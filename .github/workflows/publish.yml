@@ -1,0 +1,57 @@
+name: Publish
+
+# The 3D models' site (a copy of Awesome News, 16 November 2026, on its way to being the 3D models' own home).
+# Builds the pages from this repo and takes the news they show from the live Awesome News site, so this repo needs
+# no keys and runs no news jobs of its own. Runs on every push to main and every hour, a few minutes after the news
+# site publishes.
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "57 19-23,0-11 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the pages
+        run: python3 build.py _site
+
+      - name: Take the news from the Awesome News site
+        run: |
+          NEWS=https://ashley-pettit.github.io/awesome-news/data
+          mkdir -p _site/data/feeds _site/data/voice
+          curl -fsSL "$NEWS/status.json" -o _site/data/status.json
+          for n in $(python3 -c "import json; print(' '.join(json.load(open('_site/data/status.json')).get('sections', [])))"); do
+            curl -fsSL "$NEWS/feeds/$n.json" -o "_site/data/feeds/$n.json" || echo "no $n"
+          done
+          curl -fsSL "$NEWS/voice/index.json" -o _site/data/voice/index.json || true
+          curl -fsSL "$NEWS/tv.json" -o _site/data/tv.json || true
+
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+        continue-on-error: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
