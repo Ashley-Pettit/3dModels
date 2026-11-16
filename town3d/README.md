@@ -1698,3 +1698,16 @@ as on the graphics card. `logan-model.js` `?v=43` (patched in the bundle; rebuil
   touch screen it lets go of each mesh's JavaScript copy once it's on the graphics card. Nothing reads them back (no raycasting).
 
 JavaScript memory after loading on a phone-size test: 418 MB before, 258 MB after.
+
+## Moorooka: the possum stands on the roofs as drawn (16 November 2026)
+
+Ash: "The possum falls into many roofs". The possum worked out each roof's height from `town.json` (eave and ridge) with a guess at
+its shape: a hip rising evenly from every wall. The model draws gables as well as hips, on one or more rectangles fitted to the
+building, with overhangs, so near a gable end the guess was well below the drawn roof and the possum sank into it.
+
+- `moorooka-model.js` (`?v=38`) is patched in `$_` (the function that raises each building) to tell `window.anRoofRec(...)` what it
+  drew: the top of the walls, the building's frame (middle and turn), and either a flat roof, a ring roof (inset and rise), or each
+  rectangle's roof (gable or hip, middle, half sizes, rise, overhang).
+- `app.html` keeps those in one shared array of numbers (`anRoofs`, found by the building's middle) and the possum's `roofAt` uses
+  them first. Buildings the model raises another way (the detailed houses near number 6) keep the old guess.
+- On a test, 367 of the 378 roofs within 300 m of the possum were found this way.
