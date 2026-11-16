@@ -1314,6 +1314,17 @@ body.bstown .bs-fly-x.bs-fly-jump { top: calc(14px + env(safe-area-inset-top)); 
    out while you are in it (in the car, Up and Down are away: your eyes are the car's). */
 .bs-fly-x.bs-car { top: auto; left: 50%; right: auto; bottom: calc(166px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: #fff; color: #1b1830; z-index: 2; }
 .bs-fly-x.bs-car[hidden] { display: none; }
+/* a passenger's (or a possum holding on's) powers: Power up fills as it charges; the trick shows its seconds till it's back */
+.bs-fly-x.bs-pw, .bs-fly-x.bs-tk { top: auto; left: auto; right: 34px; z-index: 2; touch-action: none; user-select: none; -webkit-user-select: none; color: #1b1830; }
+.bs-fly-x.bs-pw { bottom: calc(254px + env(safe-area-inset-bottom)); background: linear-gradient(90deg, #ffd166 var(--charge, 0%), #b9b4a6 var(--charge, 0%)); }
+.bs-fly-x.bs-pw.ready { background: #ffd166; box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.45); }
+.bs-fly-x.bs-tk { bottom: calc(192px + env(safe-area-inset-bottom)); background: #d8d6d0; } .bs-fly-x.bs-tk.ready { background: #fff; }
+.bs-fly-x.bs-pw[hidden], .bs-fly-x.bs-tk[hidden] { display: none; }
+body.bspowers.bspossum .bs-fly-x.bs-boost, body.bspowers.bspossum .bs-fly-x.bs-hand { display: none !important; }  /* (a possum holding on is carried: Jump and Boost make way) */
+@media (hover: hover) and (pointer: fine) { .bs-fly-x.bs-tk { right: auto; left: calc(50% - 70px); transform: translateX(-100%); bottom: calc(68px + env(safe-area-inset-bottom)); } .bs-fly-x.bs-pw { right: auto; left: calc(50% + 70px); bottom: calc(68px + env(safe-area-inset-bottom)); } }
+@media (orientation: landscape) and (max-height: 500px) and (pointer: coarse) {
+  body.bstown .bs-fly-x.bs-tk { right: calc(max(18px, env(safe-area-inset-right)) + 146px); bottom: calc(26px + env(safe-area-inset-bottom)); }
+  body.bstown .bs-fly-x.bs-pw { right: calc(max(18px, env(safe-area-inset-right)) + 146px); bottom: calc(80px + env(safe-area-inset-bottom)); } }
 /* Arlo, come! / Arlo, home: by Arlo at 6 Beaudesert Road, and while he's with you (Ash, 16 November 2026) */
 /* (in the row of buttons at the top right, styled as the others there: Ash, 16 November 2026, "move go home arlo to sit nicely nxt to
    other btns") */
@@ -8094,6 +8105,7 @@ const handle = async (m, post) => {
         // L, which free the mouse first when it is looking around
         if (e.code === "KeyG" && !e.ctrlKey && !e.metaKey && BS.town?.car?.plantMenu?.()) { e.preventDefault(); return; }  // the possum's Plant
         if (e.code === "KeyH" && !e.ctrlKey && !e.metaKey && BS.town?.arlo?.()) { e.preventDefault(); return; }  // Arlo, come (or home)
+        if ((e.code === "KeyB" || e.code === "KeyV") && !e.ctrlKey && !e.metaKey && BS.town?.car?.powerKey?.(e.code === "KeyB" ? "B" : "V")) { e.preventDefault(); return; }  // a passenger's Power up and Jump or Spin
         if (e.code === "KeyQ" && !e.ctrlKey && !e.metaKey && BS.town?.car?.grip?.()) { e.preventDefault(); return; }  // the possum's Grip
         if (!e.ctrlKey && !e.metaKey && !e.altKey && /^Key[MPL]$/.test(e.code)) { const b = $({ KeyM: "bsMeBtn", KeyP: "bsShareBtn", KeyL: "bsTownFlood" }[e.code]);
           if (b && !b.hidden && b.getClientRects().length) { if (document.pointerLockElement) document.exitPointerLock?.(); b.click(); e.preventDefault(); return; } }
@@ -8955,7 +8967,11 @@ const handle = async (m, post) => {
       shops: [{ n: "Moorooka Chiropractic Centre", t: "CHIROPRACTOR", w: 14.7, c: ["#3a3d42", "#ffffff"], what: "Chiropractor", jump: true }] },
     { kind: "strip", addr: "173-175 Beaudesert Road", a: [-126.9, -210.1], b: [-136.3, -225.4], n: [0.852, -0.5235], kerb: 3.68, across: 14.28, eave: 49.6, wall: "#efede8", awning: "#5d6874",
       shops: [{ n: "", w: 6, c: ["#5d6874", "#ffffff"] }, { n: "TOBACCONIST", w: 5.5, c: ["#f2c230", "#1d1d1d"] }, { n: "Habos Kitchen", sub: "CAFE & RESTAURANT", w: 6.5, c: ["#2a2c30", "#f3e6c8"], what: "Cafe and restaurant", jump: true }] },
-    { kind: "sign", addr: "101 Beaudesert Road", a: [-227.6, -515.2], b: [-229.0, -523.0], n: [0.9843, -0.1767], kerb: 0.51, across: 11.01, eave: 38.3, wall: "#7d858d",
+    // Inline Physio, again from Street View (Ash, 16 November 2026: "Use Google maps to fix the physio"): a pale grey weatherboard cottage
+    // with white trim, a verandah across the front on white posts, the big white "inline physio." board over it, teal posters in the windows
+    { kind: "sign", addr: "101 Beaudesert Road", a: [-227.6, -515.2], b: [-229.0, -523.0], n: [0.9843, -0.1767], kerb: 0.51, across: 11.01, eave: 38.3, wall: "#a9b1b9", noBoard: true,
+      veranda: { col: "#3e4650", posts: "#f2f4f5", deep: 2.1, sign: [1.3, 6.6, 1.15] },
+      posters: [[0.6, 1.9, 0.95, 2.0, "physio", "massage", "#3fb0b5", "#ffffff"], [6.0, 7.3, 0.95, 2.0, "pilates", "", "#3fb0b5", "#ffffff"]],
       shops: [{ n: "inline physio.", w: 7.9, c: ["#f4f6f6", "#1f3b57"], stripe: ["#3fb0b5"], what: "Physio", jump: true }] },
     { kind: "sign", addr: "1106 Ipswich Road", a: [-1049.7, 19.8], b: [-1060.3, 39.5], n: [-0.8806, -0.4738], kerb: 11.4, across: 21.0, eave: 19.4, wall: "#1f5fa8", band: true,
       shops: [{ n: "WATERSKI & WAKE WORLD", w: 22.4, c: ["#ffffff", "#1f5fa8"], what: "Water ski and wakeboard shop", jump: true }] },
@@ -9016,7 +9032,7 @@ const handle = async (m, post) => {
     { at: [-108.4, -264.12], kind: 2, wall: [212, 212, 208] },               // La Pupetta (160): light grey render
     { at: [-100.4, -257.5], kind: 2, wall: [236, 230, 212] },                // the chiropractor (166-168): cream, two storeys
     { at: [-150.6, -206.27], kind: 2, wall: [239, 237, 232] },               // 173-175: white, two storeys
-    { at: [-235.32, -517.58], wall: [125, 133, 141], roof: [70, 78, 88], noShop: true },  // Inline Physio (101): a grey weatherboard cottage
+    { at: [-235.32, -517.58], wall: [169, 177, 185], roof: [62, 68, 76], noShop: true },  // Inline Physio (101): a pale grey weatherboard cottage, dark roof
     { at: [-1043.28, 31.95], kind: 2, wall: [40, 96, 170] },                 // Waterski & Wake World (1106 Ipswich Road): blue
     { at: [-541.45, 904.85], kind: 2, wall: [176, 98, 62] },                 // Moorooka Foodstore (419, on the corner of Avison Street): brick
   ];
@@ -9211,6 +9227,10 @@ const handle = async (m, post) => {
         if (f.pylon) { const px = -0.9, o = bsClamp(f.kerb - 2.2, 1.6, 6); box(px - 0.3, px + 0.3, 0, 5.4, o - 0.18, o + 0.18, f.pylon); box(px - 0.31, px + 0.31, 4.6, 4.75, o - 0.19, o + 0.19, "#e8e6e0"); }
         if (f.num) board(0.25, 1.15, 1.9, 2.75, 0.16, { n: f.num, c: ["#d71920", "#ffffff"] });  // the street number, on the wall by the corner
         if (f.posters) for (const [x0, x1, y0, y1, t, sub, bg, fg] of f.posters) board(x0, x1, y0, y1, 0.16, { n: t, sub, c: [bg, fg] });
+        // a verandah across the front (the physio's cottage): its roof sloping out from the wall on posts at the corners and between
+        if (f.veranda) { const V = f.veranda, dp = V.deep || 2; box(-0.1, len + 0.1, 2.62, 2.76, 0, dp, V.col, 0.22);
+          for (let i = 0, n = Math.max(2, Math.round(len / 2.6)); i <= n; i++) { const px = 0.12 + (len - 0.24) * i / n; box(px - 0.06, px + 0.06, 0, 2.5, dp - 0.18, dp - 0.06, V.posts); }
+          if (V.sign) { const [x0, x1, hh] = V.sign; board(x0, x1, 2.6, 2.6 + hh, dp + 0.1, shops[0]); signY = 2.6; signH = hh; } }  // its sign stands on the verandah's edge
         if (f.tall) { const px = len + 0.9, o = bsClamp(f.kerb - 1.2, 1.5, 9); box(px - 0.07, px + 0.07, 0, 1.1, o - 0.07, o + 0.07, "#8a8d90");
           box(px - 0.5, px + 0.5, 1.1, 4.2, o - 0.1, o, f.tall.c[0]); pic(px - 0.47, px + 0.47, 1.13, 4.17, o + 0.012, tall(0.94, 3.04, f.tall.lines, f.tall.c, f.tall.foot)); }
         // the vet's pole sign on the corner, as in Ash's photo: the Vet board up top and its letter board under it, on the same two posts,
@@ -10700,7 +10720,7 @@ const handle = async (m, post) => {
     const chatSend = () => { const t = clean(chatIn.value); chatIn.value = ""; chatClose(); if (!t) return;
       if (off) return toast("Other players can't see you, so they can't see what you say either. Turn it on in Settings.", 3500);
       myChat = { text: t, t: performance.now() }; try { sendChat?.(t); } catch {} if (!peers.size) toast("Said. No one else is here right now to see it.", 2600); };
-    const chatted = (t, id) => { const q = peers.get(id), text = clean(t); if (!q || !text) return; q.chat = { text, t: performance.now() }; if (q.name) toast(`${q.name}: ${text}`, 3500); };
+    const chatted = (t, id) => { const q = peers.get(id), text = clean(t); if (!q || !text) return; q.chat = { text, t: performance.now() }; T.snd?.pop?.(); if (q.name) toast(`${q.name}: ${text}`, 3500); };
     // a label: the name, or a speech bubble while they've said something in the last 30 s
     const sayIn = (el, name, chat, now, sign = "") => { const on = chat && now - chat.t < CHAT_MS, key = on ? name + "\u0000" + chat.text : name + sign;
       if (el.dataset.k === key) return; el.dataset.k = key; el.classList.toggle("said", !!on);
@@ -10713,6 +10733,8 @@ const handle = async (m, post) => {
     // (holding on, the possum also says where on top it is: [2, along, side, turn], so the driver can draw it there, riding along
     // exactly; copies of the app from before take that as getting in)
     let sendRide = null; P.ride = (id, on, at) => { try { sendRide?.(on === 2 ? (at ? [2, ...at] : 2) : on ? 1 : 0, id); } catch {} };
+    // a passenger's (or a possum holding on's) power for the driver: 1, a boost; 2, a jump, or for a plane a spin; spin, with a 360 as well
+    let sendPower = null; P.power = (id, kind, spin) => { try { sendPower?.([kind, spin ? 1 : 0], id); return !!sendPower; } catch { return false; } };
     // who is riding with you or holding on to you: a card at the top and their names over what you're in, while you drive or fly
     // (Ash, 15 November 2026: "Make it more obvious when a player is riding with you")
     const riders = new Map(), rideCard = document.createElement("div"), rideTag = document.createElement("div");
@@ -10890,6 +10912,7 @@ const handle = async (m, post) => {
         const [sp, gp] = room.makeAction("pose"), [sn, gn] = room.makeAction("name"), [se, ge] = room.makeAction("emote"); sendPose = sp; sendName = sn; sendEmote = se; gp(got); gn(named); ge(emoted);
         const [sc, gc] = room.makeAction("chat"); sendChat = sc; gc(chatted);
         const [sl, gl] = room.makeAction("potion"); sendPotion = sl; gl(smitten);
+        const [sw, gw] = room.makeAction("power"); sendPower = sw; gw((raw, id) => { const q = peers.get(id), a = Array.isArray(raw) ? raw : [raw]; if (a[0] === 1 || a[0] === 2) T.car?.power?.(a[0], !!a[1], q?.name || "A player"); });
         const [sr, gr] = room.makeAction("ride"); sendRide = sr; gr((raw, id) => { const q = peers.get(id), on = Array.isArray(raw) ? raw[0] : raw, at = Array.isArray(raw) && raw.slice(1, 4).every(Number.isFinite) ? { along: raw[1], side: raw[2], dh: raw[3] } : null;
           if (on) riders.set(id, { possum: on === 2, at }); else riders.delete(id);
           if (q?.name && (!on || !riders.get(id)?.told)) { toast(on === 2 ? `${q.name}, the possum, is holding on to you!` : on ? `${q.name} has got in with you.` : `${q.name} has got out.`, 3500); if (on) riders.get(id).told = true; } });
@@ -11035,6 +11058,18 @@ const handle = async (m, post) => {
         to(eng.sg.gain, skid * 0.1, 0.03); },
       level(v) { vol = v; if (master) master.gain.value = 0.9 * v; },
       thud(k = 1) { hit(0.28, 320, 0.5 * k, 74); },
+      // a few more (Ash, 16 November 2026: "Add a few more sounds"): a whoosh for a power-up, a boing for a jump, Arlo's woof, a pop when
+      // someone says something, and a click for Grippy
+      tone(f0, f1, len, loud = 0.08, type = "sine") { const a = ctx(); if (!a) return; const t = a.currentTime, o = a.createOscillator(), g = a.createGain(); o.type = type;
+        o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + len); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(loud, t + Math.min(0.03, len / 4));
+        g.gain.exponentialRampToValueAtTime(0.0001, t + len); o.connect(g); g.connect(master); o.start(t); o.stop(t + len + 0.02); },
+      whoosh() { const a = ctx(); if (!a) return; const t = a.currentTime, n = noise(), f = a.createBiquadFilter(), g = a.createGain(); f.type = "bandpass"; f.Q.value = 1.2;
+        f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(3200, t + 0.45); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.22, t + 0.12); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+        n.connect(f); f.connect(g); g.connect(master); n.start(t); n.stop(t + 0.6); this.tone(500, 1400, 0.4, 0.05, "triangle"); },
+      boing() { this.tone(180, 620, 0.35, 0.1, "sine"); },
+      woof() { hit(0.11, 900, 0.32, 230); setTimeout(() => hit(0.13, 800, 0.36, 200), 170); },
+      pop() { this.tone(900, 1300, 0.08, 0.06, "sine"); },
+      click() { hit(0.02, 4000, 0.12, 0); },
       door() { hit(0.09, 1100, 0.3, 120); },
       // the possum: little feet, claws on a wall or a pole, and a squeak as it jumps; and the animal by Norman Road
       step(k = 1) { hit(0.03, 2600, 0.07 * k, 0); },
@@ -11187,7 +11222,7 @@ const handle = async (m, post) => {
     T.arlo = () => { if (arloBtn.hidden) return false; arloBtn.click(); return true; };
     arloBtn.addEventListener("click", e => { e.stopPropagation(); dog.follow = !dog.follow; dog.offT = 0; dog.to = null; arloBtn.blur();
       if (!dog.follow) { if (Math.hypot(dog.x - LAWN.x, dog.z - LAWN.z) > 40) { dog.x = LAWN.x; dog.z = LAWN.z; } dog.to = [LAWN.x, LAWN.z]; }
-      toast(dog.follow ? "Arlo's coming with you!" : "Arlo's gone home to his lawn.", 2200); }); (document.querySelector("#bsFly .bs-slides") || $("bsFly"))?.prepend(arloBtn);
+      if (dog.follow) T.snd?.woof?.(); toast(dog.follow ? "Arlo's coming with you!" : "Arlo's gone home to his lawn.", 2200); }); (document.querySelector("#bsFly .bs-slides") || $("bsFly"))?.prepend(arloBtn);
     const draw = (q, arm) => { M.compose(V.set(q.x, g(q.x, q.z), q.z), Q.setFromEuler(E.set(0, q.look, 0, "YXZ")), ONE); q.parts.setMatrix(0, M.elements.slice());
       q.parts.setMatrix(1, M.clone().multiply(SH[0]).multiply(R.makeRotationZ(-arm)).elements); q.parts.setMatrix(2, M.clone().multiply(SH[1]).multiply(R.makeRotationZ(0.06)).elements); };
     const DOGS = new THREE.Vector3(1.2, 1.2, 1.2);  // a little bigger (Ash, 16 November 2026: "Make Arlo a tiny bit bigger")
@@ -11208,7 +11243,7 @@ const handle = async (m, post) => {
         if (me) draw(q, arm); }
       // Arlo: a few steps across the lawn, a sniff, then off again (only moved while he moves); his tail goes when you're near
       let d = Math.hypot(F.pos.x - dog.x, F.pos.z - dog.z);
-      if (dog.follow && d > 50) { const fx = -Math.sin(F.yaw), fz = -Math.cos(F.yaw); dog.x = F.pos.x - fx * 4; dog.z = F.pos.z - fz * 4; dog.h = F.yaw + Math.PI; d = 4; }  // always catches up
+      if (dog.follow && d > 50) { const fx = -Math.sin(F.yaw), fz = -Math.cos(F.yaw); dog.x = F.pos.x - fx * 4; dog.z = F.pos.z - fz * 4; dog.h = F.yaw + Math.PI; d = 4; T.snd?.woof?.(); }  // always catches up
       { const show = dog.follow || (!!T.walk && !T.car?.in); if (arloBtn.hidden === show) arloBtn.hidden = !show; const tx = dog.follow ? "Arlo, home" : "Arlo, come!"; if (arloBtn.textContent !== tx) arloBtn.textContent = tx; }
       if (d > 260 || up > 220) { if (dogShown) { for (let i = 0; i < 2; i++) ap.setMatrix(i, FAR.slice()); dogShown = false; } return; }
       let pet = !dogShown; dogShown = true;
@@ -11680,13 +11715,13 @@ const handle = async (m, post) => {
     // how the ground lies under something: its height, and how far the nose is up and the right side down
     const lie = (o, half, wide) => { const s = Math.sin(o.h), c = Math.cos(o.h), g = (a, b) => ground(o.x + s * a - c * b, o.z + c * a + s * b), yf = g(half, 0), yb = g(-half, 0), yr = g(0, wide), yl = g(0, -wide);
       return [(yf + yb + yr + yl) / 4, Math.atan2(yf - yb, half * 2), Math.atan2(yl - yr, wide * 2)]; };
-    const sit = dt => { const [y, p, r] = car.bus ? lie(car, 3.6, 1.1) : lie(car, 1.3, 0.8), e = dt ? Math.min(1, dt * 12) : 1; car.y += (y + 0.05 + (car.hop || 0) - car.y) * (car.flip ? 1 : e); car.p += (p - car.p) * e; car.r += (r - car.r) * e;
-      if (car.own) { Object.assign(car.own, { x: car.x, y: car.y, z: car.z, h: car.h, p: car.p, r: car.r }); showOwn(car.own); } else m.driveCar(car.id[0], car.id[1], car.x, car.y, car.z, car.h, car.p, car.r); };
+    const sit = dt => { const [y, p, r] = car.bus ? lie(car, 3.6, 1.1) : lie(car, 1.3, 0.8), e = dt ? Math.min(1, dt * 12) : 1; car.y += (y + 0.05 + (car.hop || 0) - car.y) * (car.flip || car.trick ? 1 : e); car.p += (p - car.p) * e; car.r += (r - car.r) * e; const rd = car.r + (car.roll || 0);
+      if (car.own) { Object.assign(car.own, { x: car.x, y: car.y, z: car.z, h: car.h, p: car.p, r: rd }); showOwn(car.own); } else m.driveCar(car.id[0], car.id[1], car.x, car.y, car.z, car.h, car.p, rd); };
     // ---- the planes, each stood in the model as the app's own mesh where it lives (MOO_PLANES); `plane` is the one you are in
     const M = new THREE.Matrix4(), M2 = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), ONE = new THREE.Vector3(1, 1, 1);
     const hub = new THREE.Matrix4().makeTranslation(0, 1.31, 2.74), mast = new THREE.Matrix4().makeTranslation(0, 2.45, 0.1);
     let plane = null;
-    const showPlane = P => { M.compose(V.set(P.x, P.y, P.z), Q.setFromEuler(E.set(-P.p, P.h, P.r, "YXZ")), ONE); P.parts.setMatrix(0, M.elements.slice());  // (a copy each time: what is set is kept, to be set again if the model is swapped for a sharper one)
+    const showPlane = P => { M.compose(V.set(P.x, P.y, P.z), Q.setFromEuler(E.set(-P.p, P.h, P.r + (P.roll || 0), "YXZ")), ONE); P.parts.setMatrix(0, M.elements.slice());  // (a copy each time: what is set is kept, to be set again if the model is swapped for a sharper one)
       const fast = P === plane && P.spin > 0.2; M2.copy(M).multiply(P.heli ? mast : hub);
       P.parts.setMatrix(1, fast ? M2.clone().scale(V.set(0, 0, 0)).elements : M2.clone().multiply(P.heli ? new THREE.Matrix4().makeRotationY(P.ang || 0) : new THREE.Matrix4().makeRotationZ(P.ang || 0)).elements);  // the blades, or the blur they make
       P.parts.setMatrix(2, fast ? M2.elements.slice() : M2.clone().scale(V.set(0, 0, 0)).elements); };
@@ -11927,7 +11962,7 @@ const handle = async (m, post) => {
         if (step) { F.pos.x = P.x + Math.cos(P.h) * 1.9; F.pos.z = P.z - Math.sin(P.h) * 1.9; F.yaw = P.h + Math.PI; F.pitch = -0.04; }  // out of the left door
         plane = null; showPlane(P); }
       veh = null; car = null; plane = null; window.anFast = false; showKeys(T.walk ? "walk" : null); C.in = false; F.drive = null; F.boost = false; F.hText = ""; F.vert = 0; F.stick.x = F.stick.y = F.lookStick.x = F.lookStick.y = 0; F.keys.clear();
-      document.body.classList.remove("bsdrive", "bsplane", "bspossum", "bsride"); boostBtn.hidden = true; boostBtn.textContent = "Boost"; handBtn.hidden = true; flipBtn.hidden = true; F.flip = false; plantBtn.hidden = plantMenu.hidden = true; gripBtn.hidden = true; handBtn.classList.remove("on"); F.hand = false; at = 0; C.frame(); };
+      document.body.classList.remove("bsdrive", "bsplane", "bspossum", "bsride", "bspowers"); pwBtn.hidden = tkBtn.hidden = true; boostBtn.hidden = true; boostBtn.textContent = "Boost"; handBtn.hidden = true; flipBtn.hidden = true; F.flip = false; plantBtn.hidden = plantMenu.hidden = true; gripBtn.hidden = true; handBtn.classList.remove("on"); F.hand = false; at = 0; C.frame(); };
     let camOff = null;  // where the view is from what you're in
     // (up in a plane, Moorooka's model stops fetching its sharpest ground and building backyards: window.anFast, moorooka-model.js patched)
     const tick = dt0 => { window.anFast = veh === "plane" && !!plane?.air; const dt = Math.min(dt0, 0.1), k = F.keys, has = (...c) => c.some(x => k.has(x));
@@ -11941,6 +11976,7 @@ const handle = async (m, post) => {
       const fly = veh === "plane", thr = bsClamp((has("KeyW") || (!fly && has("ArrowUp")) ? 1 : 0) - (has("KeyS") || (!fly && has("ArrowDown")) ? 1 : 0) + F.stick.y, -1, 1), str = bsClamp((has("KeyD", "ArrowRight") ? 1 : 0) - (has("KeyA", "ArrowLeft") ? 1 : 0) + F.stick.x, -1, 1);
       const boost = has("ShiftLeft", "ShiftRight") || !!F.boost;
       let o, D, text;  // what the view follows, how far back, and what the chip says
+      powersTick(dt);
       if (veh === "ride") { const L = ride.local, q = L ? (T.traffic?.cars || []).includes(L) && L.x != null ? { x: L.x, y: L.y, z: L.z, h: L.h ?? 0, p: L.p || 0, r: L.rl || 0, k: "bus" } : null : (T.peers?.list?.() || []).find(v => v.id === ride.id);
         if (!q || !RIDE_REACH[q.k]) { toast(L ? "The bus has gone." : q ? `${ride.name} has got out.` : `${ride.name} has gone.`, 2600); return leave(true); }
         const now = performance.now(), [x0, , z0, t0] = ride.at, sp = now - t0 > 0 ? Math.hypot(q.x - x0, q.z - z0) / ((now - t0) / 1000) : 0;
@@ -11958,7 +11994,12 @@ const handle = async (m, post) => {
         if ((xNew || F.flip) && car.gold && !car.flip) { F.flip = false; car.flip = { t: 0, h0: car.h, d0: car.dir, way: str < -0.1 ? -1 : 1 }; snd.thud?.(0.3); }
         const gc = car.gold, bSecs = gc ? R.goldBoostSecs : R.boostSecs, bBack = gc ? R.goldBoostBack : R.boostBack, sTurn = gc ? R.goldSlideTurn : R.slideTurn, sSlow = gc ? R.goldSlideSlow : R.slideSlow;
         if (boosting) { charge = Math.max(0, charge - dt / bSecs); if (!charge) spent = true; } else { charge = Math.min(1, charge + dt / bBack); if (charge >= 0.2) spent = false; }
-        const K = car.gold ? GOLD : car.bus ? 0.7 : 1, vmax = VMAX * K, vboost = VBOOST * K, SHAPE = car.bus ? BUS : CAR;  // (a bus: seven tenths of a car's speed and push, and a long way between its axles)  // the golden car: a fifth more top speed, push and boost
+        const K = car.gold ? GOLD : car.bus ? 0.7 : 1, vboost = VBOOST * K, SHAPE = car.bus ? BUS : CAR;
+        // a passenger's power-up: 2 km/h more, and half a boost's worth on top, for 3 seconds (Ash, 16 November 2026)
+        const team = car.teamTil > performance.now(), vmax = VMAX * K + (team ? 2 / 3.6 + 0.5 * (vboost - VMAX * K) : 0);
+        // a passenger's jump (and with a possum's, a roll right round as it goes up): up off the road and down again, still driving
+        if (car.trick) { const Tk = car.trick; Tk.t += dt; const f = Math.min(1, Tk.t / 0.9); car.hop = 2.2 * Math.sin(Math.PI * f); car.roll = Tk.spin ? Math.PI * 2 * f * f * (3 - 2 * f) : 0;
+          if (f >= 1) { car.trick = null; car.hop = 0; car.roll = 0; snd.thud(0.6); } }  // (a bus: seven tenths of a car's speed and push, and a long way between its axles)  // the golden car: a fifth more top speed, push and boost
         // the handbrake is not much of a brake (Ash, 14 November 2026: "unrealistic where it only slightly slows the car but
         // drastically increases turning for burnouts"): it swings the car round fast while it carries on the way it was going
         const slide = brake && Math.abs(v) > 3;
@@ -12006,7 +12047,7 @@ const handle = async (m, post) => {
         // moving, and is carried wherever that car goes; someone getting in and driving off takes it with them (their car is where
         // the parked one was, so it grabs on to theirs). Grip again, or Jump, lets go (Ash, 16 November 2026: "Add a thing to the
         // possum called grip so even if not on the side of the car I can hold onto a car no one is driving yet")
-        if (gripAsk) { gripAsk = false; grippy = !grippy; try { localStorage.setItem("an-possum-grippy", grippy ? "1" : "0"); } catch {} gripLook = 0; snd.squeak?.(grippy ? 1.3 : 0.8);
+        if (gripAsk) { gripAsk = false; grippy = !grippy; try { localStorage.setItem("an-possum-grippy", grippy ? "1" : "0"); } catch {} gripLook = 0; snd.click(); snd.squeak(grippy ? 1.3 : 0.8);
           if (!grippy) { P.sit = false; P.ride = null; }
           if (!grippy && !P.grip && !P.cling) toast("Grippy off: it won't hold on to anything. It still climbs.", 2200);
           else if (!grippy) { const g = P.grip, c = P.cling, q = c && (T.peers?.list?.() || []).find(v => v.id === c.id);
@@ -12096,7 +12137,8 @@ const handle = async (m, post) => {
         if ((gripLook -= dt) <= 0) { gripLook = 0.25; gripBtn.hidden = false; const tx = grippy ? "Grippy: on" : "Grippy: off"; if (gripBtn.textContent !== tx) gripBtn.textContent = tx; gripBtn.classList.toggle("on", grippy); }
         o = P; D = P.cling || P.grip ? 9 : 3.4 + Math.min(3, Math.abs(P.v) / 12); text = P.cling ? `Holding on to ${P.cling.name} \u00b7 ${Math.round(P.v * 3.6)} km/h` : P.grip ? `Gripping the car \u00b7 ${Math.round(P.v * 3.6)} km/h` : P.mode === "climb" ? "Climbing \u00b7 " + Math.round(up) + " m" : Math.round(Math.abs(P.v) * 3.6) + " km/h" + (up > 1.5 ? " \u00b7 " + Math.round(up) + " m up" : "");
         if (mission) text = `\ud83d\udfe1 ${mission.got}/${mission.rings.length} rings \u00b7 ${Math.max(0, Math.ceil(mission.t))} s \u00b7 ` + text;
-      } else { const P = plane, K = P.k, jet = boost && canBoost(P), top = (jet ? JET : CRUISE) * K;  // (only the golden plane has a boost)
+      } else { const P = plane, K = P.k, jet = boost && canBoost(P), top = ((jet ? JET : CRUISE) + (P.teamTil > performance.now() ? 2 / 3.6 + 0.5 * (JET - CRUISE) : 0)) * K;  // (only the golden plane has a boost; a passenger's power-up: 2 km/h and half a boost more)
+        if (P.trick) { P.trick.t += dt; const f = Math.min(1, P.trick.t / 1.2); P.roll = Math.PI * 2 * f * f * (3 - 2 * f); if (f >= 1) { P.trick = null; P.roll = 0; } }  // a passenger's spin: a roll right round
         // the nose: the down arrow lifts it and the up arrow lowers it, as pulling back and pushing on a plane's stick does
         // (Ash, 14 November 2026: "if i press down my plane shifts upwards and vica versa"). Space and C, and Climb and Dive, too.
         const climb = bsClamp((has("ArrowDown", "Space") ? 1 : 0) - (has("ArrowUp", "KeyC") ? 1 : 0) + F.vert, -1, 1);
@@ -12240,6 +12282,23 @@ const handle = async (m, post) => {
     plantBtn.onclick = e => { e.stopPropagation(); plantMenu.hidden = !plantMenu.hidden; plantBtn.setAttribute("aria-expanded", String(!plantMenu.hidden)); };
     $("bsFly")?.append(plantBtn, plantMenu);
     C.plantMenu = () => { if (veh !== "possum" || plantBtn.hidden) return false; plantBtn.click(); return true; };
+    // ---- powers for the one along for the ride (Ash, 16 November 2026: "Whilst someone else is driving as the passenger give me access
+    // to a boost with charge to power up my teammates car or plane with a tiny extra of 2kmph plus a 50% of a normal boost; the ability
+    // to make the car jump every 15 seconds or plane/heli 360 spin. The possum has similar effects when gripped but can make the car do a
+    // jump into a 360"): Power up charges over 8 s and gives the driver 3 s of it; the trick comes round every 15 s. B and V on a keyboard
+    const pwBtn = document.createElement("button"); pwBtn.type = "button"; pwBtn.className = "bs-fly-x bs-pw"; pwBtn.dataset.key = "B"; pwBtn.hidden = true; pwBtn.textContent = "Power up";
+    const tkBtn = document.createElement("button"); tkBtn.type = "button"; tkBtn.className = "bs-fly-x bs-tk"; tkBtn.dataset.key = "V"; tkBtn.hidden = true; tkBtn.textContent = "Jump";
+    let pwCharge = 0, tkWait = 0, pwLook = 0;
+    const powerTo = () => veh === "ride" && ride?.id ? { id: ride.id, k: ride.k, possum: false } : veh === "possum" && pos?.cling ? { id: pos.cling.id, k: (T.peers?.list?.() || []).find(v => v.id === pos.cling.id)?.k, possum: true } : null;
+    const usePower = () => { const to = powerTo(); if (!to) return false; if (pwCharge < 1) { toast("Still charging.", 900); return true; } if (T.peers?.power?.(to.id, 1)) { pwCharge = 0; snd.whoosh(); toast("\u26a1 Power up sent!", 1400); } return true; };
+    const useTrick = () => { const to = powerTo(); if (!to) return false; if (tkWait > 0) return true; const air = /plane|heli/.test(to.k || ""); if (T.peers?.power?.(to.id, 2, to.possum && !air)) { tkWait = 15; snd.boing(); toast(air ? "Spin!" : to.possum ? "Jump and roll!" : "Jump!", 1200); } return true; };
+    pwBtn.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); usePower(); }); tkBtn.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); useTrick(); });
+    $("bsFly")?.append(pwBtn, tkBtn); C.powerKey = k => (k === "B" ? usePower : useTrick)();
+    const powersTick = dt => { const to = powerTo(); pwCharge = Math.min(1, pwCharge + dt / 8); tkWait = Math.max(0, tkWait - dt);
+      document.body.classList.toggle("bspowers", !!to); if (pwBtn.hidden === !!to) { pwBtn.hidden = tkBtn.hidden = !to; }
+      if (!to || (pwLook -= dt) > 0) return; pwLook = 0.2;
+      pwBtn.style.setProperty("--charge", Math.round(pwCharge * 100) + "%"); pwBtn.classList.toggle("ready", pwCharge >= 1);
+      const air = /plane|heli/.test(to.k || ""), name = air ? "Spin" : to.possum ? "Jump 360" : "Jump", tx = tkWait > 0 ? `${name} ${Math.ceil(tkWait)}` : name; if (tkBtn.textContent !== tx) tkBtn.textContent = tx; tkBtn.classList.toggle("ready", tkWait <= 0); };
     const gripBtn = document.createElement("button"); gripBtn.type = "button"; gripBtn.className = "bs-fly-x bs-grip"; gripBtn.textContent = grippy ? "Grippy: on" : "Grippy: off"; gripBtn.dataset.key = "Q"; gripBtn.hidden = true;
     gripBtn.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); if (veh === "possum") gripAsk = true; }); $("bsFly")?.append(gripBtn);
     C.grip = () => { if (veh !== "possum") return false; gripAsk = true; return true; };
@@ -12248,7 +12307,12 @@ const handle = async (m, post) => {
     const flipBtn = $("bsFlipBtn"), flipPress = e => { e.preventDefault(); if (veh === "car" && car?.gold) F.flip = true; }; flipBtn.addEventListener("pointerdown", flipPress);
     const hidden = () => snd.quiet(document.hidden); document.addEventListener("visibilitychange", hidden);
     C.riding = () => veh === "ride";
-    C.pose = () => veh === "ride" ? null : veh === "possum" ? { k: "possum", x: pos.x, y: pos.y, z: pos.z, h: pos.h, p: pos.p, r: 0 } : veh === "car" ? { k: car.bus ? "bus" : car.gold ? "gold" : "car", x: car.x, y: car.y, z: car.z, h: car.h, p: car.p, r: car.r }
+    C.power = (kind, spin, from) => { const now = performance.now(), V2 = veh === "car" ? car : veh === "plane" ? plane : null; if (!V2) return false;
+      if (kind === 1) { V2.teamTil = now + 3000; snd.whoosh(); toast(`\u26a1 ${from} powered you up!`, 1800); }
+      else if (veh === "car" && !car.trick && !car.flip) { car.trick = { t: 0, spin }; snd.boing(); toast(spin ? `${from} flipped you!` : `${from} made you jump!`, 1600); }
+      else if (veh === "plane" && !plane.trick) { plane.trick = { t: 0 }; snd.whoosh(); toast(`${from} spun you round!`, 1600); }
+      return true; };
+    C.pose = () => veh === "ride" ? null : veh === "possum" ? { k: "possum", x: pos.x, y: pos.y, z: pos.z, h: pos.h, p: pos.p, r: 0 } : veh === "car" ? { k: car.bus ? "bus" : car.gold ? "gold" : "car", x: car.x, y: car.y, z: car.z, h: car.h, p: car.p, r: car.r + (car.roll || 0) }
       : veh ? { k: plane.heli ? (plane.gold ? "goldheli" : "heli") : plane.gold ? "goldplane" : "plane", x: plane.x, y: plane.y, z: plane.z, h: plane.h, p: plane.p, r: plane.r } : null;
     C.where = () => veh === "ride" ? { kind: "ride", with: ride.name } : veh === "possum" ? { kind: "possum", x: pos.x, y: pos.y, z: pos.z, heading: pos.h, speed: pos.v, mode: pos.mode, up: pos.y - ground(pos.x, pos.z) } : veh === "car" ? { kind: "car", gold: !!car.gold, bus: !!car.bus, x: car.x, z: car.z, heading: car.h, dir: car.dir, speed: car.v, charge } : veh ? { kind: "plane", heli: !!plane.heli, x: plane.x, y: plane.y, z: plane.z, heading: plane.h, pitch: plane.p, speed: plane.v, air: plane.air } : null;  // for checking
     C.reread = () => Object.assign(R, townPerkRide(rideSettings()));  // a number changed in Settings: the ones read as it goes (turning) apply straight away
@@ -12257,7 +12321,7 @@ const handle = async (m, post) => {
     C.toGold = () => { const G = planes.find(P => P.gold); if (!G) return false; if (veh) leave(false);
       const sn = Math.sin(G.h), cs = Math.cos(G.h), dx = sn * 7 - cs * 5, dz = cs * 7 + sn * 5; T.tween = null;
       F.pos.x = G.x + dx; F.pos.z = G.z + dz; F.pos.y = ground(F.pos.x, F.pos.z) + (T.walk ? F.eye : 14); F.yaw = Math.atan2(dx, dz); F.pitch = T.walk ? -0.06 : -0.6; at = 0; return true; };
-    C.dispose = () => { try { satMesh?.remove?.(); } catch {} if (veh) leave(false); btn.onclick = null; btn.hidden = boostBtn.hidden = handBtn.hidden = flipBtn.hidden = true; plantBtn.remove(); plantMenu.remove(); gripBtn.remove(); flipBtn.removeEventListener("pointerdown", flipPress); F.hand = false; Object.entries(press).forEach(([k, f]) => boostBtn.removeEventListener(k, f)); Object.entries(handPress).forEach(([k, f]) => handBtn.removeEventListener(k, f));
+    C.dispose = () => { try { satMesh?.remove?.(); } catch {} if (veh) leave(false); btn.onclick = null; btn.hidden = boostBtn.hidden = handBtn.hidden = flipBtn.hidden = true; plantBtn.remove(); plantMenu.remove(); gripBtn.remove(); pwBtn.remove(); tkBtn.remove(); flipBtn.removeEventListener("pointerdown", flipPress); F.hand = false; Object.entries(press).forEach(([k, f]) => boostBtn.removeEventListener(k, f)); Object.entries(handPress).forEach(([k, f]) => handBtn.removeEventListener(k, f));
       document.removeEventListener("visibilitychange", hidden); document.body.classList.remove("bsdrive", "bsplane"); snd.dispose(); showKeys(null); try { for (const P of planes) P.parts.remove(); for (const G of owns) G.parts.remove(); ring.remove(); possumMesh?.remove(); poleMesh?.remove(); } catch {} };
     return C;
   }
