@@ -8236,7 +8236,7 @@ const handle = async (m, post) => {
     // ability to jump rather than be big"); C and Down still lower them
     if (F.walk && F.canJump) { const want = has("Space") || F.jumpBtn; if (want && !F.jumpWas && !(F.jumpH > 0.01)) { F.jumpV = 7.2; F.jumpH = 0.001; } F.jumpWas = want;
       if (F.jumpH > 0) { F.jumpH = Math.max(0, F.jumpH + F.jumpV * lk); F.jumpV -= 22 * lk; if (!F.jumpH) F.jumpV = 0; } }
-    if (F.walk) { const u2 = F.canJump ? Math.min(0, u) : u; if (u2) F.eye = bsClamp((F.eye || 3) + u2 * 3 * lk, 1.5, 30);  // Up and Down: eyes higher or lower above the ground
+    if (F.walk) { const u2 = F.canJump ? Math.min(0, u) : u; if (u2) F.eye = bsClamp((F.eye || 2.8) + u2 * 3 * lk, 1.5, 30);  // Up and Down: eyes higher or lower above the ground
       const bob = 0;  // (no bob of the head: Ash, 16 November 2026, "remove head bob")
       F.pos.y += (F.walk() + bob + (F.jumpH || 0) - F.pos.y) * Math.min(1, lk * (F.jumpH ? 30 : 10)); }  // walking in the whole-town model: your eyes follow the ground, up hill and down
     else F.pos.y = bsClamp(F.pos.y + u * sp, F.floor ? F.floor() : 1.4, F.ceil || 180);
@@ -8582,7 +8582,7 @@ const handle = async (m, post) => {
           onError: msg => fail(msg) });
       return m.ready.then(() => {
         if (T.dead || BS.fly !== F) { try { m.dispose(); } catch {} return; }
-        const EYE = 3, touch = matchMedia("(pointer: coarse)").matches;  // walking: your eyes 3 m up to start, for a clear view over the cars and fences (Up and Down change it)
+        const EYE = 2.8, touch = matchMedia("(pointer: coarse)").matches;  // walking: your eyes 2.8 m up to start (Ash, 16 November 2026: "Set my start height to 2.8"; was 3), for a clear view over the cars and fences (Up and Down change it)
         F.eye = EYE;
         // the ground, or the water over it: the sea and the inlet (Inverloch), or a flood that's on the map (Logan)
         // the ground: the model's, the water's, or a flat pad the app has laid (11 Norman Road's lot sits on one, a little above the
@@ -8928,7 +8928,7 @@ const handle = async (m, post) => {
       posters: [[1.4, 2.7, 1.0, 2.3, "Yes!", "NEW CAR WARRANTY", "#f6d21a", "#c8102e"], [2.9, 4.6, 1.2, 2.2, "SAFETY", "CERTIFICATES", "#ffffff", "#1b3a6b"], [4.8, 8.0, 1.35, 2.05, "TYRES", "", "#1b3a6b", "#ffffff"]],
       tall: { lines: ["ADVANCE", "MECHANICAL", "CENTRE"], c: ["#d71920", "#ffffff"], foot: { n: "RACQ APPROVED", c: ["#ffffff", "#1b3a6b"] } },
       shops: [{ n: "ADVANCE MECHANICAL CENTRE", w: 8.4, c: ["#d71920", "#ffffff"], what: "Mechanic: one upgrade for your car", jump: true }] },  // (placed by the Queensland address register: north of Helles Street)
-    { kind: "sign", addr: "111 Beaudesert Road", a: [-230.4, -460.5], b: [-228.0, -474.5], n: [0.9856, 0.169], kerb: 9.95, across: 20.45, eave: 39.3, wall: "#f4f1ea", joke: ["WHAT DO YOU CALL", "A SLEEPING BULL?", "A BULLDOZER"], pole: { n: "Vet", cross: "#1b8a3c", c: ["#ffffff", "#1b8a3c"], x: 1.6, back: 2.3 }, noBoard: true, shops: [{ n: "Greencross Vets", w: 14.2, c: ["#ffffff", "#1b8a3c"], what: "Vet: one upgrade for your possum", jump: true }] },
+    { kind: "sign", addr: "111 Beaudesert Road", a: [-230.4, -460.5], b: [-228.0, -474.5], n: [0.9856, 0.169], kerb: 9.95, across: 20.45, eave: 39.3, wall: "#f4f1ea", joke: ["WHAT DO YOU CALL", "A SLEEPING BULL?", "A BULLDOZER"], pole: { n: "Vet", cross: "#1b8a3c", c: ["#ffffff", "#1b8a3c"], x: 2.4, back: 3.3, big: 2 }, noBoard: true, shops: [{ n: "Greencross Vets", w: 14.2, c: ["#ffffff", "#1b8a3c"], what: "Vet: one upgrade for your possum", jump: true }] },
     { kind: "row", addr: "114-120 Beaudesert Road", a: [-165.8, -429.1], b: [-159.5, -397.0], n: [-0.9813, 0.1926], kerb: 23.91, across: 35.11, eave: 42.9, wall: "#5e6063", fascia: "#46484c",
       shops: [{ n: "TerryWhite Chemmart", w: 7, c: ["#3dae49", "#ffffff"], wrap: { n: "MOOROOKA", cross: "#ffffff", c: ["#3dae49", "#ffffff"] }, what: "Pharmacy: ask the pharmacist about a love potion", jump: true },
         { n: "PHARMACY", w: 6, c: ["#3dae49", "#ffffff"], wrap: { n: "CareClinic", cross: "#ffffff", c: ["#3dae49", "#ffffff"] } }, { n: "TerryWhite Chemmart", w: 6, c: ["#3dae49", "#ffffff"], door: true },
@@ -8937,7 +8937,7 @@ const handle = async (m, post) => {
     { kind: "sign", addr: "Shop 2, 122 Beaudesert Road", a: [-155.8, -380.3], b: [-153.7, -368.0], n: [-0.9857, 0.1683], kerb: 24.92, across: 36.12, eave: 44.1, wall: "#f1eee8", glass: "#6e958f", fascia: { col: "#7a2f2c", raise: 5.2 }, pylon: "#1c1d20",
       shops: [{ n: "Moorooka Ward Office", t: "Councillor Steve Griffiths", sub: "MOOROOKA WARD OFFICE", w: 12.5, c: ["#ffffff", "#1f3a6b"], what: "Cr Steve Griffiths' office", jump: true }] },
     // the Woolworths centre (125 Beaudesert Road): the supermarket and the shops beside it along its front, the doctors at the Durack Street end
-    { kind: "row", addr: "125 Beaudesert Road", a: [-198.5, -361.3], b: [-206.8, -391.6], n: [0.9645, -0.2642], kerb: 1.52, across: 11.22, eave: 44.3, wall: "#e8e6e0", shops: [{ n: "Woolworths", w: 12, c: ["#178841", "#ffffff"], what: "Supermarket", jump: true },
+    { kind: "row", addr: "125 Beaudesert Road", a: [-198.5, -361.3], b: [-206.8, -391.6], n: [0.9645, -0.2642], kerb: 1.52, across: 11.22, eave: 44.3, wall: "#e8e6e0", shops: [{ n: "Woolworths", w: 12, sw: 9, sh: 1.5, c: ["#178841", "#ffffff"], what: "Supermarket", jump: true },
       { n: "Brumby's Bakeries", w: 4, c: ["#c8102e", "#ffffff"], what: "Bakery" }, { n: "Sushi Guru", w: 4, c: ["#1d1d1d", "#ff5a36"], what: "Sushi" }, { n: "Botanicaf\u00e9", w: 4, c: ["#2f6b3a", "#ffffff"], what: "Cafe" },
       { n: "Barra Boys", w: 3.4, c: ["#0b4f8a", "#ffd54f"], what: "Fish and chips" }, { n: "Moorooka Medical Hub", w: 4, c: ["#ffffff", "#0b6fb8"], what: "Doctors: they'll sober you up after the Willow", jump: true }] },
     { kind: "sign", addr: "212 Beaudesert Road", a: [-55.5, -149.3], b: [-53.5, -129.4], n: [-0.995, 0.1], kerb: 5.77, across: 17.97, eave: 53.1, wall: "#8f8476", screen: "#ad6e3e", posts: "#d42a20",
@@ -9163,14 +9163,21 @@ const handle = async (m, post) => {
         if (f.fascia) { pic(0, len, 0, 2.62, 0.08, fronts({ ...F, wall: f.fascia }, 2.62, shops.map(s => ({ w: s.w, door: s.door })))); plinth(0, len);
           shops.forEach((s, i) => { const [x0, x1] = where[i]; box(x0 + (i ? 0 : 0.05), x1 - (i < shops.length - 1 ? 0 : 0.05), 2.62, 3.62, 0, 0.22, s.fascia || f.fascia);
             if (s.wrap) pic(x0 + 0.3, x1 - 0.3, 0.5, 2.45, 0.1, sign(x1 - x0 - 0.6, 1.95, { ...s.wrap, big: 1.25 })); }); }
-        shops.forEach((s, i) => { const [x0, x1] = where[i], w = Math.min(x1 - x0 - 0.5, Math.max(2.6, Math.min(8, (s.t || s.n).length * (s.script ? 0.62 : 0.4)))), cx = (x0 + x1) / 2;
-          if (f.fascia) board(cx - w / 2, cx + w / 2, 2.78, 3.46, 0.3, s); else board(cx - w / 2, cx + w / 2, 2.55, 3.35, 0.14, s); });
+        // (sw, sh: a shop's own sign width and height, for a big one: Woolworths, Ash, 16 November 2026, "Make the Woolworths sign bigger")
+        shops.forEach((s, i) => { const [x0, x1] = where[i], w = s.sw ? Math.min(x1 - x0 - 0.3, s.sw) : Math.min(x1 - x0 - 0.5, Math.max(2.6, Math.min(8, (s.t || s.n).length * (s.script ? 0.62 : 0.4)))), cx = (x0 + x1) / 2;
+          if (f.fascia) board(cx - w / 2, cx + w / 2, 2.78, 2.78 + (s.sh || 0.68), 0.3, s); else board(cx - w / 2, cx + w / 2, 2.55, 2.55 + (s.sh || 0.8), 0.14, s); });
         if (f.fascia) { signY = 2.78; signH = 0.68; }
       } else if (f.kind === "pylon") {
         // a servo's sign: a pole, the name up top in its colours, and FUEL under it (Ash, 16 November 2026: "and the petrol stations")
-        const s = shops[0]; box(len / 2 - 0.16, len / 2 + 0.16, 0, 4.4, -0.16, 0.16, f.wall);
-        board(0, len, 4.4, 6.3, 0.13, s); board(0.25, len - 0.25, 3.6, 4.3, 0.13, { n: "FUEL", c: ["#f4f4f2", "#1d1d1d"] });
-        signY = 4.4; signH = 1.9;
+        // (a proper servo totem: Ash, 16 November 2026, "The petrol stations look crap. Sign is no good". A slab the brand's colour from the
+        // ground up, the name and its stripe at the top, and the price board under it in red lights, on a grey plinth)
+        const s = shops[0], W = len + 0.5, x0 = -0.25, x1 = len + 0.25;
+        // (thick enough to take in the model's own plain slab where it has one, as at the Ampol: that hid the sign inside it)
+        box(x0 - 0.05, x1 + 0.05, 0, 0.6, -0.6, 0.6, "#8d9094"); box(x0, x1, 0.6, 7.6, -0.5, 0.5, s.c[0]);
+        board(x0 + 0.12, x1 - 0.12, 5.6, 7.45, 0.51, s);
+        box(x0 + 0.15, x1 - 0.15, 1.2, 5.35, 0.5, 0.53, "#121314");
+        pic(x0 + 0.2, x1 - 0.2, 1.25, 5.3, 0.542, tall(W - 0.4, 4.05, ["UNLEADED 91", "189.9", "E10", "185.9", "PREMIUM 98", "209.9", "DIESEL", "199.9"], ["#121314", "#ff4b2b"], null, 256));
+        signY = 5.6; signH = 1.85;
       } else {
         // (as in Ash's photos, 16 November 2026: the mechanic's and the ward office's names on a band the full width of the front; the vet's
         // pole sign with its green cross; red rails up the gym's two stairs; the yellow kerb in front of the mechanic's)
@@ -9207,10 +9214,12 @@ const handle = async (m, post) => {
           box(px - 0.5, px + 0.5, 1.1, 4.2, o - 0.1, o, f.tall.c[0]); pic(px - 0.47, px + 0.47, 1.13, 4.17, o + 0.012, tall(0.94, 3.04, f.tall.lines, f.tall.c, f.tall.foot)); }
         // the vet's pole sign on the corner, as in Ash's photo: the Vet board up top and its letter board under it, on the same two posts,
         // with a terrible joke on it (Ash, 16 November 2026: "It should have a lame corny sign out the front with an animal related dad joke")
-        if (f.pole) { const px = f.pole.x ?? -1.6, o = bsClamp(f.kerb - (f.pole.back ?? 1.6), 2, 9);
-          for (const q of [px - 1.05, px + 1.05]) box(q - 0.06, q + 0.06, 0, 3.6, o - 0.06, o + 0.06, "#c9ccd0");
-          board(px - 1.0, px + 1.0, 2.75, 3.55, o + 0.07, f.pole);
-          if (f.joke) { box(px - 1.0, px + 1.0, 1.15, 2.6, o - 0.01, o + 0.07, "#ffffff"); pic(px - 0.97, px + 0.97, 1.18, 2.57, o + 0.082, tall(1.94, 1.39, f.joke, ["#ffffff", "#1d1d1d"], null, 384)); } }  // a letter board: a line at a time
+        // (twice the size, so the joke reads from the road, and a metre further back: Ash, 16 November 2026, "Make the vet sign about x2 as
+        // large so the joke is easy to read. Place back slightly")
+        if (f.pole) { const px = f.pole.x ?? -1.6, o = bsClamp(f.kerb - (f.pole.back ?? 1.6), 2, 9), k = f.pole.big || 1, hw = 1.0 * k, j0 = 1.15, j1 = j0 + 1.45 * k, v1 = j1 + 0.15, v2 = v1 + 0.8 * k;
+          for (const q of [px - hw - 0.05, px + hw + 0.05]) box(q - 0.06 * k, q + 0.06 * k, 0, v2 + 0.05, o - 0.06, o + 0.06, "#c9ccd0");
+          board(px - hw, px + hw, v1, v2, o + 0.07, f.pole);
+          if (f.joke) { box(px - hw, px + hw, j0, j1, o - 0.01, o + 0.07, "#ffffff"); pic(px - hw + 0.03, px + hw - 0.03, j0 + 0.03, j1 - 0.03, o + 0.082, tall(2 * hw - 0.06, j1 - j0 - 0.06, f.joke, ["#ffffff", "#1d1d1d"], null, k > 1 ? 512 : 384)); } }  // a letter board: a line at a time
         else if (f.joke) { const jx = len * 0.8, o = bsClamp(f.kerb - 1.4, 2, 8); for (const px of [jx - 1.25, jx + 1.25]) box(px - 0.05, px + 0.05, 0, 0.95, o - 0.1, o - 0.02, "#4a4f55");
           board(jx - 1.4, jx + 1.4, 0.9, 2.2, o, { n: f.joke.slice(0, -1).join(" "), sub: f.joke[f.joke.length - 1], c: ["#ffffff", "#1d1d1d"] }); }
         if (f.rails && !f.screen) for (const x0 of [0.4, len - 2.4]) { for (let k = 0; k < 6; k++) box(x0, x0 + 2, k * 0.3, k * 0.3 + 0.3, 0.6 + k * 0.45, 0.6 + (k + 1) * 0.45, "#9a9c9e");  // the stairs
@@ -10911,7 +10920,10 @@ const handle = async (m, post) => {
         const moved = !lastSent || a[4] !== lastSent[4] || Math.hypot(a[0] - lastSent[0], a[1] - lastSent[1], a[2] - lastSent[2]) > 0.04 || Math.abs(wrap(a[3] - lastSent[3])) > 0.02;
         if (moved || now - lastAt > 3000) { lastSent = a; lastAt = now; try { sendPose(a); } catch {} } }
       const can = !!T.walk && !T.car?.in && (peers.size > 0 || isAsh()); if (emoteBtn.hidden === can) { emoteBtn.hidden = !can; if (!can) emoteBox.hidden = true; }
-      if (!chatBtn.hidden) chatBtn.hidden = true;  // (Chat is in the Emote menu now)
+      // Chat (in the Emote menu too) gets a button of its own while another player is within 200 m (Ash, 16 November 2026: "When another
+      // player is near, show chat as seperate to emote")
+      { let near = false; if (can) for (const q of peers.values()) { const s2 = q.shown; if (s2 && Math.hypot(s2.x - F.pos.x, s2.z - F.pos.z) < 200) { near = true; break; } }
+        if (chatBtn.hidden === near) chatBtn.hidden = !near; }
       // what you just said: over you when you can see yourself (the worker view), otherwise at the top of the screen, for 30 s
       // (Ash, 15 November 2026: "The speech bubble didn't work": in your own eyes' view there was no you to put it over)
       const saying = myChat && now - myChat.t < CHAT_MS, mine3 = saying && T.me?.third?.();
@@ -11171,7 +11183,8 @@ const handle = async (m, post) => {
       toast(dog.follow ? "Arlo's coming with you!" : "Arlo's gone home to his lawn.", 2200); }); (document.querySelector("#bsFly .bs-slides") || $("bsFly"))?.prepend(arloBtn);
     const draw = (q, arm) => { M.compose(V.set(q.x, g(q.x, q.z), q.z), Q.setFromEuler(E.set(0, q.look, 0, "YXZ")), ONE); q.parts.setMatrix(0, M.elements.slice());
       q.parts.setMatrix(1, M.clone().multiply(SH[0]).multiply(R.makeRotationZ(-arm)).elements); q.parts.setMatrix(2, M.clone().multiply(SH[1]).multiply(R.makeRotationZ(0.06)).elements); };
-    const drawDog = wag => { M.compose(V.set(dog.x, g(dog.x, dog.z) + dog.bob, dog.z), Q.setFromEuler(E.set(0, dog.h, 0, "YXZ")), ONE); ap.setMatrix(0, M.elements.slice());
+    const DOGS = new THREE.Vector3(1.2, 1.2, 1.2);  // a little bigger (Ash, 16 November 2026: "Make Arlo a tiny bit bigger")
+    const drawDog = wag => { M.compose(V.set(dog.x, g(dog.x, dog.z) + dog.bob, dog.z), Q.setFromEuler(E.set(0, dog.h, 0, "YXZ")), DOGS); ap.setMatrix(0, M.elements.slice());
       ap.setMatrix(1, M.clone().multiply(TAIL).multiply(R.makeRotationX(-0.5)).multiply(new THREE.Matrix4().makeRotationZ(wag)).elements); };
     P.frame = () => { const now = performance.now(), dt = Math.min(0.1, (now - last) / 1000); last = now; t += dt; const F = BS.fly; if (!F) return;
       const up = F.pos.y - g(F.pos.x, F.pos.z);
