@@ -1670,6 +1670,16 @@ body.bstown.bsadmin-tool #bsTown { pointer-events: auto; touch-action: none; cur
 .bs-joy span { position: absolute; left: 0; right: 0; top: -22px; text-align: center; font: 700 0.7rem var(--ui); color: var(--bs-ink); text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6); }
 .bs-fly-tip { top: calc(64px + env(safe-area-inset-top)); bottom: auto; max-width: calc(100% - 200px); }
 @media (max-width: 360px) { .bs-joy { width: 112px; height: 112px; } }
+/* A phone on its side (Ash, 16 November 2026: "When I rotate my phone move the top right icons and consider best placement of boost and
+   handbrake. Should be easy for my right hand to press so still right side of screen"): the row of buttons (Arlo, street names, Flood)
+   goes up beside Jump to, out of the way; Boost and the Handbrake (the possum's Jump and Boost, and Grip) stand in a column just left of
+   the Look stick, at the height of your right thumb, Handbrake lowest */
+@media (orientation: landscape) and (max-height: 500px) and (pointer: coarse) {
+  body.bstown .bs-slides { top: calc(14px + env(safe-area-inset-top)) !important; right: calc(max(16px, env(safe-area-inset-right)) + 120px) !important; }
+  body.bstown .bs-fly-x.bs-hand { right: calc(max(18px, env(safe-area-inset-right)) + 146px) !important; bottom: calc(26px + env(safe-area-inset-bottom)) !important; }
+  body.bstown .bs-fly-x.bs-boost { right: calc(max(18px, env(safe-area-inset-right)) + 146px) !important; bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
+  body.bstown .bs-fly-x.bs-grip { right: calc(max(18px, env(safe-area-inset-right)) + 146px) !important; bottom: calc(134px + env(safe-area-inset-bottom)) !important; }
+}
 /* Desktop: the keys and the mouse move you, so no sticks or Up and Down buttons; the controls are listed bottom left instead */
 @media (hover: hover) and (pointer: fine) {
   .bs-joy, .bs-ud { display: none !important; }
@@ -2388,6 +2398,9 @@ body.bsfly .toast.show { transform: translate(-50%, 0); }
   // the iPhone out of memory and the page reloaded (Ash, 16 November 2026). logan-model.js ?v=42 reads this. Moorooka the same, 2048 x
   // 2048 (about 22 MB, not 89), moorooka-model.js ?v=35 (Ash, 16 November 2026: "When I load moorooka it loads, I play for 2 secs,
   // crashes, reloads, and is then fine").
+  // ...and smaller again (a quarter of the full photo each way: Logan 1024 x 864, about 5 MB; Moorooka 1024 x 1024, about 6 MB), to leave
+  // room for more features without lag (Ash, 16 November 2026: "On mobile let's consider dropping back that main image one more time").
+  // logan-model.js ?v=44 and moorooka-model.js ?v=37 name ground-1k.webp.
   window.anSmallGround = matchMedia("(pointer: coarse)").matches;
   // and Logan's big fixed meshes (the precinct's ground and buildings, the footpaths, the blocks) let go of their copy in JavaScript
   // once they're on the graphics card: about 80 MB that sat there twice over (Ash, 16 November 2026: the app closed on his iPhone in
@@ -2419,7 +2432,7 @@ body.bsfly .toast.show { transform: translate(-50%, 0); }
   if (pendingExplore) setTimeout(() => { try { const cfg = TOWNS[pendingExplore]; if (!cfg) return;
       const hint = (href, as) => { const l = document.createElement("link"); l.rel = "preload"; l.as = as; l.href = href; if (as !== "script") l.crossOrigin = "anonymous"; document.head.appendChild(l); };
       hint("https://cdnjs.cloudflare.com/ajax/libs/three.js/0.152.2/three.min.js", "script"); hint(cfg.src, "script");
-      for (const f of cfg.pre || []) hint(cfg.assets + (f === "ground.webp" && (cfg.place === "logan" || cfg.place === "moo") && window.anSmallGround ? "ground-2k.webp" : f), /\.webp$/.test(f) && cfg.place !== "logan" ? "image" : "fetch"); } catch {} }, 0);
+      for (const f of cfg.pre || []) hint(cfg.assets + (f === "ground.webp" && (cfg.place === "logan" || cfg.place === "moo") && window.anSmallGround ? "ground-1k.webp" : f), /\.webp$/.test(f) && cfg.place !== "logan" ? "image" : "fetch"); } catch {} }, 0);
   const hash = pendingStory || pendingTV || pendingExplore ? "" : rawHash;
   const state = {
     tab: hash || store.get("brief.tab3", "foryou"),
@@ -5837,7 +5850,10 @@ const handle = async (m, post) => {
         store.set(key, w);
       } catch {
         // The forecast saved with the news; a suburb or town without one uses its nearest city's.
-        const near = { moo: "qld", inv: "vic" }[S.region], wx = state.status?.weather || {};
+        // (the 3D site has no news of its own, so no saved forecast: it borrows the news app's. Without a forecast the town never opened:
+        // 16 November 2026, when the weather service turned this device away)
+        let wx0 = state.status?.weather; if (!wx0 && NO_NEWS) try { wx0 = (await withTimeout(fetch("https://ashley-pettit.github.io/awesome-news/data/status.json", { cache: "no-store" }).then(r => r.json()), 10000))?.weather; } catch {}
+        const near = { moo: "qld", inv: "vic" }[S.region], wx = wx0 || {};
         const snap = wx[S.region]?.current ? wx[S.region] : near ? wx[near] : null;
         if (snap?.current) w = { at: Date.parse(snap.fetchedAt) || Date.now(), d: snap, snapshot: true, city: snap === wx[S.region] ? null : CITY[near]?.[0] };
       }
@@ -6116,6 +6132,9 @@ const handle = async (m, post) => {
     }
     // The chips are for the whole day, so they don't jump around as the timeline plays.
     chips = [["Feels like", d.feels + "°"], ["Wind", d.wind + " km/h"], ...(d.hum != null ? [["Humidity", d.hum + "%"]] : []), ["UV", `${d.uv} ${bsUv(d.uv)}`, "uv"]];  // humidity: the day's average
+    // (the 3D site has no weather card: no news, so it's never drawn. Without this return, starting a town here stopped part way, at random
+    // as the weather arrived, and the town came up without its traffic and more: Ash, 16 November 2026)
+    if (!$("bsTemp")) return;
     $("bsTemp").textContent = d.hi; $("bsWhat").textContent = what; $("bsWhen").textContent = `${di ? new Intl.DateTimeFormat("en-AU", { timeZone: D.tz, weekday: "long" }).format(new Date(v.ms)) : "Today"}'s high`;
     $("bsHiLo").innerHTML = `<span>Low <b>${d.lo}°</b></span><span><b>${temp}°</b> <small>${bsTime(shownMs).replace(" ", "")}</small></span>`;
     if (BS.rainDay !== d.date) { BS.rainDay = d.date; bsRain(d); }
@@ -8393,14 +8412,14 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=20", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=36", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=37", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
       floodLook: [-27.5375, 153.0115, 1100, 40, 100], floodOf: "this map", noFloodSlider: true,  // Ash: no water level slider ("At the peak") in Moorooka: a flood just rises to its peak
       floodWarn: { council: "Brisbane City Council", short: "BCC", how: "our own computer simulation of rain running over the ground and the creeks rising (and, in big river floods, Oxley Creek backing up), on a 5 m model of the terrain", map: "Brisbane City Council's Flood Awareness Map and FloodWise Property Report" },
       floodNote: "A guide only: our own simulation, from the terrain, the buildings and the Bureau's design rainfall for Moorooka. It includes water running over the ground to the creeks. No council flood mapping is used. For property, insurance or planning decisions, use Brisbane City Council's Flood Awareness Map and FloodWise Property Report." },
-    logan: { lib: "LoganModel", src: TOWN3D + "logan/logan-model.js?v=43", assets: TOWN3D + "logan/", place: "logan", lift: [5320, -13743.6, 6320, -12743.6, 0.25], pre: ["map.json", "height.png", "roads.bin", "buildings.bin", "ground.webp", "relief.webp", "lights.webp", "cover.png"], up: () => !!BS.W?.logan, air: [5680, 218, -13486, -2.618, -0.559],
+    logan: { lib: "LoganModel", src: TOWN3D + "logan/logan-model.js?v=44", assets: TOWN3D + "logan/", place: "logan", lift: [5320, -13743.6, 6320, -12743.6, 0.25], pre: ["map.json", "height.png", "roads.bin", "buildings.bin", "ground.webp", "relief.webp", "lights.webp", "cover.png"], up: () => !!BS.W?.logan, air: [5680, 218, -13486, -2.618, -0.559],
       start: "council", onFoot: true, noFloodSlider: true, flyTo: { id: "brownsplains", label: "Fly to Browns Plains" }, wait: 90000, ceil: 110000, fast: 600, far: 150000, out: 130000, stride: 0.02, pad: 80000, stand: [0.45, 400], floodLook: [-27.69, 153.17, 12000, 55, -35],
       // the same not-official notice and banner as Moorooka's (Ash, 12 November 2026)
       floodWarn: { council: "Logan City Council", short: "LCC", how: "the 2017 flood as mapped, and the others worked out from river gauge heights and rainfall over a terrain model", map: "Logan City Council's flood maps" } },  // shown small in the bottom right corner the whole time the model is open
