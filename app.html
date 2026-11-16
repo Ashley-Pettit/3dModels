@@ -11481,6 +11481,7 @@ const handle = async (m, post) => {
     const howFar = (q, x, z) => { const dx = x - q.x, dz = z - q.z, d = Math.hypot(dx, dz); return d < 150 ? "just around the corner" : `about ${d < 1000 ? Math.round(d / 50) * 50 + " m" : (d / 1000).toFixed(1) + " km"} ${compass(dx, dz)} of here`; };
     const newsRoll = () => { for (const q of folk) if (!q.news && Math.random() < 0.01) q.news = Math.random() < 0.02 ? { gold: ["heli", "plane", "car"][Math.floor(Math.random() * 3)] } : { ride: ["heli", "plane", "possum"][Math.floor(Math.random() * 3)] }; };
     T.guideTo = (x, z, label, found) => { guide = { x, z, label, found }; };  // (the sky rings' prize uses it)
+    let aimPt = null; T.aimAt = a => { aimPt = a; };  // (and the next sky ring)
     T.gossip = (id, kind, gold) => { const q = folk.find(f => f.id === id); if (q) q.news = gold ? { gold: kind } : { ride: kind || "heli" }; return !!q; };  // (for checking it)
     const gossip = q => { const N = q.news; q.news = null;
       if (N.ride === "possum") { const S = TOWN_RIDES.moo.possum; if (!S) return false;
@@ -11586,7 +11587,7 @@ const handle = async (m, post) => {
       if (guide && !F.drunk) { const tg = guide.decoy || guide, gd = Math.hypot(tg.x - me.x, tg.z - me.z);
         if (gd < 22) { if (guide.decoy) { guide.decoy = null; toast(`\ud83d\udcde ${guide.who}: Oh no, wrong spot, sorry! I'm sure it'll be at the next place. Follow the arrow.`, 5000); }
           else { toast(guide.found, 4500); guide = null; } } }
-      const aim = F.drunk && DOC ? { x: DOC.x, z: DOC.z, label: "Doctor", near: 4 } : guide ? { ...(guide.decoy || guide), label: guide.label, near: 0 } : null;
+      const aim = F.drunk && DOC ? { x: DOC.x, z: DOC.z, label: "Doctor", near: 4 } : aimPt ? { ...aimPt, near: 0 } : guide ? { ...(guide.decoy || guide), label: guide.label, near: 0 } : null;
       if (aim) { const dx = aim.x - me.x, dz = aim.z - me.z, d = Math.hypot(dx, dz), yaw = pose ? (m.getCamera?.()?.yaw ?? F.yaw) : F.yaw, fx = -Math.sin(yaw), fz = -Math.cos(yaw), rx = Math.cos(yaw), rz = -Math.sin(yaw);
         if (d < aim.near) ptr.hidden = true; else { ptr.hidden = false; ptr.firstChild.style.transform = `rotate(${(Math.atan2(dx * rx + dz * rz, dx * fx + dz * fz) * 180 / Math.PI - 90).toFixed(0)}deg)`; ptr.lastChild.textContent = `${aim.label} \u00b7 ${d < 1000 ? Math.round(d) + " m" : (d / 1000).toFixed(1) + " km"}`; } }
       else if (!ptr.hidden) ptr.hidden = true;
@@ -11613,7 +11614,7 @@ const handle = async (m, post) => {
         const r = me.k === "walk" ? (q.r || 3.4) : me.k === "possum" ? q.possum : /^(car|gold|bus)$/.test(me.k) ? q.car : 0;
         if (r && d < r) { if (!q.near && !q.done && !open) { q.near = true; talk(q); } }
         else if (d > (r || 4) + 5) { q.near = false; q.done = false; if (open === q) shut(); } } };
-    P.dispose = () => { T.guideTo = null; card.remove(); sprint.remove(); jumpB.remove(); ptr.remove(); for (const q of folk) { q.tag.remove(); q.dot.remove(); try { q.parts?.remove(); } catch {} } const F = BS.fly; if (F) { F.drunk = null; F.sprint = false; F.giant = null; } };
+    P.dispose = () => { T.guideTo = null; T.aimAt = null; card.remove(); sprint.remove(); jumpB.remove(); ptr.remove(); for (const q of folk) { q.tag.remove(); q.dot.remove(); try { q.parts?.remove(); } catch {} } const F = BS.fly; if (F) { F.drunk = null; F.sprint = false; F.giant = null; } };
     return P;
   }
   // ---- letters at the post office (Ash, 16 November 2026: "I want to be able to send mail at the post office. I type the player name, they
@@ -12027,22 +12028,29 @@ const handle = async (m, post) => {
     // ---- the possum mission: in number 6's pool, six gold rings come up over the roofs of the houses nearby, one after another; run, climb
     // and jump through them all within a minute and out you come the golden possum. Fall short and the pool starts it again
     let mission = null, missionWait = 0, ringParts = null;
-    const ringMesh = () => { const P2 = [], N2 = [], C2 = [], R0 = 1.6, r0 = 0.14, NS = 20, NT = 6, gold = [0.95, 0.66, 0.08].map(c => c ** 1.2);
+    const ringMesh = (col = [0.95, 0.66, 0.08], look = { roughness: 0.25, metalness: 0.6 }) => { const P2 = [], N2 = [], C2 = [], R0 = 1.6, r0 = 0.14, NS = 20, NT = 6, gold = col.map(c => c ** 1.2);
       const pt = (i, j) => { const a = i / NS * Math.PI * 2, b = j / NT * Math.PI * 2, cx = Math.cos(a), cy = Math.sin(a); return [[cx * (R0 + r0 * Math.cos(b)), cy * (R0 + r0 * Math.cos(b)), r0 * Math.sin(b)], [cx * Math.cos(b), cy * Math.cos(b), Math.sin(b)]]; };
       for (let i = 0; i < NS; i++) for (let j = 0; j < NT; j++) { const q = [pt(i, j), pt(i + 1, j), pt(i + 1, j + 1), pt(i, j + 1)];
         for (const k of [0, 1, 2, 0, 2, 3]) { P2.push(...q[k][0]); N2.push(...q[k][1]); C2.push(...gold); } }
-      return { positions: new Float32Array(P2), normals: new Float32Array(N2), colors: new Float32Array(C2), color: [1, 1, 1], roughness: 0.25, metalness: 0.6, doubleSide: true }; };
+      return { positions: new Float32Array(P2), normals: new Float32Array(N2), colors: new Float32Array(C2), color: [1, 1, 1], doubleSide: true, ...look }; };
     const endMission = () => { try { ringParts?.remove(); } catch {} ringParts = null; mission = null; };
     // ---- the sky rings (Ash, 16 November 2026: "When in the plane I want a really hard quest achieveable but difficult to fly through rings
     // around moorooka. Winning should navigate to the helicopter 80% of the time or 20% of the time the golden plane"): the first time a
     // plane gets 30 m up over Moorooka, ten big gold rings stand in a loop round the suburb at different heights, the first the nearest,
     // on round the way you're flying. Through them all, in order, in two and a half minutes, and the pointer leads you to the mega
     // mysterious golden helicopter (or, one time in five, the golden plane). Out of time: land, and the next take-off has another go
-    let sky = null, skyParts = null, skyTried = false, skyDone = false;
-    const SKY_N = 10, SKY_T = 150, SKY_R = 13;
-    const skyEnd = () => { try { skyParts?.remove(); } catch {} skyParts = null; sky = null; };
-    const skyDraw = () => { if (!sky || !skyParts) return; sky.rings.forEach((r, i) => { const k = i < sky.at ? 0 : i === sky.at ? 9 : 5.5;
-      M.compose(V.set(r.x, r.y, r.z), Q.setFromEuler(E.set(0, r.h, 0, "YXZ")), new THREE.Vector3(k, k, k)); skyParts.setMatrix(i, M.elements.slice()); }); };
+    // (harder, and plain which one is next: Ash, 16 November 2026, "It was a bit easy but not obv which one to go to next". The next ring
+    // is bright gold, pulsing, with a beam of light up from the ground to find it from afar and the arrow at the top pointing to it; the
+    // rest are small and pale. Less time, and through the middle of the ring)
+    let sky = null, skyParts = null, skyNext = null, skyTried = false, skyDone = false;
+    const SKY_N = 10, SKY_T = touch ? 80 : 110, SKY_R = 8.5;
+    const skyEnd = () => { try { skyParts?.remove(); skyNext?.remove(); } catch {} skyParts = skyNext = null; sky = null; T.aimAt?.(null); };
+    const skyDraw = () => { if (!sky || !skyParts) return; sky.rings.forEach((r, i) => { const k = i <= sky.at ? 0 : 4.5;
+      M.compose(V.set(r.x, r.y, r.z), Q.setFromEuler(E.set(0, r.h, 0, "YXZ")), new THREE.Vector3(k, k, k)); skyParts.setMatrix(i, M.elements.slice()); });
+      const n = sky.rings[sky.at]; if (n) T.aimAt?.({ x: n.x, z: n.z, label: `Ring ${sky.at + 1} of ${SKY_N}` }); };
+    const skyPulse = t => { const n = sky?.rings[sky.at]; if (!n || !skyNext) return; const k = 7 * (1 + 0.07 * Math.sin(t * 6));
+      M.compose(V.set(n.x, n.y, n.z), Q.setFromEuler(E.set(0, n.h, 0, "YXZ")), new THREE.Vector3(k, k, k)); skyNext.setMatrix(0, M.elements.slice());
+      const g0 = ground(n.x, n.z), top = n.y + 90; M.compose(V.set(n.x, (g0 + top) / 2, n.z), Q.identity(), new THREE.Vector3(1, top - g0, 1)); skyNext.setMatrix(1, M.elements.slice()); };
     // (on a phone a tighter loop, lower down: flying the whole suburb high up drew so much of it at once that the game closed on Ash's
     // iPhone, 16 November 2026, "when flying on iOS game crashed ... Sky rings where on")
     const skyStart = P => { const C0 = { x: -160, z: -520 }, ph = Math.random() * Math.PI * 2, small = touch, R0 = small ? 420 : 620, RJ = small ? 160 : 320, H0 = small ? 35 : 45, HJ = small ? 45 : 95; let rings = [];
@@ -12051,16 +12059,19 @@ const handle = async (m, post) => {
       const cw = (P.x - C0.x) * Math.cos(P.h) - (P.z - C0.z) * Math.sin(P.h) < 0; if (cw) rings.reverse();
       let k0 = 0, d0 = 1e9; rings.forEach((r, i) => { const d = Math.hypot(r.x - P.x, r.z - P.z); if (d < d0) { d0 = d; k0 = i; } }); rings = [...rings.slice(k0), ...rings.slice(0, k0)];
       rings.forEach((r, i) => { const nx = rings[Math.min(i + 1, SKY_N - 1)], pv = rings[Math.max(i - 1, 0)]; r.h = Math.atan2(nx.x - pv.x, nx.z - pv.z); });
-      skyParts = m.addParts(rings.map(() => ({ ...ringMesh(), matrix: NONE }))); sky = { rings, at: 0, t: SKY_T }; skyDraw(); snd.whoosh();
-      toast("Sky rings! Fly through all ten gold rings round Moorooka, in order, in two and a half minutes. Get them all for a secret.", 6500); };
+      skyParts = m.addParts(rings.map(() => ({ ...ringMesh([0.92, 0.94, 1], { unlit: true, opacity: 0.45 }), matrix: NONE })));
+      const beam = (() => { const b = cube("#ffe27a", 3, 1, 3); return { ...b, opacity: 0.3 }; })();
+      skyNext = m.addParts([{ ...ringMesh([1, 0.78, 0.1], { roughness: 0.3, metalness: 0.3, emissive: [0.9, 0.55, 0.05], emissiveIntensity: 1.4 }), matrix: NONE }, { ...beam, matrix: NONE }]);
+      sky = { rings, at: 0, t: SKY_T, ph: 0 }; skyDraw(); skyPulse(0); snd.whoosh();
+      toast(`Sky rings! Fly through the middle of all ten rings round Moorooka, in order, in ${Math.floor(SKY_T / 60)}:${String(SKY_T % 60).padStart(2, "0")}. Follow the beam of light and the arrow. Get them all for a secret.`, 6500); };
     const skyTick = (P, dt) => { if (T.cfg?.place !== "moo" || P.heli) return "";
       if (!sky) { if (!P.air) skyTried = false; else if (!skyTried && !skyDone && P.y - ground(P.x, P.z) > 30) { skyTried = true; skyStart(P); } return ""; }
-      sky.t -= dt; const r = sky.rings[sky.at];
+      sky.t -= dt; sky.ph += dt; skyPulse(sky.ph); const r = sky.rings[sky.at];
       if (Math.hypot(P.x - r.x, P.y - r.y, P.z - r.z) < SKY_R) { sky.at++; snd.squeak?.(1.1 + sky.at * 0.06); snd.whoosh();
         if (sky.at >= SKY_N) { skyEnd(); skyDone = true; const heli = Math.random() < 0.8 || P.gold && !P.heli, G = T.car?.goldSpot?.(heli ? "heli" : "plane") || C.goldSpot(heli ? "heli" : "plane"), nm = heli ? "helicopter" : "plane";
           if (G) T.guideTo?.(G.x, G.z, `Golden ${nm}`, `\u2728 The mega mysterious Moorooka golden ${nm}! Land nearby and get in.`);
           toast(`\ud83c\udfc6 All ten sky rings! Your prize: the way to the mega mysterious Moorooka golden ${nm}. Follow the arrow.`, 7000); return ""; }
-        toast(`${sky.at} of ${SKY_N}!`, 1100); skyDraw(); }
+        toast(`${sky.at} of ${SKY_N}!`, 1100); skyDraw(); skyPulse(sky.ph); }
       if (sky.t <= 0) { const got = sky.at; skyEnd(); toast(`Out of time with ${got} of ${SKY_N} rings. Land and take off again for another go.`, 5000); return ""; }
       const n = sky.rings[sky.at], dx = n.x - P.x, dz = n.z - P.z, d = Math.hypot(dx, dz), rel = wrap(Math.atan2(dx, dz) - P.h), dy = n.y - P.y;
       const arrow = ["\u2191", "\u2197", "\u2192", "\u2198", "\u2193", "\u2199", "\u2190", "\u2196"][((Math.round(-rel / (Math.PI / 4)) % 8) + 8) % 8], mm = Math.max(0, Math.ceil(sky.t));
