@@ -10712,7 +10712,7 @@ const handle = async (m, post) => {
     const chatSend = () => { const t = clean(chatIn.value); chatIn.value = ""; chatClose(); if (!t) return;
       if (off) return toast("Other players can't see you, so they can't see what you say either. Turn it on in Settings.", 3500);
       myChat = { text: t, t: performance.now() }; try { sendChat?.(t); } catch {} if (!peers.size) toast("Said. No one else is here right now to see it.", 2600); };
-    const chatted = (t, id) => { const q = peers.get(id), text = clean(t); if (!q || !text) return; q.chat = { text, t: performance.now() }; if (q.name) toast(`${q.name}: ${text}`, 3500); };
+    const chatted = (t, id) => { const q = peers.get(id), text = clean(t); if (!q || !text) return; q.chat = { text, t: performance.now() }; T.snd?.pop?.(); if (q.name) toast(`${q.name}: ${text}`, 3500); };
     // a label: the name, or a speech bubble while they've said something in the last 30 s
     const sayIn = (el, name, chat, now, sign = "") => { const on = chat && now - chat.t < CHAT_MS, key = on ? name + "\u0000" + chat.text : name + sign;
       if (el.dataset.k === key) return; el.dataset.k = key; el.classList.toggle("said", !!on);
@@ -11050,6 +11050,18 @@ const handle = async (m, post) => {
         to(eng.sg.gain, skid * 0.1, 0.03); },
       level(v) { vol = v; if (master) master.gain.value = 0.9 * v; },
       thud(k = 1) { hit(0.28, 320, 0.5 * k, 74); },
+      // a few more (Ash, 16 November 2026: "Add a few more sounds"): a whoosh for a power-up, a boing for a jump, Arlo's woof, a pop when
+      // someone says something, and a click for Grippy
+      tone(f0, f1, len, loud = 0.08, type = "sine") { const a = ctx(); if (!a) return; const t = a.currentTime, o = a.createOscillator(), g = a.createGain(); o.type = type;
+        o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + len); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(loud, t + Math.min(0.03, len / 4));
+        g.gain.exponentialRampToValueAtTime(0.0001, t + len); o.connect(g); g.connect(master); o.start(t); o.stop(t + len + 0.02); },
+      whoosh() { const a = ctx(); if (!a) return; const t = a.currentTime, n = noise(), f = a.createBiquadFilter(), g = a.createGain(); f.type = "bandpass"; f.Q.value = 1.2;
+        f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(3200, t + 0.45); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.22, t + 0.12); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+        n.connect(f); f.connect(g); g.connect(master); n.start(t); n.stop(t + 0.6); this.tone(500, 1400, 0.4, 0.05, "triangle"); },
+      boing() { this.tone(180, 620, 0.35, 0.1, "sine"); },
+      woof() { hit(0.11, 900, 0.32, 230); setTimeout(() => hit(0.13, 800, 0.36, 200), 170); },
+      pop() { this.tone(900, 1300, 0.08, 0.06, "sine"); },
+      click() { hit(0.02, 4000, 0.12, 0); },
       door() { hit(0.09, 1100, 0.3, 120); },
       // the possum: little feet, claws on a wall or a pole, and a squeak as it jumps; and the animal by Norman Road
       step(k = 1) { hit(0.03, 2600, 0.07 * k, 0); },
@@ -11202,7 +11214,7 @@ const handle = async (m, post) => {
     T.arlo = () => { if (arloBtn.hidden) return false; arloBtn.click(); return true; };
     arloBtn.addEventListener("click", e => { e.stopPropagation(); dog.follow = !dog.follow; dog.offT = 0; dog.to = null; arloBtn.blur();
       if (!dog.follow) { if (Math.hypot(dog.x - LAWN.x, dog.z - LAWN.z) > 40) { dog.x = LAWN.x; dog.z = LAWN.z; } dog.to = [LAWN.x, LAWN.z]; }
-      toast(dog.follow ? "Arlo's coming with you!" : "Arlo's gone home to his lawn.", 2200); }); (document.querySelector("#bsFly .bs-slides") || $("bsFly"))?.prepend(arloBtn);
+      if (dog.follow) T.snd?.woof?.(); toast(dog.follow ? "Arlo's coming with you!" : "Arlo's gone home to his lawn.", 2200); }); (document.querySelector("#bsFly .bs-slides") || $("bsFly"))?.prepend(arloBtn);
     const draw = (q, arm) => { M.compose(V.set(q.x, g(q.x, q.z), q.z), Q.setFromEuler(E.set(0, q.look, 0, "YXZ")), ONE); q.parts.setMatrix(0, M.elements.slice());
       q.parts.setMatrix(1, M.clone().multiply(SH[0]).multiply(R.makeRotationZ(-arm)).elements); q.parts.setMatrix(2, M.clone().multiply(SH[1]).multiply(R.makeRotationZ(0.06)).elements); };
     const DOGS = new THREE.Vector3(1.2, 1.2, 1.2);  // a little bigger (Ash, 16 November 2026: "Make Arlo a tiny bit bigger")
@@ -11223,7 +11235,7 @@ const handle = async (m, post) => {
         if (me) draw(q, arm); }
       // Arlo: a few steps across the lawn, a sniff, then off again (only moved while he moves); his tail goes when you're near
       let d = Math.hypot(F.pos.x - dog.x, F.pos.z - dog.z);
-      if (dog.follow && d > 50) { const fx = -Math.sin(F.yaw), fz = -Math.cos(F.yaw); dog.x = F.pos.x - fx * 4; dog.z = F.pos.z - fz * 4; dog.h = F.yaw + Math.PI; d = 4; }  // always catches up
+      if (dog.follow && d > 50) { const fx = -Math.sin(F.yaw), fz = -Math.cos(F.yaw); dog.x = F.pos.x - fx * 4; dog.z = F.pos.z - fz * 4; dog.h = F.yaw + Math.PI; d = 4; T.snd?.woof?.(); }  // always catches up
       { const show = dog.follow || (!!T.walk && !T.car?.in); if (arloBtn.hidden === show) arloBtn.hidden = !show; const tx = dog.follow ? "Arlo, home" : "Arlo, come!"; if (arloBtn.textContent !== tx) arloBtn.textContent = tx; }
       if (d > 260 || up > 220) { if (dogShown) { for (let i = 0; i < 2; i++) ap.setMatrix(i, FAR.slice()); dogShown = false; } return; }
       let pet = !dogShown; dogShown = true;
@@ -12027,7 +12039,7 @@ const handle = async (m, post) => {
         // moving, and is carried wherever that car goes; someone getting in and driving off takes it with them (their car is where
         // the parked one was, so it grabs on to theirs). Grip again, or Jump, lets go (Ash, 16 November 2026: "Add a thing to the
         // possum called grip so even if not on the side of the car I can hold onto a car no one is driving yet")
-        if (gripAsk) { gripAsk = false; grippy = !grippy; try { localStorage.setItem("an-possum-grippy", grippy ? "1" : "0"); } catch {} gripLook = 0; snd.squeak?.(grippy ? 1.3 : 0.8);
+        if (gripAsk) { gripAsk = false; grippy = !grippy; try { localStorage.setItem("an-possum-grippy", grippy ? "1" : "0"); } catch {} gripLook = 0; snd.click(); snd.squeak(grippy ? 1.3 : 0.8);
           if (!grippy) { P.sit = false; P.ride = null; }
           if (!grippy && !P.grip && !P.cling) toast("Grippy off: it won't hold on to anything. It still climbs.", 2200);
           else if (!grippy) { const g = P.grip, c = P.cling, q = c && (T.peers?.list?.() || []).find(v => v.id === c.id);
@@ -12270,8 +12282,8 @@ const handle = async (m, post) => {
     const tkBtn = document.createElement("button"); tkBtn.type = "button"; tkBtn.className = "bs-fly-x bs-tk"; tkBtn.dataset.key = "V"; tkBtn.hidden = true; tkBtn.textContent = "Jump";
     let pwCharge = 0, tkWait = 0, pwLook = 0;
     const powerTo = () => veh === "ride" && ride?.id ? { id: ride.id, k: ride.k, possum: false } : veh === "possum" && pos?.cling ? { id: pos.cling.id, k: (T.peers?.list?.() || []).find(v => v.id === pos.cling.id)?.k, possum: true } : null;
-    const usePower = () => { const to = powerTo(); if (!to) return false; if (pwCharge < 1) { toast("Still charging.", 900); return true; } if (T.peers?.power?.(to.id, 1)) { pwCharge = 0; toast("\u26a1 Power up sent!", 1400); } return true; };
-    const useTrick = () => { const to = powerTo(); if (!to) return false; if (tkWait > 0) return true; const air = /plane|heli/.test(to.k || ""); if (T.peers?.power?.(to.id, 2, to.possum && !air)) { tkWait = 15; toast(air ? "Spin!" : to.possum ? "Jump and roll!" : "Jump!", 1200); } return true; };
+    const usePower = () => { const to = powerTo(); if (!to) return false; if (pwCharge < 1) { toast("Still charging.", 900); return true; } if (T.peers?.power?.(to.id, 1)) { pwCharge = 0; snd.whoosh(); toast("\u26a1 Power up sent!", 1400); } return true; };
+    const useTrick = () => { const to = powerTo(); if (!to) return false; if (tkWait > 0) return true; const air = /plane|heli/.test(to.k || ""); if (T.peers?.power?.(to.id, 2, to.possum && !air)) { tkWait = 15; snd.boing(); toast(air ? "Spin!" : to.possum ? "Jump and roll!" : "Jump!", 1200); } return true; };
     pwBtn.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); usePower(); }); tkBtn.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); useTrick(); });
     $("bsFly")?.append(pwBtn, tkBtn); C.powerKey = k => (k === "B" ? usePower : useTrick)();
     const powersTick = dt => { const to = powerTo(); pwCharge = Math.min(1, pwCharge + dt / 8); tkWait = Math.max(0, tkWait - dt);
@@ -12288,9 +12300,9 @@ const handle = async (m, post) => {
     const hidden = () => snd.quiet(document.hidden); document.addEventListener("visibilitychange", hidden);
     C.riding = () => veh === "ride";
     C.power = (kind, spin, from) => { const now = performance.now(), V2 = veh === "car" ? car : veh === "plane" ? plane : null; if (!V2) return false;
-      if (kind === 1) { V2.teamTil = now + 3000; toast(`\u26a1 ${from} powered you up!`, 1800); }
-      else if (veh === "car" && !car.trick && !car.flip) { car.trick = { t: 0, spin }; snd.squeak?.(0.9); toast(spin ? `${from} flipped you!` : `${from} made you jump!`, 1600); }
-      else if (veh === "plane" && !plane.trick) { plane.trick = { t: 0 }; toast(`${from} spun you round!`, 1600); }
+      if (kind === 1) { V2.teamTil = now + 3000; snd.whoosh(); toast(`\u26a1 ${from} powered you up!`, 1800); }
+      else if (veh === "car" && !car.trick && !car.flip) { car.trick = { t: 0, spin }; snd.boing(); toast(spin ? `${from} flipped you!` : `${from} made you jump!`, 1600); }
+      else if (veh === "plane" && !plane.trick) { plane.trick = { t: 0 }; snd.whoosh(); toast(`${from} spun you round!`, 1600); }
       return true; };
     C.pose = () => veh === "ride" ? null : veh === "possum" ? { k: "possum", x: pos.x, y: pos.y, z: pos.z, h: pos.h, p: pos.p, r: 0 } : veh === "car" ? { k: car.bus ? "bus" : car.gold ? "gold" : "car", x: car.x, y: car.y, z: car.z, h: car.h, p: car.p, r: car.r + (car.roll || 0) }
       : veh ? { k: plane.heli ? (plane.gold ? "goldheli" : "heli") : plane.gold ? "goldplane" : "plane", x: plane.x, y: plane.y, z: plane.z, h: plane.h, p: plane.p, r: plane.r } : null;
