@@ -1315,7 +1315,8 @@ body.bstown .bs-fly-x.bs-fly-jump { top: calc(14px + env(safe-area-inset-top)); 
 .bs-fly-x.bs-car { top: auto; left: 50%; right: auto; bottom: calc(166px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: #fff; color: #1b1830; z-index: 2; }
 .bs-fly-x.bs-car[hidden] { display: none; }
 /* Arlo, come! / Arlo, home: by Arlo at 6 Beaudesert Road, and while he's with you (Ash, 16 November 2026) */
-.bs-fly-x.bs-arlo { top: auto; left: 50%; right: auto; bottom: calc(222px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: #e2b47c; color: #1b1830; z-index: 2; }
+/* (in the row of buttons at the top right, styled as the others there: Ash, 16 November 2026, "move go home arlo to sit nicely nxt to
+   other btns") */
 .bs-fly-x.bs-arlo[hidden] { display: none; }
 body.bsdrive:not(.bsplane) .bs-ud { display: none; }  /* in the plane, Up and Down lift and lower the nose */
 body.bsdrive:not(.bsplane) .bs-fly-x.bs-car { bottom: calc(68px + env(safe-area-inset-bottom)); }
@@ -1353,7 +1354,8 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
   background: var(--bs-scrim); color: var(--bs-ink); font: 500 0.78rem/1.35 var(--ui); text-align: center; pointer-events: none; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); }
 .bs-keys[hidden] { display: none; }
 /* another player's name, over them (townPeers) */
-.bs-peer { position: absolute; left: 0; top: 0; z-index: 1; padding: 3px 10px; border-radius: 999px; background: rgba(20, 22, 34, 0.82); color: #fff; font: 700 0.8rem/1.4 var(--ui); white-space: nowrap; pointer-events: none; will-change: transform; box-shadow: 0 0 0 2px #ffd166; }
+.bs-peer { position: absolute; left: 0; top: 0; z-index: 1; padding: 3px 10px; border-radius: 999px; background: rgba(20, 22, 34, 0.82); color: #fff; font: 700 0.8rem/1.4 var(--ui); white-space: nowrap; pointer-events: none; will-change: transform; }
+.bs-peer.bs-player { box-shadow: 0 0 0 2px #ffd166; }  /* real players only, not the town's people (Ash, 16 November 2026) */
 /* a player off the side of the screen or behind you: their name pinned to that edge, pointing their way, with how far (Ash, 16
    November 2026: "Make the players a bit easier to locate") */
 .bs-peer-edge { position: absolute; left: 0; top: 0; z-index: 1; padding: 4px 10px; border-radius: 999px; background: #ffd166; color: #1b1830; font: 700 0.76rem/1.3 var(--ui); white-space: nowrap; pointer-events: none; will-change: transform; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35); }
@@ -1384,7 +1386,7 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 /* and Full screen beside it: the browser's bars and the taskbar out of the way (Ash, 16 November 2026: "Is there a way that on desktop i
    can go full screen? Hide the browser and taskbar?"). Esc, or the button again, comes back out */
 .bs-deskbtns { display: none; pointer-events: auto; position: absolute; z-index: 4; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom)); gap: 8px; }
-.bs-lockbtn { padding: 10px 16px; border: 0; border-radius: 999px; background: #fff; color: #1b1830; font: 700 0.86rem/1.2 var(--ui); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); cursor: pointer; }
+.bs-lockbtn { position: relative; padding: 10px 16px; border: 0; border-radius: 999px; background: #fff; color: #1b1830; font: 700 0.86rem/1.2 var(--ui); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); cursor: pointer; }
 .bs-lockbtn:hover { background: #ffd166; } .bs-lockbtn[hidden] { display: none; }
 @media (hover: hover) and (pointer: fine) { body.bstown:not(.bslocked) .bs-deskbtns { display: flex; } }
 .bs-locktip kbd { display: inline-block; margin: 0 2px 0 6px; padding: 0 5px; border-radius: 4px; background: #fff; color: #1b1830; font: 700 0.7rem/1.5 var(--ui); }
@@ -1562,6 +1564,9 @@ body.bsdrive .bs-fly-tip { display: none !important; }
   .bs-keys dd { margin: 0; }
   .bs-keys kbd { min-width: 20px; box-sizing: border-box; padding: 3px 5px 2px; border-radius: 5px; background: #fff; color: #1b1830; font: 700 0.68rem/1.1 var(--ui); text-align: center; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(27, 24, 48, 0.22); }
   .bs-keys-q { display: block; margin-top: 8px; opacity: 0.7; font-size: 0.72rem; }
+  /* the list of keys is gone: the buttons carry their own keys (Ash, 16 November 2026: "there is no need for the keys at the bottom as
+     they are already on screen"). What you can do right now (.bs-keys-now) still shows when there is something */
+  .bs-keys dl, .bs-keys-q { display: none; } .bs-keys-now { margin-bottom: 0; } .bs-keys:not(:has(.bs-keys-now:not(:empty))) { display: none; }
   .bs-keys.off dl { display: none; }
 }
 /* On a desktop, the key that does the same as a button sits at its bottom right corner as a small keycap (Ash, 14 November 2026:
@@ -2155,7 +2160,7 @@ body.bsfly .toast.show { transform: translate(-50%, 0); }
     <button class="bs-fly-x bs-car" type="button" id="bsCarBtn" data-key="Enter" hidden>Get in the car</button>
     <button class="bs-fly-x bs-boost" type="button" id="bsBoostBtn" data-key="Shift" hidden>Boost</button>
     <button class="bs-fly-x bs-hand" type="button" id="bsHandBtn" data-key="Space" hidden>Handbrake</button>
-    <div class="bs-deskbtns"><button class="bs-lockbtn" id="bsFullBtn" type="button">Full screen</button><button class="bs-lockbtn" id="bsLockBtn" type="button">Lock mouse</button></div>
+    <div class="bs-deskbtns"><button class="bs-lockbtn" id="bsFullBtn" type="button" data-key="O">Full screen</button><button class="bs-lockbtn" id="bsLockBtn" type="button" data-key="K">Lock mouse</button></div>
     <p class="bs-locktip" id="bsLockTip" hidden>The mouse looks around. <kbd>Esc</kbd> gives it back. <kbd>M</kbd> Settings <kbd>J</kbd> Jump to <kbd>P</kbd> Share <kbd>L</kbd> Flood</p>
     <button class="bs-fly-x bs-flip" type="button" id="bsFlipBtn" data-key="X" aria-label="Spin round (X)" hidden>180</button>
     <button class="bs-fly-x bs-edit" type="button" id="bsEditBtn" aria-pressed="false" aria-controls="bsAdmin" aria-label="Edit the map" title="Edit the map" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg></button>
@@ -8058,6 +8063,10 @@ const handle = async (m, post) => {
     const typing = e => /^(INPUT|TEXTAREA|SELECT)$/.test(e.target?.tagName || "");
     F.on = {
       keydown: e => { if (typing(e)) return;
+        // the mouse looks around by default on a computer (Ash, 16 November 2026: "lock mouse should be the default"): the first walking
+        // key (or a click on the view) hands it over, and again after Esc has given it back, once you set off again
+        if (/^(Key[WASD]|Arrow(Up|Down|Left|Right))$/.test(e.code)) F.on.autoLock?.();
+        if (BS.town?.on && !e.ctrlKey && !e.metaKey && !e.altKey && (e.code === "KeyO" || e.code === "KeyK")) { e.preventDefault(); if (e.code === "KeyK") F.on.autoLock?.(); else $("bsFullBtn")?.click(); return; }  // Full screen (O) and Lock mouse (K)
         // Esc closes whatever menu is open (above), and never leaves Explore (Ash, 15 November 2026: "ESC should not close the app, it
         // should close the menu the person is in"); the weather's Listen view still closes with it
         if (e.code === "Escape" && document.pointerLockElement !== canvas) { if (document.body.classList.contains("wxlisten")) bsFlyOff(); return; }
@@ -8118,7 +8127,9 @@ const handle = async (m, post) => {
       if (!document.documentElement.requestFullscreen && !document.documentElement.webkitRequestFullscreen) fb.hidden = true;
       fb.onclick = () => { try { if (fsEl()) (document.exitFullscreen || document.webkitExitFullscreen).call(document); else { const d = document.documentElement; (d.requestFullscreen || d.webkitRequestFullscreen).call(d, { navigationUI: "hide" })?.catch?.(() => {}); } } catch {} fb.blur(); };
       F.on.fsChange = () => { fb.textContent = fsEl() ? "Exit full screen" : "Full screen"; }; document.addEventListener("fullscreenchange", F.on.fsChange); document.addEventListener("webkitfullscreenchange", F.on.fsChange); }
-    F.on.lockChange = () => { const on = document.pointerLockElement === canvas; document.body.classList.toggle("bslocked", on); $("bsLockTip").hidden = !on; };
+    F.on.autoLock = () => { const T = BS.town; if (!desk || !T?.on || T.admin?.tool || document.pointerLockElement || $("bsMe")?.hidden === false || document.querySelector(".bs-askwrap")) return;
+      try { canvas.requestPointerLock?.()?.catch?.(() => {}); } catch {} };
+    F.on.lockChange = () => { const on = document.pointerLockElement === canvas; document.body.classList.toggle("bslocked", on); $("bsLockTip").hidden = true; };  // (no strip of keys along the bottom: the buttons have their keys on them. Ash, 16 November 2026: "there is no need for the keys at the bottom as they are already on screen")
     document.addEventListener("pointerdown", F.on.lock, true); document.addEventListener("pointerlockchange", F.on.lockChange);
     addEventListener("keydown", F.on.keydown); addEventListener("keyup", F.on.keyup); addEventListener("blur", F.on.blur);
     document.addEventListener("mousemove", F.on.mousemove);
@@ -8204,7 +8215,7 @@ const handle = async (m, post) => {
     if (F.walk && F.canJump) { const want = has("Space") || F.jumpBtn; if (want && !F.jumpWas && !(F.jumpH > 0.01)) { F.jumpV = 7.2; F.jumpH = 0.001; } F.jumpWas = want;
       if (F.jumpH > 0) { F.jumpH = Math.max(0, F.jumpH + F.jumpV * lk); F.jumpV -= 22 * lk; if (!F.jumpH) F.jumpV = 0; } }
     if (F.walk) { const u2 = F.canJump ? Math.min(0, u) : u; if (u2) F.eye = bsClamp((F.eye || 3) + u2 * 3 * lk, 1.5, 30);  // Up and Down: eyes higher or lower above the ground
-      const bob = F.wv && !(F.calm ??= matchMedia("(prefers-reduced-motion: reduce)").matches) ? Math.min(1, Math.hypot(...F.wv) / 5) * 0.045 * Math.sin(F.bob || 0) : 0;
+      const bob = 0;  // (no bob of the head: Ash, 16 November 2026, "remove head bob")
       F.pos.y += (F.walk() + bob + (F.jumpH || 0) - F.pos.y) * Math.min(1, lk * (F.jumpH ? 30 : 10)); }  // walking in the whole-town model: your eyes follow the ground, up hill and down
     else F.pos.y = bsClamp(F.pos.y + u * sp, F.floor ? F.floor() : 1.4, F.ceil || 180);
     if (F.heightAt) { const h = Math.max(0, F.heightAt()), t = h < 10 ? `${h.toFixed(1)} m` : h < 10000 ? `${Math.round(h)} m` : `${(h / 1000).toFixed(1)} km`; if (t !== F.hText) { F.hText = t; $("bsHeight").textContent = t; } const mh = $("bsMeH"); if (mh && mh.textContent !== t) mh.textContent = t; }
@@ -8379,7 +8390,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=20", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=35", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=36", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -10721,7 +10732,7 @@ const handle = async (m, post) => {
       skip.onclick = () => done("");
       inp.onkeydown = e => e.stopPropagation(); inp.onkeyup = e => e.stopPropagation();
       askBox.append(q, inp, go, skip); chatBar.parentElement.appendChild(askWrap); try { inp.focus({ preventScroll: true }); } catch {} }, 1800);
-    const label = id => { const el = document.createElement("div"); el.className = "bs-peer"; el.hidden = true; box.appendChild(el);
+    const label = id => { const el = document.createElement("div"); el.className = "bs-peer bs-player"; el.hidden = true; box.appendChild(el);
       const edge = el.edge = document.createElement("div"); edge.className = "bs-peer-edge"; edge.hidden = true; box.appendChild(edge); return el; };
     const drop = id => { riders?.delete(id); const q = peers.get(id); if (!q) return; try { q.parts?.remove(); } catch {} q.el.edge?.remove(); q.el.remove(); peers.delete(id); P.count = peers.size; };
     const got = (a, id) => { if (!Array.isArray(a) || a.length < 7 || !a.slice(0, 4).every(Number.isFinite)) return;
@@ -11135,7 +11146,7 @@ const handle = async (m, post) => {
     const arloBtn = document.createElement("button"); arloBtn.type = "button"; arloBtn.className = "bs-fly-x bs-arlo"; arloBtn.hidden = true; arloBtn.textContent = "Arlo, come!";
     arloBtn.addEventListener("click", e => { e.stopPropagation(); dog.follow = !dog.follow; dog.offT = 0; dog.to = null; arloBtn.blur();
       if (!dog.follow) { if (Math.hypot(dog.x - LAWN.x, dog.z - LAWN.z) > 40) { dog.x = LAWN.x; dog.z = LAWN.z; } dog.to = [LAWN.x, LAWN.z]; }
-      toast(dog.follow ? "Arlo's coming with you!" : "Arlo's gone home to his lawn.", 2200); }); $("bsFly")?.append(arloBtn);
+      toast(dog.follow ? "Arlo's coming with you!" : "Arlo's gone home to his lawn.", 2200); }); (document.querySelector("#bsFly .bs-slides") || $("bsFly"))?.prepend(arloBtn);
     const draw = (q, arm) => { M.compose(V.set(q.x, g(q.x, q.z), q.z), Q.setFromEuler(E.set(0, q.look, 0, "YXZ")), ONE); q.parts.setMatrix(0, M.elements.slice());
       q.parts.setMatrix(1, M.clone().multiply(SH[0]).multiply(R.makeRotationZ(-arm)).elements); q.parts.setMatrix(2, M.clone().multiply(SH[1]).multiply(R.makeRotationZ(0.06)).elements); };
     const drawDog = wag => { M.compose(V.set(dog.x, g(dog.x, dog.z) + dog.bob, dog.z), Q.setFromEuler(E.set(0, dog.h, 0, "YXZ")), ONE); ap.setMatrix(0, M.elements.slice());

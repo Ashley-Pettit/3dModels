@@ -61,9 +61,12 @@ head = f"""<!doctype html>
 <meta name="twitter:title" content="{title}">
 <meta name="twitter:description" content="{desc}">
 <meta name="twitter:image" content="{site_url}icons/share-card.png?v=3">
-<meta name="theme-color" content="#f6f5fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1c3047" media="(prefers-color-scheme: light)">
 <meta name="format-detection" content="telephone=no">
-<meta name="theme-color" content="#0e0d16" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#1c3047" media="(prefers-color-scheme: dark)">
+<!-- the 3D site is dark all the way to the phone's edges: Safari's bars top and bottom take the page's colour, rather than the news
+     app's light grey (Ash, 16 November 2026: "The new version opens like this. I don't like it. Note header and footer") -->
+<style>html, body {{ background: #13233a !important; }}</style>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="{title}">
