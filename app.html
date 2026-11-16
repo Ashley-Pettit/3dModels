@@ -8967,7 +8967,11 @@ const handle = async (m, post) => {
       shops: [{ n: "Moorooka Chiropractic Centre", t: "CHIROPRACTOR", w: 14.7, c: ["#3a3d42", "#ffffff"], what: "Chiropractor", jump: true }] },
     { kind: "strip", addr: "173-175 Beaudesert Road", a: [-126.9, -210.1], b: [-136.3, -225.4], n: [0.852, -0.5235], kerb: 3.68, across: 14.28, eave: 49.6, wall: "#efede8", awning: "#5d6874",
       shops: [{ n: "", w: 6, c: ["#5d6874", "#ffffff"] }, { n: "TOBACCONIST", w: 5.5, c: ["#f2c230", "#1d1d1d"] }, { n: "Habos Kitchen", sub: "CAFE & RESTAURANT", w: 6.5, c: ["#2a2c30", "#f3e6c8"], what: "Cafe and restaurant", jump: true }] },
-    { kind: "sign", addr: "101 Beaudesert Road", a: [-227.6, -515.2], b: [-229.0, -523.0], n: [0.9843, -0.1767], kerb: 0.51, across: 11.01, eave: 38.3, wall: "#7d858d",
+    // Inline Physio, again from Street View (Ash, 16 November 2026: "Use Google maps to fix the physio"): a pale grey weatherboard cottage
+    // with white trim, a verandah across the front on white posts, the big white "inline physio." board over it, teal posters in the windows
+    { kind: "sign", addr: "101 Beaudesert Road", a: [-227.6, -515.2], b: [-229.0, -523.0], n: [0.9843, -0.1767], kerb: 0.51, across: 11.01, eave: 38.3, wall: "#a9b1b9", noBoard: true,
+      veranda: { col: "#3e4650", posts: "#f2f4f5", deep: 2.1, sign: [1.3, 6.6, 1.15] },
+      posters: [[0.6, 1.9, 0.95, 2.0, "physio", "massage", "#3fb0b5", "#ffffff"], [6.0, 7.3, 0.95, 2.0, "pilates", "", "#3fb0b5", "#ffffff"]],
       shops: [{ n: "inline physio.", w: 7.9, c: ["#f4f6f6", "#1f3b57"], stripe: ["#3fb0b5"], what: "Physio", jump: true }] },
     { kind: "sign", addr: "1106 Ipswich Road", a: [-1049.7, 19.8], b: [-1060.3, 39.5], n: [-0.8806, -0.4738], kerb: 11.4, across: 21.0, eave: 19.4, wall: "#1f5fa8", band: true,
       shops: [{ n: "WATERSKI & WAKE WORLD", w: 22.4, c: ["#ffffff", "#1f5fa8"], what: "Water ski and wakeboard shop", jump: true }] },
@@ -9028,7 +9032,7 @@ const handle = async (m, post) => {
     { at: [-108.4, -264.12], kind: 2, wall: [212, 212, 208] },               // La Pupetta (160): light grey render
     { at: [-100.4, -257.5], kind: 2, wall: [236, 230, 212] },                // the chiropractor (166-168): cream, two storeys
     { at: [-150.6, -206.27], kind: 2, wall: [239, 237, 232] },               // 173-175: white, two storeys
-    { at: [-235.32, -517.58], wall: [125, 133, 141], roof: [70, 78, 88], noShop: true },  // Inline Physio (101): a grey weatherboard cottage
+    { at: [-235.32, -517.58], wall: [169, 177, 185], roof: [62, 68, 76], noShop: true },  // Inline Physio (101): a pale grey weatherboard cottage, dark roof
     { at: [-1043.28, 31.95], kind: 2, wall: [40, 96, 170] },                 // Waterski & Wake World (1106 Ipswich Road): blue
     { at: [-541.45, 904.85], kind: 2, wall: [176, 98, 62] },                 // Moorooka Foodstore (419, on the corner of Avison Street): brick
   ];
@@ -9223,6 +9227,10 @@ const handle = async (m, post) => {
         if (f.pylon) { const px = -0.9, o = bsClamp(f.kerb - 2.2, 1.6, 6); box(px - 0.3, px + 0.3, 0, 5.4, o - 0.18, o + 0.18, f.pylon); box(px - 0.31, px + 0.31, 4.6, 4.75, o - 0.19, o + 0.19, "#e8e6e0"); }
         if (f.num) board(0.25, 1.15, 1.9, 2.75, 0.16, { n: f.num, c: ["#d71920", "#ffffff"] });  // the street number, on the wall by the corner
         if (f.posters) for (const [x0, x1, y0, y1, t, sub, bg, fg] of f.posters) board(x0, x1, y0, y1, 0.16, { n: t, sub, c: [bg, fg] });
+        // a verandah across the front (the physio's cottage): its roof sloping out from the wall on posts at the corners and between
+        if (f.veranda) { const V = f.veranda, dp = V.deep || 2; box(-0.1, len + 0.1, 2.62, 2.76, 0, dp, V.col, 0.22);
+          for (let i = 0, n = Math.max(2, Math.round(len / 2.6)); i <= n; i++) { const px = 0.12 + (len - 0.24) * i / n; box(px - 0.06, px + 0.06, 0, 2.5, dp - 0.18, dp - 0.06, V.posts); }
+          if (V.sign) { const [x0, x1, hh] = V.sign; board(x0, x1, 2.6, 2.6 + hh, dp + 0.1, shops[0]); signY = 2.6; signH = hh; } }  // its sign stands on the verandah's edge
         if (f.tall) { const px = len + 0.9, o = bsClamp(f.kerb - 1.2, 1.5, 9); box(px - 0.07, px + 0.07, 0, 1.1, o - 0.07, o + 0.07, "#8a8d90");
           box(px - 0.5, px + 0.5, 1.1, 4.2, o - 0.1, o, f.tall.c[0]); pic(px - 0.47, px + 0.47, 1.13, 4.17, o + 0.012, tall(0.94, 3.04, f.tall.lines, f.tall.c, f.tall.foot)); }
         // the vet's pole sign on the corner, as in Ash's photo: the Vet board up top and its letter board under it, on the same two posts,
