@@ -2161,7 +2161,7 @@ body.bsfly .toast.show { transform: translate(-50%, 0); }
     <div class="bs-fly-time bs-town-tide" id="bsTownTide" hidden><span>Tide</span><input type="range" id="bsTownTideIn" step="0.05" aria-label="Tide level"><output id="bsTownTideOut" for="bsTownTideIn"></output></div>
     <div class="bs-height" id="bsHeight" hidden aria-hidden="true"></div>
     <span class="bs-hires" id="bsHiRes" role="status" aria-label="Loading the sharper view" title="Loading the sharper view" hidden><i></i></span>
-    <div class="bs-town-mode" id="bsTownMode" role="group" aria-label="Walk or fly" data-key="F" hidden><button type="button" data-town-mode="walk" aria-pressed="true">Walk</button><button type="button" data-town-mode="fly" aria-pressed="false">Fly</button></div>
+    <div class="bs-town-mode" id="bsTownMode" role="group" aria-label="Explore mode" data-key="F" hidden><button type="button" data-town-mode="explore" aria-pressed="false">Explore mode</button></div>
     <div class="bs-town-list" id="bsTownList" role="menu" aria-label="Places to jump to" hidden></div>
     <div class="bs-town-list bs-town-floods" id="bsTownFloods" role="menu" aria-label="Floods to show on the map" hidden></div>
     <div class="bs-slides" role="group" aria-label="Street names, tide, time and flood"><button class="bs-fly-x bs-ic" type="button" id="bsNamesBtn" data-key="N" aria-pressed="false" aria-label="Street names" title="Show street names (N)" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M9 21h6"/><path d="M5 5h11l3 2.5L16 10H5z"/><path d="M19 12H8l-3 2.5L8 17h11z"/></svg></button><button class="bs-fly-x" type="button" id="bsTideBtn" aria-controls="bsTownTide" aria-expanded="false" hidden>Tide</button><button class="bs-fly-x" type="button" id="bsTimeBtn" aria-controls="bsFlyTimeBox" aria-expanded="false" aria-label="Time of day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span id="bsTimeBtnT">Time</span></button><button class="bs-fly-x bs-town-flood" type="button" id="bsTownFlood" data-key="L" aria-haspopup="menu" aria-expanded="false" aria-pressed="false" hidden>Flood</button></div>
@@ -8295,7 +8295,7 @@ const handle = async (m, post) => {
     // ability to jump rather than be big"); C and Down still lower them
     if (F.walk && (F.canJump || has("Space") || F.jumpH > 0)) { const want = has("Space") || F.jumpBtn; if (want && !F.jumpWas && !(F.jumpH > 0.01)) { F.jumpV = 7.2; F.jumpH = 0.001; } F.jumpWas = want;
       if (F.jumpH > 0) { F.jumpH = Math.max(0, F.jumpH + F.jumpV * lk); F.jumpV -= 22 * lk; if (!F.jumpH) F.jumpV = 0; } }
-    if (F.walk) { const u2 = F.canJump ? Math.min(0, u) : u; if (u2) F.eye = bsClamp((F.eye || 2.8) + u2 * 3 * lk, 1.5, 30);  // Up and Down: eyes higher or lower above the ground
+    if (F.walk) { const u2 = F.canJump ? Math.min(0, u) : u; if (u2) F.eye = bsClamp((F.eye || 2.6) + u2 * 3 * lk, 1.5, 30);  // Up and Down: eyes higher or lower above the ground
       const bob = 0;  // (no bob of the head: Ash, 16 November 2026, "remove head bob")
       F.pos.y += (F.walk() + bob + (F.jumpH || 0) - F.pos.y) * Math.min(1, lk * (F.jumpH ? 30 : 10)); }  // walking in the whole-town model: your eyes follow the ground, up hill and down
     else F.pos.y = bsClamp(F.pos.y + u * sp, F.floor ? F.floor() : 1.4, F.ceil || 180);
@@ -8641,7 +8641,7 @@ const handle = async (m, post) => {
           onError: msg => fail(msg) });
       return m.ready.then(() => {
         if (T.dead || BS.fly !== F) { try { m.dispose(); } catch {} return; }
-        const EYE = 2.8, touch = matchMedia("(pointer: coarse)").matches;  // walking: your eyes 2.8 m up to start (Ash, 16 November 2026: "Set my start height to 2.8"; was 3), for a clear view over the cars and fences (Up and Down change it)
+        const EYE = 2.6,  /* (Ash, 16 November 2026: "Set starting height to 2.6m") */ touch = matchMedia("(pointer: coarse)").matches;  // walking: your eyes 2.8 m up to start (Ash, 16 November 2026: "Set my start height to 2.8"; was 3), for a clear view over the cars and fences (Up and Down change it)
         F.eye = EYE;
         // the ground, or the water over it: the sea and the inlet (Inverloch), or a flood that's on the map (Logan)
         // the ground: the model's, the water's, or a flat pad the app has laid (11 Norman Road's lot sits on one, a little above the
@@ -8695,13 +8695,13 @@ const handle = async (m, post) => {
         const tideBox = $("bsTownTide"), tideIn = $("bsTownTideIn"), tideOut = $("bsTownTideOut"), tidal = m.tide.max > m.tide.min, tideBtn = $("bsTideBtn");
         tideBtn.setAttribute("aria-expanded", "false"); tideBtn.onclick = () => { tideBox.hidden = !tideBox.hidden; tideBtn.setAttribute("aria-expanded", String(!tideBox.hidden)); };  // Moorooka has no tide to move
         const setMode = (walk, to) => { T.walk = walk; T.car?.walkKeys?.(walk); document.body.classList.toggle("bswalk", walk); F.walk = walk ? () => ground() + F.eye : null; tideBtn.hidden = walk || !tidal; tideBox.hidden = tideBtn.hidden || tideBtn.getAttribute("aria-expanded") !== "true"; F.lim = walk ? inner : outer;
-          modeBox.querySelectorAll("button").forEach(bn => bn.setAttribute("aria-pressed", String((bn.dataset.townMode === "walk") === walk)));
+          modeBox.querySelectorAll("button").forEach(bn => bn.setAttribute("aria-pressed", String(!walk)));
           if (F.on?.freeFor) F.on.freeFor(); else if (document.pointerLockElement) document.exitPointerLock?.();
           F.vert = 0; F.keys.clear();  // (the sticks are left alone: a thumb still on one carries on, and lifting it centres it)
           // one set of controls for every town model (Inverloch, Moorooka, Logan)
-          if (touch) tip.textContent = walk ? "Left stick to walk, right stick to look around." : "Fly with the sticks, or drag the view: pinch to zoom, two fingers to turn. Up and Down are between the sticks.";
-          else bsTip(walk ? "Drag to look around\nW A S D or the arrows to walk\nShift to run\nSpace higher · C lower\nF to fly · J to jump to a place\nN street names on or off\nR to start again · Esc to exit\n? to hide this list"
-            : "Left button drag to move\nRight button drag to turn\nScroll to zoom\nW A S D or the arrows to fly\nShift to go faster\nSpace to go up · C to go down\nF to walk · J to jump to a place\nN street names on or off\nR to start again · Esc to exit\n? to hide this list");
+          if (touch) tip.textContent = walk ? "Left stick to walk, right stick to look around." : "Explore mode: drag the view, pinch to zoom, two fingers to turn. Your player stays where you left them.";
+          else bsTip(walk ? "Drag to look around\nW A S D or the arrows to walk\nShift to run\nSpace higher · C lower\nF for Explore mode · J to jump to a place\nN street names on or off\nR to start again · Esc to exit\n? to hide this list"
+            : "Left button drag to move\nRight button drag to turn\nScroll to zoom\nW A S D or the arrows to fly\nShift to go faster\nSpace to go up · C to go down\nF back to your player · J to jump to a place\nN street names on or off\nR to start again · Esc to exit\n? to hide this list");
           tip.classList.remove("dim"); clearTimeout(F.tipT); F.tipT = setTimeout(() => tip.classList.add("dim"), 7000);
           T.tween = to ? { a: { x: F.pos.x, y: F.pos.y, z: F.pos.z, yaw: F.yaw, pitch: F.pitch }, b: to, t0: performance.now(), ms: 900 } : null; };
         // Fly: up and back from where you're standing, so the same spot stays in view. Walk: down to the ground you're looking at.
@@ -8709,10 +8709,15 @@ const handle = async (m, post) => {
           if (d[1] < -0.05) for (let t = 0; t < far; t += Math.max(5, t * stride)) { const px = F.pos.x + d[0] * t, pz = F.pos.z + d[2] * t; if (F.pos.y + d[1] * t <= ground(px, pz) + 1) { x = px; z = pz; break; } }
           x = bsClamp(x, inner[0], inner[1]); z = bsClamp(z, inner[2], inner[3]);
           return { x, y: ground(x, z) + F.eye, z, yaw: F.yaw, pitch: -0.04 }; };
-        const toMode = walk => { if (walk === T.walk) return; const w = walk && T.atStart?.() ? T.firstWalk() : null;
-          setMode(walk, w || (walk ? walkFromHere() : above(F.pos.x, F.pos.z, F.yaw))); };
+        // Explore mode (Ash, 16 November 2026: "Instead of walk/fly call this explore mode. Typically the person is walking and can turn on
+        // or off explore mode to see all of moorooka. But it doesn't move their player"): on, the view goes up over the town while your
+        // player stays where they stood (and others see them there); off, the view comes back down to your player
+        const toMode = walk => { if (walk === T.walk) return;
+          if (!walk) { F.home = { x: F.pos.x, z: F.pos.z, yaw: F.yaw, pitch: F.pitch }; setMode(false, above(F.pos.x, F.pos.z, F.yaw)); return; }
+          const H = F.home; F.home = null; const w = H ? { x: H.x, y: ground(H.x, H.z) + F.eye, z: H.z, yaw: H.yaw, pitch: H.pitch } : T.atStart?.() ? T.firstWalk() : null;
+          setMode(true, w || walkFromHere()); };
         T.firstWalk = () => { const fw = T.first?.walk; return fw ? { x: fw.x, y: ground(fw.x, fw.z) + F.eye, z: fw.z, yaw: fw.yaw, pitch: fw.pitch } : null; };
-        modeBox.onclick = e => { const bn = e.target.closest("[data-town-mode]"); if (!bn) return; toMode(bn.dataset.townMode === "walk"); };
+        modeBox.onclick = e => { const bn = e.target.closest("[data-town-mode]"); if (!bn) return; toMode(!T.walk); bn.blur(); };
 
         // ---- flying: drag the view to move, pinch (or scroll) to zoom, two fingers (or right-drag) to turn ----
         const look3 = () => { const cp = Math.cos(F.pitch); return [-Math.sin(F.yaw) * cp, Math.sin(F.pitch), -Math.cos(F.yaw) * cp]; };
@@ -8728,7 +8733,7 @@ const handle = async (m, post) => {
           const was = F.pos.clone();
           F.yaw += turn; const R2 = bsClamp(R * scale, 6, out), e = look3(); F.pos.set(L[0] - e[0] * R2, L[1] - e[1] * R2, L[2] - e[2] * R2); keepIn();
           const stuck = F.pos.distanceTo(was) < 0.3 && look3()[1] < -0.15 && F.pos.y - ground() < 6;
-          if (!T.walk && !T.tween && scale < 1 && stuck) { const now = performance.now(); if (now - squeezeAt > 700) squeeze = 1; squeezeAt = now;
+          if (!T.walk && !F.home && !T.tween && scale < 1 && stuck) { const now = performance.now(); if (now - squeezeAt > 700) squeeze = 1; squeezeAt = now;
             squeeze *= scale; if (squeeze < 0.5) { squeeze = 1; toMode(true); } } else if (scale >= 1 || !stuck) squeeze = 1; };
         const ptrs = new Map(); let pinch = null;
         const gest = {
@@ -11033,7 +11038,8 @@ const handle = async (m, post) => {
     const mine = () => { if (T.car?.riding?.()) return [0, 0, 0, 0, "none", 0, 0];  // riding with someone: they're what shows
       const v = T.car?.in && !off ? T.car.pose?.() : null; if (v) return [v.x, v.y, v.z, v.h, v.k, v.p, v.r];
       if (off) return [0, 0, 0, 0, "none", 0, 0];
-      if (T.walk) { const role = townRole() === "builder" ? "builder" : townPerks().chef ? "chef" : "walk", lc = townLookCode(); return [F.pos.x, ground(F.pos.x, F.pos.z) + (F.jumpH || 0), F.pos.z, F.yaw + Math.PI, lc ? role + "~" + lc : role, 0, 0]; }
+      if (T.walk || BS.fly?.home) { const role = townRole() === "builder" ? "builder" : townPerks().chef ? "chef" : "walk", lc = townLookCode(), H = T.walk ? { x: F.pos.x, z: F.pos.z, yaw: F.yaw } : BS.fly.home;
+        return [H.x, ground(H.x, H.z) + (T.walk ? F.jumpH || 0 : 0), H.z, H.yaw + Math.PI, lc ? role + "~" + lc : role, 0, 0]; }  // (in Explore mode, where your player stands)
       // flying low (under 60 m), others see you up there where your eyes are, rather than not at all
       // higher up, nothing is drawn, but where you are still goes, so Jump to can take players to you (Ash, 15 November 2026: "The
       // jump to player doesn't feel like it's working properly. Someone joined but I can't jump to them": a new player starts up in
@@ -11362,14 +11368,15 @@ const handle = async (m, post) => {
         let arm = 0.06; if (q.waveT >= 0) { q.waveT += dt; const k = Math.min(1, q.waveT * 4, (2.4 - q.waveT) * 4); arm = 0.06 + k * (2.5 + 0.35 * Math.sin(q.waveT * 11)); me = true; if (q.waveT > 2.4) q.waveT = -1; }
         if (me) draw(q, arm); }
       // Arlo: a few steps across the lawn, a sniff, then off again (only moved while he moves); his tail goes when you're near
-      let d = Math.hypot(F.pos.x - dog.x, F.pos.z - dog.z);
-      if (dog.follow && d > 50) { const fx = -Math.sin(F.yaw), fz = -Math.cos(F.yaw); dog.x = F.pos.x - fx * 4; dog.z = F.pos.z - fz * 4; dog.h = F.yaw + Math.PI; d = 4; T.snd?.woof?.(); }  // always catches up
+      const ME = F.home || { x: F.pos.x, z: F.pos.z, yaw: F.yaw };  // (in Explore mode Arlo stays with your player)
+      let d = Math.hypot(ME.x - dog.x, ME.z - dog.z);
+      if (dog.follow && d > 50) { const fx = -Math.sin(ME.yaw), fz = -Math.cos(ME.yaw); dog.x = ME.x - fx * 4; dog.z = ME.z - fz * 4; dog.h = ME.yaw + Math.PI; d = 4; T.snd?.woof?.(); }  // always catches up
       { const show = dog.follow || (d < 12 && !!T.walk && !T.car?.in);  /* (only by his lawn again: Ash, 16 November 2026, "Arlo only available from my house plz") */ if (arloBtn.hidden === show) arloBtn.hidden = !show; const tx = dog.follow ? "Arlo, home" : "Arlo, come!"; if (arloBtn.textContent !== tx) arloBtn.textContent = tx; }
       if (d > 260 || up > 220) { if (dogShown) { for (let i = 0; i < 2; i++) ap.setMatrix(i, FAR.slice()); dogShown = false; } return; }
       let pet = !dogShown; dogShown = true;
-      if (dog.follow) { const fx = -Math.sin(F.yaw), fz = -Math.cos(F.yaw), rx = Math.cos(F.yaw), rz = -Math.sin(F.yaw);
+      if (dog.follow) { const fx = -Math.sin(ME.yaw), fz = -Math.cos(ME.yaw), rx = Math.cos(ME.yaw), rz = -Math.sin(ME.yaw);
         if ((dog.offT -= dt) <= 0) { dog.offT = 2.5 + Math.random() * 4; const r = Math.random(); dog.off = [r < 0.45 ? 3 + Math.random() * 5 : r < 0.85 ? -(2 + Math.random() * 4) : 1, (Math.random() - 0.5) * 3]; }
-        const tx = F.pos.x + fx * dog.off[0] + rx * dog.off[1], tz = F.pos.z + fz * dog.off[0] + rz * dog.off[1], ex = tx - dog.x, ez = tz - dog.z, L = Math.hypot(ex, ez);
+        const tx = ME.x + fx * dog.off[0] + rx * dog.off[1], tz = ME.z + fz * dog.off[0] + rz * dog.off[1], ex = tx - dog.x, ez = tz - dog.z, L = Math.hypot(ex, ez);
         if (L > 0.35) { const sp = Math.min(L * 2, L > 10 ? 16 : 9), st = Math.min(L, sp * dt), hw = wrap(Math.atan2(ex, ez) - dog.h);
           dog.h += hw * Math.min(1, dt * 10); dog.x += ex / L * st; dog.z += ez / L * st; dog.bob = 0.05 * Math.abs(Math.sin(t * 17)); }
         else { dog.bob = 0; const hw = wrap(Math.atan2(F.pos.x - dog.x, F.pos.z - dog.z) - dog.h); if (Math.abs(hw) > 0.02) dog.h += hw * Math.min(1, dt * 4); }
@@ -12121,12 +12128,12 @@ const handle = async (m, post) => {
     KEYS.heli = [[["W", "S"], "Forward, back"], [["A", "D"], "Turn (\u2190 and \u2192 too)"], [["\u2193"], "Up (Space too)"], [["\u2191"], "Down (C too)"], [["Drag"], "Look around"], [["E"], "Get out, once you have landed"]];
     // on foot, on a computer: the buttons for getting in, Boost and getting out are not shown there, so the keys are listed instead
     // (Ash, 15 November 2026: "On computer hide emote and get in the car, instead show as controls")
-    KEYS.walk = [[["W", "A", "S", "D"], "Walk (the arrows too)"], [["Shift"], "Run"], [["Mouse"], "Look around (K locks the mouse for the menus, and unlocks it)"], [["O"], "Full screen"], [["E"], "Get in the car, plane or possum nearby"], [["Enter"], "Chat"], [["Space"], "Jump"], [["?"], "Hide the buttons, for a clean view"]];
+    KEYS.walk = [[["W", "A", "S", "D"], "Walk (the arrows too)"], [["Shift"], "Run"], [["Mouse"], "Look around (K locks the mouse for the menus, and unlocks it)"], [["O"], "Full screen"], [["E"], "Get in the car, plane or possum nearby"], [["F"], "Explore mode on or off (your player stays put)"], [["Enter"], "Chat"], [["Space"], "Jump"], [["?"], "Hide the buttons, for a clean view"]];
     KEYS.bus = KEYS.car; KEYS.gold = [...KEYS.car.slice(0, 4), [["X"], "180: hop and spin round, still going"], ...KEYS.car.slice(4)];
     KEYS.possum = [[["W", "A", "S", "D"], "Run that way, from where you're looking (the arrows too)"], [["W"], "Into a street light or a wall: climb it"], [["S"], "Walk backwards (on a wall: let go)"], [["Space"], "Jump (off a wall too)"], [["Shift"], "Boost"], [["Q"], "Grippy on or off: holds on to cars, planes and tree tops (on or against a car you hold on; only Grippy off lets go)"], [["Drag"], "Look around"], [["E"], "Human again"]];
     const hint = text => { if (keysNow.textContent !== text) { keysNow.textContent = text; if (touch) keysBox.hidden = !text; } };
     const keysOff = off => { keysBox.classList.toggle("off", off); keysQ.textContent = "? hides the buttons"; };
-    const showKeys = kind => { keysNow.textContent = ""; keysOff(false); keysBox.hidden = !kind || touch;  // (on a phone it shows once there is something to say)
+    const showKeys = kind => { keysNow.textContent = ""; keysOff(false); keysBox.hidden = !kind || touch || kind === "possum";  // (no list for the possum: Ash, 16 November 2026, "I don't think any are needed")  // (on a phone it shows once there is something to say)
       keysList.replaceChildren(...(KEYS[kind] || []).filter(([ks]) => !(kind === "plane" && plane && !canBoost(plane) && ks[0] === "Shift")).flatMap(([ks, what]) => { const dt = document.createElement("dt"), dd = document.createElement("dd");
         for (const key of ks) { const kb = document.createElement("kbd"); kb.textContent = key; dt.append(kb); } dd.textContent = what; return [dt, dd]; }));
       // the stick and the Up and Down buttons say what they do in it
@@ -12390,7 +12397,7 @@ const handle = async (m, post) => {
             T.peers?.ride?.(q.id, 2, [P.cling.along, P.cling.side, P.cling.dh].map(v => Math.round(v * 100) / 100)); toast(was ? `${q.name} is driving off with you! Turn Grippy off to let go.` : `Holding on to ${q.name}! Turn Grippy off to let go.`, 2800); break; } }
         P.p += ((P.mode === "climb" ? 1.45 : P.mode === "air" ? bsClamp(P.vy * 0.03, -0.35, 0.35) : 0) - P.p) * Math.min(1, dt * 12); showPossum();
         const up = P.y - ground(P.x, P.z);
-        hint(P.mode === "climb" ? (touch ? "Climbing. Stick forward to go up, back to let go" : "Climbing. W goes up, S lets go") : "");
+        hint("");
         if (mission) tickMission(dt);
         if ((gripLook -= dt) <= 0) { gripLook = 0.25; gripBtn.hidden = false; const tx = grippy ? "Grippy: on" : "Grippy: off"; if (gripBtn.textContent !== tx) gripBtn.textContent = tx; gripBtn.classList.toggle("on", grippy); }
         o = P; D = P.cling || P.grip ? 9 : 3.4 + Math.min(3, Math.abs(P.v) / 12); text = P.cling ? `Holding on to ${P.cling.name} \u00b7 ${Math.round(P.v * 3.6)} km/h` : P.grip ? `Gripping the car \u00b7 ${Math.round(P.v * 3.6)} km/h` : P.mode === "climb" ? "Climbing \u00b7 " + Math.round(up) + " m" : Math.round(Math.abs(P.v) * 3.6) + " km/h" + (up > 1.5 ? " \u00b7 " + Math.round(up) + " m up" : "");
@@ -12498,7 +12505,7 @@ const handle = async (m, post) => {
       else if (c.ride) { const q = c.ride; ride = { id: q.id, name: q.name, k: q.k, at: [q.x, q.y, q.z, performance.now()], v: 0 }; veh = "ride"; camYaw = q.h + Math.PI;
         document.body.classList.add("bsdrive", "bsride"); T.peers?.ride?.(q.id, true); toast(`You're riding with ${q.name}. Look around with the right stick.`, 3000); }
       else if (c.possum) { if (!townPerks().wasPossum) townPerkSet("wasPossum", true); veh = "possum"; pos.v = 0; pos.jumped = true; camYaw = pos.h + Math.PI; document.body.classList.add("bsdrive", "bspossum");
-        loadTrees(); const wait = loadRoofs(); if (wait) { toast("Loading the roofs the possum can climb\u2026", 8000); wait.then(() => { if (veh === "possum") toast("Ready. Run at a wall or a street light to climb it.", 2500); }); } }  // (no Up and Down: Jump sits where Boost does, over the right stick)
+        loadTrees(); const wait = loadRoofs(); if (wait) { toast("Loading the roofs\u2026", 8000); wait.then(() => { if (veh === "possum") toast("Ready.", 1200); }); } }  // (no Up and Down: Jump sits where Boost does, over the right stick)
       else if (c.plane) { plane = c.plane; veh = "plane"; if (T.cfg?.place === "moo") loadRoofs(); /* (Moorooka's roofs, so planes and helicopters meet them) */ plane.v = 0; plane.spin = 0; plane.turn = 0; camYaw = plane.h + Math.PI; document.body.classList.add("bsdrive", "bsplane"); boostBtn.style.setProperty("--charge", "100%"); }
       else { if (c.own && !owns.includes(c.own)) { const G = T.traffic?.take?.(c.own); if (!G) return true; owns.push(G); c.own = G; }
         car = c.own ? { own: c.own, gold: c.own.gold, bus: c.own.bus, x: c.own.x, z: c.own.z, h: c.own.h, dir: c.own.h, y: c.own.y, p: c.own.p, r: c.own.r, v: 0, steer: 0 } : { id: c.id, bus: !!c.bus, x: c.x, z: c.z, h: c.heading, dir: c.heading, y: ground(c.x, c.z) + 0.05, p: 0, r: 0, v: 0, steer: 0 };
@@ -12511,7 +12518,7 @@ const handle = async (m, post) => {
       boostBtn.textContent = veh === "possum" ? "Jump" : "Boost"; boostBtn.dataset.key = veh === "possum" ? "Space" : "Shift";
       if (veh === "ride") { if (RIDE_UP[ride.k] > 1) snd.door(); } else if (veh !== "possum") { snd.door(); snd.start(veh === "plane" && plane.heli ? "heli" : veh); } showKeys(veh === "plane" && plane.heli ? "heli" : veh === "ride" ? null : veh === "car" && car.gold ? "gold" : veh);
       // on a phone, a word about the sticks (on a desktop the list of keys has just come up, bottom left)
-      if (touch && veh !== "ride" && !(veh === "possum" && roofsIn)) toast(veh === "possum" ? "You're the possum. Push the left stick the way to run. Run at a street light or a wall to climb it, pull back to let go. Jump springs up." : veh === "plane" && plane.heli ? "Hold Up to lift off. Left stick: forward to go, sideways to turn. Down lands it." : veh === "plane" ? "Left stick: forward for power, sideways to turn. Climb lifts the nose once you are fast." : "Left stick to drive, right stick to look around. Hold Boost for the mega boost.", 5500);
+      if (touch && veh !== "ride" && veh !== "possum") toast(veh === "plane" && plane.heli ? "Hold Up to lift off. Left stick: forward to go, sideways to turn. Down lands it." : veh === "plane" ? "Left stick: forward for power, sideways to turn. Climb lifts the nose once you are fast." : "Left stick to drive, right stick to look around. Hold Boost for the mega boost.", 5500);
       return true; };
     // the Get in button: there while something is in reach of where you are walking (looked for a few times a second)
     C.frame = () => { followGrip(); if (veh) return; const now = performance.now(); if (now - at < 300) return; at = now;
