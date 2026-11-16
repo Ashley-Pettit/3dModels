@@ -8867,6 +8867,18 @@ const handle = async (m, post) => {
     { kind: "sign", addr: "212 Beaudesert Road", a: [-55.5, -149.3], b: [-53.5, -129.4], n: [-0.995, 0.1], kerb: 5.77, across: 17.97, eave: 53.1, wall: "#8f8476", screen: "#ad6e3e", posts: "#d42a20",
       shops: [{ n: "Snap Fitness", parts: [["snap ", "#ff3b2f"], ["fitness", "#ffffff"], [" 24/7", "#ffffff"]], w: 20, c: ["#1b1b1d", "#ffffff"], what: "Gym: a workout makes you 10% quicker on foot", jump: true }] },
     { kind: "sign", addr: "180 Beaudesert Road", a: [-112.3, -238.5], b: [-103.3, -225.2], n: [-0.8282, 0.5604], kerb: 3.06, across: 13.36, eave: 52.0, wall: "#f2efe8", shops: [{ n: "Big Boss Pizzas", w: 16.1, c: ["#1d1d1d", "#f2b632"], what: "Pizza: order the best chips ever", jump: true }] },
+    // the east side from 152 to 168 (Ash, 16 November 2026: "find all moorooka businesses, use google maps image as a reference ... try not
+    // to make it load intensive"): laid out from Street View (September 2024), each an awning with the shop's name on its edge
+    { kind: "strip", addr: "152 Beaudesert Road", a: [-136.9, -274.4], b: [-130.2, -263.4], n: [-0.854, 0.5202], kerb: 2.06, across: 12.36, eave: 48.6, wall: "#f3f1ec", awning: "#7e1b1b",
+      shops: [{ n: "Moorooka Halal Butcher & Grocery", w: 12.9, c: ["#ffffff", "#c8102e"], what: "Halal butcher and grocery", jump: true }] },
+    { kind: "strip", addr: "160 Beaudesert Road", a: [-124.9, -257.6], b: [-120.9, -251.3], n: [-0.8442, 0.536], kerb: 2.96, across: 13.26, eave: 50.1, wall: "#d6d6d2", awning: "#1f4f9a",
+      shops: [{ n: "La Pupetta Store", w: 7.5, c: ["#1f4f9a", "#ffffff"], what: "Shop", jump: true }] },
+    { kind: "strip", addr: "166-168 Beaudesert Road", a: [-120.6, -251.1], b: [-112.5, -238.8], n: [-0.8352, 0.55], kerb: 3.0, across: 13.3, eave: 51.5, wall: "#ece6d4", awning: "#3a3d42",
+      shops: [{ n: "Moorooka Chiropractic Centre", t: "CHIROPRACTOR", w: 14.7, c: ["#3a3d42", "#ffffff"], what: "Chiropractor", jump: true }] },
+    { kind: "strip", addr: "173-175 Beaudesert Road", a: [-126.9, -210.1], b: [-136.3, -225.4], n: [0.852, -0.5235], kerb: 3.68, across: 14.28, eave: 49.6, wall: "#efede8", awning: "#5d6874",
+      shops: [{ n: "", w: 6, c: ["#5d6874", "#ffffff"] }, { n: "TOBACCONIST", w: 5.5, c: ["#f2c230", "#1d1d1d"] }, { n: "Habos Kitchen", sub: "CAFE & RESTAURANT", w: 6.5, c: ["#2a2c30", "#f3e6c8"], what: "Cafe and restaurant", jump: true }] },
+    { kind: "sign", addr: "101 Beaudesert Road", a: [-227.6, -515.2], b: [-229.0, -523.0], n: [0.9843, -0.1767], kerb: 0.51, across: 11.01, eave: 38.3, wall: "#7d858d",
+      shops: [{ n: "inline physio.", w: 7.9, c: ["#f4f6f6", "#1f3b57"], stripe: ["#3fb0b5"], what: "Physio", jump: true }] },
     { kind: "sign", addr: "Beaudesert Road at Mayfield Road", a: [-91.7, -214.1], b: [-84.9, -210.0], n: [-0.5163, 0.8564], kerb: 7.88, across: 18.18, eave: 51.7, wall: "#efeae0", shops: [{ n: "Rooka Acai", w: 7.9, c: ["#5b2a86", "#ffffff"], what: "Acai bowls", jump: true }] },
     // the servos: a tall sign on a pole by the kerb, a face each way along the road (where each is: its corner, or its number along
     // the road from Starbucks at 1115 Ipswich Road, so near enough rather than exact)
@@ -8906,6 +8918,12 @@ const handle = async (m, post) => {
     { at: [-153.7, -414.8], roof: [172, 166, 158] },                         // the pharmacy row (114-120): a weathered grey iron roof
     { at: [-99.76, -124.24], wall: [92, 74, 60], noShop: true },             // the Willow (215): dark timber
     { at: [-36.53, -129.14], wall: [214, 202, 182], noShop: true },          // Snap Fitness (212): a pale render behind its screen
+    { at: [-121.75, -277.68], kind: 2, wall: [244, 242, 236] },              // the halal butcher (152): white
+    { at: [-117.95, -266.95], kind: 2, wall: [196, 84, 52] },                // 156: red-orange, a white parapet
+    { at: [-108.4, -264.12], kind: 2, wall: [212, 212, 208] },               // La Pupetta (160): light grey render
+    { at: [-100.4, -257.5], kind: 2, wall: [236, 230, 212] },                // the chiropractor (166-168): cream, two storeys
+    { at: [-150.6, -206.27], kind: 2, wall: [239, 237, 232] },               // 173-175: white, two storeys
+    { at: [-235.32, -517.58], wall: [125, 133, 141], roof: [70, 78, 88], noShop: true },  // Inline Physio (101): a grey weatherboard cottage
   ];
   window.anStyle = (x, z) => { for (const q of MOO_STYLE) if (Math.abs(q.at[0] - x) < 0.6 && Math.abs(q.at[1] - z) < 0.6) return q; return null; };
   function townShops(T, m) {
