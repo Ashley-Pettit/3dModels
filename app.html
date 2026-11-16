@@ -8153,10 +8153,11 @@ const handle = async (m, post) => {
         if (e.code === "KeyR") { if (F.hot?.r) F.hot.r(); else { F.pos.copy(F.start.pos); F.yaw = F.start.yaw; F.pitch = F.start.pitch; } }
       },
       keyup: e => F.keys.delete(e.code),
-      blur: () => F.keys.clear(),
+      blur: () => { F.keys.clear(); F.rmb = false; },
       mousemove: e => { if (document.pointerLockElement === canvas) look(e.movementX, e.movementY, 0.0024); },
       pointerdown: e => {
         // desktop: drag to look (no mouse capture, so the buttons can always be clicked)
+        if (e.pointerType === "mouse" && F.mix && e.button === 2) { F.rmb = true; try { canvas.setPointerCapture(e.pointerId); } catch {} if (document.pointerLockElement === canvas) return; }
         if (e.pointerType === "mouse") { F.drag = { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, t: performance.now(), b: e.button }; try { canvas.setPointerCapture(e.pointerId); } catch {} canvas.style.cursor = "grabbing"; return; }
         try { canvas.setPointerCapture(e.pointerId); } catch {}
         F.touches.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, move: e.clientX < innerWidth / 2 }); tip.classList.add("dim"); },
@@ -8170,7 +8171,7 @@ const handle = async (m, post) => {
         if (t.move) { F.stick.x = bsClamp((e.clientX - t.sx) / 55, -1, 1); F.stick.y = bsClamp(-(e.clientY - t.sy) / 55, -1, 1); }
         else look(e.clientX - t.x, e.clientY - t.y, 0.006);
         t.x = e.clientX; t.y = e.clientY; e.preventDefault(); },
-      pointerup: e => { const D = F.drag; F.drag = null; canvas.style.cursor = F.simple ? "pointer" : "";
+      pointerup: e => { if (e.button === 2 || !(e.buttons & 2)) F.rmb = false; const D = F.drag; F.drag = null; canvas.style.cursor = F.simple ? "pointer" : "";
         if (D && F.simple && e.pointerType === "mouse" && D.b === 0 && Math.hypot(e.clientX - D.sx, e.clientY - D.sy) < 6 && performance.now() - D.t < 450) F.on.clickGo?.(e.clientX, e.clientY); const t = F.touches.get(e.pointerId); if (t?.move && !F.joys?.some(j => j.move && j.held())) { F.stick.x = 0; F.stick.y = 0; } F.touches.delete(e.pointerId); },
     };
     F.on.pointercancel = e => F.on.pointerup(e);
@@ -8186,7 +8187,7 @@ const handle = async (m, post) => {
       if (!hit || Math.hypot(hit.x - F.pos.x, hit.z - F.pos.z) < 0.6) return;
       F.goTo = { x: hit.x, z: hit.z, last: [F.pos.x, F.pos.z], stuck: 0 }; F.on.goMark?.(hit.x, hit.z); };
     // the scroll wheel: a few steps forwards or back
-    F.on.wheel = e => { if (!F.simple || !BS.town?.walk || F.drive || e.ctrlKey) return; e.preventDefault(); const st = e.deltaY < 0 ? 3 : -3;
+    F.on.wheel = e => { if (!(F.simple || F.mix) || !BS.town?.walk || F.drive || e.ctrlKey) return; e.preventDefault(); const st = e.deltaY < 0 ? 3 : -3;
       F.goTo = { x: F.pos.x - Math.sin(F.yaw) * st, z: F.pos.z - Math.cos(F.yaw) * st, last: [F.pos.x, F.pos.z], stuck: 0, keep: true }; };
     // the mouse looks around on a computer (Ash, 15 November 2026: "On pc make the game feel more natural when walking. Mouse able to
     // control viewpoint"): walking or driving in a town, a click on the view hands the mouse to the view; Esc gives it back, and
@@ -8197,7 +8198,11 @@ const handle = async (m, post) => {
     // can people use the mouse to move around rather than control the camera"): like Street View, click where you want to go and you
     // walk there, drag to look around, the scroll wheel steps you forwards and back. The mouse is never captured. The keys still work, and
     // nothing new needs a key, so the two can become one later. Chosen at the start of each game; the last choice is remembered
-    F.simple = desk && (() => { try { return localStorage.getItem("an-controls") === "simple"; } catch { return false; } })();
+    // and a third, Mixed (Ash, 17 November 2026: "Gamer default, add a 3rd one which is a combined thing trying to make mainly gamer but
+    // add btns like right click to moves forward or scroll wheel for w s while walking"): Gamer, plus the right button held walks you
+    // forwards and the scroll wheel steps you forwards and back
+    F.ctl = desk ? (() => { try { const v = localStorage.getItem("an-controls"); return v === "simple" || v === "mix" ? v : "gamer"; } catch { return "gamer"; } })() : "gamer";
+    F.simple = F.ctl === "simple"; F.mix = F.ctl === "mix"; F.rmb = false;
     F.goTo = null;
     F.on.lock = e => { const T = BS.town; if (!desk || F.simple || !T?.on || T.admin?.tool || F.userLocked || e.pointerType !== "mouse" || e.button !== 0 || document.pointerLockElement) return;
       if (e.target.closest?.("button, a, input, select, textarea, label, [role=menu], [role=dialog], [role=toolbar], .bs-me, .bs-review, .bs-chatbar, .bs-keys, #bsTownList, #bsShareBox")) return;
@@ -8228,13 +8233,16 @@ const handle = async (m, post) => {
           const wrap = document.createElement("div"), box = document.createElement("div"), q = document.createElement("p"), easy = document.createElement("button"), pro = document.createElement("button");
           wrap.className = "bs-askwrap"; box.className = "bs-chatbar bs-askname bs-askfull bs-askctl"; box.setAttribute("role", "dialog"); box.setAttribute("aria-label", "Controls");
           q.textContent = "How do you like to play?";
-          easy.type = pro.type = "button"; easy.innerHTML = "<b>Simple</b><span>Click where you want to go. Drag to look around.</span>"; pro.innerHTML = "<b>Gamer</b><span>W A S D to move. The mouse looks around.</span>";
-          const pick = simple => { wrap.remove(); removeEventListener("keydown", esc, true); F.simple = simple; try { localStorage.setItem("an-controls", simple ? "simple" : "gamer"); } catch {}
-            document.body.classList.toggle("bssimple", simple); canvas.style.cursor = simple ? "pointer" : ""; if (simple && document.pointerLockElement) document.exitPointerLock?.();
-            toast(simple ? "Click where you want to go. Drag to look around. The scroll wheel steps you forwards and back. The arrow keys work too." : "W A S D to move, the mouse looks around. K frees the mouse for the menus.", 4200); };
-          const esc = e => { if (e.code === "Escape") { e.stopPropagation(); pick(!!F.simple); } };
-          easy.onclick = () => pick(true); pro.onclick = () => pick(false); addEventListener("keydown", esc, true);
-          box.append(q, easy, pro); wrap.append(box); fb.closest(".bs-deskbtns").parentElement.appendChild(wrap); try { (F.simple ? easy : pro).focus({ preventScroll: true }); } catch {} }, 400); }
+          const mix = document.createElement("button"); easy.type = pro.type = mix.type = "button";
+          pro.innerHTML = "<b>Gamer</b><span>W A S D to move. The mouse looks around.</span>"; mix.innerHTML = "<b>Mixed</b><span>Gamer, plus hold the right button to walk and scroll to step.</span>"; easy.innerHTML = "<b>Simple</b><span>Click where you want to go. Drag to look around.</span>";
+          const pick = ctl => { wrap.remove(); removeEventListener("keydown", esc, true); F.ctl = ctl; F.simple = ctl === "simple"; F.mix = ctl === "mix"; F.rmb = false; try { localStorage.setItem("an-controls", ctl); } catch {}
+            document.body.classList.toggle("bssimple", F.simple); canvas.style.cursor = F.simple ? "pointer" : ""; if (F.simple && document.pointerLockElement) document.exitPointerLock?.();
+            toast(F.simple ? "Click where you want to go. Drag to look around. The scroll wheel steps you forwards and back. The arrow keys work too."
+              : F.mix ? "W A S D or hold the right button to walk. Scroll to step forwards and back. The mouse looks around; K frees it for the menus."
+              : "W A S D to move, the mouse looks around. K frees the mouse for the menus.", 4200); };
+          const esc = e => { if (e.code === "Escape") { e.stopPropagation(); pick(F.ctl); } };
+          pro.onclick = () => pick("gamer"); mix.onclick = () => pick("mix"); easy.onclick = () => pick("simple"); addEventListener("keydown", esc, true);
+          box.append(q, pro, mix, easy); wrap.append(box); fb.closest(".bs-deskbtns").parentElement.appendChild(wrap); try { ({ gamer: pro, mix, simple: easy }[F.ctl] || pro).focus({ preventScroll: true }); } catch {} }, 400); }
       if (desk && !BS.fsAsked && (document.fullscreenEnabled || document.webkitFullscreenEnabled) && !fsEl()) { BS.fsAsked = true;  // (once a page load)
         let onAt = 0; const t0 = performance.now(), wait = setInterval(() => { const T = BS.town, now = performance.now();
           if (!F.on || fsEl() || now - t0 > 90000) { clearInterval(wait); return; }
@@ -8257,7 +8265,7 @@ const handle = async (m, post) => {
     document.addEventListener("pointerdown", F.on.lock, true); document.addEventListener("pointerlockchange", F.on.lockChange);
     addEventListener("keydown", F.on.keydown); addEventListener("keyup", F.on.keyup); addEventListener("blur", F.on.blur);
     document.addEventListener("mousemove", F.on.mousemove);
-    ["pointerdown", "pointermove", "pointerup", "pointercancel"].forEach(k => canvas.addEventListener(k, F.on[k])); canvas.addEventListener("wheel", F.on.wheel, { passive: false });
+    ["pointerdown", "pointermove", "pointerup", "pointercancel"].forEach(k => canvas.addEventListener(k, F.on[k])); canvas.addEventListener("wheel", F.on.wheel, { passive: false }); F.on.ctxmenu = e => { if (F.mix || F.simple) e.preventDefault(); }; canvas.addEventListener("contextmenu", F.on.ctxmenu);
     if (F.simple) canvas.style.cursor = "pointer";
     $("bsFlyX").onclick = () => { if (document.body.classList.contains("wxlisten")) backToNews(); else bsExitAsk(); };
     $("bsFly").focus({ preventScroll: true });
@@ -8276,7 +8284,7 @@ const handle = async (m, post) => {
     removeEventListener("keydown", F.on.keydown); removeEventListener("keyup", F.on.keyup); removeEventListener("blur", F.on.blur);
     document.removeEventListener("mousemove", F.on.mousemove); document.removeEventListener("pointerdown", F.on.lock, true); document.removeEventListener("pointerlockchange", F.on.lockChange); if (F.on.fsChange) { document.removeEventListener("fullscreenchange", F.on.fsChange); document.removeEventListener("webkitfullscreenchange", F.on.fsChange); }
     document.body.classList.remove("bslocked"); $("bsLockTip").hidden = true;
-    ["pointerdown", "pointermove", "pointerup", "pointercancel"].forEach(k => canvas.removeEventListener(k, F.on[k])); canvas.removeEventListener("wheel", F.on.wheel); canvas.style.cursor = "";
+    ["pointerdown", "pointermove", "pointerup", "pointercancel"].forEach(k => canvas.removeEventListener(k, F.on[k])); canvas.removeEventListener("wheel", F.on.wheel); canvas.removeEventListener("contextmenu", F.on.ctxmenu); canvas.style.cursor = "";
     if (document.pointerLockElement === canvas) document.exitPointerLock?.();
     for (const j of [...(F.joys || []), ...(F.uds || [])]) { j.end(); Object.entries(j.h).forEach(([k, f]) => j.el.removeEventListener(k, f)); }
     if (F.noGesture) ["gesturestart", "gesturechange"].forEach(k => document.removeEventListener(k, F.noGesture));
@@ -8322,7 +8330,7 @@ const handle = async (m, post) => {
     // on foot, the gym makes you 10% quicker and Pandy's lime cordial lets you sprint half as fast again (Shift, or the Sprint button)
     const legs = F.walk ? (F.fit ? 1.1 : 1) * (F.cordial && (F.sprint || has("ShiftLeft", "ShiftRight")) ? 1.5 : 1) * (F.drunk ? 0.8 : 1) * (F.giant ? 2 : 1) : 1;
     const sp = (has("ShiftLeft", "ShiftRight") ? 34 : 11) * (F.speed ? F.speed() : 1) * Math.min(dt, 0.1) * (F.walk && has("ShiftLeft", "ShiftRight") ? 11 / 34 : 1) * legs;  // the whole-town model flies faster the higher you are
-    const f = (has("KeyW", "ArrowUp") ? 1 : 0) - (has("KeyS", "ArrowDown") ? 1 : 0) + F.stick.y;
+    const f = (has("KeyW", "ArrowUp") || (F.rmb && F.walk) ? 1 : 0) - (has("KeyS", "ArrowDown") ? 1 : 0) + F.stick.y;
     const r = (has("KeyD", "ArrowRight") ? 1 : 0) - (has("KeyA", "ArrowLeft") ? 1 : 0) + F.stick.x;
     const u = (F.walk ? 0 : (has("Space") ? 1 : 0) - (has("KeyC") ? 1 : 0)) + F.vert;  // Space up, C down (flying; on foot Space jumps: Ash, 16 November 2026, "On pc remove c and space for up down when walking. Make space bar for jump")
     const lk = Math.min(dt, 0.1);  // the look stick turns you, faster the further it's pushed
@@ -8331,7 +8339,7 @@ const handle = async (m, post) => {
     const lim = F.lim || [-420, 420, -420, 200];  // the area you can fly in (Norman Road has its own)
     // on foot with the keys (a computer): a walk, Shift to run, easing in and out, and a little bob of the head (Ash, 15 November 2026:
     // "On pc make the game feel more natural when walking"); on a phone, the stick, as before
-    const kb = F.walk && !F.stick.x && !F.stick.y && has("KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight");
+    const kb = F.walk && !F.stick.x && !F.stick.y && (F.rmb || has("KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"));
     // a click to walk there (simple controls): any key or the stick takes over; there, or stuck against something, it stops
     let go = null; if (F.goTo) { const G = F.goTo, gx = G.x - F.pos.x, gz = G.z - F.pos.z, gd = Math.hypot(gx, gz);
       if (!F.walk || kb || F.stick.x || F.stick.y || gd < 0.5) F.goTo = null;
