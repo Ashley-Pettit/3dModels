@@ -2428,7 +2428,8 @@ body.bsfly .toast.show { transform: translate(-50%, 0); }
   // and Logan's big fixed meshes (the precinct's ground and buildings, the footpaths, the blocks) let go of their copy in JavaScript
   // once they're on the graphics card: about 80 MB that sat there twice over (Ash, 16 November 2026: the app closed on his iPhone in
   // Logan; then "Consider doing the same change you did for phone for pc to reduce lag", so computers too). Nothing reads them back.
-  // logan-model.js ?v=43 calls this, and draws the precinct's ground in 14 m triangles, not 7.
+  // logan-model.js ?v=43 calls this, and draws the precinct's ground in 14 m triangles, not 7. moorooka-model.js ?v=39 calls it for the
+  // suburb's buildings (both their near and far versions) and its street furniture (the game closed flying over Moorooka on Ash's iPhone).
   window.anFreeCpu = mesh => { const g = mesh?.geometry; if (!g?.attributes) return;
     g.computeBoundingSphere(); g.computeBoundingBox(); const free = function () { this.array = null; };
     for (const k in g.attributes) g.attributes[k].onUpload?.(free); g.index?.onUpload?.(free); };
@@ -8471,7 +8472,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=20", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=38", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=39", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -12042,8 +12043,10 @@ const handle = async (m, post) => {
     const skyEnd = () => { try { skyParts?.remove(); } catch {} skyParts = null; sky = null; };
     const skyDraw = () => { if (!sky || !skyParts) return; sky.rings.forEach((r, i) => { const k = i < sky.at ? 0 : i === sky.at ? 9 : 5.5;
       M.compose(V.set(r.x, r.y, r.z), Q.setFromEuler(E.set(0, r.h, 0, "YXZ")), new THREE.Vector3(k, k, k)); skyParts.setMatrix(i, M.elements.slice()); }); };
-    const skyStart = P => { const C0 = { x: -160, z: -520 }, ph = Math.random() * Math.PI * 2; let rings = [];
-      for (let i = 0; i < SKY_N; i++) { const a = ph + i / SKY_N * Math.PI * 2, rr = 620 + (Math.random() - 0.5) * 320, x = C0.x + Math.cos(a) * rr * 1.15, z = C0.z + Math.sin(a) * rr; rings.push({ x, z, y: ground(x, z) + 45 + Math.random() * 95 }); }
+    // (on a phone a tighter loop, lower down: flying the whole suburb high up drew so much of it at once that the game closed on Ash's
+    // iPhone, 16 November 2026, "when flying on iOS game crashed ... Sky rings where on")
+    const skyStart = P => { const C0 = { x: -160, z: -520 }, ph = Math.random() * Math.PI * 2, small = touch, R0 = small ? 420 : 620, RJ = small ? 160 : 320, H0 = small ? 35 : 45, HJ = small ? 45 : 95; let rings = [];
+      for (let i = 0; i < SKY_N; i++) { const a = ph + i / SKY_N * Math.PI * 2, rr = R0 + (Math.random() - 0.5) * RJ, x = C0.x + Math.cos(a) * rr * 1.15, z = C0.z + Math.sin(a) * rr; rings.push({ x, z, y: ground(x, z) + H0 + Math.random() * HJ }); }
       // round the way you're going: the nearest first, then on in the direction you're flying round the middle
       const cw = (P.x - C0.x) * Math.cos(P.h) - (P.z - C0.z) * Math.sin(P.h) < 0; if (cw) rings.reverse();
       let k0 = 0, d0 = 1e9; rings.forEach((r, i) => { const d = Math.hypot(r.x - P.x, r.z - P.z); if (d < d0) { d0 = d; k0 = i; } }); rings = [...rings.slice(k0), ...rings.slice(0, k0)];
