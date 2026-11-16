@@ -12508,7 +12508,9 @@ const handle = async (m, post) => {
     const nearPlane = () => { let best = null, far = Infinity; for (const P of planes) { const d = Math.hypot(P.x - F.pos.x, P.z - F.pos.z); if (d < far) { far = d; best = P; } } return [best, far]; };
     // (the moving cars count too: getting into one takes it out of the traffic)
     const nearOwn = () => { let best = null, far = Infinity; for (const G of [...owns, ...(T.traffic?.cars || []).filter(D => D.x != null && !D.away && !D.bus)]) { const d = Math.hypot(G.x - F.pos.x, G.z - F.pos.z); if (d < far) { far = d; best = G; } } return [best, far]; };
-    const reach = () => { const c0 = parked(F.pos.x, F.pos.z, 8), [G, dg] = nearOwn(), c = G && dg < (G.bus ? 15 : 8) && (!c0 || dg < c0.distance) ? { own: G, gold: G.gold, distance: dg } : c0, [P, d] = nearPlane(), r = d < 11 && (!c || d - 2 < c.distance) ? { plane: P } : c;
+    // (cars from 5.6 m, 30% closer than the 8 they were: Ash, 17 November 2026, "Make get in the car only work from a closer radius. Not too
+    // close but about 30% less")
+    const reach = () => { const c0 = parked(F.pos.x, F.pos.z, 5.6), [G, dg] = nearOwn(), c = G && dg < (G.bus ? 15 : 5.6) && (!c0 || dg < c0.distance) ? { own: G, gold: G.gold, distance: dg } : c0, [P, d] = nearPlane(), r = d < 11 && (!c || d - 2 < c.distance) ? { plane: P } : c;
       const dp = possumMesh ? Math.hypot(pos.x - F.pos.x, pos.z - F.pos.z) : Infinity, r2 = dp < 6 && (!r || r.plane || dp < r.distance) ? { possum: pos, distance: dp } : r;  // the possum, within 6 m
       // another player's car, bus, plane, helicopter or possum, near enough, and not up in the air (Ash, 15 November 2026: "Make it so
       // I can get into a car or plane or possum that another player is driving")
@@ -12517,7 +12519,7 @@ const handle = async (m, post) => {
       const pick = best && (!r2 || best.distance < (r2.distance ?? 11) + 4) ? best : r2;
       const B = T.traffic?.bus, db = B && B.x != null && !B.away ? Math.hypot(B.x - F.pos.x, B.z - F.pos.z) : Infinity;  // the bus that drives itself, within 9 m
       return db < 9 && (!pick || db < (pick.distance ?? 11) + 3) ? { bus: B, distance: db } : pick; };  // (someone in it wins over an empty one beside it, such as your own copy of the golden car they drove off in)
-    const RIDE_REACH = { car: 8, gold: 8, bus: 15, plane: 11, goldplane: 11, heli: 11, goldheli: 11, possum: 6 }, RIDE_BACK = { car: 7, gold: 7, bus: 13, plane: 15, goldplane: 15, heli: 14, goldheli: 14, possum: 3.6 },
+    const RIDE_REACH = { car: 5.6, gold: 5.6, bus: 15, plane: 11, goldplane: 11, heli: 11, goldheli: 11, possum: 6 }, RIDE_BACK = { car: 7, gold: 7, bus: 13, plane: 15, goldplane: 15, heli: 14, goldheli: 14, possum: 3.6 },
       RIDE_UP = { car: 1.5, gold: 1.5, bus: 3.4, plane: 2.4, goldplane: 2.4, heli: 2.4, goldheli: 2.4, possum: 0.9 };
     let ride = null, shownRide = null;  // the player you're riding with: { id, name, k, at: [x, y, z, t] }; who the button last offered
     const CLING = { plane: 1.95, goldplane: 1.95, heli: 2.05, goldheli: 2.05, car: 1.45, gold: 1.45, bus: 3.3 };  // (cars too: Ash, 15 November 2026, "let the possum also get ontop of cars")  // what the possum can hold on to, and how high its top is
