@@ -8700,8 +8700,7 @@ const handle = async (m, post) => {
           F.vert = 0; F.keys.clear();  // (the sticks are left alone: a thumb still on one carries on, and lifting it centres it)
           // one set of controls for every town model (Inverloch, Moorooka, Logan)
           if (touch) tip.textContent = walk ? "Left stick to walk, right stick to look around." : "Explore mode: drag the view, pinch to zoom, two fingers to turn. Your player stays where you left them.";
-          else bsTip(walk ? "Drag to look around\nW A S D or the arrows to walk\nShift to run\nSpace higher · C lower\nF for Explore mode · J to jump to a place\nN street names on or off\nR to start again · Esc to exit\n? to hide this list"
-            : "Left button drag to move\nRight button drag to turn\nScroll to zoom\nW A S D or the arrows to fly\nShift to go faster\nSpace to go up · C to go down\nF back to your player · J to jump to a place\nN street names on or off\nR to start again · Esc to exit\n? to hide this list");
+          else bsTip("? hides the buttons");  // (no list of keys: the buttons have their keys on them)
           tip.classList.remove("dim"); clearTimeout(F.tipT); F.tipT = setTimeout(() => tip.classList.add("dim"), 7000);
           T.tween = to ? { a: { x: F.pos.x, y: F.pos.y, z: F.pos.z, yaw: F.yaw, pitch: F.pitch }, b: to, t0: performance.now(), ms: 900 } : null; };
         // Fly: up and back from where you're standing, so the same spot stays in view. Walk: down to the ground you're looking at.
@@ -12131,10 +12130,11 @@ const handle = async (m, post) => {
     KEYS.walk = [[["W", "A", "S", "D"], "Walk (the arrows too)"], [["Shift"], "Run"], [["Mouse"], "Look around (K locks the mouse for the menus, and unlocks it)"], [["O"], "Full screen"], [["E"], "Get in the car, plane or possum nearby"], [["F"], "Explore mode on or off (your player stays put)"], [["Enter"], "Chat"], [["Space"], "Jump"], [["?"], "Hide the buttons, for a clean view"]];
     KEYS.bus = KEYS.car; KEYS.gold = [...KEYS.car.slice(0, 4), [["X"], "180: hop and spin round, still going"], ...KEYS.car.slice(4)];
     KEYS.possum = [[["W", "A", "S", "D"], "Run that way, from where you're looking (the arrows too)"], [["W"], "Into a street light or a wall: climb it"], [["S"], "Walk backwards (on a wall: let go)"], [["Space"], "Jump (off a wall too)"], [["Shift"], "Boost"], [["Q"], "Grippy on or off: holds on to cars, planes and tree tops (on or against a car you hold on; only Grippy off lets go)"], [["Drag"], "Look around"], [["E"], "Human again"]];
-    const hint = text => { if (keysNow.textContent !== text) { keysNow.textContent = text; if (touch) keysBox.hidden = !text; } };
+    // (only the sky rings' count and way: no tips bottom left, Ash, 16 November 2026, "The bottom left tooltips other that ? Aren't needed")
+    const hint = text0 => { const text = /^Ring \d/.test(text0 || "") ? text0 : ""; if (keysNow.textContent !== text) { keysNow.textContent = text; if (touch) keysBox.hidden = !text; } };
     const keysOff = off => { keysBox.classList.toggle("off", off); keysQ.textContent = "? hides the buttons"; };
     const showKeys = kind => { keysNow.textContent = ""; keysOff(false); keysBox.hidden = !kind || touch || kind === "possum";  // (no list for the possum: Ash, 16 November 2026, "I don't think any are needed")  // (on a phone it shows once there is something to say)
-      keysList.replaceChildren(...(KEYS[kind] || []).filter(([ks]) => !(kind === "plane" && plane && !canBoost(plane) && ks[0] === "Shift")).flatMap(([ks, what]) => { const dt = document.createElement("dt"), dd = document.createElement("dd");
+      keysList.replaceChildren(...([]).filter(([ks]) => !(kind === "plane" && plane && !canBoost(plane) && ks[0] === "Shift")).flatMap(([ks, what]) => { const dt = document.createElement("dt"), dd = document.createElement("dd");
         for (const key of ks) { const kb = document.createElement("kbd"); kb.textContent = key; dt.append(kb); } dd.textContent = what; return [dt, dd]; }));
       // the stick and the Up and Down buttons say what they do in it
       if (joyName) joyName.textContent = kind === "plane" ? "Power and turn" : kind === "heli" ? "Go and turn" : kind === "car" ? "Drive" : kind === "possum" ? "Run and turn" : "Move";
