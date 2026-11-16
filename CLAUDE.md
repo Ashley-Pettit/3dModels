@@ -4,7 +4,8 @@ This repo (Ashley-Pettit/3dModels) is a copy of Awesome News made on 16 November
 models of Moorooka, Logan and Inverloch). Ash's plan: copy it here, test it here, point the news app's links here, redirect the old
 Explore links here, then take Explore out of Awesome News. Until that's done, Awesome News is still where people play, so a fix
 made here must also go to Awesome News (or wait until the move is finished). The site is https://ashley-pettit.github.io/3dModels/.
-It takes its news from the live Awesome News site (`.github/workflows/publish.yml`) and runs no news jobs of its own.
+It has no news (Ash, 16 November 2026: "The new sites don't need news"): town pages open straight into Explore, the home page is a
+picker of the three towns, and the publish workflow runs no news jobs.
 
 The rules below came with the copy. Where they name the awesome-news repo, read them for this one; the version links point at
 https://github.com/Ashley-Pettit/3dModels/commit/<id>.
