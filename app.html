@@ -8139,7 +8139,10 @@ const handle = async (m, post) => {
   }
   function bsFlyOff() {
     const F = BS.fly; if (!F) return;
-    if (NO_NEWS) setTimeout(townPicker, 0);  // (no news to go back to)
+    // (no news to go back to). Opened inside the Awesome News app on the home screen (it shows this site over the news, to keep it
+    // full screen: Ash, 16 November 2026), leaving goes back to the news there
+    if (NO_NEWS) { let framed = false; try { framed = window.parent !== window && window.parent.location.origin === location.origin; } catch {}
+      if (framed) window.parent.postMessage({ an: "explore-close" }, location.origin); else setTimeout(townPicker, 0); }
     try { sessionStorage.removeItem("an-ex-town"); } catch {}
     if (BS.town) townModelOff();
     if (BS.flyView) { BS.view = { ...BS.flyView, ms: BS.flyView.mode === "live" ? Date.now() : BS.flyView.ms }; BS.flyView = null; try { bsApply(true); } catch {} }
