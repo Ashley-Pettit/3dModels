@@ -1673,3 +1673,11 @@ Logan crashed on Ash's iPhone (the tab ran out of memory and reloaded). Its grou
 75 MB of graphics memory. On a touch screen (`window.anSmallGround`, set in `app.html`), `logan-model.js` (`?v=42`, patched where it
 names its files) and the preload use `ground-2k.webp` (2048 x 1728, about 19 MB) instead. Computers still get the full photo. If
 `ground.webp` is remade, remake `ground-2k.webp` from it (Lanczos, WebP quality 86).
+
+## The 3D models' own site: no news (16 November 2026)
+
+This repo (3dModels) is the copy of Awesome News that becomes Explore's home. Ash: "The new sites don't need news". `NO_NEWS` in
+`app.html` (true here): `loadStatic` never fetches the news; a town's page (`/<town>/explore/`) opens its town straight away, and the
+home page, or leaving a town, shows a picker of the three towns (`townPicker`). The weather still comes from Open-Meteo. The publish
+workflow builds the pages only (no news download, no schedule). Checked: phone size, home picker, Moorooka opened from it, the
+two-finger stick test after 11 minutes of play, leaving back to the picker, no news requests, no errors.
