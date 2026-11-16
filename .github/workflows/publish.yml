@@ -41,6 +41,11 @@ jobs:
           for n in $(python3 -c "import json; print(' '.join(json.load(open('_site/data/status.json')).get('sections', [])))"); do
             curl -fsSL "$NEWS/feeds/$n.json" -o "_site/data/feeds/$n.json" || echo "no $n"
           done
+          for n in community-moo community-logan community-inv; do curl -fsSL "$NEWS/feeds/$n.json" -o "_site/data/feeds/$n.json" || true; done
+          mkdir -p _site/data/text
+          for t in $(python3 -c "import json; print(' '.join(json.load(open('_site/data/status.json')).get('textChunks', [])))"); do
+            curl -fsSL "$NEWS/text/$t.json" -o "_site/data/text/$t.json" || true
+          done
           curl -fsSL "$NEWS/voice/index.json" -o _site/data/voice/index.json || true
           curl -fsSL "$NEWS/tv.json" -o _site/data/tv.json || true
 
