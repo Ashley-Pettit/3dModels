@@ -11169,7 +11169,7 @@ const handle = async (m, post) => {
         const o1 = a.createOscillator(), o2 = a.createOscillator(), mix = a.createGain(), lp = a.createBiquadFilter(), out = a.createGain(), chop = a.createGain();
         o1.type = "sawtooth"; o2.type = heli ? "triangle" : plane ? "sawtooth" : "square"; mix.gain.value = 0.5; lp.type = "lowpass"; lp.frequency.value = 300; out.gain.value = 0;
         o1.connect(mix); o2.connect(mix); mix.connect(lp); lp.connect(chop); chop.connect(out); out.connect(master);
-        let beat = null; if (plane) { beat = a.createOscillator(); beat.type = heli ? "sawtooth" : "sine"; const bg = a.createGain(); beat.frequency.value = heli ? 4.5 : 16; bg.gain.value = heli ? 0.45 : 0.3; chop.gain.value = heli ? 0.55 : 0.8; beat.connect(bg); bg.connect(chop.gain); beat.start(t); }  // the rotor's whop, the propeller's beat
+        let beat = null; if (plane) { beat = a.createOscillator(); beat.type = "sine"; const bg = a.createGain(); beat.frequency.value = heli ? 4.5 : 16; bg.gain.value = heli ? 0.28 : 0.3; chop.gain.value = heli ? 0.62 : 0.8;  /* (the helicopter's whop softer: Ash, 16 November 2026, "heli is a bit intense") */ beat.connect(bg); bg.connect(chop.gain); beat.start(t); }  // the rotor's whop, the propeller's beat
         const wn = noise(), wf = a.createBiquadFilter(), wg = a.createGain(); wf.type = "bandpass"; wf.frequency.value = heli ? 420 : 700; wf.Q.value = 0.6; wg.gain.value = 0; wn.connect(wf); wf.connect(wg); wg.connect(plane ? chop : master);  // wind and road (chopped by the rotor or propeller)
         const sn = noise(), sf = a.createBiquadFilter(), sg = a.createGain(); sf.type = "bandpass"; sf.frequency.value = 2300; sf.Q.value = 3; sg.gain.value = 0; sn.connect(sf); sf.connect(sg); sg.connect(master);  // tyres
         for (const n of [o1, o2, wn, sn]) n.start(t);
@@ -11177,9 +11177,9 @@ const handle = async (m, post) => {
       // every frame: how fast the engine turns (0 to 1), how hard it works (0 to 1), the speed (m/s), the boost, and tyres sliding (0 to 1)
       set(rev, load, speed, boost, skid) { if (!eng || !ac) return; const t = ac.currentTime, to = (p, v, k = 0.07) => p.setTargetAtTime(v, t, k);
         const f = (eng.heli ? 38 + 34 * rev : eng.plane ? 50 + 62 * rev : 36 + 150 * rev) * (boost ? 1.3 : 1), up = eng.plane ? 1.6 : 1;
-        to(eng.o1.frequency, f); to(eng.o2.frequency, f * (eng.heli ? 22 : eng.plane ? 1.5 : 0.5)); if (eng.beat) to(eng.beat.frequency, eng.heli ? 4.2 + 3 * rev : 11 + 24 * rev);
-        to(eng.lp.frequency, (eng.heli ? 700 : 240) + 1500 * load + (boost ? 1500 : 0)); to(eng.out.gain, (0.042 + 0.1 * load + (boost ? 0.06 : 0)) * up);  // (turned down by about two fifths: Ash, "the engine sounds are slightly too loud")
-        to(eng.wf.frequency, (eng.heli ? 350 : 450) + 1500 * Math.min(1, speed / 70)); to(eng.wg.gain, eng.heli ? 0.05 + 0.08 * rev : Math.min(0.19, (speed / 45) ** 2 * 0.065) * (eng.plane ? 1.4 : 1) + (boost ? 0.055 : 0));
+        to(eng.o1.frequency, f); to(eng.o2.frequency, f * (eng.heli ? 11 : eng.plane ? 1.5 : 0.5)); if (eng.beat) to(eng.beat.frequency, eng.heli ? 4.2 + 3 * rev : 11 + 24 * rev);
+        to(eng.lp.frequency, (eng.heli ? 420 : 240) + (eng.heli ? 800 : 1500) * load + (boost ? 1500 : 0)); to(eng.out.gain, (0.042 + 0.1 * load + (boost ? 0.06 : 0)) * (eng.heli ? 1 : up));  // (turned down by about two fifths: Ash, "the engine sounds are slightly too loud")
+        to(eng.wf.frequency, (eng.heli ? 350 : 450) + 1500 * Math.min(1, speed / 70)); to(eng.wg.gain, eng.heli ? 0.03 + 0.045 * rev : Math.min(0.19, (speed / 45) ** 2 * 0.065) * (eng.plane ? 1.4 : 1) + (boost ? 0.055 : 0));
         to(eng.sg.gain, skid * 0.1, 0.03); },
       level(v) { vol = v; if (master) master.gain.value = 0.9 * v; },
       thud(k = 1) { hit(0.28, 320, 0.5 * k, 74); },
@@ -12381,12 +12381,15 @@ const handle = async (m, post) => {
         if (grippy && (P.mode === "ground" || P.mode === "climb") && !P.cling && !P.grip && P.t > (P.gripWait || 0)) { const best = gripFind(P);
           if (best && !best.peer && best.along != null && Math.hypot(Math.max(0, Math.abs(best.along) - best.hl), Math.max(0, Math.abs(best.side) - best.hw)) < (P.mode === "climb" ? 0.6 : 0.35)) {
             P.grip = { ref: best.ref, top: best.top, hw: best.hw, along: bsClamp(best.along, 0.5 - best.hl, best.hl - 0.5), side: bsClamp(best.side, 0.35 - best.hw, best.hw - 0.35), dh: wrap(P.h - best.h), last: [best.x, best.z] }; P.ride = null; P.v = 0; P.wall = null;
-            snd.squeak(1.1); if (!P.gripTold) { P.gripTold = true; toast("Holding on to the car. If it drives off, you go too. Turn Grippy off to let go.", 3400); } } }
+            if (!P.gripTold) { P.gripTold = true; snd.squeak(0.9); toast("Holding on to the car. If it drives off, you go too. Turn Grippy off to let go.", 3400); } } }
         { let on = null; if (grippy && P.mode === "ground" && !P.cling && !P.grip) for (const t of carTops) { const dx = P.x - t.x, dz = P.z - t.z; if (t.ref && Math.abs(P.y - t.top) < 0.4 && Math.abs(dx * t.s + dz * t.c) < t.hl && Math.abs(dx * t.c - dz * t.s) < t.hw) { on = t.ref; break; } }
           if (!on) P.ride = null; else if (P.ride?.ref !== on) P.ride = { ref: on, last: [on.x, on.z, on.h] }; }
         // its sounds: a patter of feet as it runs, claws as it climbs, a squeak as it jumps
-        P.pat = (P.pat || 0) + (P.mode === "ground" ? Math.abs(P.v) * dt / 0.55 : P.mode === "climb" ? Math.abs(P.y - (P.lastY ?? P.y)) / 0.3 : 0); P.lastY = P.y;
-        if (P.pat >= 1) { P.pat %= 1; if (P.mode === "climb") snd.scratch(); else snd.step(0.6 + Math.random() * 0.5); }
+        // (softer and fewer, and none while it's carried: the car's speed was making its feet tap. Ash, 16 November 2026: "Relax the possum
+        // sounds, esp when gripping a vehicle, there is a random tapping")
+        const carried = !!(P.grip || P.cling || P.ride);
+        P.pat = carried ? 0 : (P.pat || 0) + (P.mode === "ground" ? Math.abs(P.v) * dt / 0.85 : P.mode === "climb" ? Math.abs(P.y - (P.lastY ?? P.y)) / 0.7 : 0); P.lastY = P.y;
+        if (P.pat >= 1) { P.pat %= 1; if (P.mode === "climb") snd.scratch(0.5); else snd.step(0.3 + Math.random() * 0.2); }
         if (jump && !P.jumped && P.mode === "air" && P.vy > R.possumJump - 1) snd.squeak();
         P.jumped = jump;  // (one jump a press)
         // touching a plane or helicopter someone's flying (running into it, or landing on it): it grabs on
