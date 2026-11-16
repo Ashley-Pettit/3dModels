@@ -1875,6 +1875,14 @@ body.bsfly .toast.show { transform: translate(-50%, 0); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+#townPick { position: fixed; inset: 0; z-index: 9000; background: radial-gradient(120% 90% at 50% 0%, #1d3b4f, #0b1620); color: #fff; display: grid; place-items: center; padding: 24px 16px; overflow: auto; font-family: system-ui, -apple-system, sans-serif; }
+#townPick .tp-in { width: min(440px, 100%); }
+#townPick h1 { font-size: 34px; margin: 0 0 6px; letter-spacing: -0.5px; }
+#townPick p { margin: 0 0 22px; color: #b9cad6; font-size: 16px; }
+#townPick a { display: flex; gap: 14px; align-items: center; padding: 12px; margin-bottom: 12px; border-radius: 18px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); color: inherit; text-decoration: none; }
+#townPick a:focus-visible { outline: 3px solid #8fd3ff; outline-offset: 2px; }
+#townPick img { width: 64px; height: 64px; border-radius: 14px; flex: none; }
+#townPick b { display: block; font-size: 20px; } #townPick small { display: block; color: #b9cad6; font-size: 14px; margin-top: 2px; }
 </style>
 
 <main id="home">
@@ -8079,6 +8087,7 @@ const handle = async (m, post) => {
   }
   function bsFlyOff() {
     const F = BS.fly; if (!F) return;
+    if (NO_NEWS) setTimeout(townPicker, 0);  // (no news to go back to)
     try { sessionStorage.removeItem("an-ex-town"); } catch {}
     if (BS.town) townModelOff();
     if (BS.flyView) { BS.view = { ...BS.flyView, ms: BS.flyView.mode === "live" ? Date.now() : BS.flyView.ms }; BS.flyView = null; try { bsApply(true); } catch {} }
@@ -12907,7 +12916,17 @@ const handle = async (m, post) => {
     }
     feeds[key] = { ...(feeds[key] || {}), items: out };
   }
+  // This site is the 3D towns only, no news (Ash, 16 November 2026: "The new sites don't need news"). A town's page opens its town
+  // straight away; anywhere else (and on leaving a town) shows the three towns to pick from.
+  const NO_NEWS = true;
+  function townPicker() {
+    if (BS.town || $("townPick")) return;
+    const d = document.createElement("div"); d.id = "townPick";
+    d.innerHTML = `<div class="tp-in"><h1>3D towns</h1><p>Walk, drive and meet the locals. Pick a town.</p>${[["moorooka", "moo", "Moorooka", "Brisbane's south side"], ["logan", "logan", "Logan", "Logan Central and the council precinct"], ["inverloch", "inv", "Inverloch", "On the Bass Coast, Victoria"]]
+      .map(([path, , name, sub]) => `<a href="${new URL(path + "/explore/", document.baseURI).href}"><img src="${path}/explore/explore-icon-192.png" alt=""><span><b>${name}</b><small>${sub}</small></span></a>`).join("")}</div>`;
+    document.body.append(d); }
   async function loadStatic(manual) {
+    if (NO_NEWS) { if (pendingExplore && !BS.town) { const which = pendingExplore; pendingExplore = ""; if (!state.wx) loadWeather(); townModelOpen(true, which); } else if (!BS.town) townPicker(); return; }
     try {
       const st = await (await fetch(`data/status.json?t=${Date.now()}`, { cache: "no-store" })).json();
       const changed = st.updatedAt !== state.status?.updatedAt;
