@@ -1681,3 +1681,10 @@ This repo (3dModels) is the copy of Awesome News that becomes Explore's home. As
 home page, or leaving a town, shows a picker of the three towns (`townPicker`). The weather still comes from Open-Meteo. The publish
 workflow builds the pages only (no news download, no schedule). Checked: phone size, home picker, Moorooka opened from it, the
 two-finger stick test after 11 minutes of play, leaving back to the picker, no news requests, no errors.
+
+## Moorooka on phones: a half-size ground photo (16 November 2026)
+
+Ash: "When I load moorooka it loads, I play for 2 secs, crashes, reloads, and is then fine". Moorooka's `ground.webp` is 4096 x 4096,
+about 89 MB of graphics memory, and the sharper ground tiles that arrive a couple of seconds in pushed the phone over. On a touch
+screen (`window.anSmallGround`) `moorooka-model.js` (`?v=35`, patched where it names `ground.webp`) and the preload use
+`moorooka/ground-2k.webp` (2048 x 2048, about 22 MB). Rebuilding the model from source loses the patch: put it back.
