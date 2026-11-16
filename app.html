@@ -1371,6 +1371,9 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
    November 2026: "Make the players a bit easier to locate") */
 .bs-peer-edge { position: absolute; left: 0; top: 0; z-index: 1; padding: 4px 10px; border-radius: 999px; background: #ffd166; color: #1b1830; font: 700 0.76rem/1.3 var(--ui); white-space: nowrap; pointer-events: none; will-change: transform; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35); }
 .bs-peer-edge[hidden] { display: none; }
+/* the quieter ones, past the nearest two when more than three are playing */
+.bs-peer-edge.far { padding: 2px 8px; background: rgba(20, 22, 34, 0.55); color: #fff; font-size: 0.66rem; box-shadow: none; opacity: 0.85; }
+.bs-peer.bs-player.far { box-shadow: none; opacity: 0.7; font-size: 0.7rem; }
 .bs-peer[hidden] { display: none; }
 /* what a player has just said: a white speech bubble over them, their name small on top, for about 30 s */
 .bs-peer.said { max-width: 220px; padding: 7px 11px 8px; border-radius: 14px; background: #fff; color: #1b1830; font: 600 0.82rem/1.3 var(--ui); white-space: normal; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25); }
@@ -11077,8 +11080,13 @@ const handle = async (m, post) => {
       if (mine3) { const dx = F.pos.x - cam.x, dy = ground(F.pos.x, F.pos.z) + 2.35 - cam.y, dz = F.pos.z - cam.z, depth = dx * fx + dy * fy + dz * fz;
         if (depth > 1) { sayIn(meEl, playerName(), myChat, now); meEl.hidden = false;
           meEl.style.transform = `translate(${Math.round(w / 2 + (dx * rx + dz * rz) / depth * f * (h / 2))}px, ${Math.round(h / 2 - (dx * ux + dy * uy + dz * uz) / depth * f * (h / 2))}px) translate(-50%, -100%)`; } }
+      // with more than three in the game, only the nearest two are marked out boldly; the rest are quieter (Ash, 16 November 2026: "When
+      // there is more than 3 players in the game, just show prominent icons for the closest two and subtle ones where further away")
+      let bold = null; { const L = []; for (const [id, q] of peers) { const s0 = q.shown || q.b; if (q.b && q.b.k !== "none" && s0) L.push([Math.hypot(s0.x - cam.x, s0.z - cam.z), id]); }
+        if (L.length >= 3) bold = new Set(L.sort((a, b) => a[0] - b[0]).slice(0, 2).map(e => e[1])); }
       for (const [id, q] of peers) { if (!q.b) continue;
         if (now - q.b.t > 12000) { drop(id); continue; }  // not heard from: gone
+        { const quiet = !!bold && !bold.has(id); if (q.el.classList.contains("far") !== quiet) { q.el.classList.toggle("far", quiet); q.el.edge?.classList.toggle("far", quiet); } }
         const kind = q.b.k, [base, lc] = String(kind).split("~"), fig = base === "walk" || base === "builder" || base === "chef", big = fig && lc && townLookOf(lc).giant ? 3 : 1;
         if (kind !== q.kind) { try { q.parts?.remove(); } catch {} q.parts = null; q.kind = kind; if (SHAPES[base]) q.parts = m.addParts(SHAPES[base](q.colour, lc).map(part => ({ ...part, matrix: NONE.slice() }))); q.a = q.b; }
         if (!q.parts) { q.el.hidden = true; continue; }
@@ -11409,7 +11417,24 @@ const handle = async (m, post) => {
     { id: "sue", name: "Sue", kind: "sue", top: "#7fb3d5", x: -233.0, z: -1022.0, yaw: 1.37, path: [[-233.0, -1022.0], [-131.6, -1001.0]] },
     { id: "gym", name: "Trainer", kind: "person", top: "#d71920", x: -57.5, z: -139.1, yaw: -1.471 },
     { id: "post", name: "Postie", kind: "person", top: "#d71920", x: -206.3, z: -323.3, yaw: 1.705 },
+    // locals who pass on what they've heard, a different thing each time (Ash, 16 November 2026: "add some vendors that give information
+    // like I heard of a love potion, I heard are helicopter around here (they don't know where) or similar, can you catch a possum for
+    // me; I last saw it on kingwell street. I heard the chips from big boss are the best ever, that mechanic in town did some amazing
+    // things for me"): on the footpath a few steps along from the post office, Big Boss, the doctor's and the hairdresser's
+    { id: "tip1", name: "Shirley", kind: "person", top: "#7b5ea7", look: "-.bun.grey", x: -207.5, z: -332.2, yaw: 1.705, tips: true },
+    { id: "tip2", name: "Mo", kind: "person", top: "#2e8b57", x: -104.3, z: -223.4, yaw: -0.976, tips: true },
+    { id: "tip3", name: "Dave", kind: "person", top: "#c46a2f", x: -207.7, z: -398.6, yaw: 1.838, tips: true },
+    { id: "tip4", name: "Amina", kind: "person", top: "#1f6f8b", look: "-.long.black", x: -158.3, z: -264.8, yaw: 2.133, tips: true },
   ];
+  // what they've heard: the words, and who (or what) it's about, for the pointer; the helicopter one doesn't know where
+  const MOO_TIPS = [["I heard the pharmacist sells love potions. Give one to someone and they can't help following you around!", "chem"],
+    ["I heard there's a helicopter around here somewhere. No idea where, mind you.", null],
+    ["Can you catch a possum for me? I last saw it on Kingwell Street.", "possum"],
+    ["I heard the chips from Big Boss Pizzas are the best ever. Best. Ever.", "pizza"],
+    ["That mechanic in town did some amazing things for my car. Go and see him.", "mech"],
+    ["Sue bakes bread on Bohain Street that puts a real spring in your step.", "sue"],
+    ["Pandy's lime cordial will have you sprinting, I swear.", "pandy"],
+    ["Councillor Steve does a 360 kick. Ask him nicely and he'll teach you.", "steve"]];
   function townLocals(T, m) {
     const P = { frame() {}, dispose() {} }; if (!m.addParts || !m.groundAt) return P;
     const THREE = BS.B.THREE, g = (x, z) => m.groundAt(x, z), M = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), ONE = new THREE.Vector3(1, 1, 1);
@@ -11448,6 +11473,7 @@ const handle = async (m, post) => {
     const compass = (dx, dz) => ["east", "south-east", "south", "south-west", "west", "north-west", "north", "north-east"][((Math.round(Math.atan2(dz, dx) / (Math.PI / 4)) % 8) + 8) % 8];
     const howFar = (q, x, z) => { const dx = x - q.x, dz = z - q.z, d = Math.hypot(dx, dz); return d < 150 ? "just around the corner" : `about ${d < 1000 ? Math.round(d / 50) * 50 + " m" : (d / 1000).toFixed(1) + " km"} ${compass(dx, dz)} of here`; };
     const newsRoll = () => { for (const q of folk) if (!q.news && Math.random() < 0.01) q.news = Math.random() < 0.02 ? { gold: ["heli", "plane", "car"][Math.floor(Math.random() * 3)] } : { ride: ["heli", "plane", "possum"][Math.floor(Math.random() * 3)] }; };
+    T.guideTo = (x, z, label, found) => { guide = { x, z, label, found }; };  // (the sky rings' prize uses it)
     T.gossip = (id, kind, gold) => { const q = folk.find(f => f.id === id); if (q) q.news = gold ? { gold: kind } : { ride: kind || "heli" }; return !!q; };  // (for checking it)
     const gossip = q => { const N = q.news; q.news = null;
       if (N.ride === "possum") { const S = TOWN_RIDES.moo.possum; if (!S) return false;
@@ -11466,6 +11492,13 @@ const handle = async (m, post) => {
       if (q.id === "steve") return k.kick ? show(q, "Good to see you again! How's the 360 kick coming along?", [["Show me again", () => { T.peers?.emote?.("kick") || T.me && (T.me.emote = { e: TOWN_EMOTES.find(e => e[0] === "kick"), t0: performance.now() }); }, "ok"], ["See you, Steve", () => {}]])
         : show(q, "G'day, welcome to Moorooka! Want to learn a move? I'll teach you my 360 kick.", [["Teach me", () => { townPerkSet("kick", true); T.me && (T.me.emote = { e: TOWN_EMOTES.find(e => e[0] === "kick"), t0: performance.now() }); toast("🥋 You learnt the 360 kick! It's in Emotes (T), in place of Spin.", 4500); }, "ok"], ["Maybe later", () => {}]]);
       if (q.id === "mech") return show(q, "Pick one upgrade for your car. One at a time: swap whenever you like.", [["Not today", () => {}]], pick(q, CAR_UPS, "car", "car"));
+      // (before you've been the possum, the vet tells you about it: Ash, 16 November 2026, "The vet if the person hasn't already gotten in the
+      // possum should talk of a possum on kingwell street")
+      if (q.id === "vet" && !k.wasPossum && TOWN_RIDES.moo.possum) { const S = TOWN_RIDES.moo.possum; return show(q, "Have you met the possum on Kingwell Street? Be the possum and bring yourself in: I do upgrades for possums.",
+        [["Show me the way", () => { guide = { x: S.x, z: S.z, label: "The possum", found: "There's the possum! Walk up to it and be the possum." }; toast("Follow the arrow to the possum.", 2400); }, "ok"], ["Thanks", () => {}]]); }
+      if (q.tips) { let i; do i = Math.floor(Math.random() * MOO_TIPS.length); while (MOO_TIPS.length > 1 && i === q.lastTip); q.lastTip = i; const [say, about] = MOO_TIPS[i];
+        const L = about === "possum" ? { ...TOWN_RIDES.moo.possum, name: "The possum" } : about ? folk.find(f => f.id === about) : null;
+        return show(q, say, L ? [["Show me the way", () => { guide = { x: L.x, z: L.z, label: L.name, found: about === "possum" ? "There's the possum! Walk up to it and be the possum." : `Here's ${L.name}.` }; toast(`Follow the arrow to ${about === "possum" ? "the possum" : L.name}.`, 2400); }, "ok"], ["Thanks", () => {}]] : [["Thanks", () => {}]]); }
       if (q.id === "vet") return show(q, "Come in, little possum! Pick one upgrade. One at a time.", [["Not today", () => {}]], pick(q, POSSUM_UPS, "possum", "possum"));
       if (q.id === "chem") { const n = k.potions | 0; return show(q, `Love potion? Give it to another player near you (Emotes, T) and they'll follow you around for 30 seconds.${n ? ` You've got ${n}.` : ""}`,
         [[n >= 3 ? "You've got plenty" : "Buy a love potion", () => { if (n >= 3) return; townPerkSet("potions", n + 1); toast(`💘 A love potion! You've got ${n + 1}. Use it from Emotes (T) near another player.`, 4000); }, "ok"], ["No thanks", () => {}]]); }
@@ -11573,7 +11606,7 @@ const handle = async (m, post) => {
         const r = me.k === "walk" ? (q.r || 3.4) : me.k === "possum" ? q.possum : /^(car|gold|bus)$/.test(me.k) ? q.car : 0;
         if (r && d < r) { if (!q.near && !q.done && !open) { q.near = true; talk(q); } }
         else if (d > (r || 4) + 5) { q.near = false; q.done = false; if (open === q) shut(); } } };
-    P.dispose = () => { card.remove(); sprint.remove(); jumpB.remove(); ptr.remove(); for (const q of folk) { q.tag.remove(); q.dot.remove(); try { q.parts?.remove(); } catch {} } const F = BS.fly; if (F) { F.drunk = null; F.sprint = false; F.giant = null; } };
+    P.dispose = () => { T.guideTo = null; card.remove(); sprint.remove(); jumpB.remove(); ptr.remove(); for (const q of folk) { q.tag.remove(); q.dot.remove(); try { q.parts?.remove(); } catch {} } const F = BS.fly; if (F) { F.drunk = null; F.sprint = false; F.giant = null; } };
     return P;
   }
   // ---- letters at the post office (Ash, 16 November 2026: "I want to be able to send mail at the post office. I type the player name, they
@@ -11993,6 +12026,36 @@ const handle = async (m, post) => {
         for (const k of [0, 1, 2, 0, 2, 3]) { P2.push(...q[k][0]); N2.push(...q[k][1]); C2.push(...gold); } }
       return { positions: new Float32Array(P2), normals: new Float32Array(N2), colors: new Float32Array(C2), color: [1, 1, 1], roughness: 0.25, metalness: 0.6, doubleSide: true }; };
     const endMission = () => { try { ringParts?.remove(); } catch {} ringParts = null; mission = null; };
+    // ---- the sky rings (Ash, 16 November 2026: "When in the plane I want a really hard quest achieveable but difficult to fly through rings
+    // around moorooka. Winning should navigate to the helicopter 80% of the time or 20% of the time the golden plane"): the first time a
+    // plane gets 30 m up over Moorooka, ten big gold rings stand in a loop round the suburb at different heights, the first the nearest,
+    // on round the way you're flying. Through them all, in order, in two and a half minutes, and the pointer leads you to the mega
+    // mysterious golden helicopter (or, one time in five, the golden plane). Out of time: land, and the next take-off has another go
+    let sky = null, skyParts = null, skyTried = false, skyDone = false;
+    const SKY_N = 10, SKY_T = 150, SKY_R = 13;
+    const skyEnd = () => { try { skyParts?.remove(); } catch {} skyParts = null; sky = null; };
+    const skyDraw = () => { if (!sky || !skyParts) return; sky.rings.forEach((r, i) => { const k = i < sky.at ? 0 : i === sky.at ? 9 : 5.5;
+      M.compose(V.set(r.x, r.y, r.z), Q.setFromEuler(E.set(0, r.h, 0, "YXZ")), new THREE.Vector3(k, k, k)); skyParts.setMatrix(i, M.elements.slice()); }); };
+    const skyStart = P => { const C0 = { x: -160, z: -520 }, ph = Math.random() * Math.PI * 2; let rings = [];
+      for (let i = 0; i < SKY_N; i++) { const a = ph + i / SKY_N * Math.PI * 2, rr = 620 + (Math.random() - 0.5) * 320, x = C0.x + Math.cos(a) * rr * 1.15, z = C0.z + Math.sin(a) * rr; rings.push({ x, z, y: ground(x, z) + 45 + Math.random() * 95 }); }
+      // round the way you're going: the nearest first, then on in the direction you're flying round the middle
+      const cw = (P.x - C0.x) * Math.cos(P.h) - (P.z - C0.z) * Math.sin(P.h) < 0; if (cw) rings.reverse();
+      let k0 = 0, d0 = 1e9; rings.forEach((r, i) => { const d = Math.hypot(r.x - P.x, r.z - P.z); if (d < d0) { d0 = d; k0 = i; } }); rings = [...rings.slice(k0), ...rings.slice(0, k0)];
+      rings.forEach((r, i) => { const nx = rings[Math.min(i + 1, SKY_N - 1)], pv = rings[Math.max(i - 1, 0)]; r.h = Math.atan2(nx.x - pv.x, nx.z - pv.z); });
+      skyParts = m.addParts(rings.map(() => ({ ...ringMesh(), matrix: NONE }))); sky = { rings, at: 0, t: SKY_T }; skyDraw(); snd.whoosh();
+      toast("Sky rings! Fly through all ten gold rings round Moorooka, in order, in two and a half minutes. Get them all for a secret.", 6500); };
+    const skyTick = (P, dt) => { if (T.cfg?.place !== "moo" || P.heli) return "";
+      if (!sky) { if (!P.air) skyTried = false; else if (!skyTried && !skyDone && P.y - ground(P.x, P.z) > 30) { skyTried = true; skyStart(P); } return ""; }
+      sky.t -= dt; const r = sky.rings[sky.at];
+      if (Math.hypot(P.x - r.x, P.y - r.y, P.z - r.z) < SKY_R) { sky.at++; snd.squeak?.(1.1 + sky.at * 0.06); snd.whoosh();
+        if (sky.at >= SKY_N) { skyEnd(); skyDone = true; const heli = Math.random() < 0.8 || P.gold && !P.heli, G = T.car?.goldSpot?.(heli ? "heli" : "plane") || C.goldSpot(heli ? "heli" : "plane"), nm = heli ? "helicopter" : "plane";
+          if (G) T.guideTo?.(G.x, G.z, `Golden ${nm}`, `\u2728 The mega mysterious Moorooka golden ${nm}! Land nearby and get in.`);
+          toast(`\ud83c\udfc6 All ten sky rings! Your prize: the way to the mega mysterious Moorooka golden ${nm}. Follow the arrow.`, 7000); return ""; }
+        toast(`${sky.at} of ${SKY_N}!`, 1100); skyDraw(); }
+      if (sky.t <= 0) { const got = sky.at; skyEnd(); toast(`Out of time with ${got} of ${SKY_N} rings. Land and take off again for another go.`, 5000); return ""; }
+      const n = sky.rings[sky.at], dx = n.x - P.x, dz = n.z - P.z, d = Math.hypot(dx, dz), rel = wrap(Math.atan2(dx, dz) - P.h), dy = n.y - P.y;
+      const arrow = ["\u2191", "\u2197", "\u2192", "\u2198", "\u2193", "\u2199", "\u2190", "\u2196"][((Math.round(-rel / (Math.PI / 4)) % 8) + 8) % 8], mm = Math.max(0, Math.ceil(sky.t));
+      return `Ring ${sky.at + 1} of ${SKY_N} ${arrow} ${d < 1000 ? Math.round(d) + " m" : (d / 1000).toFixed(1) + " km"}${dy > 12 ? ", climb" : dy < -12 ? ", dive" : ""} \u00b7 ${Math.floor(mm / 60)}:${String(mm % 60).padStart(2, "0")} left`; };
     const startMission = () => { if (!roofs || roofsIn) { loadRoofs(); toast("Getting the roofs ready\u2026 hop out and back in the pool in a moment.", 2600); missionWait = performance.now() + 1500; return; }
       // the houses within 90 m of the pool, each once (a roof is listed in every 16 m square it covers)
       const seen = new Set(), C3 = [];
@@ -12120,7 +12183,7 @@ const handle = async (m, post) => {
       if (on && car) M.compose(V.set(car.x, car.y, car.z), Q.setFromEuler(E.set(-car.p, car.h, car.r, "YXZ")), BEAT.set(beat * (car.bus ? 2.1 : 1), 1, beat * (car.bus ? 2.1 : 1)));
       for (let i = 0; i <= RING; i++) { const show = !!on && !!car && (i === 0 || i <= full); if (show || lit[i]) { ring.setMatrix(i, show ? M.elements.slice() : NONE); lit[i] = show; } }
       const pc = Math.round(charge * 100) + "%"; if (boostBtn.style.getPropertyValue("--charge") !== pc) boostBtn.style.setProperty("--charge", pc); };
-    const leave = step => { if (!veh) return; const was = veh; rockets(false); for (let i = 0; i < FXN; i++) if (sparks[i]) { sparks[i] = null; fx.setMatrix(i, NONE); } if (was !== "possum" && was !== "ride") snd.door(); snd.stop();
+    const leave = step => { if (!veh) return; const was = veh; rockets(false); if (sky) { skyEnd(); skyTried = false; } for (let i = 0; i < FXN; i++) if (sparks[i]) { sparks[i] = null; fx.setMatrix(i, NONE); } if (was !== "possum" && was !== "ride") snd.door(); snd.stop();
       if (was === "ride") { const q = ride.q; if (ride.local) { ride.local.rider = false; snd.door(); } else T.peers?.ride?.(ride.id, false);
         if (step && q && ride.local) { F.pos.x = q.x - Math.cos(q.h) * 2.6; F.pos.z = q.z + Math.sin(q.h) * 2.6; F.yaw = q.h - Math.PI / 2; F.pitch = -0.04; }  // off the bus's kerb-side door
         else if (step && q) { const back = RIDE_UP[q.k] > 1 ? 2.4 : 1.2; F.pos.x = q.x - Math.cos(q.h) * back; F.pos.z = q.z + Math.sin(q.h) * back; F.yaw = q.h + Math.PI; F.pitch = -0.04; }
@@ -12379,10 +12442,11 @@ const handle = async (m, post) => {
         if (thud > 1.5) snd.thud(Math.min(1.6, 0.4 + thud / 14));
         P.spin += ((thr > 0.05 ? 1 : 0.45) - P.spin) * Math.min(1, dt * 1.5); P.ang = (P.ang || 0) + P.spin * 40 * dt; showPlane(P);
         const alt = Math.max(0, P.y - ground(P.x, P.z));
-        // what to do next
+        // what to do next (and the sky rings, up over Moorooka)
+        const skyTxt = skyTick(P, dt);
         hint(!P.air && P.v < -0.3 ? "Backing up" : !P.air ? (P.v >= LIFT ? (touch ? "Fast enough. Hold Climb to take off" : "Fast enough. Press \u2193 to take off") : P.v < 1 && thr <= 0.05 ? (touch ? "Push the left stick forward for power" : "Hold W for power") : `Faster: it flies at ${Math.round(LIFT * 3.6)} km/h`)
           : P.v < LIFT * 0.92 ? (touch ? "Too slow to stay up. Push the stick forward" : "Too slow to stay up. W for more power")
-          : touch ? "Flying. Pull the stick back to slow down and land" : "Flying. \u2193 climbs, \u2191 dives, S slows it down to land");
+          : skyTxt || (touch ? "Flying. Pull the stick back to slow down and land" : "Flying. \u2193 climbs, \u2191 dives, S slows it down to land"));
         snd.set(0.25 + 0.75 * bsClamp(P.spin * (0.6 + 0.4 * P.v / CRUISE), 0, 1), thr > 0.05 ? 0.5 + 0.5 * thr : 0.2, P.v, jet && thr > 0.05, !P.air && thr < -0.05 && P.v > 4 ? 0.7 : 0);
         o = P; D = 13 + Math.min(16, P.v / 7); text = Math.round(P.v * 3.6) + " km/h" + (P.air ? " · " + Math.round(alt) + " m" : ""); }
       }
@@ -12433,7 +12497,7 @@ const handle = async (m, post) => {
         document.body.classList.add("bsdrive", "bsride"); snd.door(); toast("All aboard! The bus drives itself and stops every few hundred metres. Get off at a stop.", 4500); }
       else if (c.ride) { const q = c.ride; ride = { id: q.id, name: q.name, k: q.k, at: [q.x, q.y, q.z, performance.now()], v: 0 }; veh = "ride"; camYaw = q.h + Math.PI;
         document.body.classList.add("bsdrive", "bsride"); T.peers?.ride?.(q.id, true); toast(`You're riding with ${q.name}. Look around with the right stick.`, 3000); }
-      else if (c.possum) { veh = "possum"; pos.v = 0; pos.jumped = true; camYaw = pos.h + Math.PI; document.body.classList.add("bsdrive", "bspossum");
+      else if (c.possum) { if (!townPerks().wasPossum) townPerkSet("wasPossum", true); veh = "possum"; pos.v = 0; pos.jumped = true; camYaw = pos.h + Math.PI; document.body.classList.add("bsdrive", "bspossum");
         loadTrees(); const wait = loadRoofs(); if (wait) { toast("Loading the roofs the possum can climb\u2026", 8000); wait.then(() => { if (veh === "possum") toast("Ready. Run at a wall or a street light to climb it.", 2500); }); } }  // (no Up and Down: Jump sits where Boost does, over the right stick)
       else if (c.plane) { plane = c.plane; veh = "plane"; if (T.cfg?.place === "moo") loadRoofs(); /* (Moorooka's roofs, so planes and helicopters meet them) */ plane.v = 0; plane.spin = 0; plane.turn = 0; camYaw = plane.h + Math.PI; document.body.classList.add("bsdrive", "bsplane"); boostBtn.style.setProperty("--charge", "100%"); }
       else { if (c.own && !owns.includes(c.own)) { const G = T.traffic?.take?.(c.own); if (!G) return true; owns.push(G); c.own = G; }
