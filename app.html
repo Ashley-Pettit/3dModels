@@ -12123,7 +12123,7 @@ const handle = async (m, post) => {
     // (Ash, 15 November 2026: "On computer hide emote and get in the car, instead show as controls")
     KEYS.walk = [[["W", "A", "S", "D"], "Walk (the arrows too)"], [["Shift"], "Run"], [["Mouse"], "Look around (K locks the mouse for the menus, and unlocks it)"], [["O"], "Full screen"], [["E"], "Get in the car, plane or possum nearby"], [["Enter"], "Chat"], [["Space"], "Jump"], [["?"], "Hide the buttons, for a clean view"]];
     KEYS.bus = KEYS.car; KEYS.gold = [...KEYS.car.slice(0, 4), [["X"], "180: hop and spin round, still going"], ...KEYS.car.slice(4)];
-    KEYS.possum = [[["W", "A", "S", "D"], "Run that way, from where you're looking (the arrows too)"], [["W"], "Into a street light or a wall: climb it"], [["S"], "Walk backwards (on a wall: let go)"], [["Space"], "Jump (off a wall too)"], [["Shift"], "Boost"], [["Q"], "Grippy on or off: holds on to cars, planes and tree tops (stand still on a car to hold on; run or jump off while it's stopped)"], [["Drag"], "Look around"], [["E"], "Human again"]];
+    KEYS.possum = [[["W", "A", "S", "D"], "Run that way, from where you're looking (the arrows too)"], [["W"], "Into a street light or a wall: climb it"], [["S"], "Walk backwards (on a wall: let go)"], [["Space"], "Jump (off a wall too)"], [["Shift"], "Boost"], [["Q"], "Grippy on or off: holds on to cars, planes and tree tops (on or against a car you hold on; only Grippy off lets go)"], [["Drag"], "Look around"], [["E"], "Human again"]];
     const hint = text => { if (keysNow.textContent !== text) { keysNow.textContent = text; if (touch) keysBox.hidden = !text; } };
     const keysOff = off => { keysBox.classList.toggle("off", off); keysQ.textContent = "? hides the buttons"; };
     const showKeys = kind => { keysNow.textContent = ""; keysOff(false); keysBox.hidden = !kind || touch;  // (on a phone it shows once there is something to say)
@@ -12306,9 +12306,8 @@ const handle = async (m, post) => {
               T.peers?.ride?.(q.id, 2, [P.cling.along, P.cling.side, P.cling.dh].map(v => Math.round(v * 100) / 100)); toast(`Holding on to ${q.name}! Turn Grippy off to let go.`, 2600); }
             else { P.grip = { ref: best.ref, top: best.top, hw: best.hw, along: bsClamp(best.along, 0.5 - best.hl, best.hl - 0.5), side: bsClamp(best.side, 0.35 - best.hw, best.hw - 0.35), dh: wrap(P.h - best.h), last: [best.x, best.z] }; P.ride = null; P.v = 0; snd.squeak(1.1);
               toast(best.ref.parked || best.ref === gold || owns.includes(best.ref) ? "Gripping the car. When someone drives it away, you go too. Turn Grippy off to let go." : "Gripping the car! Turn Grippy off to let go.", 3200); } } }
-        // (a car standing still: run or jump and you're off it, Grippy or not. Moving, you hold on until Grippy goes off)
-        if ((P.grip || P.cling) && P.v < 1.5 && (Math.hypot(str, thr) > 0.3 || (jump && !P.jumped)) && P.t > (P.gripWait || 0)) {
-          if (P.cling) T.peers?.ride?.(P.cling.id, false); P.grip = P.cling = null; P.mode = "ground"; P.y = surf(P.x, P.z); P.gripWait = P.t + 0.5; }
+        // (held on, only Grippy off lets go, moving or not: Ash, 16 November 2026, "if get into the car the only way to get off should be to
+        // turn grippy off")
         if (P.grip && !P.cling) { const g = P.grip, r = g.ref;  // carried along: its place on the roof turns and moves with the car
           if (!r || r.x == null || r.h == null || Math.hypot(r.x - g.last[0], r.z - g.last[1]) > 30) { P.grip = null; P.mode = "air"; P.vy = 0; toast("The car's gone. You've let go.", 2200); }  // (a car of the traffic that has been put back somewhere else)
           else { const sn = Math.sin(r.h), cs = Math.cos(r.h), x = r.x + sn * g.along + cs * g.side, z = r.z + cs * g.along - sn * g.side;
@@ -12371,10 +12370,11 @@ const handle = async (m, post) => {
         // Grippy on: standing still on a car's roof, or right up against it, the possum takes hold, so the car driving off carries it
         // (Ash, 16 November 2026: "Grippy on didn't grip to the car properly, it drove off without him"). Before, it only took hold
         // when Grippy was switched on beside the car
-        if (grippy && P.mode === "ground" && !P.cling && !P.grip && Math.hypot(str, thr) < 0.15 && P.t > (P.gripWait || 0)) { const best = gripFind(P);
-          if (best && !best.peer && best.along != null && Math.hypot(Math.max(0, Math.abs(best.along) - best.hl), Math.max(0, Math.abs(best.side) - best.hw)) < 0.35) {
-            P.grip = { ref: best.ref, top: best.top, hw: best.hw, along: bsClamp(best.along, 0.5 - best.hl, best.hl - 0.5), side: bsClamp(best.side, 0.35 - best.hw, best.hw - 0.35), dh: wrap(P.h - best.h), last: [best.x, best.z] }; P.ride = null; P.v = 0;
-            if (!P.gripTold) { P.gripTold = true; snd.squeak(1.1); toast("Holding on to the car. If it drives off, you go too. Run or jump off while it's stopped, or turn Grippy off.", 3400); } } }
+        // (and climbing a car counts as holding on to it: Ash, 16 November 2026, "If I'm climbing the car considered me gripped to it")
+        if (grippy && (P.mode === "ground" || P.mode === "climb") && !P.cling && !P.grip && P.t > (P.gripWait || 0)) { const best = gripFind(P);
+          if (best && !best.peer && best.along != null && Math.hypot(Math.max(0, Math.abs(best.along) - best.hl), Math.max(0, Math.abs(best.side) - best.hw)) < (P.mode === "climb" ? 0.6 : 0.35)) {
+            P.grip = { ref: best.ref, top: best.top, hw: best.hw, along: bsClamp(best.along, 0.5 - best.hl, best.hl - 0.5), side: bsClamp(best.side, 0.35 - best.hw, best.hw - 0.35), dh: wrap(P.h - best.h), last: [best.x, best.z] }; P.ride = null; P.v = 0; P.wall = null;
+            snd.squeak(1.1); if (!P.gripTold) { P.gripTold = true; toast("Holding on to the car. If it drives off, you go too. Turn Grippy off to let go.", 3400); } } }
         { let on = null; if (grippy && P.mode === "ground" && !P.cling && !P.grip) for (const t of carTops) { const dx = P.x - t.x, dz = P.z - t.z; if (t.ref && Math.abs(P.y - t.top) < 0.4 && Math.abs(dx * t.s + dz * t.c) < t.hl && Math.abs(dx * t.c - dz * t.s) < t.hw) { on = t.ref; break; } }
           if (!on) P.ride = null; else if (P.ride?.ref !== on) P.ride = { ref: on, last: [on.x, on.z, on.h] }; }
         // its sounds: a patter of feet as it runs, claws as it climbs, a squeak as it jumps
