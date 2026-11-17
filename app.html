@@ -1410,6 +1410,15 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 .bs-askwrap .bs-askname.bs-askctl button { display: grid; gap: 3px; flex: 1 0 100%; height: auto; min-height: 0; white-space: normal; text-align: left; padding: 12px 16px; }
 .bs-askwrap .bs-askname.bs-askctl button b { font-size: 1rem; } .bs-askwrap .bs-askname.bs-askctl button span { font-weight: 500; font-size: 0.82rem; opacity: 0.85; }
 body.bssimple #bsLockBtn { display: none; }
+/* a local's choices: their number key, on a computer */
+.bs-offer button kbd { display: inline-block; min-width: 1.15em; margin-right: 6px; padding: 0 4px; border-radius: 5px; background: rgba(0, 0, 0, 0.18); font: 800 0.75rem/1.35 var(--ui); text-align: center; vertical-align: 1px; }
+.bs-opts button kbd { float: left; margin-top: 2px; }
+/* the tutorial's card, at the top in the middle; it doesn't block the view */
+.bs-tut { pointer-events: auto; position: absolute; z-index: 6; left: 50%; top: calc(64px + env(safe-area-inset-top)); transform: translateX(-50%); width: min(400px, calc(100% - 32px)); box-sizing: border-box;
+  display: grid; gap: 6px; padding: 14px 16px; border-radius: 16px; background: rgba(22, 24, 38, 0.92); color: #fff; font: 500 0.9rem/1.35 var(--ui); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35); transition: background 0.2s; }
+.bs-tut b { font: 800 0.95rem var(--ui); color: #ffd166; } .bs-tut.ok { background: rgba(26, 110, 64, 0.94); } .bs-tut.ok b { color: #fff; }
+.bs-tut div { display: flex; gap: 8px; margin-top: 4px; } .bs-tut button { flex: 1; min-height: 38px; border: 0; border-radius: 10px; font: 700 0.88rem var(--ui); background: #ffd166; color: #1b1830; cursor: pointer; }
+.bs-tut button + button { background: rgba(255, 255, 255, 0.16); color: #fff; }
 .bs-askwrap .bs-askname.bs-askfull button.skip { background: rgba(255, 255, 255, 0.14); color: #fff; }
 .bs-locktip kbd { display: inline-block; margin: 0 2px 0 6px; padding: 0 5px; border-radius: 4px; background: #fff; color: #1b1830; font: 700 0.7rem/1.5 var(--ui); }
 @keyframes bsLockTip { 0%, 75% { opacity: 1; } 100% { opacity: 0.35; } }
@@ -8153,7 +8162,7 @@ const handle = async (m, post) => {
         if (e.code === "KeyR") { if (F.hot?.r) F.hot.r(); else { F.pos.copy(F.start.pos); F.yaw = F.start.yaw; F.pitch = F.start.pitch; } }
       },
       keyup: e => F.keys.delete(e.code),
-      blur: () => { F.keys.clear(); F.rmb = false; },
+      blur: () => { F.keys.clear(); F.held?.clear(); F.rmb = false; },
       mousemove: e => { if (document.pointerLockElement === canvas) look(e.movementX, e.movementY, 0.0024); },
       pointerdown: e => {
         // desktop: drag to look (no mouse capture, so the buttons can always be clicked)
@@ -8175,6 +8184,37 @@ const handle = async (m, post) => {
         if (D && F.simple && e.pointerType === "mouse" && D.b === 0 && Math.hypot(e.clientX - D.sx, e.clientY - D.sy) < 6 && performance.now() - D.t < 450) F.on.clickGo?.(e.clientX, e.clientY); const t = F.touches.get(e.pointerId); if (t?.move && !F.joys?.some(j => j.move && j.held())) { F.stick.x = 0; F.stick.y = 0; } F.touches.delete(e.pointerId); },
     };
     F.on.pointercancel = e => F.on.pointerup(e);
+    // a short tutorial (Ash, 17 November 2026: "At the start offer players a short tutorial to learn the controls"): a card at the top, one
+    // thing at a time, each step ticked off by doing it (or Next); Skip ends it. Finished once, it isn't offered again
+    F.on.tutorial = () => { F.on.tutEnd?.(); const T = BS.town; if (!T?.on) return;
+      const STEPS = desk ? [
+        ["Look around", "Click the view, then move the mouse.", () => F.tutTurn > 1.2],
+        ["Walk", "Hold W, or hold the right mouse button. A S D step left, back and right.", () => F.tutWalk > 8],
+        ["Scroll to move", "Scroll the wheel up to go forwards, down to go back. It works in cars and helicopters too.", () => F.wheelN - F.tutWheel0 >= 3],
+        ["Jump", "Press Space.", () => (F.jumpH || 0) > 0.05],
+        ["Explore mode", "Press F to see the whole town from above. Press F again to come back to where you were.", () => F.tutExplored && T.walk],
+        ["Get in something", "Walk up to a car, plane or the possum and press E (E again to get out).", () => !!F.drive],
+        ["That's it", "J jumps to a place, Enter chats, K frees the mouse for the menus, O is full screen. Have fun!", null]]
+      : [["Look around", "Drag the right stick, or the right half of the screen.", () => F.tutTurn > 1.2],
+        ["Walk", "Push the left stick the way you want to go.", () => F.tutWalk > 8],
+        ["Explore mode", "Tap Explore mode at the top to see the whole town. Tap it again to come back.", () => F.tutExplored && T.walk],
+        ["Get in something", "Walk up to a car, plane or the possum and tap the Get in button.", () => !!F.drive],
+        ["That's it", "Jump to (top) takes you to a place. Have fun!", null]];
+      const card = document.createElement("div"), h = document.createElement("b"), p = document.createElement("span"), row = document.createElement("div"), next = document.createElement("button"), skip = document.createElement("button");
+      card.className = "bs-tut"; card.setAttribute("role", "status"); next.type = skip.type = "button"; skip.textContent = "Skip"; row.append(next, skip); card.append(h, p, row);
+      $("bsFullBtn").closest(".bs-deskbtns").parentElement.appendChild(card);
+      let i = -1, lastYaw = F.yaw, lastX = F.pos.x, lastZ = F.pos.z, done = 0;
+      const show = k => { i = k; if (i >= STEPS.length) return F.on.tutEnd(true); const [t, d] = STEPS[i]; h.textContent = `${i + 1} of ${STEPS.length} \u00b7 ${t}`; p.textContent = d;
+        next.textContent = i === STEPS.length - 1 ? "Done" : "Next"; card.classList.remove("ok"); F.tutTurn = 0; F.tutWalk = 0; F.tutWheel0 = F.wheelN; F.tutExplored = false; done = 0; };
+      next.onclick = () => { show(i + 1); next.blur(); }; skip.onclick = () => F.on.tutEnd(true);
+      const tick = setInterval(() => { if (!BS.town?.on) return F.on.tutEnd();
+        F.tutTurn += Math.abs(Math.atan2(Math.sin(F.yaw - lastYaw), Math.cos(F.yaw - lastYaw))); lastYaw = F.yaw;
+        if (BS.town.walk && !F.drive) F.tutWalk += Math.min(5, Math.hypot(F.pos.x - lastX, F.pos.z - lastZ)); lastX = F.pos.x; lastZ = F.pos.z;
+        if (!BS.town.walk) F.tutExplored = true;
+        const ok = STEPS[i]?.[2]; if (ok && !done && ok()) { done = performance.now(); card.classList.add("ok"); p.textContent = "Nice one!"; }
+        if (done && performance.now() - done > 900) show(i + 1); }, 150);
+      F.on.tutEnd = fin => { clearInterval(tick); card.remove(); F.on.tutEnd = null; if (fin) try { localStorage.setItem("an-tut", "done"); } catch {} };
+      show(0); };
     // where on the ground a click lands: along the ray from the eye through the mouse, to the ground or the first wall
     F.on.clickGo = (sx, sy) => { const T = BS.town, m = T?.model; if (!T?.on || !T.walk || !m || F.drive) return;
       const cam = m.getCamera?.() || { x: F.pos.x, y: F.pos.y, z: F.pos.z, yaw: F.yaw, pitch: F.pitch }, r0 = canvas.getBoundingClientRect(), w = r0.width, h = r0.height, f = 1 / Math.tan(((m.fov ? m.fov() : 50) * Math.PI) / 360);
@@ -8187,8 +8227,13 @@ const handle = async (m, post) => {
       if (!hit || Math.hypot(hit.x - F.pos.x, hit.z - F.pos.z) < 0.6) return;
       F.goTo = { x: hit.x, z: hit.z, last: [F.pos.x, F.pos.z], stuck: 0 }; F.on.goMark?.(hit.x, hit.z); };
     // the scroll wheel: a few steps forwards or back
-    F.on.wheel = e => { if (!(F.simple || F.mix) || !BS.town?.walk || F.drive || e.ctrlKey) return; e.preventDefault(); const st = e.deltaY < 0 ? 3 : -3;
-      F.goTo = { x: F.pos.x - Math.sin(F.yaw) * st, z: F.pos.z - Math.cos(F.yaw) * st, last: [F.pos.x, F.pos.z], stuck: 0, keep: true }; };
+    // (now W and S themselves, for a moment each notch, so it's the same walking, driving and flying; Explore mode keeps it for zooming)
+    F.held = new Set(); F.wheelN = 0;
+    F.on.heldDown = e => F.held.add(e.code); F.on.heldUp = e => F.held.delete(e.code);
+    F.on.wheel = e => { const T = BS.town; if (!desk || !T?.on || !T.walk || e.ctrlKey) return; e.preventDefault(); F.wheelN++;
+      const code = e.deltaY < 0 ? "KeyW" : "KeyS", other = code === "KeyW" ? "KeyS" : "KeyW";
+      if (!F.held.has(other)) F.keys.delete(other); F.keys.add(code); clearTimeout(F.wheelT);
+      F.wheelT = setTimeout(() => { if (!F.held.has(code)) F.keys.delete(code); }, 300); };
     // the mouse looks around on a computer (Ash, 15 November 2026: "On pc make the game feel more natural when walking. Mouse able to
     // control viewpoint"): walking or driving in a town, a click on the view hands the mouse to the view; Esc gives it back, and
     // M, P and L still open Settings, Share and Flood. Not with a map-editing tool in hand, and never on a phone
@@ -8201,8 +8246,9 @@ const handle = async (m, post) => {
     // and a third, Mixed (Ash, 17 November 2026: "Gamer default, add a 3rd one which is a combined thing trying to make mainly gamer but
     // add btns like right click to moves forward or scroll wheel for w s while walking"): Gamer, plus the right button held walks you
     // forwards and the scroll wheel steps you forwards and back
-    F.ctl = desk ? (() => { try { const v = localStorage.getItem("an-controls"); return v === "simple" || v === "mix" ? v : "gamer"; } catch { return "gamer"; } })() : "gamer";
-    F.simple = F.ctl === "simple"; F.mix = F.ctl === "mix"; F.rmb = false;
+    // (then just Mixed, no choosing: Ash, 17 November 2026, "Remove the options but instead just keep mixed. Make scroll wheel up and down
+    // always bound to w s so that they work the same in cars and helicopters. At the start offer players a short tutorial")
+    F.ctl = desk ? "mix" : "gamer"; F.simple = false; F.mix = desk; F.rmb = false;
     F.goTo = null;
     F.on.lock = e => { const T = BS.town; if (!desk || F.simple || !T?.on || T.admin?.tool || F.userLocked || e.pointerType !== "mouse" || e.button !== 0 || document.pointerLockElement) return;
       if (e.target.closest?.("button, a, input, select, textarea, label, [role=menu], [role=dialog], [role=toolbar], .bs-me, .bs-review, .bs-chatbar, .bs-keys, #bsTownList, #bsShareBox")) return;
@@ -8225,24 +8271,18 @@ const handle = async (m, post) => {
       F.on.fsChange = () => { fb.textContent = fsEl() ? "Exit full screen" : "Full screen"; if (fsEl()) document.querySelector(".bs-askfull")?.parentElement?.remove(); };
       // asked once at the start of a game on a computer (Ash, 16 November 2026: "On pc at the start of the game ask the player if they
       // want to go full screen"), after the name question if there is one
-      // the controls: asked at the start of each game on a computer, before full screen (the last choice is the one ready to press)
-      document.body.classList.toggle("bssimple", !!F.simple);
-      if (desk && !BS.ctlAsked) { BS.ctlAsked = true; let onAt = 0; const t0 = performance.now(), wait = setInterval(() => { const T = BS.town, now = performance.now();
-          if (!F.on || now - t0 > 90000) { clearInterval(wait); return; } if (!T?.on) return; if (!onAt) onAt = now;
-          if (now - onAt < 1800 || document.querySelector(".bs-askwrap") || document.pointerLockElement) return; clearInterval(wait);
-          const wrap = document.createElement("div"), box = document.createElement("div"), q = document.createElement("p"), easy = document.createElement("button"), pro = document.createElement("button");
-          wrap.className = "bs-askwrap"; box.className = "bs-chatbar bs-askname bs-askfull bs-askctl"; box.setAttribute("role", "dialog"); box.setAttribute("aria-label", "Controls");
-          q.textContent = "How do you like to play?";
-          const mix = document.createElement("button"); easy.type = pro.type = mix.type = "button";
-          pro.innerHTML = "<b>Gamer</b><span>W A S D to move. The mouse looks around.</span>"; mix.innerHTML = "<b>Mixed</b><span>Gamer, plus hold the right button to walk and scroll to step.</span>"; easy.innerHTML = "<b>Simple</b><span>Click where you want to go. Drag to look around.</span>";
-          const pick = ctl => { wrap.remove(); removeEventListener("keydown", esc, true); F.ctl = ctl; F.simple = ctl === "simple"; F.mix = ctl === "mix"; F.rmb = false; try { localStorage.setItem("an-controls", ctl); } catch {}
-            document.body.classList.toggle("bssimple", F.simple); canvas.style.cursor = F.simple ? "pointer" : ""; if (F.simple && document.pointerLockElement) document.exitPointerLock?.();
-            toast(F.simple ? "Click where you want to go. Drag to look around. The scroll wheel steps you forwards and back. The arrow keys work too."
-              : F.mix ? "W A S D or hold the right button to walk. Scroll to step forwards and back. The mouse looks around; K frees it for the menus."
-              : "W A S D to move, the mouse looks around. K frees the mouse for the menus.", 4200); };
-          const esc = e => { if (e.code === "Escape") { e.stopPropagation(); pick(F.ctl); } };
-          pro.onclick = () => pick("gamer"); mix.onclick = () => pick("mix"); easy.onclick = () => pick("simple"); addEventListener("keydown", esc, true);
-          box.append(q, pro, mix, easy); wrap.append(box); fb.closest(".bs-deskbtns").parentElement.appendChild(wrap); try { ({ gamer: pro, mix, simple: easy }[F.ctl] || pro).focus({ preventScroll: true }); } catch {} }, 400); }
+      // a short tutorial, offered at the start (after the name and full screen questions) until it's done or turned down for good
+      if (!BS.tutAsked && !(() => { try { return localStorage.getItem("an-tut"); } catch { return null; } })()) { BS.tutAsked = true;
+        let onAt = 0; const t0 = performance.now(), wait = setInterval(() => { const T = BS.town, now = performance.now();
+          if (!F.on || now - t0 > 120000) { clearInterval(wait); return; } if (!T?.on) return; if (!onAt) onAt = now;
+          if (now - onAt < 3400 || document.querySelector(".bs-askwrap") || document.pointerLockElement) return; clearInterval(wait);
+          const wrap = document.createElement("div"), box = document.createElement("div"), q = document.createElement("p"), yes = document.createElement("button"), no = document.createElement("button"), never = document.createElement("button");
+          wrap.className = "bs-askwrap"; box.className = "bs-chatbar bs-askname bs-askfull"; box.setAttribute("role", "dialog"); box.setAttribute("aria-label", "Tutorial");
+          q.textContent = "New here? Learn the controls in under a minute.";
+          yes.type = no.type = never.type = "button"; yes.textContent = "Show me"; no.className = never.className = "skip"; no.textContent = "Not now"; never.textContent = "Don't ask again";
+          const close = () => { wrap.remove(); removeEventListener("keydown", esc, true); }, esc = e => { if (e.code === "Escape") { e.stopPropagation(); close(); } };
+          yes.onclick = () => { close(); F.on.tutorial?.(); }; no.onclick = close; never.onclick = () => { close(); try { localStorage.setItem("an-tut", "no"); } catch {} };
+          addEventListener("keydown", esc, true); box.append(q, yes, no, never); wrap.append(box); fb.closest(".bs-deskbtns").parentElement.appendChild(wrap); try { yes.focus({ preventScroll: true }); } catch {} }, 400); }
       if (desk && !BS.fsAsked && (document.fullscreenEnabled || document.webkitFullscreenEnabled) && !fsEl()) { BS.fsAsked = true;  // (once a page load)
         let onAt = 0; const t0 = performance.now(), wait = setInterval(() => { const T = BS.town, now = performance.now();
           if (!F.on || fsEl() || now - t0 > 90000) { clearInterval(wait); return; }
@@ -8263,7 +8303,7 @@ const handle = async (m, post) => {
       if (on) F.userLocked = false; else if (F.codeFree || !document.hasFocus()) F.codeFree = false; else F.userLocked = true;  // (Esc counts as locking it; leaving the window doesn't)
       lockLabel(); };  // (no strip of keys along the bottom: the buttons have their keys on them. Ash, 16 November 2026: "there is no need for the keys at the bottom as they are already on screen")
     document.addEventListener("pointerdown", F.on.lock, true); document.addEventListener("pointerlockchange", F.on.lockChange);
-    addEventListener("keydown", F.on.keydown); addEventListener("keyup", F.on.keyup); addEventListener("blur", F.on.blur);
+    addEventListener("keydown", F.on.keydown); addEventListener("keyup", F.on.keyup); addEventListener("blur", F.on.blur); addEventListener("keydown", F.on.heldDown, true); addEventListener("keyup", F.on.heldUp, true);
     document.addEventListener("mousemove", F.on.mousemove);
     ["pointerdown", "pointermove", "pointerup", "pointercancel"].forEach(k => canvas.addEventListener(k, F.on[k])); canvas.addEventListener("wheel", F.on.wheel, { passive: false }); F.on.ctxmenu = e => { if (F.mix || F.simple) e.preventDefault(); }; canvas.addEventListener("contextmenu", F.on.ctxmenu);
     if (F.simple) canvas.style.cursor = "pointer";
@@ -8281,7 +8321,7 @@ const handle = async (m, post) => {
     if (BS.flyView) { BS.view = { ...BS.flyView, ms: BS.flyView.mode === "live" ? Date.now() : BS.flyView.ms }; BS.flyView = null; try { bsApply(true); } catch {} }
     document.body.classList.remove("flypeek");
     const canvas = $("bsGl");
-    removeEventListener("keydown", F.on.keydown); removeEventListener("keyup", F.on.keyup); removeEventListener("blur", F.on.blur);
+    removeEventListener("keydown", F.on.keydown); removeEventListener("keyup", F.on.keyup); removeEventListener("blur", F.on.blur); removeEventListener("keydown", F.on.heldDown, true); removeEventListener("keyup", F.on.heldUp, true); clearTimeout(F.wheelT); F.on.tutEnd?.();
     document.removeEventListener("mousemove", F.on.mousemove); document.removeEventListener("pointerdown", F.on.lock, true); document.removeEventListener("pointerlockchange", F.on.lockChange); if (F.on.fsChange) { document.removeEventListener("fullscreenchange", F.on.fsChange); document.removeEventListener("webkitfullscreenchange", F.on.fsChange); }
     document.body.classList.remove("bslocked"); $("bsLockTip").hidden = true;
     ["pointerdown", "pointermove", "pointerup", "pointercancel"].forEach(k => canvas.removeEventListener(k, F.on[k])); canvas.removeEventListener("wheel", F.on.wheel); canvas.removeEventListener("contextmenu", F.on.ctxmenu); canvas.style.cursor = "";
@@ -11522,7 +11562,15 @@ const handle = async (m, post) => {
     const show = (q, html, buttons, extra) => { open = q; card.replaceChildren(); const x = document.createElement("button"); x.type = "button"; x.className = "x"; x.setAttribute("aria-label", "Close"); x.textContent = "×"; x.onclick = () => { q.done = true; shut(); };
       const p = document.createElement("p"); p.innerHTML = `<b>${q.name}</b>: ${html}`; card.append(x, p); if (extra) card.append(extra);
       const row = document.createElement("div"); for (const [label, fn, cls] of buttons) { const b = document.createElement("button"); b.type = "button"; b.textContent = label; if (cls) b.className = cls; b.onclick = () => { const r = fn(); if (r !== "keep") { q.done = true; shut(); } }; row.append(b); }
-      card.append(row); card.hidden = false; };
+      card.append(row); card.hidden = false;
+      // number keys for the choices, shown on them (on a computer), Esc to close (Ash, 17 November 2026: "Add hotkeys for vendor options")
+      if (deskKeys) [...card.querySelectorAll(".bs-opts button, div:last-child > button")].slice(0, 9).forEach((b, i) => { const k = document.createElement("kbd"); k.textContent = i + 1; b.prepend(k); }); };
+    const deskKeys = matchMedia("(hover: hover) and (pointer: fine)").matches;
+    const cardKeys = e => { if (card.hidden || e.ctrlKey || e.metaKey || e.altKey || /^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName || "")) return;
+      if (e.code === "Escape") { e.preventDefault(); e.stopImmediatePropagation(); if (open) open.done = true; shut(); return; }
+      const m2 = /^(?:Digit|Numpad)([1-9])$/.exec(e.code); if (!m2) return; const L = [...card.querySelectorAll(".bs-opts button, div:last-child > button")], b = L[+m2[1] - 1];
+      if (b) { e.preventDefault(); e.stopImmediatePropagation(); b.click(); } };
+    addEventListener("keydown", cardKeys, true);
     const perks = () => townPerks(), reread = () => BS.town?.car?.reread?.();
     const pick = (q, list, key, what) => { const cur = perks()[key]; const opts = document.createElement("div"); opts.className = "bs-opts";
       for (const [id, label, desc] of list) { const b = document.createElement("button"); b.type = "button"; b.className = id === cur ? "ok" : ""; b.innerHTML = `${id === cur ? "✓ " : ""}<b>${label}</b><small>${desc}</small>`;
@@ -11675,7 +11723,7 @@ const handle = async (m, post) => {
         const r = me.k === "walk" ? (q.r || 3.4) : me.k === "possum" ? q.possum : /^(car|gold|bus)$/.test(me.k) ? q.car : 0;
         if (r && d < r) { if (!q.near && !q.done && !open) { q.near = true; talk(q); } }
         else if (d > (r || 4) + 5) { q.near = false; q.done = false; if (open === q) shut(); } } };
-    P.dispose = () => { T.guideTo = null; T.aimAt = null; card.remove(); sprint.remove(); jumpB.remove(); ptr.remove(); for (const q of folk) { q.tag.remove(); q.dot.remove(); try { q.parts?.remove(); } catch {} } const F = BS.fly; if (F) { F.drunk = null; F.sprint = false; F.giant = null; } };
+    P.dispose = () => { removeEventListener("keydown", cardKeys, true); T.guideTo = null; T.aimAt = null; card.remove(); sprint.remove(); jumpB.remove(); ptr.remove(); for (const q of folk) { q.tag.remove(); q.dot.remove(); try { q.parts?.remove(); } catch {} } const F = BS.fly; if (F) { F.drunk = null; F.sprint = false; F.giant = null; } };
     return P;
   }
   // ---- letters at the post office (Ash, 16 November 2026: "I want to be able to send mail at the post office. I type the player name, they
