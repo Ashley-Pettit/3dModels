@@ -8205,7 +8205,7 @@ const handle = async (m, post) => {
       $("bsFullBtn").closest(".bs-deskbtns").parentElement.appendChild(card);
       let i = -1, lastYaw = F.yaw, lastX = F.pos.x, lastZ = F.pos.z, done = 0;
       const show = k => { i = k; if (i >= STEPS.length) return F.on.tutEnd(true); const [t, d] = STEPS[i]; h.textContent = `${i + 1} of ${STEPS.length} \u00b7 ${t}`; p.textContent = d;
-        next.textContent = i === STEPS.length - 1 ? "Done" : "Next"; card.classList.remove("ok"); F.tutTurn = 0; F.tutWalk = 0; F.tutWheel0 = F.wheelN; F.tutExplored = false; done = 0; };
+        next.textContent = i === STEPS.length - 1 ? "Finish" : "Next"; skip.hidden = i === STEPS.length - 1; card.classList.remove("ok"); F.tutTurn = 0; F.tutWalk = 0; F.tutWheel0 = F.wheelN; F.tutExplored = false; done = 0; };
       next.onclick = () => { show(i + 1); next.blur(); }; skip.onclick = () => F.on.tutEnd(true);
       const tick = setInterval(() => { if (!BS.town?.on) return F.on.tutEnd();
         F.tutTurn += Math.abs(Math.atan2(Math.sin(F.yaw - lastYaw), Math.cos(F.yaw - lastYaw))); lastYaw = F.yaw;
@@ -8272,17 +8272,21 @@ const handle = async (m, post) => {
       // asked once at the start of a game on a computer (Ash, 16 November 2026: "On pc at the start of the game ask the player if they
       // want to go full screen"), after the name question if there is one
       // a short tutorial, offered at the start (after the name and full screen questions) until it's done or turned down for good
+      // (offered once, ever: Ash, 17 November 2026, "We don't need don't ask me again. Only ever show a person it once, add in settings
+      // ability to play again")
       if (!BS.tutAsked && !(() => { try { return localStorage.getItem("an-tut"); } catch { return null; } })()) { BS.tutAsked = true;
         let onAt = 0; const t0 = performance.now(), wait = setInterval(() => { const T = BS.town, now = performance.now();
           if (!F.on || now - t0 > 120000) { clearInterval(wait); return; } if (!T?.on) return; if (!onAt) onAt = now;
           if (now - onAt < 3400 || document.querySelector(".bs-askwrap") || document.pointerLockElement) return; clearInterval(wait);
-          const wrap = document.createElement("div"), box = document.createElement("div"), q = document.createElement("p"), yes = document.createElement("button"), no = document.createElement("button"), never = document.createElement("button");
+          const wrap = document.createElement("div"), box = document.createElement("div"), q = document.createElement("p"), yes = document.createElement("button"), no = document.createElement("button");
+          try { localStorage.setItem("an-tut", "offered"); } catch {}
           wrap.className = "bs-askwrap"; box.className = "bs-chatbar bs-askname bs-askfull"; box.setAttribute("role", "dialog"); box.setAttribute("aria-label", "Tutorial");
           q.textContent = "New here? Learn the controls in under a minute.";
-          yes.type = no.type = never.type = "button"; yes.textContent = "Show me"; no.className = never.className = "skip"; no.textContent = "Not now"; never.textContent = "Don't ask again";
+          yes.type = no.type = "button"; yes.textContent = "Show me"; no.className = "skip"; no.textContent = "No thanks";
           const close = () => { wrap.remove(); removeEventListener("keydown", esc, true); }, esc = e => { if (e.code === "Escape") { e.stopPropagation(); close(); } };
-          yes.onclick = () => { close(); F.on.tutorial?.(); }; no.onclick = close; never.onclick = () => { close(); try { localStorage.setItem("an-tut", "no"); } catch {} };
-          addEventListener("keydown", esc, true); box.append(q, yes, no, never); wrap.append(box); fb.closest(".bs-deskbtns").parentElement.appendChild(wrap); try { yes.focus({ preventScroll: true }); } catch {} }, 400); }
+          yes.onclick = () => { close(); F.on.tutorial?.(); }; no.onclick = close;
+          q.textContent = "New here? Learn the controls in under a minute. (It's in Settings any time.)";
+          addEventListener("keydown", esc, true); box.append(q, yes, no); wrap.append(box); fb.closest(".bs-deskbtns").parentElement.appendChild(wrap); try { yes.focus({ preventScroll: true }); } catch {} }, 400); }
       if (desk && !BS.fsAsked && (document.fullscreenEnabled || document.webkitFullscreenEnabled) && !fsEl()) { BS.fsAsked = true;  // (once a page load)
         let onAt = 0; const t0 = performance.now(), wait = setInterval(() => { const T = BS.town, now = performance.now();
           if (!F.on || fsEl() || now - t0 > 90000) { clearInterval(wait); return; }
@@ -11093,6 +11097,8 @@ const handle = async (m, post) => {
           || [open, "In Chrome or Edge, click the install icon at the right of the address bar.", "Or on your phone, open the same page and add it to your home screen."];
         if (deskB) app.append(forWhat(`For ${deskB} on a computer`)); app.append(steps(S)); openPage(); app.append(deskB === "Firefox" ? copyBtn() : after); }
       const hi = el("div", "bs-me-h"), ho = el("span", "", F.hText || ""); ho.id = "bsMeH"; hi.append(el("span", "", "Height above the ground"), ho);
+      // the controls tutorial, again
+      const tut = el("button", "bs-me-go", "Play the controls tutorial"); tut.type = "button"; tut.onclick = () => { meClose(); if (!T.walk) T.toMode?.(true); setTimeout(() => F.on?.tutorial?.(), 150); };
       // the other towns, plain links (Ash, 15 November 2026: "In settings I want to be able to change from Logan to Inverloch and
       // moorooka. Nothing fancy. Just a hyperlink"): each opens that town's Explore page
       const towns = el("div", "bs-me-sec bs-me-towns"); towns.append(el("span", "bs-me-lbl", "Other towns"));
@@ -11113,7 +11119,7 @@ const handle = async (m, post) => {
       let sug = null; if (isAsh() && T.admin?.plans) { const n = T.admin.plans.count(); sug = el("div", "bs-me-sec"); sug.append(el("span", "bs-me-lbl", "Suggested map changes (just you)"));
         const b = el("button", "bs-me-go", n ? `Review ${n} suggestion${n === 1 ? "" : "s"}` : "Check for suggestions"); b.type = "button"; b.onclick = () => { meClose(); T.admin.plans.open(); };
         sug.append(b, el("p", "", n ? "Shows each one on the map where it is, then Approve puts it in everyone's app, or Deny drops it." : "None waiting from construction workers.")); }
-      meBox.append(head, you, as, sw, here, tm, app, ...(sug ? [sug] : []), ...(isAsh() ? exAshSecs(meDraw) : []), towns, ...(wv ? [wv] : []), hi, priv, ver); };  // no Exit explore (Ash, 15 November 2026: "Remove exit explore"); Esc, or the browser's back, still leaves
+      meBox.append(head, you, as, sw, here, tm, app, ...(sug ? [sug] : []), ...(isAsh() ? exAshSecs(meDraw) : []), towns, tut, ...(wv ? [wv] : []), hi, priv, ver); };  // no Exit explore (Ash, 15 November 2026: "Remove exit explore"); Esc, or the browser's back, still leaves
     // closes with its \u00d7, the gear again, or a tap anywhere else
     const meOut = e => { if (!meBox.hidden && !meBox.contains(e.target) && !meBtn.contains(e.target)) meClose(); }; document.addEventListener("pointerdown", meOut, true);
     document.body.classList.add("bsme"); meBtn.hidden = false; meBtn.onclick = () => { meBox.hidden = !meBox.hidden; meBtn.setAttribute("aria-expanded", String(!meBox.hidden)); if (!meBox.hidden) meDraw(); meBtn.blur(); };
@@ -12253,13 +12259,20 @@ const handle = async (m, post) => {
     // on foot, on a computer: the buttons for getting in, Boost and getting out are not shown there, so the keys are listed instead
     // (Ash, 15 November 2026: "On computer hide emote and get in the car, instead show as controls")
     KEYS.walk = [[["W", "A", "S", "D"], "Walk (the arrows too)"], [["Shift"], "Run"], [["Mouse"], "Look around (K locks the mouse for the menus, and unlocks it)"], [["O"], "Full screen"], [["E"], "Get in the car, plane or possum nearby"], [["F"], "Explore mode on or off (your player stays put)"], [["Enter"], "Chat"], [["Space"], "Jump"], [["?"], "Hide the buttons, for a clean view"]];
+    // a few keys back, bottom left: only the ones without a button on the screen (Ash, 17 November 2026: "Add back here a few key
+    // controls, don't include those that are already on the screen"); none for the possum
+    const KEYS_FEW = { walk: [[["W", "A", "S", "D"], "Walk"], [["Right click"], "Walk forwards"], [["Scroll"], "Forwards and back"], [["Shift"], "Run"], [["Space"], "Jump"], [["Mouse"], "Look around"]],
+      car: [[["W", "S"], "Go, brake or reverse (scroll too)"], [["A", "D"], "Steer"]],
+      plane: [[["W", "S"], "Power up, power down (scroll too)"], [["A", "D"], "Turn"], [["\u2193", "\u2191"], "Climb, come down"]],
+      heli: [[["W", "S"], "Forward, back (scroll too)"], [["A", "D"], "Turn"], [["\u2193", "\u2191"], "Up, down"]] };
+    KEYS_FEW.bus = KEYS_FEW.gold = KEYS_FEW.car;
     KEYS.bus = KEYS.car; KEYS.gold = [...KEYS.car.slice(0, 4), [["X"], "180: hop and spin round, still going"], ...KEYS.car.slice(4)];
     KEYS.possum = [[["W", "A", "S", "D"], "Run that way, from where you're looking (the arrows too)"], [["W"], "Into a street light or a wall: climb it"], [["S"], "Walk backwards (on a wall: let go)"], [["Space"], "Jump (off a wall too)"], [["Shift"], "Boost"], [["Q"], "Grippy on or off: holds on to cars, planes and tree tops (on or against a car you hold on; only Grippy off lets go)"], [["Drag"], "Look around"], [["E"], "Human again"]];
     // (only the sky rings' count and way: no tips bottom left, Ash, 16 November 2026, "The bottom left tooltips other that ? Aren't needed")
     const hint = text0 => { const text = /^Ring \d/.test(text0 || "") ? text0 : ""; if (keysNow.textContent !== text) { keysNow.textContent = text; if (touch) keysBox.hidden = !text; } };
     const keysOff = off => { keysBox.classList.toggle("off", off); keysQ.textContent = "? hides the buttons"; };
     const showKeys = kind => { keysNow.textContent = ""; keysOff(false); keysBox.hidden = !kind || touch || kind === "possum";  // (no list for the possum: Ash, 16 November 2026, "I don't think any are needed")  // (on a phone it shows once there is something to say)
-      keysList.replaceChildren(...([]).filter(([ks]) => !(kind === "plane" && plane && !canBoost(plane) && ks[0] === "Shift")).flatMap(([ks, what]) => { const dt = document.createElement("dt"), dd = document.createElement("dd");
+      keysList.replaceChildren(...(KEYS_FEW[kind] || []).filter(([ks]) => !(kind === "plane" && plane && !canBoost(plane) && ks[0] === "Shift")).flatMap(([ks, what]) => { const dt = document.createElement("dt"), dd = document.createElement("dd");
         for (const key of ks) { const kb = document.createElement("kbd"); kb.textContent = key; dt.append(kb); } dd.textContent = what; return [dt, dd]; }));
       // the stick and the Up and Down buttons say what they do in it
       if (joyName) joyName.textContent = kind === "plane" ? "Power and turn" : kind === "heli" ? "Go and turn" : kind === "car" ? "Drive" : kind === "possum" ? "Run and turn" : "Move";
