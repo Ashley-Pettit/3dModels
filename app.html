@@ -1419,6 +1419,11 @@ body.bssimple #bsLockBtn { display: none; }
 .bs-tut b { font: 800 0.95rem var(--ui); color: #ffd166; } .bs-tut.ok { background: rgba(26, 110, 64, 0.94); } .bs-tut.ok b { color: #fff; }
 .bs-tut div { display: flex; gap: 8px; margin-top: 4px; } .bs-tut button { flex: 1; min-height: 38px; border: 0; border-radius: 10px; font: 700 0.88rem var(--ui); background: #ffd166; color: #1b1830; cursor: pointer; }
 .bs-tut button + button { background: rgba(255, 255, 255, 0.16); color: #fff; }
+/* Rod's keys panel: the actions in a list, each a button showing its key */
+.bs-tut.bs-keyed { width: min(460px, calc(100% - 32px)); max-height: calc(100% - 140px); overflow-y: auto; }
+.bs-tut .bs-keylist { display: grid; gap: 6px; margin: 0; } .bs-keylist i { font-style: normal; font-weight: 800; color: #ffd166; margin-top: 6px; }
+.bs-keylist button { min-height: 36px; border: 0; border-radius: 10px; text-align: left; padding: 6px 12px; font: 600 0.88rem var(--ui); background: rgba(255, 255, 255, 0.12); color: #fff; cursor: pointer; }
+.bs-tut.bs-keyed > div:last-child { flex-wrap: wrap; }
 .bs-askwrap .bs-askname.bs-askfull button.skip { background: rgba(255, 255, 255, 0.14); color: #fff; }
 .bs-locktip kbd { display: inline-block; margin: 0 2px 0 6px; padding: 0 5px; border-radius: 4px; background: #fff; color: #1b1830; font: 700 0.7rem/1.5 var(--ui); }
 @keyframes bsLockTip { 0%, 75% { opacity: 1; } 100% { opacity: 0.35; } }
@@ -8274,6 +8279,10 @@ const handle = async (m, post) => {
       // a short tutorial, offered at the start (after the name and full screen questions) until it's done or turned down for good
       // (offered once, ever: Ash, 17 November 2026, "We don't need don't ask me again. Only ever show a person it once, add in settings
       // ability to play again")
+      F.rod?.off(); F.rod = bsRodKeys(F, desk);  // (Rod's own keys: a layer in front of the game's)
+      if (F.rod?.offer && !BS.rodAsked) { BS.rodAsked = true; let onAt = 0; const t0 = performance.now(), wait = setInterval(() => { const T = BS.town, now = performance.now();
+          if (!F.on || now - t0 > 120000) { clearInterval(wait); return; } if (!T?.on) return; if (!onAt) onAt = now;
+          if (now - onAt < 3400 || document.querySelector(".bs-askwrap") || document.pointerLockElement) return; clearInterval(wait); F.rod.offer = false; F.rod.setup(); }, 400); BS.tutAsked = true; }
       if (!BS.tutAsked && !(() => { try { return localStorage.getItem("an-tut"); } catch { return null; } })()) { BS.tutAsked = true;
         let onAt = 0; const t0 = performance.now(), wait = setInterval(() => { const T = BS.town, now = performance.now();
           if (!F.on || now - t0 > 120000) { clearInterval(wait); return; } if (!T?.on) return; if (!onAt) onAt = now;
@@ -8325,7 +8334,7 @@ const handle = async (m, post) => {
     if (BS.flyView) { BS.view = { ...BS.flyView, ms: BS.flyView.mode === "live" ? Date.now() : BS.flyView.ms }; BS.flyView = null; try { bsApply(true); } catch {} }
     document.body.classList.remove("flypeek");
     const canvas = $("bsGl");
-    removeEventListener("keydown", F.on.keydown); removeEventListener("keyup", F.on.keyup); removeEventListener("blur", F.on.blur); removeEventListener("keydown", F.on.heldDown, true); removeEventListener("keyup", F.on.heldUp, true); clearTimeout(F.wheelT); F.on.tutEnd?.();
+    removeEventListener("keydown", F.on.keydown); removeEventListener("keyup", F.on.keyup); removeEventListener("blur", F.on.blur); removeEventListener("keydown", F.on.heldDown, true); removeEventListener("keyup", F.on.heldUp, true); clearTimeout(F.wheelT); F.on.tutEnd?.(); F.rod?.off(); F.rod = null;
     document.removeEventListener("mousemove", F.on.mousemove); document.removeEventListener("pointerdown", F.on.lock, true); document.removeEventListener("pointerlockchange", F.on.lockChange); if (F.on.fsChange) { document.removeEventListener("fullscreenchange", F.on.fsChange); document.removeEventListener("webkitfullscreenchange", F.on.fsChange); }
     document.body.classList.remove("bslocked"); $("bsLockTip").hidden = true;
     ["pointerdown", "pointermove", "pointerup", "pointercancel"].forEach(k => canvas.removeEventListener(k, F.on[k])); canvas.removeEventListener("wheel", F.on.wheel); canvas.removeEventListener("contextmenu", F.on.ctxmenu); canvas.style.cursor = "";
@@ -10749,6 +10758,80 @@ const handle = async (m, post) => {
   // selected go to a 3rd person view and enable the ability to edit the ground ... if they are not admin they cannot save over the
   // world but instead they submit the edits to the town planner"). Kept on this device for every town: "explorer" or "builder".
   const townRole = () => { try { return localStorage.getItem("an-player-role") === "builder" ? "builder" : "explorer"; } catch { return "explorer"; } };
+  // ---- Rod's own keys (Ash, 18 November 2026: "If players name is rod, add more settings in the menu. Rod is my dad and he wants to
+  // create custom keys that feel good to him. We'll need to save his layout so that in the future we can consider merging into the
+  // main game. Take rod through walking and driving a car, ask him what key he'd like to do it, then store that key to do that action.
+  // Also expose a keys btn in the menu so he can change this himself manually. Allow him to restart this with f5. Give him the option
+  // to default the camera to locked or unlocked (mouse controls camera)"). A layer in front of the game's keys: a key Rod chose is
+  // passed on as the usual key for that action (walking, or driving a car), so nothing else in the game changes. His layout is kept on
+  // his device (an-keys) and sent to the town planner's topic (k: "keys"), which tools/plans.py keeps, so it can be looked at later
+  const townIsRod = () => { let n = ""; try { n = (localStorage.getItem("an-player") || "").trim(); } catch {} return /^rod(ney)?$/i.test(n) || (!n && isRod()); };
+  const ROD_ACTIONS = { walk: [["fwd", "KeyW", "Walk forwards"], ["back", "KeyS", "Walk backwards"], ["left", "KeyA", "Step left"], ["right", "KeyD", "Step right"],
+      ["run", "ShiftLeft", "Run"], ["jump", "Space", "Jump"], ["getin", "KeyE", "Get in a car"], ["explore", "KeyF", "Explore mode"]],
+    car: [["go", "KeyW", "Go (accelerate)"], ["brake", "KeyS", "Brake and reverse"], ["left", "KeyA", "Steer left"], ["right", "KeyD", "Steer right"],
+      ["boost", "ShiftLeft", "Boost"], ["hand", "Space", "Handbrake"], ["getout", "KeyE", "Get out"]] };
+  const keyName = c => !c ? "?" : { Space: "Space", ShiftLeft: "Shift", ShiftRight: "Right Shift", ControlLeft: "Ctrl", ControlRight: "Right Ctrl", AltLeft: "Alt", AltRight: "Right Alt",
+    ArrowUp: "↑", ArrowDown: "↓", ArrowLeft: "←", ArrowRight: "→", Enter: "Enter", Tab: "Tab", Backspace: "Backspace", CapsLock: "Caps Lock", Semicolon: ";", Quote: "'",
+    Comma: ",", Period: ".", Slash: "/", BracketLeft: "[", BracketRight: "]", Backslash: "\\", Minus: "-", Equal: "=", Backquote: "`" }[c] || c.replace(/^Key|^Digit|^Numpad/, m => m === "Numpad" ? "Num " : "");
+  const rodLayout = () => { let L = null; try { L = JSON.parse(localStorage.getItem("an-keys") || "null"); } catch {} return L && typeof L === "object" ? L : { walk: {}, car: {}, cam: "look" }; };
+  function bsRodKeys(F, desk) {
+    const P = { off() {}, setup() {}, panel() {}, offer: false }; if (!desk || !townIsRod()) return P;
+    let L = rodLayout(); L.walk = L.walk || {}; L.car = L.car || {};
+    let sendT = 0; const save = () => { try { localStorage.setItem("an-keys", JSON.stringify(L)); } catch {} clearTimeout(sendT); try { if (!F.drive) BS.town?.car?.walkKeys?.(!!BS.town.walk); } catch {}
+      sendT = setTimeout(() => { try { fetch(TOWN_PLANS, { method: "POST", body: JSON.stringify({ k: "keys", id: "keys-" + playerName().toLowerCase(), by: playerName(), town: BS.town?.cfg?.place === "moo" ? "moorooka" : BS.town?.cfg?.place === "inv" ? "inverloch" : "logan", v: 1, layout: L }) }).catch(() => {}); } catch {} }, 4000); };
+    const ctx = () => { const b = document.body.classList; return b.contains("bsdrive") && !b.contains("bsplane") && !b.contains("bspossum") && !b.contains("bsheld") ? "car" : "walk"; };
+    const code = (c, id) => L[c][id] || ROD_ACTIONS[c].find(a => a[0] === id)[1];
+    // the layer: Rod's key in, the usual key out (only for the actions he changed)
+    const down = new Map(); let capture = null;
+    const pass = (type, from, to, e) => { const ev = new KeyboardEvent(type, { code: to, key: to.startsWith("Key") ? to.slice(3).toLowerCase() : to === "Space" ? " " : to, repeat: e.repeat, bubbles: true, cancelable: true, shiftKey: e.shiftKey }); window.dispatchEvent(ev); };
+    const kd = e => { if (!e.isTrusted || !BS.town?.on) return; const t = document.activeElement; if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+      if (e.code === "F5" && !e.ctrlKey) { e.preventDefault(); e.stopImmediatePropagation(); P.setup(); return; }
+      if (capture) { e.preventDefault(); e.stopImmediatePropagation(); if (!e.repeat) capture(e.code); return; }
+      if (down.has(e.code)) { e.preventDefault(); e.stopImmediatePropagation(); if (e.repeat) pass("keydown", e.code, down.get(e.code), e); return; }
+      const c = ctx(), act = ROD_ACTIONS[c].find(a => L[c][a[0]] === e.code); if (!act || act[1] === e.code) return;
+      e.preventDefault(); e.stopImmediatePropagation(); down.set(e.code, act[1]); pass("keydown", e.code, act[1], e); };
+    const ku = e => { if (!e.isTrusted) return; if (down.has(e.code)) { e.preventDefault(); e.stopImmediatePropagation(); pass("keyup", e.code, down.get(e.code), e); down.delete(e.code); } };
+    addEventListener("keydown", kd, true); addEventListener("keyup", ku, true);
+    // the buttons' keycaps show his keys
+    const caps = () => { const c = ctx(); const set = (id, k) => { const b = document.getElementById(id); if (b && b.dataset.key !== k) b.dataset.key = k; };
+      set("bsCarBtn", keyName(c === "car" ? code("car", "getout") : code("walk", "getin"))); set("bsBoostBtn", keyName(code("car", "boost"))); set("bsHandBtn", keyName(code("car", "hand")));
+      const tm = document.getElementById("bsTownMode"); if (tm && tm.dataset.key !== keyName(code("walk", "explore"))) tm.dataset.key = keyName(code("walk", "explore")); };
+    const capsT = setInterval(caps, 500); caps();
+    // the camera at the start: the mouse looks around (unlocked), or stays free for the menus (locked)
+    if (L.cam === "free") F.userLocked = true;
+    // one card at the top: the guided setup
+    let card = null; const cardOff = () => { capture = null; clearInterval(card?.t); card?.el.remove(); card = null; };
+    const mk = () => { cardOff(); const el = document.createElement("div"), h = document.createElement("b"), p = document.createElement("span"), row = document.createElement("div"); el.className = "bs-tut"; el.setAttribute("role", "status"); el.append(h, p, row); document.getElementById("bsFullBtn").closest(".bs-deskbtns").parentElement.appendChild(el); card = { el, h, p, row }; return card; };
+    const btn = (label, fn) => { const b = document.createElement("button"); b.type = "button"; b.textContent = label; b.onclick = () => { b.blur(); fn(); }; return b; };
+    P.setup = () => { if (document.pointerLockElement) document.exitPointerLock?.(); F.userLocked = true;
+      const steps = [...ROD_ACTIONS.walk.map(a => ["walk", ...a]), ["try-walk"], ...ROD_ACTIONS.car.map(a => ["car", ...a]), ["try-car"], ["done"]]; let i = 0;
+      const next = () => { i++; show(); };
+      const show = () => { const c = mk(), st = steps[i];
+        if (!st) return cardOff();
+        if (st[0] === "try-walk") { c.h.textContent = "Give your walking keys a go"; c.p.textContent = `${keyName(code("walk", "fwd"))} forwards, ${keyName(code("walk", "back"))} back, ${keyName(code("walk", "left"))} and ${keyName(code("walk", "right"))} to the sides. Walk a few steps. (Click the view if you want the mouse to look around.)`;
+          F.userLocked = false; const x0 = F.pos.x, z0 = F.pos.z; c.row.append(btn("Next", next)); c.t = setInterval(() => { if (Math.hypot(F.pos.x - x0, F.pos.z - z0) > 6) { c.el.classList.add("ok"); c.p.textContent = "Nice one!"; clearInterval(c.t); setTimeout(next, 900); } }, 200); return; }
+        if (st[0] === "try-car") { c.h.textContent = "Now take a car for a drive"; c.p.textContent = `Walk up to a car and press ${keyName(code("walk", "getin"))}. Then ${keyName(code("car", "go"))} to go, ${keyName(code("car", "left"))} and ${keyName(code("car", "right"))} to steer, ${keyName(code("car", "getout"))} to get out.`;
+          F.userLocked = false; c.row.append(btn("Next", next)); let d0 = null; c.t = setInterval(() => { if (F.drive && ctx() === "car") { if (!d0) d0 = [F.pos.x, F.pos.z]; else if (Math.hypot(F.pos.x - d0[0], F.pos.z - d0[1]) > 25) { c.el.classList.add("ok"); c.p.textContent = "Lovely driving!"; clearInterval(c.t); setTimeout(next, 900); } } }, 250); return; }
+        if (st[0] === "done") { c.h.textContent = "All set, Rod"; c.p.textContent = "Your keys are saved. Change any of them in Settings, Keys. F5 runs this again."; F.userLocked = L.cam === "free"; save(); c.row.append(btn("Finish", cardOff)); return; }
+        const [cx, id, def, what] = st; c.h.textContent = `${cx === "walk" ? "Walking" : "Driving a car"} · ${i + 1 - (cx === "car" ? 1 : 0)} of ${steps.length - 3}`;
+        c.p.textContent = `Which key would you like to ${what.toLowerCase()}? Press it now. (Now: ${keyName(code(cx, id))})`;
+        c.row.append(btn(`Keep ${keyName(code(cx, id))}`, next), btn("Stop for now", () => { save(); F.userLocked = L.cam === "free"; cardOff(); }));
+        capture = k => { if (k === "Escape") { capture = null; return next(); } L[cx][id] = k; save(); capture = null; c.el.classList.add("ok"); c.p.textContent = `Got it: ${keyName(k)} to ${what.toLowerCase()}.`; setTimeout(next, 800); }; };
+      show(); };
+    // Settings, Keys: every action with its key; click one, then press the new key
+    P.panel = () => { const c = mk(); c.el.classList.add("bs-keyed"); c.h.textContent = "Your keys"; c.p.textContent = "Click an action, then press the key you want for it.";
+      const list = document.createElement("div"); list.className = "bs-keylist";
+      const draw = () => { list.replaceChildren(); for (const cx of ["walk", "car"]) { const hd = document.createElement("i"); hd.textContent = cx === "walk" ? "Walking" : "Driving a car"; list.append(hd);
+          for (const [id, , what] of ROD_ACTIONS[cx]) { const b = btn(`${what}: ${keyName(code(cx, id))}`, () => { b.textContent = `${what}: press a key…`; capture = k => { capture = null; if (k !== "Escape") { L[cx][id] = k; save(); } draw(); }; }); list.append(b); } }
+        const cam = document.createElement("i"); cam.textContent = "At the start, the mouse"; list.append(cam);
+        for (const [v, lab] of [["look", "Looks around (unlocked)"], ["free", "Is free for the menus (locked)"]]) { const b = btn((L.cam === v || (!L.cam && v === "look") ? "✓ " : "") + lab, () => { L.cam = v; save(); draw(); }); list.append(b); } };
+      draw(); c.el.insertBefore(list, c.row);
+      c.row.append(btn("Set up again (F5)", () => P.setup()), btn("Usual keys", () => { L.walk = {}; L.car = {}; save(); draw(); }), btn("Close", cardOff)); };
+    // the first time, the setup is offered (in place of the tutorial)
+    P.offer = (() => { try { return !localStorage.getItem("an-keys"); } catch { return false; } })();
+    P.off = () => { removeEventListener("keydown", kd, true); removeEventListener("keyup", ku, true); clearInterval(capsT); cardOff(); };
+    return P;
+  }
   const TOWN_PLANS = "https://ntfy.sh/awesome-news-town-plans-r8k3", TOWN_PLANS_FILE = "https://raw.githubusercontent.com/Ashley-Pettit/awesome-news/chat/chat/plans.json";
   const playerName = () => { let n = ""; try { n = (localStorage.getItem("an-player") || "").trim().slice(0, 16); } catch {}
     if (!n) { let id = ""; try { id = localStorage.getItem("an-player-id") || ""; if (!id) { id = String(100 + Math.floor(Math.random() * 900)); localStorage.setItem("an-player-id", id); } } catch { id = "000"; } n = "Player " + id; } return n; };
@@ -11098,6 +11181,8 @@ const handle = async (m, post) => {
         if (deskB) app.append(forWhat(`For ${deskB} on a computer`)); app.append(steps(S)); openPage(); app.append(deskB === "Firefox" ? copyBtn() : after); }
       const hi = el("div", "bs-me-h"), ho = el("span", "", F.hText || ""); ho.id = "bsMeH"; hi.append(el("span", "", "Height above the ground"), ho);
       // the controls tutorial, again
+      const keysB = BS.fly?.rod?.panel && townIsRod() && matchMedia("(hover: hover) and (pointer: fine)").matches ? el("button", "bs-me-go", "Keys (your own layout)") : null;
+      if (keysB) { keysB.type = "button"; keysB.onclick = () => { meClose(); BS.fly.rod.panel(); }; }
       const tut = el("button", "bs-me-go", "Play the controls tutorial"); tut.type = "button"; tut.onclick = () => { meClose(); if (!T.walk) T.toMode?.(true); setTimeout(() => F.on?.tutorial?.(), 150); };
       // the other towns, plain links (Ash, 15 November 2026: "In settings I want to be able to change from Logan to Inverloch and
       // moorooka. Nothing fancy. Just a hyperlink"): each opens that town's Explore page
@@ -11119,7 +11204,7 @@ const handle = async (m, post) => {
       let sug = null; if (isAsh() && T.admin?.plans) { const n = T.admin.plans.count(); sug = el("div", "bs-me-sec"); sug.append(el("span", "bs-me-lbl", "Suggested map changes (just you)"));
         const b = el("button", "bs-me-go", n ? `Review ${n} suggestion${n === 1 ? "" : "s"}` : "Check for suggestions"); b.type = "button"; b.onclick = () => { meClose(); T.admin.plans.open(); };
         sug.append(b, el("p", "", n ? "Shows each one on the map where it is, then Approve puts it in everyone's app, or Deny drops it." : "None waiting from construction workers.")); }
-      meBox.append(head, you, as, sw, here, tm, app, ...(sug ? [sug] : []), ...(isAsh() ? exAshSecs(meDraw) : []), towns, tut, ...(wv ? [wv] : []), hi, priv, ver); };  // no Exit explore (Ash, 15 November 2026: "Remove exit explore"); Esc, or the browser's back, still leaves
+      meBox.append(head, you, as, sw, here, tm, app, ...(sug ? [sug] : []), ...(isAsh() ? exAshSecs(meDraw) : []), towns, ...(keysB ? [keysB] : []), tut, ...(wv ? [wv] : []), hi, priv, ver); };  // no Exit explore (Ash, 15 November 2026: "Remove exit explore"); Esc, or the browser's back, still leaves
     // closes with its \u00d7, the gear again, or a tap anywhere else
     const meOut = e => { if (!meBox.hidden && !meBox.contains(e.target) && !meBtn.contains(e.target)) meClose(); }; document.addEventListener("pointerdown", meOut, true);
     document.body.classList.add("bsme"); meBtn.hidden = false; meBtn.onclick = () => { meBox.hidden = !meBox.hidden; meBtn.setAttribute("aria-expanded", String(!meBox.hidden)); if (!meBox.hidden) meDraw(); meBtn.blur(); };
@@ -12272,7 +12357,9 @@ const handle = async (m, post) => {
     const hint = text0 => { const text = /^Ring \d/.test(text0 || "") ? text0 : ""; if (keysNow.textContent !== text) { keysNow.textContent = text; if (touch) keysBox.hidden = !text; } };
     const keysOff = off => { keysBox.classList.toggle("off", off); keysQ.textContent = "? hides the buttons"; };
     const showKeys = kind => { keysNow.textContent = ""; keysOff(false); keysBox.hidden = !kind || touch || kind === "possum";  // (no list for the possum: Ash, 16 November 2026, "I don't think any are needed")  // (on a phone it shows once there is something to say)
-      keysList.replaceChildren(...(KEYS_FEW[kind] || []).filter(([ks]) => !(kind === "plane" && plane && !canBoost(plane) && ks[0] === "Shift")).flatMap(([ks, what]) => { const dt = document.createElement("dt"), dd = document.createElement("dd");
+      const RODMAP = (() => { if (!townIsRod()) return null; const L = rodLayout(), cx = kind === "walk" ? "walk" : /^(car|bus|gold)$/.test(kind) ? "car" : null; if (!cx) return null;
+        const by = { W: "KeyW", A: "KeyA", S: "KeyS", D: "KeyD", Shift: "ShiftLeft", Space: "Space" }, m = {}; for (const [id, def] of ROD_ACTIONS[cx]) { const lab = Object.keys(by).find(k => by[k] === def); if (lab && L[cx]?.[id]) m[lab] = keyName(L[cx][id]); } return m; })();
+      keysList.replaceChildren(...(KEYS_FEW[kind] || []).map(([ks, what]) => [RODMAP ? ks.map(k => RODMAP[k] || k) : ks, what]).filter(([ks]) => !(kind === "plane" && plane && !canBoost(plane) && ks[0] === "Shift")).flatMap(([ks, what]) => { const dt = document.createElement("dt"), dd = document.createElement("dd");
         for (const key of ks) { const kb = document.createElement("kbd"); kb.textContent = key; dt.append(kb); } dd.textContent = what; return [dt, dd]; }));
       // the stick and the Up and Down buttons say what they do in it
       if (joyName) joyName.textContent = kind === "plane" ? "Power and turn" : kind === "heli" ? "Go and turn" : kind === "car" ? "Drive" : kind === "possum" ? "Run and turn" : "Move";
