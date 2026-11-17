@@ -11771,10 +11771,12 @@ const handle = async (m, post) => {
       const box = (u0, u1, o0, o1, y1, y2, hex) => { const c = lin(hex), p = (u, o, y) => at(u, o, y);
         quad(p(u0, o1, y1), p(u1, o1, y1), p(u1, o1, y2), p(u0, o1, y2), c); quad(p(u1, o0, y1), p(u0, o0, y1), p(u0, o0, y2), p(u1, o0, y2), c); quad(p(u0, o0, y2), p(u0, o1, y2), p(u1, o1, y2), p(u1, o0, y2), c);
         quad(p(u0, o0, y1), p(u0, o1, y1), p(u0, o1, y2), p(u0, o0, y2), c); quad(p(u1, o1, y1), p(u1, o0, y1), p(u1, o0, y2), p(u1, o1, y2), c); };
-      box(-3.2, 3.2, 0, 2.6, 0, 0.06, "#c9c3b6");  // the patio
-      box(-0.85, 0.85, 0, 0.5, 0.06, 0.32, "#bdb8ad"); box(-0.85, 0.85, 0.5, 0.95, 0.06, 0.18, "#bdb8ad");  // steps
-      box(-0.55, 0.55, 0.0, 0.05, 0.32, 2.45, "#f2f0ea"); box(-0.46, 0.46, 0.03, 0.07, 0.36, 2.38, "#4a3324");  // the door in its frame
-      box(-1.5, 1.5, 0, 1.9, 2.62, 2.72, "#9a8a76"); for (const u of [-1.4, 1.4]) box(u - 0.06, u + 0.06, 1.74, 1.86, 0.06, 2.62, "#f2f0ea");  // the porch roof on two posts
+      // (all stood 8 cm off the wall: their backs were in the wall's own plane and flickered against its brown base. Ash, 18 November
+      // 2026, "The brown banner at the bottom of Venky's house is flashing and pixelated")
+      box(-3.2, 3.2, 0.08, 2.6, 0, 0.06, "#c9c3b6");  // the patio
+      box(-0.85, 0.85, 0.08, 0.5, 0.06, 0.32, "#bdb8ad"); box(-0.85, 0.85, 0.5, 0.95, 0.06, 0.18, "#bdb8ad");  // steps
+      box(-0.55, 0.55, 0.08, 0.13, 0.32, 2.45, "#f2f0ea"); box(-0.46, 0.46, 0.11, 0.15, 0.36, 2.38, "#4a3324");  // the door in its frame
+      box(-1.5, 1.5, 0.08, 1.9, 2.62, 2.72, "#9a8a76"); for (const u of [-1.4, 1.4]) box(u - 0.06, u + 0.06, 1.74, 1.86, 0.06, 2.62, "#f2f0ea");  // the porch roof on two posts
       for (const u of [-2.7, 2.5]) box(u - 0.22, u + 0.22, 1.9, 2.3, 0.06, 0.5, "#8a5a3c");  // pot plants either side
       for (const u of [-2.7, 2.5]) box(u - 0.18, u + 0.18, 1.95, 2.25, 0.5, 0.95, "#4f8a3a");
       m.addParts([{ positions: new Float32Array(Pp), normals: new Float32Array(Nn), colors: new Float32Array(Cc), color: [1, 1, 1], roughness: 0.8, doubleSide: true, matrix: new THREE.Matrix4().elements }]); }
