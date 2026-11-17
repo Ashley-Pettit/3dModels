@@ -10765,7 +10765,7 @@ const handle = async (m, post) => {
   // to default the camera to locked or unlocked (mouse controls camera)"). A layer in front of the game's keys: a key Rod chose is
   // passed on as the usual key for that action (walking, or driving a car), so nothing else in the game changes. His layout is kept on
   // his device (an-keys) and sent to the town planner's topic (k: "keys"), which tools/plans.py keeps, so it can be looked at later
-  const townIsRod = () => { let n = ""; try { n = (localStorage.getItem("an-player") || "").trim(); } catch {} return /^rod(ney)?$/i.test(n) || (!n && isRod()); };
+  const townIsRod = () => { let n = ""; try { n = (localStorage.getItem("an-player") || "").trim(); } catch {} return /^rod(ney)?\b/i.test(n) || (!n && isRod()); };
   const ROD_ACTIONS = { walk: [["fwd", "KeyW", "Walk forwards"], ["back", "KeyS", "Walk backwards"], ["left", "KeyA", "Step left"], ["right", "KeyD", "Step right"],
       ["run", "ShiftLeft", "Run"], ["jump", "Space", "Jump"], ["getin", "KeyE", "Get in a car"], ["explore", "KeyF", "Explore mode"]],
     car: [["go", "KeyW", "Go (accelerate)"], ["brake", "KeyS", "Brake and reverse"], ["left", "KeyA", "Steer left"], ["right", "KeyD", "Steer right"],
@@ -10775,7 +10775,7 @@ const handle = async (m, post) => {
     Comma: ",", Period: ".", Slash: "/", BracketLeft: "[", BracketRight: "]", Backslash: "\\", Minus: "-", Equal: "=", Backquote: "`" }[c] || c.replace(/^Key|^Digit|^Numpad/, m => m === "Numpad" ? "Num " : "");
   const rodLayout = () => { let L = null; try { L = JSON.parse(localStorage.getItem("an-keys") || "null"); } catch {} return L && typeof L === "object" ? L : { walk: {}, car: {}, cam: "look" }; };
   function bsRodKeys(F, desk) {
-    const P = { off() {}, setup() {}, panel() {}, offer: false }; if (!desk || !townIsRod()) return P;
+    const P = { off() {}, setup() {}, panel() {}, offer: false, live: false }; if (!townIsRod()) return P; P.live = true;
     let L = rodLayout(); L.walk = L.walk || {}; L.car = L.car || {};
     let sendT = 0; const save = () => { try { localStorage.setItem("an-keys", JSON.stringify(L)); } catch {} clearTimeout(sendT); try { if (!F.drive) BS.town?.car?.walkKeys?.(!!BS.town.walk); } catch {}
       sendT = setTimeout(() => { try { fetch(TOWN_PLANS, { method: "POST", body: JSON.stringify({ k: "keys", id: "keys-" + playerName().toLowerCase(), by: playerName(), town: BS.town?.cfg?.place === "moo" ? "moorooka" : BS.town?.cfg?.place === "inv" ? "inverloch" : "logan", v: 1, layout: L }) }).catch(() => {}); } catch {} }, 4000); };
@@ -11108,7 +11108,9 @@ const handle = async (m, post) => {
       // your player: the name over you and the colour of your top
       const you = el("div", "bs-me-sec"), lab = el("label", "bs-me-lbl", "Player name"), inp = el("input"); inp.id = "bsMeName"; lab.htmlFor = "bsMeName"; inp.type = "text"; inp.maxLength = 16; inp.autocomplete = "off"; inp.placeholder = playerName(); try { inp.value = localStorage.getItem("an-player") || ""; } catch {}
       inp.onkeydown = e => { e.stopPropagation(); if (e.key === "Enter") inp.blur(); }; inp.onkeyup = e => e.stopPropagation();
-      inp.onchange = () => { try { const v = inp.value.replace(/[<>]/g, "").trim().slice(0, 16); if (v) localStorage.setItem("an-player", v); else localStorage.removeItem("an-player"); } catch {} tell(); toast(`Your player name is ${playerName()}.`, 2200); };
+      inp.onchange = () => { try { const v = inp.value.replace(/[<>]/g, "").trim().slice(0, 16); if (v) localStorage.setItem("an-player", v); else localStorage.removeItem("an-player"); } catch {} tell(); toast(`Your player name is ${playerName()}.`, 2200);
+        // (Rod: his keys start now, not at the next game; Ash, 18 November 2026, "I'm in as rod, I don't see it in settings and I don't see the guide through")
+        const Fy = BS.fly; if (Fy && townIsRod() !== !!Fy.rod?.live) { Fy.rod?.off(); Fy.rod = bsRodKeys(Fy, true); meDraw(); if (Fy.rod.live && Fy.rod.offer) { Fy.rod.offer = false; meClose(); setTimeout(() => Fy.rod.setup(), 600); } } };
       const row = el("div", "bs-me-tops"); row.setAttribute("role", "group"); row.setAttribute("aria-label", "Top colour");
       TOPS.forEach((col, i) => { const bn = el("button"); bn.type = "button"; bn.style.background = col; bn.setAttribute("aria-label", `Top colour ${i + 1}`); bn.setAttribute("aria-pressed", String(myColour() === i));
         bn.onclick = () => { try { localStorage.setItem("an-player-colour", String(i)); } catch {} tell(); meDraw(); meBox.querySelector(`.bs-me-tops button:nth-child(${i + 1})`)?.focus(); }; row.append(bn); });
@@ -11181,8 +11183,8 @@ const handle = async (m, post) => {
         if (deskB) app.append(forWhat(`For ${deskB} on a computer`)); app.append(steps(S)); openPage(); app.append(deskB === "Firefox" ? copyBtn() : after); }
       const hi = el("div", "bs-me-h"), ho = el("span", "", F.hText || ""); ho.id = "bsMeH"; hi.append(el("span", "", "Height above the ground"), ho);
       // the controls tutorial, again
-      const keysB = BS.fly?.rod?.panel && townIsRod() && matchMedia("(hover: hover) and (pointer: fine)").matches ? el("button", "bs-me-go", "Keys (your own layout)") : null;
-      if (keysB) { keysB.type = "button"; keysB.onclick = () => { meClose(); BS.fly.rod.panel(); }; }
+      const keysB = BS.fly && townIsRod() ? el("button", "bs-me-go", "Keys (your own layout)") : null;
+      if (keysB) { keysB.type = "button"; keysB.onclick = () => { meClose(); const Fy = BS.fly; if (!Fy.rod?.live) { Fy.rod?.off(); Fy.rod = bsRodKeys(Fy, true); } Fy.rod.panel(); }; }
       const tut = el("button", "bs-me-go", "Play the controls tutorial"); tut.type = "button"; tut.onclick = () => { meClose(); if (!T.walk) T.toMode?.(true); setTimeout(() => F.on?.tutorial?.(), 150); };
       // the other towns, plain links (Ash, 15 November 2026: "In settings I want to be able to change from Logan to Inverloch and
       // moorooka. Nothing fancy. Just a hyperlink"): each opens that town's Explore page
