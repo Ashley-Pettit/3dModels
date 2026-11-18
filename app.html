@@ -10424,7 +10424,8 @@ const handle = async (m, post) => {
   // top with each change worth a look, and take off what Ash has seen (Ash, 19 November 2026: "I want you to have a btn for the player with
   // name ash that jumps to new features so I can quickly review")
   const MOO_NEW = [
-    ["Beaudesert Road's fences", "77 houses' front fences and driveways, from Street View", -305.7, -864.1, -1.727, 0.1],
+    ["Beaudesert Road, south end", "14 more houses' fences and driveways (383 to 397 and on)", -470.1, 836.2, 1.023, 0.1],
+    ["Beaudesert Road's fences", "91 houses' front fences and driveways, from Street View", -305.7, -864.1, -1.727, 0.1],
     ["26 Beaudesert Road", "The light way: two storeys, its black tubular fence", -299.9, -888.2, -1.727, 0.12],
     ["Pandy's house (24 Beaudesert Rd)", "As it really is: fence, bamboo, drive, pool out the back", -296.7, -908.9, -1.727, 0.08],
     ["Brisbane Car Yard", "Its sign and bunting off Ipswich Road", -663.8, -557.9, -1.464, 0.05],
@@ -10519,6 +10520,20 @@ const handle = async (m, post) => {
     { N: [-347.95, 718.53], S: [-353.58, 738.26], f: ["s",  "#ecebe8",  1.7], d: [0.4,  3.6,  12.3] },
     { N: [-429.76, 741.53], S: [-424.98, 726.7], f: ["s",  "#2f3236",  1.4,  "#a65a40",  0.5], d: [0.4,  3.6,  12.4] },
     { N: [-434.44, 756.05], S: [-429.76, 741.53], f: ["t",  "#4a5a40",  0.9], d: [11.7,  14.9,  11.9] },
+    { N: [-444.89, 773.37], S: [-434.44, 756.05], d: [0.4,  3.6,  6.9] },
+    { N: [-451.69, 784.66], S: [-444.89, 773.37], d: [9.6,  12.8,  8.6] },
+    { N: [-466.95, 809.81], S: [-458.48, 795.92], d: [12.7,  15.9,  14.9] },
+    { N: [-475.33, 823.56], S: [-466.95, 809.81], f: ["s",  "#a65a40",  0.6] },
+    { N: [-483.72, 837.3], S: [-475.33, 823.56], f: ["s",  "#ecebe6",  1.0], d: [6.4,  9.6,  13.7] },
+    { N: [-492.1, 851.05], S: [-483.72, 837.3], d: [6.5,  9.7,  7.4] },
+    { N: [-371.6, 840.13], S: [-373.26, 861.16], f: ["s",  "#dcd6c6",  1.4] },
+    { N: [-500.48, 864.79], S: [-492.1, 851.05], f: ["s",  "#e6e5e0",  0.9], d: [6.4,  9.6,  9.2] },
+    { N: [-373.26, 861.16], S: [-374.61, 878.21], f: ["s",  "#e3e1da",  1.4] },
+    { N: [-508.86, 878.54], S: [-500.48, 864.79], d: [12.5,  15.7,  5.8] },
+    { N: [-374.61, 878.21], S: [-375.95, 895.27], f: ["s",  "#cfc6ae",  1.6] },
+    { N: [-366.74, 933.1], S: [-362.1, 949.01], f: ["s",  "#a65a40",  0.9], d: [6.7,  9.9,  10.9] },
+    { N: [-362.1, 949.01], S: [-356.88, 966.85], f: ["s",  "#3f6b4a",  1.6] },
+    { N: [-570.0, 978.22], S: [-551.1, 946.57], f: ["s",  "#7c8a7c",  1.6] },
   ];
   function townHousesLite(T, m) {
     if (!m.addParts || !m.groundAt) return;
