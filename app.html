@@ -1673,6 +1673,10 @@ body.bstown.bsadmin-tool #bsTown { pointer-events: auto; touch-action: none; cur
   text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff, 0 0 5px rgba(255,255,255,.85); opacity: 0; transition: opacity .2s ease-out; will-change: transform, opacity; }
 .bs-streets span.major { font-size: 13px; font-weight: 700; }
 .bs-streets span.on { opacity: 1; }
+/* a shop's name over its sign when you're close (two at most): like the street names, with a little storefront mark */
+.bs-shoptag { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; white-space: nowrap; font: 600 12px/1 var(--ui); color: #23272f; padding: 3px 7px 3px 6px; border-radius: 9px; background: rgba(255,255,255,0.86); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+.bs-shoptag::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 2px; background: #e8a33c; vertical-align: 0; }
+.bs-shoptag[hidden] { display: none; }
 @media (prefers-reduced-motion: reduce) { .bs-streets span { transition: none; } }
 #bsTown.bs-nonames .lgn-label--road { display: none !important; }  /* Logan's own chips for its main roads go with the rest */
 .bs-town-list.bs-town-floods { top: calc(106px + env(safe-area-inset-top)); }
@@ -9351,7 +9355,7 @@ const handle = async (m, post) => {
   ];
   window.anStyle = (x, z) => { for (const q of MOO_STYLE) if (Math.abs(q.at[0] - x) < 0.6 && Math.abs(q.at[1] - z) < 0.6) return q; return null; };
   function townShops(T, m) {
-    const THREE = BS.B.THREE, out = [], parts = [], I = new THREE.Matrix4().elements;
+    const THREE = BS.B.THREE, out = [], parts = [], I = new THREE.Matrix4().elements; T.shopTags = [];  // (each shop's name and where its sign is, for the little name tags)
     const P = [], Nn = [], Cc = [];  // everything plain, in one piece: positions, normals, colours
     const rgb = hex => { const v = parseInt(hex.slice(1), 16); return [((v >> 16) & 255) / 255, ((v >> 8) & 255) / 255, (v & 255) / 255].map(c => Math.pow(c, 2.2)); };
     const shade = (hex, k) => "#" + [1, 3, 5].map(i => Math.max(0, Math.min(255, Math.round(parseInt(hex.slice(i, i + 2), 16) * k))).toString(16).padStart(2, "0")).join("");
@@ -9561,7 +9565,8 @@ const handle = async (m, post) => {
         if (f.kerbPaint) box(-1, len + 1, 0, 0.04, f.kerb - 0.25, f.kerb, f.kerbPaint);
       }
       // in Jump to: across the street (or on the near footpath, when the shop stands well back), looking at the shop's sign
-      shops.forEach((s, i) => { if (!s.jump) return;
+      shops.forEach((s, i) => { if (s.n && where[i]) { const q = at((where[i][0] + where[i][1]) / 2, signY + signH + 0.35, 0.3); T.shopTags.push({ n: s.n === "POST OFFICE" ? "Post Office" : s.n, x: q[0], y: q[1], z: q[2] }); }
+        if (!s.jump) return;
         const cx = (where[i][0] + where[i][1]) / 2, D = f.across + 1.6 <= 22 ? f.across + 1.6 : Math.max(6, f.kerb - 1.5), p = at(cx, 0, D), q = at(cx, 0, 0);
         out.push({ name: s.n === "POST OFFICE" ? "Moorooka Post Office" : s.n, group: "Shops and places", what: `${s.what}, ${f.addr}`, walk: { x: p[0], z: p[2], yaw: Math.atan2(f.n[0], f.n[1]), pitch: Math.atan2(signY + signH / 2 - 1.7, D) * 0.8 }, target: [q[0], q[2]] }); });
     }
@@ -11820,6 +11825,11 @@ const handle = async (m, post) => {
     const V2S = new THREE.Vector3();
     const folk = MOO_LOCALS.map(q => ({ ...q, look: q.yaw || 0, shown: false, parts: null, tag: Object.assign(document.createElement("div"), { className: "bs-peer bs-mayor", textContent: q.name, hidden: true }), near: false }));
     T.folk = () => folk;  // (the pigeon's game aims at them)
+    // little name tags over the shops near you, like the street names (Ash, 18 November 2026: "If I'm close to a business show up to a max
+    // of two businesses with little indicators like the street signs. if there isn't already a person or marker near it already so that
+    // it doesn't get too busy"): the nearest two within 30 m, skipping any with a local, a player or the arrow's mark within 7 m
+    const shopEl = [0, 1].map(() => Object.assign(document.createElement("div"), { className: "bs-shoptag", hidden: true })); shopEl.forEach(e => box.append(e));
+    let shopAt = 0, shopsOn = [];
     folk.forEach(q => { q.dot = Object.assign(document.createElement("div"), { className: "bs-news", hidden: true, title: "Has news for you" }); box.append(q.tag, q.dot); });
     // where a point is on the screen, or null behind you
     const onScreen = (x, y, z) => { const cam = m.getCamera?.(); if (!cam) return null; const w = box.clientWidth, h = box.clientHeight, f = 1 / Math.tan(((m.fov ? m.fov() : 50) * Math.PI) / 360);
@@ -12022,6 +12032,13 @@ const handle = async (m, post) => {
       // tipsy: you sway as you walk, and it wears off
       if (now > newsAt) { newsAt = now + 300000; newsRoll(); }
       nestFrame(now, dt, me, up, F);
+      if (now - shopAt > 300) { shopAt = now; shopsOn = []; const near = [];
+        if (up < 40) for (const t of T.shopTags || []) { const d = Math.hypot(t.x - me.x, t.z - me.z); if (d < 30) near.push([d, t]); }
+        near.sort((a, b) => a[0] - b[0]); const others = T.peers?.list?.() || [];
+        for (const [, t] of near) { if (shopsOn.length >= 2) break; const by = (x, z, r) => Math.hypot(x - t.x, z - t.z) < r;
+          if (folk.some(q => q.x != null && by(q.x, q.z, 7)) || others.some(q => by(q.x, q.z, 7)) || (guide && by(guide.x, guide.z, 7)) || (aimPt && by(aimPt.x, aimPt.z, 7)) || shopsOn.some(o => by(o.x, o.z, 5))) continue;
+          shopsOn.push(t); } }
+      shopEl.forEach((e, i) => { const t = shopsOn[i], s = t ? onScreen(t.x, t.y, t.z) : null; if (e.hidden === !!s) e.hidden = !s; if (s) { if (e.textContent !== t.n) e.textContent = t.n; e.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; } });
       // a local's news you said yes to: the pointer leads there (via the wrong place first, two times in three, for the golden one)
       if (guide && !F.drunk) { const tg = guide.decoy || guide, gd = Math.hypot(tg.x - me.x, tg.z - me.z);
         if (gd < 22) { if (guide.decoy) { guide.decoy = null; toast(`\ud83d\udcde ${guide.who}: Oh no, wrong spot, sorry! I'm sure it'll be at the next place. Follow the arrow.`, 5000); }
@@ -12060,7 +12077,7 @@ const handle = async (m, post) => {
         // (step back a metre and a half and they'll talk again, not eight: Ash, 18 November 2026, "When I leave a vendor and try and come
         // back, show the chat a bit faster or lower radius". The card still only shuts once you're well away)
         else if (d > (r || 4) + 1.5) { if (open !== q) { q.near = false; q.done = false; } else if (d > (r || 4) + 5) { q.near = false; q.done = false; shut(); } } } };
-    P.dispose = () => { removeEventListener("keydown", cardKeys, true); T.guideTo = null; T.aimAt = null; T.chick = null; chickBtn.remove(); try { nestP?.remove(); chickP?.remove(); } catch {} card.remove(); sprint.remove(); jumpB.remove(); ptr.remove(); for (const q of folk) { q.tag.remove(); q.dot.remove(); try { q.parts?.remove(); } catch {} } const F = BS.fly; if (F) { F.drunk = null; F.sprint = false; F.giant = null; } };
+    P.dispose = () => { removeEventListener("keydown", cardKeys, true); shopEl.forEach(e => e.remove()); T.guideTo = null; T.aimAt = null; T.chick = null; chickBtn.remove(); try { nestP?.remove(); chickP?.remove(); } catch {} card.remove(); sprint.remove(); jumpB.remove(); ptr.remove(); for (const q of folk) { q.tag.remove(); q.dot.remove(); try { q.parts?.remove(); } catch {} } const F = BS.fly; if (F) { F.drunk = null; F.sprint = false; F.giant = null; } };
     return P;
   }
   // ---- letters at the post office (Ash, 16 November 2026: "I want to be able to send mail at the post office. I type the player name, they
