@@ -1724,3 +1724,5 @@ drawn as a solid 7.5 m block with windows, carrying National Storage's sign, and
   you can walk and drive under them. Give a canopy `kind: 1` and `flat: true` so it gets a flat roof and no windows.
 - The BP's pylon is where Street View has it, on the grass between the driveways (it stood 40 m up the road, placed by number), and
   National Storage's sign is on its own three-storey charcoal building behind the BP.
+- The Coles Express at 1029 Ipswich Road is a Reddy Express now (Street View, September 2024): renamed, its canopy done the same way
+  with Reddy's red stripe, and its shops in their order along the front (Subway, Reddy Express, Gloria Jean's drive-through).
