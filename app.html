@@ -8063,7 +8063,7 @@ const handle = async (m, post) => {
     // With the passphrase entered (or in the private copy): keep the view you've flown to as this place's weather view
     // In the private copy that's for everyone: it goes in the database, and the hourly refresh carries it to the public apps.
     const lk = $("bsFlyLock"), key = BS.sceneKey, what = /^drive/.test(key || "") ? "drive" : "weather", all = state.mode === "claude" && !!state.db;
-    lk.hidden = !(A.unlocked || state.mode === "claude") || !key; lk.textContent = `Use this view for the ${what}, for everyone`;
+    lk.hidden = true;  // (gone: Ash, 18 November 2026, "Remove the btn set the weather view") lk.textContent = `Use this view for the ${what}, for everyone`;
     let sentAll = false;
     const keep = async v => { sentAll = false;
       if (all) { const next = { ...(state.wxCams || {}) }; if (v) next[key] = v; else delete next[key];
@@ -11092,7 +11092,7 @@ const handle = async (m, post) => {
     const drop = id => { riders?.delete(id); const q = peers.get(id); if (!q) return; try { q.parts?.remove(); } catch {} q.el.edge?.remove(); q.el.remove(); peers.delete(id); P.count = peers.size; };
     const got = (a, id) => { if (!Array.isArray(a) || a.length < 7 || !a.slice(0, 4).every(Number.isFinite)) return;
       let q = peers.get(id); if (!q) { if (peers.size >= 12) return; q = { el: label(id), name: "", kind: "", parts: null, a: null, b: null, colour: TOPS[[...String(id)].reduce((n, ch) => n + ch.charCodeAt(0), 0) % TOPS.length] }; peers.set(id, q); P.count = peers.size; }
-      const now = performance.now(), s = { x: a[0], y: a[1], z: a[2], h: a[3], p: +a[5] || 0, r: +a[6] || 0, k: SHAPES[String(a[4]).split("~")[0]] ? String(a[4]).slice(0, 40) : a[4] === "none" ? "none" : "walk", t: now };
+      const now = performance.now(), s = { x: a[0], y: a[1], z: a[2], h: a[3], p: +a[5] || 0, r: +a[6] || 0, fx: (+a[7] || 0) & 3, k: SHAPES[String(a[4]).split("~")[0]] ? String(a[4]).slice(0, 40) : a[4] === "none" ? "none" : "walk", t: now };
       q.a = q.b && now - q.b.t < 1500 ? (q.shown || q.b) : s; q.b = s; q.from = now; };
     const named = (raw, id) => { const n = Array.isArray(raw) ? raw[0] : raw, c = Array.isArray(raw) && TOPS[raw[1]]; if (c) { const q0 = peers.get(id); if (q0 && q0.colour !== c) { q0.colour = c; q0.kind = ""; } }
       const q = peers.get(id), name = String(n || "").replace(/[\u0000-\u001f<>]/g, "").trim().slice(0, 16) || "Player"; if (q) { if (!q.name) toast(`${name} is here.`, 2500); q.name = name; q.el.textContent = name; } else { got([0, -1e5, 0, 0, "none", 0, 0], id); const p2 = peers.get(id); if (p2) { p2.name = name; p2.el.textContent = name; if (c) p2.colour = c; toast(`${name} is here.`, 2500); } } };
@@ -11230,7 +11230,7 @@ const handle = async (m, post) => {
     join(2500);
     // what I am doing now, as seven small numbers
     const mine = () => { if (T.car?.riding?.()) return [0, 0, 0, 0, "none", 0, 0];  // riding with someone: they're what shows
-      const v = T.car?.in && !off ? T.car.pose?.() : null; if (v) return [v.x, v.y, v.z, v.h, v.k, v.p, v.r];
+      const v = T.car?.in && !off ? T.car.pose?.() : null; if (v) return [v.x, v.y, v.z, v.h, v.k, v.p, v.r, T.car.fxFlags?.() || 0];
       if (off) return [0, 0, 0, 0, "none", 0, 0];
       if (T.walk || BS.fly?.home) { const role = townRole() === "builder" ? "builder" : townPerks().chef ? "chef" : "walk", lc = townLookCode(), H = T.walk ? { x: F.pos.x, z: F.pos.z, yaw: F.yaw } : BS.fly.home;
         return [H.x, ground(H.x, H.z) + (T.walk ? F.jumpH || 0 : 0), H.z, H.yaw + Math.PI, lc ? role + "~" + lc : role, 0, 0]; }  // (in Explore mode, where your player stands)
@@ -11252,7 +11252,7 @@ const handle = async (m, post) => {
       // 2026, "I see the name of ash as 'a player'")
       if (sendName && now - (P.toldAt || 0) > 20000) { P.toldAt = now; tell(); }
       if (sendPose && now - tick > 200) { tick = now; const a = mine().map(v => typeof v === "number" ? Math.round(v * 100) / 100 : v);
-        const moved = !lastSent || a[4] !== lastSent[4] || Math.hypot(a[0] - lastSent[0], a[1] - lastSent[1], a[2] - lastSent[2]) > 0.04 || Math.abs(wrap(a[3] - lastSent[3])) > 0.02;
+        const moved = !lastSent || a[4] !== lastSent[4] || Math.hypot(a[0] - lastSent[0], a[1] - lastSent[1], a[2] - lastSent[2]) > 0.04 || Math.abs(wrap(a[3] - lastSent[3])) > 0.02 || Math.abs((a[6] || 0) - (lastSent[6] || 0)) > 0.02 || (a[7] || 0) !== (lastSent[7] || 0);
         if (moved || now - lastAt > 3000) { lastSent = a; lastAt = now; try { sendPose(a); } catch {} } }
       const can = !!T.walk && !T.car?.in && (peers.size > 0 || isAsh()); if (emoteBtn.hidden === can) { emoteBtn.hidden = !can; if (!can) emoteBox.hidden = true; }
       // Chat (in the Emote menu too) gets a button of its own while another player is within 200 m (Ash, 16 November 2026: "When another
@@ -11266,6 +11266,8 @@ const handle = async (m, post) => {
       if (saying && !mine3) { sayIn(meEl, "You said", myChat, now); meEl.hidden = false; meEl.classList.add("top"); meEl.style.transform = ""; }
       else { meEl.classList.remove("top"); if (!mine3 && !meEl.hidden) meEl.hidden = true; }
       // who is riding with you: the card at the top, and their names over what you're in
+      if (T.car?.in && riders.size) { const v0 = T.car.pose?.(); for (const [id, r] of riders) { const q = peers.get(id), b = q?.b; if (!q) { riders.delete(id); continue; }
+          if (r.possum && b && v0 && (!/possum/.test(b.k) || Math.hypot(b.x - v0.x, b.z - v0.z) > 15)) riders.delete(id); } }  // (a possum that's let go, or gone back to a person)
       const withMe = T.car?.in ? [...riders].map(([id, r]) => ({ q: peers.get(id), r })).filter(o => o.q) : [];
       { const txt = withMe.length ? withMe.map(o => o.q.name || "A player").join(" and ") + (withMe.length > 1 ? " are" : " is") + (withMe.every(o => o.r.possum) ? " holding on to you" : " riding with you") : "";
         if (rideCard.dataset.t !== txt) { rideCard.dataset.t = txt; rideCard.textContent = txt; rideCard.hidden = !txt; }
@@ -11284,6 +11286,7 @@ const handle = async (m, post) => {
       // there is more than 3 players in the game, just show prominent icons for the closest two and subtle ones where further away")
       let bold = null; { const L = []; for (const [id, q] of peers) { const s0 = q.shown || q.b; if (q.b && q.b.k !== "none" && s0) L.push([Math.hypot(s0.x - cam.x, s0.z - cam.z), id]); }
         if (L.length >= 3) bold = new Set(L.sort((a, b) => a[0] - b[0]).slice(0, 2).map(e => e[1])); }
+      T.car?.fxFrame?.(Math.min(0.1, (now - (P.fxLast || now)) / 1000)); P.fxLast = now;
       for (const [id, q] of peers) { if (!q.b) continue;
         if (now - q.b.t > 12000) { drop(id); continue; }  // not heard from: gone
         { const quiet = !!bold && !bold.has(id); if (q.el.classList.contains("far") !== quiet) { q.el.classList.toggle("far", quiet); q.el.edge?.classList.toggle("far", quiet); } }
@@ -11293,6 +11296,7 @@ const handle = async (m, post) => {
         // a fifth of a second behind, gliding from where they were shown to the newest word of them
         const t = Math.min(1, (now - q.from) / 220), a = q.a || q.b, b = q.b, far = Math.hypot(b.x - a.x, b.z - a.z) > 60, k = far ? 1 : t;
         const s = q.shown = { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k, z: a.z + (b.z - a.z) * k, h: a.h + wrap(b.h - a.h) * k, p: a.p + (b.p - a.p) * k, r: a.r + (b.r - a.r) * k, t: now };
+        if (b.fx) T.car?.peerFx?.(s, b.fx, Math.min(0.1, (now - (q.fxAt || now)) / 1000)); q.fxAt = now;  // (their sparks and rockets, on your screen too)
         // a possum holding on to what you're driving or flying: drawn right where it holds on (its own word of where it is comes a
         // moment late, and at a plane's speed that was well behind the plane: Ash, 15 November 2026, "When flying the plane and the
         // possum is on I can't see the possum")
@@ -11336,8 +11340,8 @@ const handle = async (m, post) => {
     goldBoostSecs: [5, "Golden car boost lasts", "seconds", 1, 60], goldBoostBack: [5, "Golden car boost refills in", "seconds", 0.5, 120], planeBoost: [0, "Standard plane has a boost", "0 for no, 1 for yes", 0, 1],
     // a passenger's boost, held like the driver's own, with its own settings (Ash, 16 November 2026: "I want the boost from the passenger
     // to work like the cars normal boost just different settings"; "Jump cd to 10 from 15")
-    teamBoostSecs: [3, "Passenger boost lasts", "seconds", 1, 60], teamBoostBack: [8, "Passenger boost refills in", "seconds", 1, 120], teamBoostShare: [50, "Passenger boost is this much of a boost", "%", 0, 200],
-    teamBoostExtra: [2, "Passenger boost adds on top", "km/h", 0, 50], trickBack: [10, "Passenger jump or spin comes back in", "seconds", 2, 120],
+    teamBoostSecs: [3, "Passenger boost lasts", "seconds", 1, 60], teamBoostBack: [8, "Passenger boost refills in", "seconds", 1, 120], teamBoostShare: [100, "Passenger boost is this much of a boost", "%", 0, 200],  /* (was 50: Ash, 18 November 2026, "Increase the boost that another player gives the driver") */
+    teamBoostExtra: [6, "Passenger boost adds on top", "km/h", 0, 50], trickBack: [10, "Passenger jump or spin comes back in", "seconds", 2, 120],
     // the possum (Ash, 15 November 2026: "Add into settings the ability to customise the possum. Slow it down by 25% but add back
     // boost"): 71 km/h is a quarter under the 95 it was
     possumTop: [71, "Possum top speed", "km/h", 10, 300], possumBoost: [60, "Possum boost adds", "%", 0, 400], possumJump: [11.1, "Possum jump", "m/s upwards", 2, 40], possumClimb: [12, "Possum climbing speed", "m/s", 2, 60], volume: [100, "Engine volume", "%", 0, 300] };
@@ -12419,7 +12423,7 @@ const handle = async (m, post) => {
       if (on && car) M.compose(V.set(car.x, car.y, car.z), Q.setFromEuler(E.set(-car.p, car.h, car.r, "YXZ")), BEAT.set(beat * (car.bus ? 2.1 : 1), 1, beat * (car.bus ? 2.1 : 1)));
       for (let i = 0; i <= RING; i++) { const show = !!on && !!car && (i === 0 || i <= full); if (show || lit[i]) { ring.setMatrix(i, show ? M.elements.slice() : NONE); lit[i] = show; } }
       const pc = Math.round(charge * 100) + "%"; if (boostBtn.style.getPropertyValue("--charge") !== pc) boostBtn.style.setProperty("--charge", pc); };
-    const leave = step => { if (!veh) return; const was = veh; if (held) { document.body.classList.remove("bsheld"); held = null; } rockets(false); if (sky) { skyEnd(); skyTried = false; } for (let i = 0; i < FXN; i++) if (sparks[i]) { sparks[i] = null; fx.setMatrix(i, NONE); } if (was !== "possum" && was !== "ride") snd.door(); snd.stop();
+    const leave = step => { if (!veh) return; const was = veh; if (was === "possum" && pos?.cling) { try { T.peers?.ride?.(pos.cling.id, false); } catch {} pos.cling = null; }  // (it stayed stuck to the driver: Ash, 18 November 2026) if (held) { document.body.classList.remove("bsheld"); held = null; } rockets(false); if (sky) { skyEnd(); skyTried = false; } for (let i = 0; i < FXN; i++) if (sparks[i]) { sparks[i] = null; fx.setMatrix(i, NONE); } if (was !== "possum" && was !== "ride") snd.door(); snd.stop();
       if (was === "ride") { const q = ride.q; if (ride.local) { ride.local.rider = false; snd.door(); } else T.peers?.ride?.(ride.id, false);
         if (step && q && ride.local) { F.pos.x = q.x - Math.cos(q.h) * 2.6; F.pos.z = q.z + Math.sin(q.h) * 2.6; F.yaw = q.h - Math.PI / 2; F.pitch = -0.04; }  // off the bus's kerb-side door
         else if (step && q) { const back = RIDE_UP[q.k] > 1 ? 2.4 : 1.2; F.pos.x = q.x - Math.cos(q.h) * back; F.pos.z = q.z + Math.sin(q.h) * back; F.yaw = q.h + Math.PI; F.pitch = -0.04; }
@@ -12831,8 +12835,18 @@ const handle = async (m, post) => {
         toast(gold && spin ? `\ud83d\ude80 ${from}, the golden possum: mega jump!` : spin ? `${from} sent you flying!` : `${from} made you jump!`, 1600); }
       else if (veh === "plane" && !plane.trick) { plane.trick = { t: 0, turns: gold ? 2 : 1 }; snd.whoosh(); toast(gold ? `${from} spun you round twice!` : `${from} spun you round!`, 1600); }
       return true; };
+    C.fxFlags = () => veh === "car" && car ? (car.trick?.spin ? 1 : 0) | (rkOn ? 2 : 0) : 0;
+    // the effects on someone else's car, as their pose says (sparks while it's up in a trick, rockets while its golden boost is on)
+    let peerRk = null;
+    C.peerFx = (v, flags, dt) => { if (!v) return; if (flags & 1 && Math.random() < dt * 26) fxSpray({ x: v.x, y: v.y, z: v.z, h: v.h, spinY: 0 }, false); if (flags & 2) peerRk = v; };
+    C.fxFrame = dt => { if (!F.drive) fxTick(Math.min(dt, 0.1));
+      if (peerRk && !(veh === "car" && rkOn)) { const v = peerRk, sn = Math.sin(v.h), cs = Math.cos(v.h), x = v.x - sn * 2.35, z = v.z - cs * 2.35, y = v.y + 0.75, fl = 0.7 + Math.random() * 0.6;
+        M.compose(V.set(x, y, z), Q0.setFromEuler(E.set(-(v.p || 0), v.h, v.r || 0, "YXZ")), ONE); rk.setMatrix(0, M.elements.slice()); M.compose(V.set(x - sn * 0.65, y, z - cs * 0.65), Q0, RKS.set(1, 1, fl)); rk.setMatrix(1, M.elements.slice()); peerShown = true; }
+      else if (peerShown && !(veh === "car" && rkOn)) { peerShown = false; rk.setMatrix(0, NONE); rk.setMatrix(1, NONE); }
+      peerRk = null; };
+    let peerShown = false;
     C.pose = () => veh === "ride" ? null : veh === "possum" ? { k: "possum", x: pos.x, y: pos.y, z: pos.z, h: pos.h, p: pos.p, r: 0 } : veh === "car" ? { k: car.bus ? "bus" : car.gold ? "gold" : "car", x: car.x, y: car.y, z: car.z, h: car.h + (car.spinY || 0), p: car.p, r: car.r + (car.roll || 0) }
-      : veh ? { k: plane.heli ? (plane.gold ? "goldheli" : "heli") : plane.gold ? "goldplane" : "plane", x: plane.x, y: plane.y, z: plane.z, h: plane.h, p: plane.p, r: plane.r } : null;
+      : veh ? { k: plane.heli ? (plane.gold ? "goldheli" : "heli") : plane.gold ? "goldplane" : "plane", x: plane.x, y: plane.y, z: plane.z, h: plane.h, p: plane.p, r: plane.r + (plane.roll || 0) } : null;
     C.where = () => veh === "ride" ? { kind: "ride", with: ride.name } : veh === "possum" ? { kind: "possum", x: pos.x, y: pos.y, z: pos.z, heading: pos.h, speed: pos.v, mode: pos.mode, up: pos.y - ground(pos.x, pos.z) } : veh === "car" ? { kind: "car", gold: !!car.gold, bus: !!car.bus, x: car.x, z: car.z, heading: car.h, dir: car.dir, speed: car.v, charge } : veh ? { kind: "plane", heli: !!plane.heli, x: plane.x, y: plane.y, z: plane.z, heading: plane.h, pitch: plane.p, speed: plane.v, air: plane.air } : null;  // for checking
     C.reread = () => Object.assign(R, townPerkRide(rideSettings()));  // a number changed in Settings: the ones read as it goes (turning) apply straight away
     C.planes = planes; C.gold = gold; C.goldHeli = planes.find(P => P.heli && P.gold) || null;
