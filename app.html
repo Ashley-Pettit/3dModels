@@ -11065,7 +11065,8 @@ const handle = async (m, post) => {
     // a love potion (Ash, 16 November 2026: "buy a love potion that forces another player to follow you for 30 seconds"): it goes to the
     // nearest other player on foot within 40 m, whose app walks them after you for 30 seconds
     let sendPotion = null; P.potion = () => { const n = townPerks().potions | 0; if (n < 1) return false;
-      const me = { x: F.pos.x, z: F.pos.z }; let best = null, far = 40; for (const [id, q] of peers) { const s = q.shown; if (!s || q.b?.k !== "walk" && q.b?.k !== "builder" && q.b?.k !== "chef") continue; const d = Math.hypot(s.x - me.x, s.z - me.z); if (d < far) { far = d; best = [id, q]; } }
+      // (players on foot send "walk~" and their look, so only a plain "walk" was ever matched: Ash, 18 November 2026, "Love potion isn't working")
+      const me = F.home ? { x: F.home.x, z: F.home.z } : { x: F.pos.x, z: F.pos.z }; let best = null, far = 40; for (const [id, q] of peers) { const s = q.shown, k0 = String(q.b?.k || "").split("~")[0]; if (!s || k0 !== "walk" && k0 !== "builder" && k0 !== "chef") continue; const d = Math.hypot(s.x - me.x, s.z - me.z); if (d < far) { far = d; best = [id, q]; } }
       if (!best) { toast("No one on foot close enough. Get within 40 m of another player.", 2600); return false; }
       try { sendPotion?.(1, best[0]); } catch {} townPerkSet("potions", n - 1 || null); toast(`\ud83d\udc98 ${best[1].name || "They"} can't help following you for 30 seconds!`, 3000); return true; };
     // given one: walked after them for 30 seconds, however you steer
