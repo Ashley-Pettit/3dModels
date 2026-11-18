@@ -9311,8 +9311,8 @@ const handle = async (m, post) => {
       windows: [[1.2, 8.4, 1, "#20262d", 2.4, 4.4], [1.2, 8.4, 1, "#20262d", 7.0, 9.0], [1.2, 8.4, 1, "#20262d", 13.0, 15.0], [1.2, 8.4, 1, "#20262d", 17.6, 19.6]],
       shops: [{ n: "NATIONAL STORAGE", w: 19, c: ["#f2c300", "#23262b"], what: "Storage units" }] },
     { kind: "sign", addr: "1160 Ipswich Road", a: [-1135.8, 280.6], b: [-1139.9, 298.7], n: [-0.9753, -0.2209], kerb: 17.69, across: 27.29, eave: 19.1, wall: "#e7e7e4",
-      flags: [-6, 20, ["#e8337a", "#c8102e"]],
-      shops: [{ n: "MOTORAMA", sub: "PRE-OWNED", w: 10, c: ["#111111", "#ffffff"], what: "Used cars", jump: true }] },
+      flags: [-6, 20, ["#e8337a", "#e8337a", "#c8102e"]], band: true,
+      shops: [{ n: "MOTORAMA", sub: "PRE-OWNED", w: 10, c: ["#e8337a", "#ffffff"], what: "Used cars", jump: true }] },
     { kind: "sign", addr: "5 Hamilton Road", a: [-1130.9, 386.5], b: [-1152.8, 383.3], n: [0.1446, -0.9895], kerb: 8.61, across: 19.21, eave: 22.6, wall: "#585c62",
       shops: [{ n: "Connections", sub: "EARLY LEARNING", w: 8, c: ["#e5501f", "#ffffff"], what: "Childcare" }] },
     { kind: "sign", addr: "12/115 Muriel Avenue", a: [-1204.7, 742.9], b: [-1193.4, 744.5], n: [-0.1402, 0.9901], kerb: 19.49, across: 24.69, eave: 19.4, wall: "#e2e2df",
@@ -9582,7 +9582,8 @@ const handle = async (m, post) => {
     { kind: "row", addr: "655 Toohey Road, Salisbury", a: [1283.4, 1193.4], b: [1299.5, 1100.6], n: [0.9853, 0.1709], kerb: 20.91, across: 26.91, eave: 37.4, wall: "#4e5258",
       windows: [3.4, 4.8, 16, "#2a3640"],
       shops: [{ w: 3 }, { n: "Supernumerary Coffee", w: 6, c: ["#1d1d1d", "#ffffff"], what: "Coffee", jump: true }, { w: 6 },
-        { n: "Le Boulangerie Amour Fou", w: 7, c: ["#f1e6d2", "#5a3a1e"], what: "French bakery", jump: true }, { w: 72.2 }] },
+        { n: "Le Boulangerie Amour Fou", w: 7, c: ["#f1e6d2", "#5a3a1e"], what: "French bakery", jump: true }, { w: 2 },
+        { n: "Fitstop", w: 7, c: ["#111111", "#ffffff"], what: "Gym" }, { w: 63.2 }] },
     { kind: "sign", addr: "449 Beaudesert Road", a: [-568.8, 1059.4], b: [-566.7, 1049.8], n: [0.9769, 0.2137], kerb: 25.82, across: 35.42, eave: 15.6, wall: "#eeede9", band: true,
       shops: [{ n: "Brisbane Appliance", sub: "SERVICE CENTRE", w: 9, c: ["#ffffff", "#1f4fa0"], what: "Appliance repairs" }] },
     // three more from Google Maps, each from Street View (19 November 2026): Sabor's dark timber cafe on Station Road, Yeerongpilly
@@ -9611,6 +9612,39 @@ const handle = async (m, post) => {
     { kind: "row", addr: "26 Queens Way, Yeerongpilly", a: [-1354.5, -1182.0], b: [-1361.9, -1132.5], n: [-0.9891, -0.147], kerb: 6.34, across: 16.94, eave: 17.5, wall: "#9a9da0", fascia: "#5a5f66",
       shops: [{ w: 8 }, { n: "Figtree Social", w: 8, c: ["#2f4a3a", "#ffffff"], what: "Cafe", jump: true }, { n: "Bureau of Beauty", w: 8, c: ["#1d1d1d", "#ffffff"], what: "Beauty salon" },
         { w: 6 }, { n: "Jessica James", sub: "HAIR", w: 8, c: ["#ffffff", "#1d1d1d"], what: "Hairdresser" }, { w: 12 }] },
+    // Sundays Cafe on the corner of Brooke Street and Pegg Road, Rocklea (Street View, 2024: a pale blue-grey corner shop under a flat
+    // awning, then signed Rocklea Rail Takeaway), and Future Auto in the long white building at the Moorooka Servo (485 Beaudesert Road)
+    { kind: "sign", addr: "59 Brooke Street, Rocklea", a: [-1205.5, 1153.4], b: [-1213.6, 1146.8], n: [0.6317, -0.7752], kerb: 0.3, across: 10.49, eave: 11.9, wall: "#b8c7d0", noBoard: true,
+      veranda: { deep: 1.8, col: "#d9dee0", posts: "#eceee9", sign: [0.6, 9.8, 0.7] },
+      shops: [{ n: "Sundays Cafe", sub: "ROCKLEA", w: 9, c: ["#ffffff", "#2b2b2b"], what: "Cafe", jump: true }] },
+    { kind: "sign", addr: "485 Beaudesert Road (Future Auto)", a: [-610.9, 1197.2], b: [-594.4, 1147.3], n: [0.9494, 0.3139], kerb: 17.9, across: 27.5, eave: 15.7, wall: "#eeede9", high: true, bx: 10, bw: 9,
+      rollers: [[3.5, 7.5, 3.3, "#d2d4d6", true]], windows: [[0.0, 2.4, 1, "#2a3640", 9.0, 11.4], [3.45, 3.6, 1, "#c8102e", 0.0, 52.6]],
+      shops: [{ n: "FUTURE AUTO", sub: "TYRES & MECHANICAL", w: 9, c: ["#ffffff", "#c8102e"], what: "Tyres and mechanic" }] },
+    // PSBROS Auto Care in the grey iron shed at 23 Sherwood Road, Rocklea: a workshop door open, yellow and white flags out the front
+    { kind: "sign", addr: "U2/23 Sherwood Road, Rocklea", a: [-1551.1, 670.2], b: [-1524.0, 680.1], n: [-0.3431, 0.9393], kerb: 19.08, across: 25.08, eave: 13.2, wall: "#c4c8cc", high: true, bx: 14, bw: 8,
+      rollers: [[10.0, 14.5, 3.4, "#d2d4d6", true]], windows: [0.0, 2.4, 1, "#2a3640", 17.5, 21.0], flags: [-2, 9, ["#f2c200", "#ffffff"]],
+      shops: [{ n: "PSBROS AUTO CARE", w: 8, c: ["#ffffff", "#1d1d1d"], what: "Mechanic" }] },
+    // Dragonfly's depot at 35 Evans Road, Salisbury: a white warehouse behind a brick fence, its big charcoal sign up high (Street View,
+    // August 2024; four thousand reviews on Google Maps)
+    { kind: "sign", addr: "Building 2/35 Evans Road, Salisbury", a: [-307.5, 1040.5], b: [-332.4, 1036.4], n: [0.1625, -0.9867], kerb: 24.16, across: 30.16, eave: 27.0, wall: "#efeeea", sy: [3.6, 5.6], bw: 9,
+      shops: [{ n: "Dragonfly", t: "dragonfly", sub: "DELIVERY DONE DIFFERENTLY", w: 9, c: ["#1f2328", "#ffffff"], what: "Parcel delivery depot" }] },
+    // the Moorooka Motel on Ipswich Road (Street View, September 2024): a cream office behind a blue-grey wall with its name on it, and the
+    // blue MOTEL sign on its pole by the road
+    { kind: "sign", addr: "980 Ipswich Road", a: [-661.3, -553.9], b: [-663.7, -541.7], n: [-0.9812, -0.193], kerb: 9.56, across: 19.46, eave: 30.4, wall: "#ece6d6", noBoard: true,
+      pole: { n: "MOTEL", sub: "MOOROOKA", c: ["#1f4f9a", "#ffffff"], x: 14.0, back: 1.0, big: 1.2 },
+      tenants: { lines: ["MOOROOKA MOTEL"], c: ["#5d6f86", "#ffffff"], x: 4.5, back: 1.4, w: 5.5, lh: 0.42, y: 0.15 },
+      shops: [{ n: "Moorooka Motel", w: 12, c: ["#1f4f9a", "#ffffff"], what: "Motel" }] },
+    // Goodlife at the south end of YG Riverside Village's Queens Way side
+    { kind: "sign", addr: "25 Figtree Street, Yeerongpilly", a: [-1362.6, -1127.6], b: [-1365.1, -1110.8], n: [-0.9891, -0.147], kerb: 6.34, across: 16.94, eave: 17.5, wall: "#9a9da0", glass: "#22303a", sy: [3.4, 4.4],
+      shops: [{ n: "Goodlife", sub: "HEALTH CLUBS", w: 8, c: ["#1d1d1d", "#ffffff"], what: "Gym" }] },
+    // Bandesha Autos (26 Baldock Street): a beige brick workshop with two doors open and its signs over them; Wilson Timbers (13 Davey
+    // Street, Salisbury): the timber yard's sheds behind its tall blue and white sign by the fence (Street View)
+    { kind: "sign", addr: "26 Baldock Street", a: [-1040.5, -280.1], b: [-1048.8, -297.7], n: [0.9045, -0.4265], kerb: 7.92, across: 18.32, eave: 14.6, wall: "#d8c9a8", bx: 6.8, bw: 4.4, high: true,
+      rollers: [[4.6, 9.0, 3.1, "#c9ccd0", true], [11.2, 15.4, 3.1, "#c9ccd0", true]], windows: [[0.6, 2.4, 1, "#2a3640", 0.4, 3.8], [0.6, 2.4, 1, "#2a3640", 16.0, 19.2]],
+      shops: [{ n: "BANDESHA AUTOS", w: 8, c: ["#ffffff", "#1f4fa0"], what: "Mechanic" }] },
+    { kind: "sign", addr: "13 Davey Street, Salisbury", a: [387.9, 716.5], b: [347.2, 709.0], n: [0.1812, -0.9834], kerb: 8.97, across: 19.57, eave: 40.5, wall: "#d9dcdd", noBoard: true,
+      rollers: [[20.0, 25.0, 3.8, "#3b3f45", true]], pole: { n: "WILSON TIMBERS", c: ["#ffffff", "#1f4fa0"], x: 15.0, back: 1.2, big: 1.2 },
+      shops: [{ n: "Wilson Timbers", w: 10, c: ["#ffffff", "#1f4fa0"], what: "Timber yard" }] },
     { kind: "sign", addr: "1 Sherley Street", a: [-189.6, 135.3], b: [-208.0, 132.2], n: [0.1661, -0.9861], kerb: 23.11, across: 33.71, eave: 40.5, wall: "#e9dcc4", shops: [{ n: "Moorooka State School", w: 18.7, c: ["#163e7a", "#ffffff"], what: "Primary school (heritage listed)", jump: true }] },
     { kind: "sign", addr: "17 Hawtree Street", a: [-654.6, 331.9], b: [-647.5, 301.6], n: [0.9736, 0.2281], kerb: 10.82, across: 21.42, eave: 41.7, wall: "#e4d6c2", shops: [{ n: "St Brendan's School", w: 31.1, c: ["#7a1c2a", "#ffffff"], what: "Catholic primary school", jump: true }] },
   ];
@@ -9644,6 +9678,14 @@ const handle = async (m, post) => {
     { at: [194.40, -392.70], kind: 2, wall: [152, 80, 62] },                // The Clubhouse Moorooka (76 Koala Road): red-brown brick
     { at: [-372.98, 278.00], wall: [226, 216, 192] },                      // Star Seafood (Keats Street): cream weatherboard
     { at: [-1298.44, -1182.92], kind: 2, wall: [150, 154, 158] },           // YG Riverside Village (Yeerongpilly): grey precast concrete
+    { at: [-1210.47, 1156.48], kind: 2, wall: [184, 199, 208] },            // Sundays Cafe (59 Brooke Street, Rocklea): pale blue-grey
+    { at: [-606.21, 1160.49], kind: 2, wall: [238, 237, 233] },             // the Moorooka Servo's building (485 Beaudesert Road): white
+    { at: [-1529.3, 652.6], kind: 2, wall: [196, 200, 204] },               // 23 Sherwood Road, Rocklea (PSBROS Auto Care): grey iron
+    { at: [-315.09, 1097.44], kind: 2, wall: [239, 238, 234] },             // Dragonfly's depot (35 Evans Road): a white warehouse
+    { at: [-1128.11, 286.96], kind: 2, wall: [240, 239, 236] },             // Motorama (1160 Ipswich Road): white
+    { at: [-642.92, -543.92], wall: [236, 230, 214] },                      // the Moorooka Motel (980 Ipswich Road): cream
+    { at: [-1064.5, -279.0], kind: 2, wall: [206, 186, 150] },              // Bandesha Autos (26 Baldock Street): beige brick
+    { at: [365.0, 726.62], kind: 2, wall: [217, 220, 221] },                // Wilson Timbers (13 Davey Street): pale grey sheds
     { at: [-876.96, -340.86], kind: 1, flat: true, wall: [244, 244, 242], canopy: { band: 1.0, stripe: [214, 30, 38] } },  // Reddy Express (1029 Ipswich Road): red
     { at: [-911.64, -637.63], kind: 2, wall: [214, 202, 174] },             // 281 Station Road: beige over a blue-grey awning
     { at: [1354.06, 1194.91], kind: 2, wall: [239, 237, 232] },             // 660 Toohey Road's shops: white
@@ -10046,7 +10088,7 @@ const handle = async (m, post) => {
           if (T2.n) T.shopTags.push((q => ({ n: T2.n, x: q[0], y: q[1], z: q[2] }))(at(px, y0 + h + 0.35, o))); } }
       // in Jump to: across the street (or on the near footpath, when the shop stands well back), looking at the shop's sign
       // (a shop on a post out the front: its tag over the post, not over the wall behind it)
-      shops.forEach((s, i) => { if (s.n && where[i]) { const pk = f.pole?.big || 1, q = f.pole && f.noBoard ? at(f.pole.x ?? -1.6, 1.15 + 1.45 * pk + 0.15 + 0.8 * pk + 0.35, f.pole.o ?? bsClamp(f.kerb - (f.pole.back ?? 1.6), 2, 9)) : at((where[i][0] + where[i][1]) / 2, signY + signH + 0.35, 0.3); T.shopTags.push({ n: s.n === "POST OFFICE" ? "Post Office" : s.n, x: q[0], y: q[1], z: q[2] }); }
+      shops.forEach((s, i) => { if (s.n && where[i]) { const pk = f.pole?.big || 1, q = f.pole && f.noBoard ? at(f.pole.x ?? -1.6, 1.15 + 1.45 * pk + 0.15 + 0.8 * pk + 0.35, f.pole.o ?? bsClamp(f.kerb - (f.pole.back ?? 1.6), 2, 9)) : at(f.kind === "sign" && f.bx != null && shops.length === 1 ? f.bx : (where[i][0] + where[i][1]) / 2, signY + signH + 0.35, 0.3); T.shopTags.push({ n: s.n === "POST OFFICE" ? "Post Office" : s.n, x: q[0], y: q[1], z: q[2] }); }
         if (!s.jump) return;
         const cx = (where[i][0] + where[i][1]) / 2, D = f.across + 1.6 <= 22 ? f.across + 1.6 : Math.max(6, f.kerb - 1.5), p = at(cx, 0, D), q = at(cx, 0, 0);
         out.push({ name: s.n === "POST OFFICE" ? "Moorooka Post Office" : s.n, group: "Shops and places", what: `${s.what}, ${f.addr}`, walk: { x: p[0], z: p[2], yaw: Math.atan2(f.n[0], f.n[1]), pitch: Math.atan2(signY + signH / 2 - 1.7, D) * 0.8 }, target: [q[0], q[2]] }); });
