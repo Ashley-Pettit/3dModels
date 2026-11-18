@@ -1711,3 +1711,16 @@ building, with overhangs, so near a gable end the guess was well below the drawn
 - `app.html` keeps those in one shared array of numbers (`anRoofs`, found by the building's middle) and the possum's `roofAt` uses
   them first. Buildings the model raises another way (the detailed houses near number 6) keep the old guess.
 - On a test, 367 of the 378 roofs within 300 m of the possum were found this way.
+
+## Moorooka: servo canopies on posts (19 November 2026)
+
+Checking the businesses against Street View (Ash: "check for errors in current ones") showed the BP at 1129 Ipswich Road's canopy
+drawn as a solid 7.5 m block with windows, carrying National Storage's sign, and the Ampol's and Pearl Energy's canopies the same.
+
+- `moorooka-model.js` (`?v=41`, patched in the bundle; rebuilding from source loses it, so put it back): a `MOO_STYLE` entry with
+  `canopy: { band, stripe, under, post }` draws the building as a canopy. `anCanopy` (just before `$_`) draws the fascia round the
+  edge (`band` metres deep, white with the brand's `stripe` across it), its inside face, the underside (lit as if it faced up, and
+  glowing at night like the canopy's lamps) and two rows of posts down to the forecourt. `K_` (the solid test) skips canopies, so
+  you can walk and drive under them. Give a canopy `kind: 1` and `flat: true` so it gets a flat roof and no windows.
+- The BP's pylon is where Street View has it, on the grass between the driveways (it stood 40 m up the road, placed by number), and
+  National Storage's sign is on its own three-storey charcoal building behind the BP.
