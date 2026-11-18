@@ -11105,7 +11105,7 @@ const handle = async (m, post) => {
     const drop = id => { riders?.delete(id); const q = peers.get(id); if (!q) return; try { q.parts?.remove(); } catch {} q.el.edge?.remove(); q.el.remove(); peers.delete(id); P.count = peers.size; };
     const got = (a, id) => { if (!Array.isArray(a) || a.length < 7 || !a.slice(0, 4).every(Number.isFinite)) return;
       let q = peers.get(id); if (!q) { if (peers.size >= 12) return; q = { el: label(id), name: "", kind: "", parts: null, a: null, b: null, colour: TOPS[[...String(id)].reduce((n, ch) => n + ch.charCodeAt(0), 0) % TOPS.length] }; peers.set(id, q); P.count = peers.size; }
-      const now = performance.now(), s = { x: a[0], y: a[1], z: a[2], h: a[3], p: +a[5] || 0, r: +a[6] || 0, fx: (+a[7] || 0) & 3, k: SHAPES[String(a[4]).split("~")[0]] ? String(a[4]).slice(0, 40) : a[4] === "none" ? "none" : "walk", t: now };
+      const now = performance.now(), s = { x: a[0], y: a[1], z: a[2], h: a[3], p: +a[5] || 0, r: +a[6] || 0, fx: (+a[7] || 0) & 7, k: SHAPES[String(a[4]).split("~")[0]] ? String(a[4]).slice(0, 40) : a[4] === "none" ? "none" : "walk", t: now };
       q.a = q.b && now - q.b.t < 1500 ? (q.shown || q.b) : s; q.b = s; q.from = now; };
     const named = (raw, id) => { const n = Array.isArray(raw) ? raw[0] : raw, c = Array.isArray(raw) && TOPS[raw[1]]; if (c) { const q0 = peers.get(id); if (q0 && q0.colour !== c) { q0.colour = c; q0.kind = ""; } }
       const q = peers.get(id), name = String(n || "").replace(/[\u0000-\u001f<>]/g, "").trim().slice(0, 16) || "Player"; if (q) { if (!q.name) toast(`${name} is here.`, 2500); q.name = name; q.el.textContent = name; } else { got([0, -1e5, 0, 0, "none", 0, 0], id); const p2 = peers.get(id); if (p2) { p2.name = name; p2.el.textContent = name; if (c) p2.colour = c; toast(`${name} is here.`, 2500); } } };
@@ -12464,26 +12464,41 @@ const handle = async (m, post) => {
     const fxAdd = (x, y, z, vx, vy, vz, life) => { const i = fxAt++ % FXN; sparks[i] = { x, y, z, vx, vy, vz, t: 0, life, s: 0.6 + Math.random() * 0.9 }; };
     const fxSpray = (c, gold) => { const fx0 = Math.sin(c.h + (c.spinY || 0)), fz0 = Math.cos(c.h + (c.spinY || 0)); for (let k = 0; k < (gold ? 2 : 1); k++) fxAdd(c.x - fx0 * 2 + (Math.random() - 0.5), c.y + 0.4, c.z - fz0 * 2 + (Math.random() - 0.5), -fx0 * 4 + (Math.random() - 0.5) * 6, 2 + Math.random() * 3, -fz0 * 4 + (Math.random() - 0.5) * 6, 0.7 + Math.random() * 0.4); };
     const fxBurst = (c, gold) => { for (let k = 0; k < (gold ? 28 : 18); k++) { const a = Math.random() * Math.PI * 2, sp = 5 + Math.random() * 7; fxAdd(c.x + Math.sin(a) * 1.4, c.y + 0.2, c.z + Math.cos(a) * 1.4, Math.sin(a) * sp, 3 + Math.random() * 5, Math.cos(a) * sp, 0.6 + Math.random() * 0.5); } };
+    // (the golden possum's: gold glitter as well, slower to fall and twinkling, ten clusters of six bits. Ash, 18 November 2026: "Make the
+    // golden possums effects more in vehicles more spectacular")
+    const GFXN = 10, GFXC = ["#ffd700", "#fff6b0", "#f5b400", "#ffe46b"], gfx = m.addParts(Array.from({ length: GFXN }, (_, i) => cube(GFXC[i % GFXC.length], 0.22, 0.22, 0.22, 0, [[0, 0, 0], [0.5, 0.25, -0.3], [-0.4, -0.2, 0.45], [0.2, 0.55, 0.35], [-0.5, 0.4, -0.25], [0.35, -0.45, 0.1]]))), glit = [];
+    let gfxAt = 0;
+    const gAdd = (x, y, z, vx, vy, vz, life) => { const i = gfxAt++ % GFXN; glit[i] = { x, y, z, vx, vy, vz, t: 0, life, s: 0.7 + Math.random() * 0.8 }; };
+    const gBurst = (c, up = 6, sp = 9, y0 = 0.6) => { for (let k = 0; k < GFXN; k++) { const a = k / GFXN * Math.PI * 2 + Math.random() * 0.4, v = sp * (0.6 + Math.random() * 0.6); gAdd(c.x + Math.sin(a) * 1.2, c.y + y0, c.z + Math.cos(a) * 1.2, Math.sin(a) * v, up * (0.5 + Math.random()), Math.cos(a) * v, 0.9 + Math.random() * 0.5); } };
+    const gPop = (x, y, z) => { for (let k = 0; k < GFXN; k++) { const a = Math.random() * Math.PI * 2, e = Math.random() * 1.4 - 0.4, v = 9 + Math.random() * 5; gAdd(x, y, z, Math.sin(a) * Math.cos(e) * v, Math.sin(e) * v + 3, Math.cos(a) * Math.cos(e) * v, 1.1 + Math.random() * 0.5); } };  // a firework
     const SPK = new THREE.Vector3(), Q0 = new THREE.Quaternion();
-    const fxTick = dt => { for (let i = 0; i < FXN; i++) { const p = sparks[i]; if (!p) continue; p.t += dt;
+    const fxTick = dt => { for (let i = 0; i < GFXN; i++) { const p = glit[i]; if (!p) continue; p.t += dt;
+        if (p.t >= p.life) { glit[i] = null; gfx.setMatrix(i, NONE); continue; }
+        p.vy -= 6 * dt; p.vx *= 1 - dt * 0.8; p.vz *= 1 - dt * 0.8; p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; const k = p.s * (1 - p.t / p.life) * (0.7 + 0.3 * Math.sin(p.t * 32 + i));
+        M.compose(V.set(p.x, p.y, p.z), Q0.setFromEuler(E.set(p.t * 4, p.t * 6, 0, "YXZ")), SPK.set(k, k, k)); gfx.setMatrix(i, M.elements.slice()); }
+      for (let i = 0; i < FXN; i++) { const p = sparks[i]; if (!p) continue; p.t += dt;
         if (p.t >= p.life) { sparks[i] = null; fx.setMatrix(i, NONE); continue; }
         p.vy -= 14 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; const k = p.s * (1 - p.t / p.life);
         M.compose(V.set(p.x, p.y, p.z), Q0.setFromEuler(E.set(p.t * 7, p.t * 5, 0, "YXZ")), SPK.set(k, k, k)); fx.setMatrix(i, M.elements.slice()); } };
     // the golden possum's turbo rockets: two silver tubes on the back with flames out of them, while its boost or jump is on
-    const rk = m.addParts([cube("#c9ced6", 0.36, 0.36, 1.3, 0, [[-0.55, 0, 0], [0.55, 0, 0]]), cube("#ff8a1c", 0.3, 0.3, 1.1, -0.55, [[-0.55, 0, 0], [0.55, 0, 0]])]);
+    // (bigger: long flickering flames with a yellow bloom at the nozzles, and a trail of gold glitter behind. Ash, 18 November 2026)
+    const rk = m.addParts([cube("#c9ced6", 0.36, 0.36, 1.3, 0, [[-0.55, 0, 0], [0.55, 0, 0]]), cube("#ff8a1c", 0.3, 0.3, 1.1, -0.55, [[-0.55, 0, 0], [0.55, 0, 0]]), cube("#ffe46b", 0.5, 0.5, 0.45, 0, [[-0.55, 0, 0], [0.55, 0, 0]])]);
     let rkOn = false; const RKS = new THREE.Vector3();
-    const rockets = on => { if (!on) { if (rkOn) { rkOn = false; rk.setMatrix(0, NONE); rk.setMatrix(1, NONE); } return; } rkOn = true;
-      const hd = car.h + (car.spinY || 0), sn = Math.sin(hd), cs = Math.cos(hd), back = car.bus ? 6.2 : 2.35, fl = 0.7 + Math.random() * 0.6, x = car.x - sn * back, z = car.z - cs * back, y = car.y + 0.75;
-      M.compose(V.set(x, y, z), Q0.setFromEuler(E.set(-car.p, hd, car.r + (car.roll || 0), "YXZ")), ONE); rk.setMatrix(0, M.elements.slice());
-      M.compose(V.set(x - sn * 0.65, y, z - cs * 0.65), Q0, RKS.set(1, 1, fl)); rk.setMatrix(1, M.elements.slice());
-      if (Math.random() < dt0Now * 20) fxAdd(x - sn * 1.6, y, z - cs * 1.6, -sn * 6 + (Math.random() - 0.5) * 2, Math.random() * 2, -cs * 6 + (Math.random() - 0.5) * 2, 0.35); };
+    const rkHide = () => { for (let i = 0; i < 3; i++) rk.setMatrix(i, NONE); };
+    const drawRk = (v, hd, back, yo) => { const sn = Math.sin(hd), cs = Math.cos(hd), x = v.x - sn * back, z = v.z - cs * back, y = v.y + yo, fl = 1.4 + Math.random() * 1.2, bl = 0.8 + Math.random() * 0.55;
+      M.compose(V.set(x, y, z), Q0.setFromEuler(E.set(-(v.p || 0), hd, (v.r || 0) + (v.roll || 0), "YXZ")), ONE); rk.setMatrix(0, M.elements.slice());
+      M.compose(V.set(x - sn * 0.65, y, z - cs * 0.65), Q0, RKS.set(1.1, 1.1, fl)); rk.setMatrix(1, M.elements.slice());
+      M.compose(V.set(x - sn * 0.85, y, z - cs * 0.85), Q0, RKS.set(bl, bl, bl)); rk.setMatrix(2, M.elements.slice());
+      if (Math.random() < dt0Now * 20) fxAdd(x - sn * 1.6, y, z - cs * 1.6, -sn * 6 + (Math.random() - 0.5) * 2, Math.random() * 2, -cs * 6 + (Math.random() - 0.5) * 2, 0.35);
+      if (Math.random() < dt0Now * 30) gAdd(x - sn * (1.4 + fl) + (Math.random() - 0.5) * 1.4, y + (Math.random() - 0.5) * 0.5, z - cs * (1.4 + fl) + (Math.random() - 0.5) * 1.4, -sn * 3 + (Math.random() - 0.5) * 3, 1 + Math.random() * 2.5, -cs * 3 + (Math.random() - 0.5) * 3, 0.9); };
+    const rockets = on => { if (!on) { if (rkOn) { rkOn = false; rkHide(); } return; } rkOn = true; drawRk(car, car.h + (car.spinY || 0), car.bus ? 6.2 : 2.35, 0.75); };
     let dt0Now = 0;
     const BEAT = new THREE.Vector3();
     const showRing = (on, hot) => { const full = on && car ? Math.ceil(charge * RING - 1e-6) : 0, beat = hot ? 1 + 0.03 * Math.sin(performance.now() / 55) : 1;
       if (on && car) M.compose(V.set(car.x, car.y, car.z), Q.setFromEuler(E.set(-car.p, car.h, car.r, "YXZ")), BEAT.set(beat * (car.bus ? 2.1 : 1), 1, beat * (car.bus ? 2.1 : 1)));
       for (let i = 0; i <= RING; i++) { const show = !!on && !!car && (i === 0 || i <= full); if (show || lit[i]) { ring.setMatrix(i, show ? M.elements.slice() : NONE); lit[i] = show; } }
       const pc = Math.round(charge * 100) + "%"; if (boostBtn.style.getPropertyValue("--charge") !== pc) boostBtn.style.setProperty("--charge", pc); };
-    const leave = step => { if (!veh) return; const was = veh; if (was === "possum" && pos?.cling) { try { T.peers?.ride?.(pos.cling.id, false); } catch {} pos.cling = null; }  // (it stayed stuck to the driver: Ash, 18 November 2026) if (held) { document.body.classList.remove("bsheld"); held = null; } rockets(false); if (sky) { skyEnd(); skyTried = false; } for (let i = 0; i < FXN; i++) if (sparks[i]) { sparks[i] = null; fx.setMatrix(i, NONE); } if (was !== "possum" && was !== "pigeon" && was !== "ride") snd.door(); snd.stop();
+    const leave = step => { if (!veh) return; const was = veh; if (was === "possum" && pos?.cling) { try { T.peers?.ride?.(pos.cling.id, false); } catch {} pos.cling = null; }  // (it stayed stuck to the driver: Ash, 18 November 2026) if (held) { document.body.classList.remove("bsheld"); held = null; } rockets(false); if (sky) { skyEnd(); skyTried = false; } for (let i = 0; i < FXN; i++) if (sparks[i]) { sparks[i] = null; fx.setMatrix(i, NONE); } for (let i = 0; i < GFXN; i++) if (glit[i]) { glit[i] = null; gfx.setMatrix(i, NONE); } if (was !== "possum" && was !== "pigeon" && was !== "ride") snd.door(); snd.stop();
       if (was === "ride") { const q = ride.q; if (ride.local) { ride.local.rider = false; snd.door(); } else T.peers?.ride?.(ride.id, false);
         if (step && q && ride.local) { F.pos.x = q.x - Math.cos(q.h) * 2.6; F.pos.z = q.z + Math.sin(q.h) * 2.6; F.yaw = q.h - Math.PI / 2; F.pitch = -0.04; }  // off the bus's kerb-side door
         else if (step && q) { const back = RIDE_UP[q.k] > 1 ? 2.4 : 1.2; F.pos.x = q.x - Math.cos(q.h) * back; F.pos.z = q.z + Math.sin(q.h) * back; F.yaw = q.h + Math.PI; F.pitch = -0.04; }
@@ -12558,9 +12573,11 @@ const handle = async (m, post) => {
         // Ash, 16 November 2026: "jump the car high into the air and then do a 360 to land the same direction with a speed boost and
         // some low res special effects coming off the car")
         if (car.trick) { const Tk = car.trick; Tk.t += dt; const f = Math.min(1, Tk.t / (Tk.len || 0.9)); car.hop = (Tk.high || 2.2) * Math.sin(Math.PI * f); car.roll = 0;
-          if (Tk.spin) { const g = bsClamp((f - 0.12) / 0.76, 0, 1); car.spinY = Math.PI * 2 * g * g * (3 - 2 * g); if (Math.random() < dt * 26) fxSpray(car, Tk.gold); }
+          if (Tk.spin) { const g = bsClamp((f - 0.12) / 0.76, 0, 1); car.spinY = Math.PI * 2 * (Tk.gold ? 2 : 1) * g * g * (3 - 2 * g); if (Math.random() < dt * 26) fxSpray(car, Tk.gold); }  // (the golden possum's: twice round)
+          if (Tk.gold) { if (Math.random() < dt * 40) gAdd(car.x + (Math.random() - 0.5) * 3, car.y + 0.4, car.z + (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 4, -1 - Math.random() * 2, (Math.random() - 0.5) * 4, 1.2);
+            if (f >= 0.5 && !Tk.pop) { Tk.pop = true; gPop(car.x, car.y + 1.5, car.z); snd.whoosh(); } }  // a firework at the top
           if (f >= 1) { car.trick = null; car.hop = 0; car.roll = 0; car.spinY = 0; snd.thud(0.8);
-            if (Tk.spin) { car.teamTil = performance.now() + (Tk.gold ? 3000 : 1600); car.teamK = Tk.gold ? 2 : 1; fxBurst(car, Tk.gold); snd.whoosh(); } } }  // (a bus: seven tenths of a car's speed and push, and a long way between its axles)  // the golden car: a fifth more top speed, push and boost
+            if (Tk.spin) { car.teamTil = performance.now() + (Tk.gold ? 3000 : 1600); car.teamK = Tk.gold ? 2 : 1; fxBurst(car, Tk.gold); if (Tk.gold) gBurst(car, 3, 14, 0.2); snd.whoosh(); } } }  // (a bus: seven tenths of a car's speed and push, and a long way between its axles)  // the golden car: a fifth more top speed, push and boost
         // the handbrake is not much of a brake (Ash, 14 November 2026: "unrealistic where it only slightly slows the car but
         // drastically increases turning for burnouts"): it swings the car round fast while it carries on the way it was going
         const slide = brake && Math.abs(v) > 3;
@@ -12739,6 +12756,7 @@ const handle = async (m, post) => {
         const up = P.y - ground(P.x, P.z);
         o = P; D = P.air ? 4.5 + Math.min(4, P.v / 6) : 2.6; text = Math.round(Math.abs(P.v) * 3.6) + " km/h" + (up > 1.5 ? " \u00b7 " + Math.round(up) + " m up" : "");
       } else { const P = plane, K = P.k, jet = boost && canBoost(P), top = ((jet ? JET : CRUISE) + (P.teamTil > performance.now() ? (P.teamK || 1) * (R.teamBoostExtra / 3.6 + R.teamBoostShare / 100 * (JET - CRUISE)) : 0)) * K;  // (only the golden plane has a boost; a passenger's power-up: 2 km/h and half a boost more)
+        if (planeGold(P) && Math.random() < dt * 34) { const sd = Math.random() < 0.5 ? -1 : 1, rl = P.roll || 0; gAdd(P.x + Math.cos(P.h) * 3.5 * sd * Math.cos(rl), P.y + 1 + 3.5 * sd * Math.sin(rl), P.z - Math.sin(P.h) * 3.5 * sd * Math.cos(rl), (Math.random() - 0.5) * 2, Math.random(), (Math.random() - 0.5) * 2, 1.1); }  // golden: glitter off the wingtips
         if (P.trick) { P.trick.t += dt; const n2 = P.trick.turns || 1, f = Math.min(1, P.trick.t / (1.2 * n2)); P.roll = Math.PI * 2 * n2 * f * f * (3 - 2 * f); if (f >= 1) { P.trick = null; P.roll = 0; } }  // a passenger's spin: a roll right round
         // the nose: the down arrow lifts it and the up arrow lowers it, as pulling back and pushing on a plane's stick does
         // (Ash, 14 November 2026: "if i press down my plane shifts upwards and vica versa"). Space and C, and Climb and Dive, too.
@@ -12927,19 +12945,21 @@ const handle = async (m, post) => {
     // golden possum should double the effect of vehicle bonuses including a mega high jump and putting turbo rockets onto the back of
     // the vehicle")
     C.power = (kind, spin, from, gold) => { const now = performance.now(), V2 = veh === "car" ? car : veh === "plane" ? plane : null; if (!V2) return false;
-      if (kind === 1) { if (!(V2.teamTil > now - 600)) { snd.whoosh(); toast(gold ? `\ud83d\ude80 ${from}, the golden possum, fired your turbo rockets!` : `\u26a1 ${from} is boosting you!`, 1600); } V2.teamTil = now + 450; V2.teamK = gold ? 2 : 1; }
-      else if (veh === "car" && !car.trick && !car.flip) { car.trick = { t: 0, spin, gold, len: spin ? (gold ? 2.6 : 1.9) : 0.9, high: spin ? (gold ? 16 : 8) : gold ? 4.4 : 2.2 }; snd.boing(); if (spin) snd.whoosh();
+      if (kind === 1) { if (!(V2.teamTil > now - 600)) { snd.whoosh(); if (gold) gBurst(V2, 5, 10); toast(gold ? `\ud83d\ude80 ${from}, the golden possum, fired your turbo rockets!` : `\u26a1 ${from} is boosting you!`, 1600); } V2.teamTil = now + 450; V2.teamK = gold ? 2 : 1; }
+      else if (veh === "car" && !car.trick && !car.flip) { car.trick = { t: 0, spin, gold, len: spin ? (gold ? 2.9 : 1.9) : 0.9, high: spin ? (gold ? 20 : 8) : gold ? 4.4 : 2.2 }; snd.boing(); if (spin) snd.whoosh(); if (gold) gBurst(car, 4, 8, 0.2);
         toast(gold && spin ? `\ud83d\ude80 ${from}, the golden possum: mega jump!` : spin ? `${from} sent you flying!` : `${from} made you jump!`, 1600); }
-      else if (veh === "plane" && !plane.trick) { plane.trick = { t: 0, turns: gold ? 2 : 1 }; snd.whoosh(); toast(gold ? `${from} spun you round twice!` : `${from} spun you round!`, 1600); }
+      else if (veh === "plane" && !plane.trick) { plane.trick = { t: 0, turns: gold ? 2 : 1 }; snd.whoosh(); if (gold) gBurst(plane, 3, 10, 1); toast(gold ? `${from} spun you round twice!` : `${from} spun you round!`, 1600); }
       return true; };
-    C.fxFlags = () => veh === "car" && car ? (car.trick?.spin ? 1 : 0) | (rkOn ? 2 : 0) : 0;
+    C.fxFlags = () => veh === "car" && car ? (car.trick?.spin ? 1 : 0) | (rkOn ? 2 : 0) : veh === "plane" && plane && planeGold(plane) ? 4 : 0;
+    const planeGold = P => !!(P.trick?.turns > 1 || (P.teamK > 1 && P.teamTil > performance.now()));
     // the effects on someone else's car, as their pose says (sparks while it's up in a trick, rockets while its golden boost is on)
-    let peerRk = null;
-    C.peerFx = (v, flags, dt) => { if (!v) return; if (flags & 1 && Math.random() < dt * 26) fxSpray({ x: v.x, y: v.y, z: v.z, h: v.h, spinY: 0 }, false); if (flags & 2) peerRk = v; };
+    let peerRk = null, peerGold = null;
+    C.peerFx = (v, flags, dt) => { if (!v) return; if (flags & 1 && Math.random() < dt * 26) fxSpray({ x: v.x, y: v.y, z: v.z, h: v.h, spinY: 0 }, false); if (flags & 2) peerRk = v; if (flags & 4) peerGold = v; };
     C.fxFrame = dt => { if (!F.drive) fxTick(Math.min(dt, 0.1));
-      if (peerRk && !(veh === "car" && rkOn)) { const v = peerRk, sn = Math.sin(v.h), cs = Math.cos(v.h), x = v.x - sn * 2.35, z = v.z - cs * 2.35, y = v.y + 0.75, fl = 0.7 + Math.random() * 0.6;
-        M.compose(V.set(x, y, z), Q0.setFromEuler(E.set(-(v.p || 0), v.h, v.r || 0, "YXZ")), ONE); rk.setMatrix(0, M.elements.slice()); M.compose(V.set(x - sn * 0.65, y, z - cs * 0.65), Q0, RKS.set(1, 1, fl)); rk.setMatrix(1, M.elements.slice()); peerShown = true; }
-      else if (peerShown && !(veh === "car" && rkOn)) { peerShown = false; rk.setMatrix(0, NONE); rk.setMatrix(1, NONE); }
+      if (peerRk && !(veh === "car" && rkOn)) { dt0Now = Math.min(dt, 0.1); drawRk(peerRk, peerRk.h, 2.35, 0.75); peerShown = true; }
+      else if (peerShown && !(veh === "car" && rkOn)) { peerShown = false; rkHide(); }
+      if (peerGold && Math.random() < Math.min(dt, 0.1) * 30) { const v = peerGold, sd = Math.random() < 0.5 ? -1 : 1; gAdd(v.x + Math.cos(v.h) * 3.5 * sd, v.y + 1, v.z - Math.sin(v.h) * 3.5 * sd, (Math.random() - 0.5) * 2, Math.random(), (Math.random() - 0.5) * 2, 1); }  // a golden plane's glitter trail
+      peerGold = null;
       peerRk = null; };
     let peerShown = false;
     C.pose = () => veh === "ride" ? null : veh === "possum" ? { k: "possum", x: pos.x, y: pos.y, z: pos.z, h: pos.h, p: pos.p, r: 0 } : veh === "pigeon" ? { k: "pigeon", x: pg.x, y: pg.y, z: pg.z, h: pg.h, p: pg.p, r: pg.r } : veh === "car" ? { k: car.bus ? "bus" : car.gold ? "gold" : "car", x: car.x, y: car.y, z: car.z, h: car.h + (car.spinY || 0), p: car.p, r: car.r + (car.roll || 0) }
