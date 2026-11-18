@@ -10867,24 +10867,11 @@ const handle = async (m, post) => {
     ["dive", "Dive bomber", "Dives a third faster"]];
   const PIGEON_TIPS = ["Hold Flap to climb, then let go and he glides a long way.", "Dive to drop fast, then Flap to pull out of it.", "Glide down on to a roof and he'll land on it. Great for a rest.",
     "Shift flies faster. Hold it with W for a real burst.", "Land somewhere quiet and make a nest. Ten minutes later there's a little one!"];
-  // the golden pigeon's quest (Ash, 18 November 2026: "We need a way to turn the pigeon into the golden pigeon. If Im a pigeon and I go to
-  // big boss and I eat the chips, start the quest. The quest is to find your home. It's a pigeon loft found in one of 10 houses rolled
-  // randomly. The quest is a riddle that is one of 10 scenarios where the person needs to solve the riddle to work out the location of
-  // their home"): ten back yards, each a house about 60 to 100 m from a landmark, and the riddle that leads there. The loft shows once
-  // you're within 60 m; land on it and you come out golden
-  const GOLD_POWERS = { blink: ["Blink", "Zip 35 m ahead in a flash of gold."], rocket: ["Rocket", "Four seconds of rocket speed."], firework: ["Firework", "A gold firework bursts over you."],
-    roll: ["Barrel roll", "A spinning roll in a shower of glitter."] };
-  const PIGEON_LOFTS = [
-    { x: 351.7, z: 102.8, riddle: "A furry climber naps on a Kingwell Street lawn, under a row of street lights. From his bed, flap about 80 m south-west and look over the back fences." },
-    { x: -226.8, z: -900.4, riddle: "Across the road from where Flick throws her crumbs, a red car sleeps backwards in a driveway. From that driveway, fly about 100 m south and peek into the back yards." },
-    { x: -156.7, z: 90.5, riddle: "Bells ring, kids run, and lessons end at three on Sherley Street. From the school, fly about 65 m north-east, then look behind the houses." },
-    { x: -601.2, z: 285.5, riddle: "A saint's name on a school and a church on Hawtree Street. From there, fly about 80 m north-east and check the back yards." },
-    { x: -427.0, z: 114.8, riddle: "Where Moorooka meets for a cuppa and a chat on Gainsborough Street. From that hall, fly about 75 m east, out the back." },
-    { x: 177.4, z: -323.6, riddle: "Flat whites and a clubhouse on Koala Road, where the grass is kept short. From the clubhouse, about 65 m south-west, behind a house." },
-    { x: -395.1, z: 471.0, riddle: "Where cars stop for a drink on the corner of Beaudesert and Hamilton roads. From the bowsers, about 80 m north-west, in a back yard." },
-    { x: -219.4, z: 674.2, riddle: "A vet on Fegen Drive patches up the neighbourhood's pets. From the vet's, about 85 m south, out the back of a house." },
-    { x: -142.5, z: -64.4, riddle: "Where the Willow pours a cold one on Beaudesert Road. From the pub, fly about 80 m south-west and look behind the houses." },
-    { x: -135.4, z: -939.2, riddle: "Fresh bread and a brisk walk: Sue's stretch of Bohain Street. From the middle of her walk, about 85 m south-east, in a back yard." } ];
+  // the golden pigeon's game (Ash, 18 November 2026: "For the pigeon quest I want it instead to be a mini game that lasts around 2 mins
+  // and is difficult to win. Maybe like poop on 10 different things with poop only a unlocked during this, count a hit if close, show up
+  // to 3 targets at a time, humans, walking humans, cars, moving cars etc"): eat Big Boss's chips as the pigeon and you've two minutes
+  // to poop on ten things; three at a time are marked, 40 to 200 m from you; a hit counts within 2.2 m of a person or 2.8 m of a car
+  const POOP_SECS = 120, POOP_GOAL = 10;
   // your look (Made in Africa's clothes, A La Mode's hairdos, and Sue's bread for a minute), carried to other players in your figure's kind
   // as "walk~top.hair.colour" (".g" on the end: a giant); copies of the app from before take it as plain "walk"
   const TOWN_OUTFITS = { kente: ["Kente cloth shirt", "#e3a21a", ["#1f7a3d", "#b5121b", "#111111"]], dashiki: ["Dashiki", "#b5121b", [], "#f2c230"], ankara: ["Ankara print shirt", "#1f4fa8", ["#f28c28", "#f2c230"]],
@@ -11810,6 +11797,7 @@ const handle = async (m, post) => {
     const FAR = new THREE.Matrix4().makeTranslation(0, -1e5, 0).elements, wrap = a => Math.atan2(Math.sin(a), Math.cos(a)), box = $("bsTown") || document.body;
     const SHP = [new THREE.Matrix4().makeTranslation(-0.31, 1.42, 0), new THREE.Matrix4().makeTranslation(0.31, 1.42, 0)], SHA = [new THREE.Matrix4().makeTranslation(-0.25, 1.36, 0), new THREE.Matrix4().makeTranslation(0.25, 1.36, 0)];
     const folk = MOO_LOCALS.map(q => ({ ...q, look: q.yaw || 0, shown: false, parts: null, tag: Object.assign(document.createElement("div"), { className: "bs-peer bs-mayor", textContent: q.name, hidden: true }), near: false }));
+    T.folk = () => folk;  // (the pigeon's game aims at them)
     folk.forEach(q => { q.dot = Object.assign(document.createElement("div"), { className: "bs-news", hidden: true, title: "Has news for you" }); box.append(q.tag, q.dot); });
     // where a point is on the screen, or null behind you
     const onScreen = (x, y, z) => { const cam = m.getCamera?.(); if (!cam) return null; const w = box.clientWidth, h = box.clientHeight, f = 1 / Math.tan(((m.fov ? m.fov() : 50) * Math.PI) / 360);
@@ -11881,11 +11869,11 @@ const handle = async (m, post) => {
       if (q.id === "chem") { const n = k.potions | 0; return show(q, `Love potion? Give it to another player near you (Emotes, T) and they'll follow you around for 30 seconds.${n ? ` You've got ${n}.` : ""}`,
         [[n >= 3 ? "You've got plenty" : "Buy a love potion", () => { if (n >= 3) return; townPerkSet("potions", n + 1); toast(`💘 A love potion! You've got ${n + 1}. Use it from Emotes (T) near another player.`, 4000); }, "ok"], ["No thanks", () => {}]]); }
       if (q.id === "bar") return show(q, "What'll it be?", [["A beer", () => drink(1), "ok"], ["A cocktail", () => drink(2), "ok"], ["Just a water", () => toast(BS.fly.drunk ? "Water helps, but you'll still need the doctor at the Moorooka Medical Hub (by Woolworths) before you drive." : "Refreshing.", 3000)]]);
-      if (q.id === "pizza" && /pigeon$/.test(T.car?.pose?.()?.k || "")) { const Qs = k.pigeonQuest;
+      if (q.id === "pizza" && /pigeon$/.test(T.car?.pose?.()?.k || "")) {
         if (k.goldPigeon) return show(q, "Well I'll be! The golden pigeon of Moorooka! On the house, mate.", [["Cheers", () => {}]]);
-        if (Qs && PIGEON_LOFTS[Qs.i]) return show(q, `Still looking for your home? Here's that riddle again: ${PIGEON_LOFTS[Qs.i].riddle}`, [["Off I fly", () => {}]]);
-        return show(q, "A pigeon! You look starving, mate. Want some of the best chips ever?", [["Eat the chips", () => { const i = Math.floor(Math.random() * PIGEON_LOFTS.length); townPerkSet("pigeonQuest", { i, t: Date.now() });
-          show(q, `The best chips ever! Something stirs in you: every pigeon has a home loft, and yours is out there. Find it and land on it, and you'll come out golden. Here's the riddle: ${PIGEON_LOFTS[i].riddle}`, [["Off I fly", () => {}, "ok"]]); return "keep"; }, "ok"], ["No thanks", () => {}]]); }
+        if (T.car?.poopOn?.()) return show(q, "Go on, off you go! The clock's ticking.", [["On it", () => {}]]);
+        return show(q, "A pigeon! You look starving, mate. Want some of the best chips ever? Fair warning: they go straight through you.", [["Eat the chips", () => {
+          show(q, `Uh oh. You've got ${POOP_SECS / 60} minutes and a full tank. Poop on ${POOP_GOAL} things: people, cars, anything marked. Hit them all and you'll be the golden pigeon. Poop is the \ud83d\udca9 button (Q) while you fly.`, [["Bombs away", () => { T.car?.poopStart?.(); }, "ok"]]); return "keep"; }, "ok"], ["No thanks", () => {}]]); }
       if (q.id === "pizza") return show(q, k.chef ? "Back for more of the best chips ever?" : "What can I get you?",
         [["The best chips ever", () => { townPerkSet("chef", true); toast("🍟 Best chips ever! You're a pizza chef now: whites, the hat and a big moustache. Everyone can see.", 4500); }, "ok"], ...(k.chef ? [["Take off the chef's whites", () => { townPerkSet("chef", null); toast("Back to your old self.", 2000); }]] : []), ["Just looking", () => {}]]);
       if (q.id === "gym") return k.fit ? show(q, "Looking strong! You're already 10% quicker on your feet.", [["Thanks!", () => {}]])
@@ -12603,13 +12591,36 @@ const handle = async (m, post) => {
       // the wings: folded back along its sides on the ground; out and beating while it flaps up, held out a touch raised as it glides
       const fold = P.air ? 0 : 1.45, ang = !P.air ? -0.15 : P.flap ? 0.25 + 0.85 * Math.sin(P.t * 22) : 0.12 + 0.05 * Math.sin(P.t * 3);
       for (const [i, sx] of [[1, 1], [2, -1]]) pigeonMesh.setMatrix(i, M.clone().multiply(WING.makeTranslation(sx * 0.07, 0.31, 0.03)).multiply(WY.makeRotationY(sx * fold)).multiply(WZ.makeRotationZ(sx * ang)).elements.slice()); };
-    // the golden pigeon's quest: the loft, shown once you're within 60 m of it while the quest is on, and the golden pigeon once you've landed on it
-    let loftMesh = null, loftI = -1;
-    const loftTick = (x, z, quest) => { const L = quest ? PIGEON_LOFTS[quest.i] : null, near = L && Math.hypot(L.x - x, L.z - z) < 60;
-      if (!near) { if (loftMesh) { try { loftMesh.remove(); } catch {} loftMesh = null; loftI = -1; } return L; }
-      if (loftI !== quest.i) { try { loftMesh?.remove(); } catch {} loftI = quest.i; loftMesh = m.addParts(townPlaneParts(undefined, "loft").map(q => ({ ...q, matrix: M.identity().elements.slice() })));
-        M.compose(V.set(L.x, ground(L.x, L.z), L.z), Q.setFromEuler(E.set(0, Math.random() * Math.PI * 2, 0, "YXZ")), ONE); loftMesh.setMatrix(0, M.elements.slice()); }
-      return L; };
+    // the poop game (POOP_SECS, POOP_GOAL): targets marked by a red arrow over them, the poops falling from you
+    let game = null;
+    let MK = null, PO = null;  // (made the first time a game starts)
+    const MKS = new THREE.Vector3(1, 0.6, 1);
+    const poopPick = (P, taken) => { const out = [], far = (x, z) => { const d = Math.hypot(x - P.x, z - P.z); return d > 40 && d < 200; }, used = r => taken.some(t => t.ref === r);
+      for (const q of T.folk?.() || []) if (q.x != null && far(q.x, q.z) && !used(q)) out.push({ ref: q, label: q.loop || q.path ? `${q.name}, out walking` : q.name, r: 2.2, top: 1.8 });
+      for (const C of T.traffic?.cars || []) if (C.x != null && !C.away && !C.rider && far(C.x, C.z) && !used(C)) out.push({ ref: C, label: C.bus ? "the bus" : "a moving car", r: C.bus ? 3.6 : 2.8, top: C.bus ? 3.3 : 1.5 });
+      for (const q of T.peers?.list?.() || []) if (far(q.x, q.z) && !used(q)) out.push({ ref: q, label: q.name, r: 2.4, top: 1.8 });
+      if (m.nearestCar) for (let k = 0; k < 4; k++) { const a = Math.random() * Math.PI * 2, d = 60 + Math.random() * 120, c = m.nearestCar(P.x + Math.cos(a) * d, P.z + Math.sin(a) * d, 40); if (c && far(c.x, c.z) && !taken.some(t => Math.hypot(t.ref.x - c.x, t.ref.z - c.z) < 3)) out.push({ ref: { x: c.x, z: c.z }, label: "a parked car", r: 2.8, top: 1.5 }); }
+      return out.length ? out[Math.floor(Math.random() * out.length)] : null; };
+    C.poopOn = () => !!game;
+    C.poopStart = () => { if (veh !== "pigeon") return false;
+      if (!MK) { MK = m.addParts(Array.from({ length: 3 }, () => cube("#ff3b30", 0.9, 0.9, 0.9, 0, [[0, 1.0, 0], [0, 0.35, 0], [0, -0.15, 0]]))); PO = m.addParts(Array.from({ length: 6 }, () => cube("#f2f0e8", 0.22, 0.22, 0.22, 0, [[0, 0, 0], [0.12, 0.1, 0.05]]))); }
+      for (let i = 0; i < 3; i++) MK.setMatrix(i, NONE); for (let i = 0; i < 6; i++) PO.setMatrix(i, NONE); game = { t: POOP_SECS, hits: 0, targets: [], poops: [], cool: 0 }; snd.boing(); toast(`\ud83d\udca9 Two minutes! Poop on ${POOP_GOAL} things: follow the arrow, fly over a red marker and press \ud83d\udca9 (Q).`, 5000); return true; };
+    const poopEnd = (won, why) => { if (!game) return; const g0 = game; game = null; T.aimAt?.(null); if (MK) { for (let i = 0; i < 3; i++) MK.setMatrix(i, NONE); for (let i = 0; i < 6; i++) PO.setMatrix(i, NONE); }
+      if (won) { townPerkSet("goldPigeon", true); pg.gold = true; pigeonLook(true); gBurst(pg, 6, 9, 0.5); snd.whoosh(); toast(`\u2728 ${POOP_GOAL} out of ${POOP_GOAL}! You're the golden pigeon now: faster, stronger flaps, and a golden power.`, 6500); }
+      else toast(why || `Time's up! ${g0.hits} of ${POOP_GOAL}. Eat Big Boss's chips to have another go.`, 5000); };
+    const poopTick = (P, dt, drop) => { const G = game; G.t -= dt; G.cool -= dt;
+      while (G.targets.length < 3) { const t = poopPick(P, G.targets); if (!t) break; G.targets.push(t); }
+      if (drop && G.cool <= 0) { G.cool = 0.5; let i = G.poops.findIndex(q => !q); if (i < 0) i = G.poops.length < 6 ? G.poops.length : 0; G.poops[i] = { x: P.x, y: P.y + 0.1, z: P.z, vx: Math.sin(P.h) * P.v * 0.7, vz: Math.cos(P.h) * P.v * 0.7, vy: Math.min(0, P.vy) - 1 }; snd.pop(); }
+      for (let i = 0; i < G.poops.length; i++) { const q = G.poops[i]; if (!q) continue; q.vy -= 14 * dt; q.x += q.vx * dt; q.y += q.vy * dt; q.z += q.vz * dt;
+        let hit = null; for (const t of G.targets) { const ty = ground(t.ref.x, t.ref.z) + t.top; if (q.y < ty + 0.4 && q.y > ty - t.top - 0.2 && Math.hypot(q.x - t.ref.x, q.z - t.ref.z) < t.r) { hit = t; break; } }
+        if (hit) { G.poops[i] = null; PO.setMatrix(i, NONE); G.hits++; G.targets = G.targets.filter(t => t !== hit); snd.boing(); fxBurst({ x: hit.ref.x, y: ground(hit.ref.x, hit.ref.z) + hit.top, z: hit.ref.z }, false);
+          if (G.hits >= POOP_GOAL) return poopEnd(true); toast(`\ud83d\udca9 Direct hit on ${hit.label}! ${G.hits} of ${POOP_GOAL}.`, 1800); continue; }
+        if (q.y <= surf(q.x, q.z)) { G.poops[i] = null; PO.setMatrix(i, NONE); continue; }  // splat: a miss
+        M.compose(V.set(q.x, q.y, q.z), Q0.identity(), ONE); PO.setMatrix(i, M.elements.slice()); }
+      const now = performance.now(); G.targets.forEach((t, i) => { M.compose(V.set(t.ref.x, ground(t.ref.x, t.ref.z) + t.top + 1.6 + 0.3 * Math.sin(now / 250 + i), t.ref.z), Q0.setFromEuler(E.set(0, now / 600, 0, "YXZ")), MKS); MK.setMatrix(i, M.elements.slice()); });
+      for (let i = G.targets.length; i < 3; i++) MK.setMatrix(i, NONE);
+      let near = null, nd = Infinity; for (const t of G.targets) { const d = Math.hypot(t.ref.x - P.x, t.ref.z - P.z); if (d < nd) { nd = d; near = t; } } T.aimAt?.(near ? { x: near.ref.x, z: near.ref.z, label: near.label } : null);
+      if (G.t <= 0) poopEnd(false); };
     const pigeonLook = gold => { if (!pigeonMesh || pigeonMesh.gold === gold) return; try { pigeonMesh.remove(); } catch {} pigeonMesh = m.addParts(townPlaneParts(gold ? "gold" : undefined, "pigeon").map(q => ({ ...q, matrix: M.identity().elements.slice() }))); pigeonMesh.gold = gold; showPigeon(); };
     const pigeonHome = () => { Object.assign(pg, { x: PG.x, z: PG.z, h: PG.h, p: 0, r: 0, v: 0, vy: 0, mode: "ground", air: false, flap: 0 }); pg.y = ground(pg.x, pg.z); showPigeon(); };
     const wakePigeon = () => { if (pigeonMesh || !pg) return; pigeonMesh = m.addParts(townPlaneParts(undefined, "pigeon").map(q => ({ ...q, matrix: M.identity().elements.slice() }))); pigeonMesh.gold = false; pigeonHome(); pigeonLook(!!townPerks().goldPigeon); };
@@ -12666,7 +12677,7 @@ const handle = async (m, post) => {
       // the stick and the Up and Down buttons say what they do in it
       if (joyName) joyName.textContent = kind === "plane" ? "Power and turn" : kind === "heli" ? "Go and turn" : kind === "car" ? "Drive" : kind === "possum" ? "Run and turn" : "Move";
       if (udName.length === 2) { udName[0].textContent = kind === "plane" ? "Climb" : kind === "possum" ? "Jump" : "Up"; udName[1].textContent = kind === "plane" ? "Dive" : kind === "possum" ? "Let go" : "Down"; } };
-    C.probe = () => ({ pos, pg, surf, roofAt, solid, loadRoofs, treeAt, loadTrees, mission: () => mission });  // (for checking the possum's footing in tests)
+    C.probe = () => ({ pos, pg, game: () => game, surf, roofAt, solid, loadRoofs, treeAt, loadTrees, mission: () => mission });  // (for checking the possum's footing in tests)
     C.walkKeys = on => { if (!veh) showKeys(on ? "walk" : null); }; if (T.walk) showKeys("walk");
     C.keys = () => { if (!veh) return false; keysOff(!keysBox.classList.contains("off")); return true; };  // "?" hides the list and brings it back
     // ---- the boost's charge: a fine ring of 48 slanted ticks on the ground round the car, lit as far round as there is charge
@@ -12703,8 +12714,9 @@ const handle = async (m, post) => {
     const GFXN = 10, GFXC = ["#ffd700", "#fff6b0", "#f5b400", "#ffe46b"], gfx = m.addParts(Array.from({ length: GFXN }, (_, i) => cube(GFXC[i % GFXC.length], 0.22, 0.22, 0.22, 0, [[0, 0, 0], [0.5, 0.25, -0.3], [-0.4, -0.2, 0.45], [0.2, 0.55, 0.35], [-0.5, 0.4, -0.25], [0.35, -0.45, 0.1]]))), glit = [];
     let gfxAt = 0;
     const gAdd = (x, y, z, vx, vy, vz, life) => { const i = gfxAt++ % GFXN; glit[i] = { x, y, z, vx, vy, vz, t: 0, life, s: 0.7 + Math.random() * 0.8 }; };
-    const gBurst = (c, up = 6, sp = 9, y0 = 0.6) => { for (let k = 0; k < GFXN; k++) { const a = k / GFXN * Math.PI * 2 + Math.random() * 0.4, v = sp * (0.6 + Math.random() * 0.6); gAdd(c.x + Math.sin(a) * 1.2, c.y + y0, c.z + Math.cos(a) * 1.2, Math.sin(a) * v, up * (0.5 + Math.random()), Math.cos(a) * v, 0.9 + Math.random() * 0.5); } };
-    const gPop = (x, y, z) => { for (let k = 0; k < GFXN; k++) { const a = Math.random() * Math.PI * 2, e = Math.random() * 1.4 - 0.4, v = 9 + Math.random() * 5; gAdd(x, y, z, Math.sin(a) * Math.cos(e) * v, Math.sin(e) * v + 3, Math.cos(a) * Math.cos(e) * v, 1.1 + Math.random() * 0.5); } };  // a firework
+    const GB = GFXN / 2;  // (bursts half as big: Ash, 18 November 2026, "reduce glitter by 50%")
+    const gBurst = (c, up = 6, sp = 9, y0 = 0.6) => { for (let k = 0; k < GB; k++) { const a = k / GB * Math.PI * 2 + Math.random() * 0.4, v = sp * (0.6 + Math.random() * 0.6); gAdd(c.x + Math.sin(a) * 1.2, c.y + y0, c.z + Math.cos(a) * 1.2, Math.sin(a) * v, up * (0.5 + Math.random()), Math.cos(a) * v, 0.9 + Math.random() * 0.5); } };
+    const gPop = (x, y, z) => { for (let k = 0; k < GB; k++) { const a = Math.random() * Math.PI * 2, e = Math.random() * 1.4 - 0.4, v = 9 + Math.random() * 5; gAdd(x, y, z, Math.sin(a) * Math.cos(e) * v, Math.sin(e) * v + 3, Math.cos(a) * Math.cos(e) * v, 1.1 + Math.random() * 0.5); } };  // a firework
     const SPK = new THREE.Vector3(), Q0 = new THREE.Quaternion();
     const fxTick = dt => { for (let i = 0; i < GFXN; i++) { const p = glit[i]; if (!p) continue; p.t += dt;
         if (p.t >= p.life) { glit[i] = null; gfx.setMatrix(i, NONE); continue; }
@@ -12724,7 +12736,7 @@ const handle = async (m, post) => {
       M.compose(V.set(x - sn * 0.65, y, z - cs * 0.65), Q0, RKS.set(1.1, 1.1, fl)); rk.setMatrix(1, M.elements.slice());
       M.compose(V.set(x - sn * 0.85, y, z - cs * 0.85), Q0, RKS.set(bl, bl, bl)); rk.setMatrix(2, M.elements.slice());
       if (Math.random() < dt0Now * 20) fxAdd(x - sn * 1.6, y, z - cs * 1.6, -sn * 6 + (Math.random() - 0.5) * 2, Math.random() * 2, -cs * 6 + (Math.random() - 0.5) * 2, 0.35);
-      if (Math.random() < dt0Now * 30) gAdd(x - sn * (1.4 + fl) + (Math.random() - 0.5) * 1.4, y + (Math.random() - 0.5) * 0.5, z - cs * (1.4 + fl) + (Math.random() - 0.5) * 1.4, -sn * 3 + (Math.random() - 0.5) * 3, 1 + Math.random() * 2.5, -cs * 3 + (Math.random() - 0.5) * 3, 0.9); };
+      if (Math.random() < dt0Now * 15) gAdd(x - sn * (1.4 + fl) + (Math.random() - 0.5) * 1.4, y + (Math.random() - 0.5) * 0.5, z - cs * (1.4 + fl) + (Math.random() - 0.5) * 1.4, -sn * 3 + (Math.random() - 0.5) * 3, 1 + Math.random() * 2.5, -cs * 3 + (Math.random() - 0.5) * 3, 0.9); };
     const rockets = on => { if (!on) { if (rkOn) { rkOn = false; rkHide(); } return; } rkOn = true; drawRk(car, car.h + (car.spinY || 0), car.bus ? 6.2 : 2.35, 0.75); };
     let dt0Now = 0;
     const BEAT = new THREE.Vector3();
@@ -12743,7 +12755,7 @@ const handle = async (m, post) => {
           // you stand where the view was (behind it, clear of the building it is on); facing it
           if (solid(F.pos.x, F.pos.z) || !inside(F.pos.x, F.pos.z)) { F.pos.x = PS.stand.x; F.pos.z = PS.stand.z; }
           F.yaw = Math.atan2(F.pos.x - P.x, F.pos.z - P.z); F.pitch = -0.08; } }
-      else if (was === "pigeon") { const P = pg; P.v = 0; P.flap = 0;
+      else if (was === "pigeon") { const P = pg; P.v = 0; P.flap = 0; poopEnd(false, "You stopped being the pigeon, so the game's over. Eat Big Boss's chips to have another go.");
         if (!step) pigeonHome();  // flying off as the camera, a jump to a place or starting again: back to the shops
         else { if (P.mode === "air") { P.y = surf(P.x, P.z); P.vy = 0; P.mode = "ground"; P.air = false; } P.p = P.r = 0; showPigeon();  // it stays where it landed
           // you stand just behind it (on the ground below, if it's up on a roof), clear of any building, facing it
@@ -12808,7 +12820,7 @@ const handle = async (m, post) => {
         // some low res special effects coming off the car")
         if (car.trick) { const Tk = car.trick; Tk.t += dt; const f = Math.min(1, Tk.t / (Tk.len || 0.9)); car.hop = (Tk.high || 2.2) * Math.sin(Math.PI * f); car.roll = 0;
           if (Tk.spin) { const g = bsClamp((f - 0.12) / 0.76, 0, 1); car.spinY = Math.PI * 2 * (Tk.gold ? 2 : 1) * g * g * (3 - 2 * g); if (Math.random() < dt * 26) fxSpray(car, Tk.gold); }  // (the golden possum's: twice round)
-          if (Tk.gold) { if (Math.random() < dt * 40) gAdd(car.x + (Math.random() - 0.5) * 3, car.y + 0.4, car.z + (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 4, -1 - Math.random() * 2, (Math.random() - 0.5) * 4, 1.2);
+          if (Tk.gold) { if (Math.random() < dt * 20) gAdd(car.x + (Math.random() - 0.5) * 3, car.y + 0.4, car.z + (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 4, -1 - Math.random() * 2, (Math.random() - 0.5) * 4, 1.2);
             if (f >= 0.5 && !Tk.pop) { Tk.pop = true; gPop(car.x, car.y + 1.5, car.z); snd.whoosh(); } }  // a firework at the top
           if (f >= 1) { car.trick = null; car.hop = 0; car.roll = 0; car.spinY = 0; snd.thud(0.8);
             if (Tk.spin) { car.teamTil = performance.now() + (Tk.gold ? 3000 : 1600); car.teamK = Tk.gold ? 2 : 1; fxBurst(car, Tk.gold); if (Tk.gold) gBurst(car, 3, 14, 0.2); snd.whoosh(); } } }  // (a bus: seven tenths of a car's speed and push, and a long way between its axles)  // the golden car: a fifth more top speed, push and boost
@@ -12964,7 +12976,7 @@ const handle = async (m, post) => {
         if ((gripLook -= dt) <= 0) { gripLook = 0.25; gripBtn.hidden = false; const tx = grippy ? "Grippy: on" : "Grippy: off"; if (gripBtn.textContent !== tx) gripBtn.textContent = tx; gripBtn.classList.toggle("on", grippy); }
         o = P; D = P.cling || P.grip ? 9 : 3.4 + Math.min(3, Math.abs(P.v) / 12); text = P.cling ? `Holding on to ${P.cling.name} \u00b7 ${Math.round(P.v * 3.6)} km/h` : P.grip ? `Gripping the car \u00b7 ${Math.round(P.v * 3.6)} km/h` : P.mode === "climb" ? "Climbing \u00b7 " + Math.round(up) + " m" : Math.round(Math.abs(P.v) * 3.6) + " km/h" + (up > 1.5 ? " \u00b7 " + Math.round(up) + " m up" : "");
         if (mission) text = `\ud83d\udfe1 ${mission.got}/${mission.rings.length} rings \u00b7 ${Math.max(0, Math.ceil(mission.t))} s \u00b7 ` + text;
-      } else if (veh === "pigeon") { const P = pg, U = P.up, G = P.gold ? 1.35 : 1, flapK = has("Space") || !!F.boost, dive = has("KeyC") || !!F.hand, fast = has("ShiftLeft", "ShiftRight");  // (Dive: C, or the Dive button. Ash, 18 November 2026: "Pigeon needs a dive button that speeds him towards the ground. Not too fast")
+      } else if (veh === "pigeon") { const P = pg, U = P.up, G = P.gold ? 1.35 : 1, VPG = 40 / 3.6, flapK = has("Space") || !!F.boost, dive = has("KeyC") || !!F.hand, fast = has("ShiftLeft", "ShiftRight");  // (Dive: C, or the Dive button. Ash, 18 November 2026: "Pigeon needs a dive button that speeds him towards the ground. Not too fast")
         P.t += dt; const mag = Math.min(1, Math.hypot(str, thr)), goH = mag > 0.15 ? F.yaw + Math.PI + Math.atan2(-str, thr) : P.h, turn = wrap(goH - P.h);
         if (P.mode === "ground") {  // walking: it turns quick to the way the stick points and potters off; Jump (Flap) takes off
           if (mag > 0.15) P.h += Math.sign(turn) * Math.min(Math.abs(turn), 5 * dt);
@@ -12973,7 +12985,8 @@ const handle = async (m, post) => {
         else {  // flying: it heads the way you point it (from where you're looking) and swings round to it; hold Flap to climb, let go to glide down, C to dive
           if (mag > 0.15) P.h += Math.sign(turn) * Math.min(Math.abs(turn), 1.9 * dt);
           // (Flick's pigeon food: Strong wings, Big flaps, Long glide or Dive bomber)
-          const want = (dive ? 25.2 * (U === "dive" ? 1.33 : 1) :  /* (20% faster: Ash, 18 November 2026) */ (fast ? 24 : 15) * (mag > 0.15 ? 1 : 0.65)) * (U === "wings" ? 1.25 : 1) * G;  // (golden: a third faster again) P.v += (want - P.v) * Math.min(1, dt * 1.6);
+          // (40 km/h tops, the golden pigeon a third more: Ash, 18 November 2026, "Max speed 40 on the pigeon")
+          const want = Math.min(VPG * G, (dive ? 12 * (U === "dive" ? 1.33 : 1) : (fast ? 10.5 : 8.5) * (mag > 0.15 ? 1 : 0.7)) * (U === "wings" ? 1.25 : 1) * G); P.v += (want - P.v) * Math.min(1, dt * 1.6);
           const fu = (U === "flap" ? 1.5 : 1) * (P.gold ? 1.3 : 1); if (flapK) P.vy = Math.min(6 * fu, P.vy + 16 * fu * dt); else if (dive) P.vy = Math.max(-9.6 * (U === "dive" ? 1.33 : 1), P.vy - 14.4 * dt); else P.vy += ((U === "glide" ? -1.1 : -2.2) - P.vy) * Math.min(1, dt * 2);
           if (P.y - ground(P.x, P.z) > 150 && P.vy > 0) P.vy = 0;  // (no higher than 150 m)
           P.y += P.vy * dt; }
@@ -12981,43 +12994,41 @@ const handle = async (m, post) => {
           const x = P.x + Math.sin(P.h) * P.v * st, z = P.z + Math.cos(P.h) * P.v * st;
           if (!inside(x, z)) { P.v = 0; break; }
           const s = surf(x, z);
-          if (s > P.y + (P.mode === "ground" ? 0.45 : 0.15)) { if (P.mode === "air" && s - P.y < 1.2) P.y = s; else { if (P.mode === "air" && P.v > 10) snd.thud(0.4); P.v = 0; break; } }  // just over the edge of a roof: up on to it; a wall: it stops
+          // just over the edge of a roof: up on to it; a wall or a tree in the way: he pulls up over it, or on foot hops up (rather than sticking
+          // there going nowhere: Ash, 18 November 2026, "Sometimes pigeon bugs and won't go forwards")
+          if (s > P.y + (P.mode === "ground" ? 0.45 : 0.15)) { if (P.mode === "air" && s - P.y < 1.2) P.y = s; else { if (P.mode === "air" && P.v > 9) snd.thud(0.3); P.v = Math.min(P.v, 2.5); if (mag > 0.15 || P.mode === "air") { P.mode = "air"; P.vy = Math.max(P.vy, 4.5); } break; } }
           P.x = x; P.z = z;
           if (P.mode === "ground" && s < P.y - 0.6) { P.mode = "air"; P.vy = 0; } }  // walked off the edge of a roof: it glides
         { const s = surf(P.x, P.z); if (P.mode === "air" && P.y <= s && P.vy <= 0.5) { P.y = s; P.vy = 0; P.mode = "ground"; P.v = Math.min(P.v, 3); } else if (P.mode === "ground") P.y += (s - P.y) * Math.min(1, dt * 20); if (P.y < s) P.y = s; }
         P.flapped = flapK; P.air = P.mode === "air"; P.flap = flapK && P.air ? 1 : 0;
         const tp = P.air ? bsClamp(P.vy * 0.05, -0.5, 0.35) : 0, tr = P.air && mag > 0.15 ? bsClamp(turn * 0.8, -0.7, 0.7) : 0; P.p += (tp - P.p) * Math.min(1, dt * 6); if (P.rollT == null) P.r += (tr - P.r) * Math.min(1, dt * 5);
         showPigeon(); hint("");
-        // the quest: find the loft and land on it (or right by it) and you're the golden pigeon
-        if ((P.qAt = (P.qAt ?? 0) - dt) <= 0) { P.qAt = 1; const k = townPerks(); P.quest = k.pigeonQuest || null; if (!!k.goldPigeon !== !!P.gold) { P.gold = !!k.goldPigeon; pigeonLook(P.gold); } }
-        { const L = loftTick(P.x, P.z, P.quest);
-          if (L && !P.loftSeen && Math.hypot(L.x - P.x, L.z - P.z) < 45) { P.loftSeen = true; toast("\ud83d\udc40 That's it! A pigeon loft. Your home! Land on it.", 3500); }
-          if (L && Math.hypot(L.x - P.x, L.z - P.z) < 4 && P.y - ground(L.x, L.z) < 4.5) { townPerkSet("pigeonQuest", null); townPerkSet("goldPigeon", true); P.quest = null; P.gold = true; pigeonLook(true); loftTick(P.x, P.z, null);
-            gBurst(P, 6, 9, 0.5); snd.whoosh(); toast("\u2728 You found your home! You're the golden pigeon now: a third faster, stronger flaps and a trail of gold.", 6000); } }
+        if ((P.qAt = (P.qAt ?? 0) - dt) <= 0) { P.qAt = 1; const k = townPerks(); if (!!k.goldPigeon !== !!P.gold) { P.gold = !!k.goldPigeon; pigeonLook(P.gold); } }
+        if (game) { const drop = nestAsk && P.air; if (drop) nestAsk = false; poopTick(P, dt, drop); }  // the poop game: Q (the button) poops while you fly
         // the golden pigeon's power, one rolled for you when you turn golden (Ash, 18 November 2026: "The golden pigeon also needs a random
         // super cool ability"): in the air, the button where Make a nest is (Q) - Blink 35 m ahead, a Rocket burst, a Firework, or a Barrel roll
         if (P.gold && !P.power) { let pw = townPerks().goldPower; if (!GOLD_POWERS[pw]) { pw = Object.keys(GOLD_POWERS)[Math.floor(Math.random() * 4)]; townPerkSet("goldPower", pw); toast(`\u2728 Your golden power: ${GOLD_POWERS[pw][0]}! ${GOLD_POWERS[pw][1]} Tap \u2728 ${GOLD_POWERS[pw][0]} (Q) while you're flying.`, 7000); } P.power = pw; }
-        if (P.gold && P.air && nestAsk) { nestAsk = false; const now = performance.now(), pw = P.power, cd = { blink: 3000, rocket: 8000, firework: 1500, roll: 1200 }[pw] || 2000;
+        if (!game && P.gold && P.air && nestAsk) { nestAsk = false; const now = performance.now(), pw = P.power, cd = { blink: 3000, rocket: 8000, firework: 1500, roll: 1200 }[pw] || 2000;
           if (now - (P.pwAt || 0) < cd) toast("Charging\u2026", 900);
           else { P.pwAt = now; snd.whoosh();
             if (pw === "blink") { gBurst(P, 3, 6, 0); let n = 0; for (; n < 70; n++) { const x = P.x + Math.sin(P.h) * 0.5, z = P.z + Math.cos(P.h) * 0.5; if (!inside(x, z) || surf(x, z) > P.y - 0.3) break; P.x = x; P.z = z; } gBurst(P, 3, 6, 0); }
             else if (pw === "rocket") P.rocketTil = now + 4000;
             else if (pw === "firework") { gPop(P.x, P.y + 6, P.z); snd.boing(); }
             else P.rollT = 0; } }
-        if (P.rocketTil > performance.now()) { P.v = Math.max(P.v, 52); if (Math.random() < dt * 30) fxAdd(P.x - Math.sin(P.h) * 0.8, P.y + 0.2, P.z - Math.cos(P.h) * 0.8, -Math.sin(P.h) * 4, Math.random(), -Math.cos(P.h) * 4, 0.4); }
-        if (P.rollT != null) { P.rollT += dt; P.r = Math.PI * 2 * Math.min(1, P.rollT / 0.7); if (Math.random() < dt * 30) gAdd(P.x, P.y + 0.3, P.z, (Math.random() - 0.5) * 3, Math.random() * 2, (Math.random() - 0.5) * 3, 0.8); if (P.rollT >= 0.7) { P.rollT = null; P.r = 0; } }
-        if (P.gold && P.air && Math.random() < dt * 22) gAdd(P.x - Math.sin(P.h) * 0.6 + (Math.random() - 0.5) * 0.6, P.y + 0.3, P.z - Math.cos(P.h) * 0.6 + (Math.random() - 0.5) * 0.6, (Math.random() - 0.5), -0.5, (Math.random() - 0.5), 0.9);  // golden: a glitter trail
+        if (P.rocketTil > performance.now()) { P.v = Math.max(P.v, 24); if (Math.random() < dt * 30) fxAdd(P.x - Math.sin(P.h) * 0.8, P.y + 0.2, P.z - Math.cos(P.h) * 0.8, -Math.sin(P.h) * 4, Math.random(), -Math.cos(P.h) * 4, 0.4); }
+        if (P.rollT != null) { P.rollT += dt; P.r = Math.PI * 2 * Math.min(1, P.rollT / 0.7); if (Math.random() < dt * 15) gAdd(P.x, P.y + 0.3, P.z, (Math.random() - 0.5) * 3, Math.random() * 2, (Math.random() - 0.5) * 3, 0.8); if (P.rollT >= 0.7) { P.rollT = null; P.r = 0; } }
+        if (P.gold && P.air && Math.random() < dt * 11) gAdd(P.x - Math.sin(P.h) * 0.6 + (Math.random() - 0.5) * 0.6, P.y + 0.3, P.z - Math.cos(P.h) * 0.6 + (Math.random() - 0.5) * 0.6, (Math.random() - 0.5), -0.5, (Math.random() - 0.5), 0.9);  // golden: a glitter trail
         // a nest (Ash, 18 November 2026: "The pigeon should be able to make a nest, after 10mins the nest creates a mini pigeon"): on the
         // ground, a roof or a tree, the Make a nest button (Q) lays an egg there; townLocals hatches it ten minutes on into your chick
         if (nestAsk) { nestAsk = false; const N = townPerks().nest;
           if (P.mode !== "ground") toast("Land first, then make your nest.", 2200);
           else if (N && !N.hatched) { const left = Math.max(0, N.t + 600000 - Date.now()), d = Math.round(Math.hypot(N.x - P.x, N.z - P.z)); toast(`You've already got an egg in your nest${d > 5 ? `, ${d} m away` : ""}. It hatches in ${Math.max(1, Math.ceil(left / 60000))} min.`, 3500); }
           else { townPerkSet("nest", { x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2), t: Date.now() }); snd.click(); toast("🪺 You've made a nest and laid an egg! In 10 minutes it hatches into a baby pigeon that flies with you.", 5000); } }
-        if ((gripLook -= dt) <= 0) { gripLook = 0.25; const pw = P.gold && P.air && GOLD_POWERS[P.power], sh = P.mode === "ground" || !!pw, tx = pw ? `\u2728 ${pw[0]}` : "Make a nest"; if (gripBtn.hidden === sh) gripBtn.hidden = !sh; if (gripBtn.textContent !== tx) gripBtn.textContent = tx; gripBtn.classList.toggle("on", !!pw); }
+        if ((gripLook -= dt) <= 0) { gripLook = 0.25; const pw = !game && P.gold && P.air && GOLD_POWERS[P.power], pp = game && P.air, sh = P.mode === "ground" || !!pw || pp, tx = pp ? "\ud83d\udca9 Poop" : pw ? `\u2728 ${pw[0]}` : "Make a nest"; if (gripBtn.hidden === sh) gripBtn.hidden = !sh; if (gripBtn.textContent !== tx) gripBtn.textContent = tx; gripBtn.classList.toggle("on", !!pw || pp); }
         const up = P.y - ground(P.x, P.z);
-        o = P; D = P.air ? 4.5 + Math.min(4, P.v / 6) : 2.6; text = Math.round(Math.abs(P.v) * 3.6) + " km/h" + (up > 1.5 ? " \u00b7 " + Math.round(up) + " m up" : "");
+        o = P; D = P.air ? 4.5 + Math.min(4, P.v / 6) : 2.6; text = (game ? `\ud83d\udca9 ${game.hits}/${POOP_GOAL} \u00b7 ${Math.floor(Math.max(0, game.t) / 60)}:${String(Math.ceil(Math.max(0, game.t)) % 60).padStart(2, "0")} \u00b7 ` : "") + Math.round(Math.abs(P.v) * 3.6) + " km/h" + (up > 1.5 ? " \u00b7 " + Math.round(up) + " m up" : "");
       } else { const P = plane, K = P.k, jet = boost && canBoost(P), top = ((jet ? JET : CRUISE) + (P.teamTil > performance.now() ? (P.teamK || 1) * (R.teamBoostExtra / 3.6 + R.teamBoostShare / 100 * (JET - CRUISE)) : 0)) * K;  // (only the golden plane has a boost; a passenger's power-up: 2 km/h and half a boost more)
-        if (planeGold(P) && Math.random() < dt * 34) { const sd = Math.random() < 0.5 ? -1 : 1, rl = P.roll || 0; gAdd(P.x + Math.cos(P.h) * 3.5 * sd * Math.cos(rl), P.y + 1 + 3.5 * sd * Math.sin(rl), P.z - Math.sin(P.h) * 3.5 * sd * Math.cos(rl), (Math.random() - 0.5) * 2, Math.random(), (Math.random() - 0.5) * 2, 1.1); }  // golden: glitter off the wingtips
+        if (planeGold(P) && Math.random() < dt * 17) { const sd = Math.random() < 0.5 ? -1 : 1, rl = P.roll || 0; gAdd(P.x + Math.cos(P.h) * 3.5 * sd * Math.cos(rl), P.y + 1 + 3.5 * sd * Math.sin(rl), P.z - Math.sin(P.h) * 3.5 * sd * Math.cos(rl), (Math.random() - 0.5) * 2, Math.random(), (Math.random() - 0.5) * 2, 1.1); }  // golden: glitter off the wingtips
         if (P.trick) { P.trick.t += dt; const n2 = P.trick.turns || 1, f = Math.min(1, P.trick.t / (1.2 * n2)); P.roll = Math.PI * 2 * n2 * f * f * (3 - 2 * f); if (f >= 1) { P.trick = null; P.roll = 0; } }  // a passenger's spin: a roll right round
         // the nose: the down arrow lifts it and the up arrow lowers it, as pulling back and pushing on a plane's stick does
         // (Ash, 14 November 2026: "if i press down my plane shifts upwards and vica versa"). Space and C, and Climb and Dive, too.
@@ -13124,8 +13135,8 @@ const handle = async (m, post) => {
         document.body.classList.add("bsdrive", "bsride"); T.peers?.ride?.(q.id, true); toast(`You're riding with ${q.name}. Look around with the right stick.`, 3000); }
       else if (c.possum) { if (!townPerks().wasPossum) townPerkSet("wasPossum", true); veh = "possum"; pos.v = 0; pos.jumped = true; camYaw = pos.h + Math.PI; document.body.classList.add("bsdrive", "bspossum");
         loadTrees(); const wait = loadRoofs(); if (wait) { toast("Loading the roofs\u2026", 8000); wait.then(() => { if (veh === "possum") toast("Ready.", 1200); }); } }  // (no Up and Down: Jump sits where Boost does, over the right stick)
-      else if (c.pigeon) { veh = "pigeon"; pg.v = 0; pg.flapped = true; pg.up = townPerks().pigeon || null; gripLook = 0; pg.qAt = 0; pg.loftSeen = false; pg.power = null;
-        { const Qs = townPerks().pigeonQuest; if (Qs && PIGEON_LOFTS[Qs.i]) setTimeout(() => veh === "pigeon" && toast(`Find your home loft: ${PIGEON_LOFTS[Qs.i].riddle}`, 9000), 1500); } camYaw = pg.h + Math.PI; document.body.classList.add("bsdrive", "bspossum");
+      else if (c.pigeon) { veh = "pigeon"; pg.v = 0; pg.flapped = true; pg.up = townPerks().pigeon || null; gripLook = 0; pg.qAt = 0; pg.power = null;
+ camYaw = pg.h + Math.PI; document.body.classList.add("bsdrive", "bspossum");
         loadTrees(); const wait = loadRoofs(); if (wait) { toast("Loading the roofs\u2026", 8000); wait.then(() => { if (veh === "pigeon") toast("Ready.", 1200); }); }
         if (!townPerks().wasPigeon) { townPerkSet("wasPigeon", true); setTimeout(() => veh === "pigeon" && toast(touch ? "You're the pigeon! Hold Flap to take off and climb, push the stick to fly that way, and let go of Flap to glide down." : "You're the pigeon! Space flaps (take off, fly up), W flies the way you're looking, C dives. E to be human again.", 6500), wait ? 2500 : 0); } }
       else if (c.plane) { plane = c.plane; veh = "plane"; if (T.cfg?.place === "moo") loadRoofs(); /* (Moorooka's roofs, so planes and helicopters meet them) */ plane.v = 0; plane.spin = 0; plane.turn = 0; camYaw = plane.h + Math.PI; document.body.classList.add("bsdrive", "bsplane"); boostBtn.style.setProperty("--charge", "100%"); }
@@ -13225,7 +13236,7 @@ const handle = async (m, post) => {
     C.fxFrame = dt => { if (!F.drive) fxTick(Math.min(dt, 0.1));
       if (peerRk && !(veh === "car" && rkOn)) { dt0Now = Math.min(dt, 0.1); drawRk(peerRk, peerRk.h, 2.35, 0.75); peerShown = true; }
       else if (peerShown && !(veh === "car" && rkOn)) { peerShown = false; rkHide(); }
-      if (peerGold && Math.random() < Math.min(dt, 0.1) * 30) { const v = peerGold, sd = Math.random() < 0.5 ? -1 : 1; gAdd(v.x + Math.cos(v.h) * 3.5 * sd, v.y + 1, v.z - Math.sin(v.h) * 3.5 * sd, (Math.random() - 0.5) * 2, Math.random(), (Math.random() - 0.5) * 2, 1); }  // a golden plane's glitter trail
+      if (peerGold && Math.random() < Math.min(dt, 0.1) * 15) { const v = peerGold, sd = Math.random() < 0.5 ? -1 : 1; gAdd(v.x + Math.cos(v.h) * 3.5 * sd, v.y + 1, v.z - Math.sin(v.h) * 3.5 * sd, (Math.random() - 0.5) * 2, Math.random(), (Math.random() - 0.5) * 2, 1); }  // a golden plane's glitter trail
       peerGold = null;
       peerRk = null; };
     let peerShown = false;
