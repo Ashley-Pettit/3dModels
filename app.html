@@ -1291,6 +1291,9 @@ body.bstown .bs-fly-x.bs-fly-jump { top: calc(14px + env(safe-area-inset-top)); 
 .bs-town-list button.bs-town-flyto small { grid-column: 2; }
 /* The Logan model's floods: a Flood button under Jump, its list of floods, and (with a flood on) the water level above the time */
 .bs-fly-x.bs-town-flood { top: calc(60px + env(safe-area-inset-top)); left: auto; right: 16px; }
+/* New (Ash only): the newest things to look at, each a jump (Ash, 19 November 2026: "I want you to have a btn for the player with name ash that
+   jumps to new features so I can quickly review") */
+.bs-fly-x.bs-town-new { top: calc(106px + env(safe-area-inset-top)); left: auto; right: 16px; background: #ffd36b; color: #1b1830; }
 .bs-fly-x.bs-town-flood[aria-pressed="true"] { background: #fff; color: #1b1830; }
 /* The top of Explore (Ash, 14 November 2026: "Optimise top btn layout"). The tools (share, street names, tide, time, flood)
    sit in one pill, built like Walk and Fly, so the top reads as a few groups instead of a row of loose chips: exit, walk or
@@ -2220,6 +2223,7 @@ body.bsfly .toast.show { transform: translate(-50%, 0); }
     <div class="bs-town-ask" id="bsTownAsk" role="alertdialog" aria-labelledby="bsTownAskText" hidden><p id="bsTownAskText"></p><div><button type="button" data-ask="yes">Yes</button><button type="button" data-ask="no">No</button></div></div>
     <div class="bs-fly-time bs-town-tide bs-town-rise" id="bsTownRise" hidden><span>Water</span><input type="range" id="bsTownRiseIn" min="0" max="1" step="0.01" value="1" aria-label="Flood water level"><output id="bsTownRiseOut" for="bsTownRiseIn"></output></div>
     <button class="bs-fly-x bs-fly-jump" type="button" id="bsFlyJump" data-key="J" hidden>Jump to Norman Rd</button>
+    <button class="bs-fly-x bs-town-new" type="button" id="bsTownNew" hidden>New</button>
     <button class="bs-fly-x bs-me-btn" type="button" id="bsMeBtn" data-key="M" aria-expanded="false" aria-controls="bsMe" aria-label="Settings" title="Settings" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     <button class="bs-fly-x bs-share-btn" type="button" id="bsShareBtn" data-key="P" aria-label="Share a link to this 3D model" title="Share" aria-expanded="false" aria-controls="bsShareBox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></button>
     <div class="bs-me" id="bsMe" hidden></div>
@@ -8951,6 +8955,10 @@ const handle = async (m, post) => {
             ...golds.map((g, i) => { const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "menuitem"); b.className = "bs-town-players"; b.dataset.townGold = i;
               const sm = document.createElement("small"); sm.textContent = g.what; b.append(g.name, sm); return b; })] : [];
           list.append(...goldEls);  // at the bottom of the list (Ash, 15 November 2026: "move just for you to the bottom")
+          const news = isAsh() && cfg.place === "moo" ? MOO_NEW : [];  // New: at the top, Ash only
+          if (news.length) { const h = document.createElement("p"); h.className = "bs-town-group bs-town-players bs-town-newhead"; h.setAttribute("role", "presentation"); h.textContent = "New to check";
+            list.prepend(h, ...news.map((q, i) => { const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "menuitem"); b.className = "bs-town-players"; b.dataset.townNew = i;
+              const sm = document.createElement("small"); sm.textContent = q[1]; b.append(q[0], sm); return b; })); }
           const who = T.peers?.list?.() || []; if (!who.length) return;
           const near = who.map(q => ({ ...q, d: Math.hypot(q.x - F.pos.x, q.z - F.pos.z) })).sort((a, b) => a.d - b.d);
           const head = document.createElement("p"); head.className = "bs-town-group bs-town-players"; head.setAttribute("role", "presentation"); head.textContent = "Players in town";
@@ -8975,7 +8983,12 @@ const handle = async (m, post) => {
         const openList = on => { if (on) players(); list.hidden = !on; jump.setAttribute("aria-expanded", String(on)); if (on) { fl.hidden = true; fb.setAttribute("aria-expanded", "false"); list.querySelector("button")?.focus({ preventScroll: true }); } };
         jump.hidden = !places.length; jump.textContent = "Jump to…"; jump.setAttribute("aria-haspopup", "menu"); openList(false);
         jump.onclick = () => openList(list.hidden);
+        const newBtn = $("bsTownNew"), newShow = () => { newBtn.hidden = !(cfg.place === "moo" && isAsh() && MOO_NEW.length); };
+        if (newBtn) { newShow(); clearInterval(BS.newT); BS.newT = setInterval(newShow, 4000);  // (the name can be set after Explore opens)
+          newBtn.onclick = () => { openList(true); const h = list.querySelector(".bs-town-newhead"); if (h) { list.scrollTop = 0; h.nextElementSibling?.focus({ preventScroll: true }); } }; }
         list.onclick = e => { if (e.target.closest("[data-town-fly]")) { openList(false); flyTo(); jump.focus({ preventScroll: true }); return; }
+          const nw = e.target.closest("[data-town-new]"); if (nw) { const q = MOO_NEW[+nw.dataset.townNew]; openList(false); if (q) { T.tween = null; if (!T.walk) setMode(true);
+            F.pos.set(q[2], ground(q[2], q[3]) + F.eye, q[3]); F.yaw = q[4]; F.pitch = q[5]; } return; }
           const gd = e.target.closest("[data-town-gold]"); if (gd) { openList(false); toGold(+gd.dataset.townGold); jump.focus({ preventScroll: true }); return; }
           const pl = e.target.closest("[data-town-player]"); if (pl) { openList(false); toPlayer(pl.dataset.townPlayer); jump.focus({ preventScroll: true }); return; }
           const bn = e.target.closest("[data-town-go]"); if (!bn) return; const p = places[+bn.dataset.townGo]; openList(false); go(p, T.walk && !p.water);  // the inlet and the strait are best seen from the air
@@ -10407,6 +10420,17 @@ const handle = async (m, post) => {
   // 10's ground floor) and the chainwire another, so two draw calls and about 2,900 triangles; both are moved out of sight
   // when the view is more than 420 m away or 320 m up. Load: nothing to download; built from the numbers here (17 ms on a
   // slow test machine).
+  // ---- New (Ash only): the newest things in Moorooka, each where to stand to see it [name, what, x, z, yaw, pitch]. Newest first; add to the
+  // top with each change worth a look, and take off what Ash has seen (Ash, 19 November 2026: "I want you to have a btn for the player with
+  // name ash that jumps to new features so I can quickly review")
+  const MOO_NEW = [
+    ["Beaudesert Road's fences", "77 houses' front fences and driveways, from Street View", -305.7, -864.1, -1.727, 0.1],
+    ["26 Beaudesert Road", "The light way: two storeys, its black tubular fence", -299.9, -888.2, -1.727, 0.12],
+    ["Pandy's house (24 Beaudesert Rd)", "As it really is: fence, bamboo, drive, pool out the back", -296.7, -908.9, -1.727, 0.08],
+    ["Brisbane Car Yard", "Its sign and bunting off Ipswich Road", -663.8, -557.9, -1.464, 0.05],
+    ["Friendly Autocare", "Its name on its wall, not in Baldock Street", -1059.5, -341.3, -1.139, 0.05],
+    ["Kustomize It", "New, in the olive green units on Chrome Street", 373.0, 971.7, 0.696, 0.06],
+  ];
   // ---- houses drawn the light way (Ash, 19 November 2026: "Do an example how in lower res", "That level is good", "aim for .5kb max per
   // house"): what makes a house recognisable from the street, from Street View (September 2026) and the satellite view, squared to its lot.
   // Its roof and wall colours and the right number of storeys are in MOO_STYLE (no memory at all); here, its front fence and its driveway,
