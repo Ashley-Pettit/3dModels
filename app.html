@@ -8636,7 +8636,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=20", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=41", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=42", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -9662,7 +9662,7 @@ const handle = async (m, post) => {
   // A few of the model's own buildings in their real colours, from Ash's photos (16 November 2026: "Use the photos I gave you to make it
   // realistic"). The model asks for each building as it builds it (moorooka-model.js ?v=34, patched: window.anStyle, given the mean of its
   // outline's corners in the survey); kind 2 is a shop (a flat roof behind a parapet), 0 a house; base is the colour under a highset
-  // house; flat, a flat roof; noShop, none of the model's own shopfronts and awnings, which it puts on every wall facing Beaudesert Road
+  // house; flat, a flat roof; hip, a hipped roof (no gable end), a shop's too (moorooka-model.js ?v=42); noShop, none of the model's own shopfronts and awnings, which it puts on every wall facing Beaudesert Road
   // along the shopping strip, cottage or not (the vet had one: the dark glass across its front). Colours are 0 to 255.
   const MOO_STYLE = [
     { at: [-237.88, -464.82], roof: [168, 74, 50], wall: [238, 231, 214], base: [158, 84, 60], noShop: true },  // Greencross Vets (111): a cream cottage under red tiles, on red brick
@@ -9671,11 +9671,23 @@ const handle = async (m, post) => {
     { at: [-153.7, -414.8], roof: [172, 166, 158] },                         // the pharmacy row (114-120): a weathered grey iron roof
     { at: [-99.76, -124.24], wall: [92, 74, 60], noShop: true },             // the Willow (215): dark timber
     { at: [-36.53, -129.14], wall: [214, 202, 182], noShop: true },          // Snap Fitness (212): a pale render behind its screen
-    { at: [-121.75, -277.68], kind: 2, wall: [244, 242, 236] },              // the halal butcher (152): white
-    { at: [-117.95, -266.95], kind: 2, wall: [196, 84, 52] },                // 156: red-orange, a white parapet
+    { at: [-121.75, -277.68], kind: 2, flat: true, wall: [244, 242, 236] },  // the halal butcher (152): white
+    { at: [-117.95, -266.95], kind: 2, flat: true, wall: [196, 84, 52] },    // 156: red-orange, a white parapet
     { at: [-108.4, -264.12], kind: 2, wall: [212, 212, 208] },               // La Pupetta (160): light grey render
-    { at: [-100.4, -257.5], kind: 2, wall: [236, 230, 212] },                // the chiropractor (166-168): cream, two storeys
-    { at: [-150.6, -206.27], kind: 2, wall: [239, 237, 232] },               // 173-175: white, two storeys
+    { at: [-100.4, -257.5], kind: 2, flat: true, wall: [236, 230, 212] },    // the chiropractor (166-168): cream, two storeys
+    { at: [-150.6, -206.27], kind: 2, flat: true, wall: [239, 237, 232] },   // 173-175: white, two storeys
+    // the rest of the shopping strip from Street View (19 November 2026): flat roofs behind parapets, not gable ends on the street
+    { at: [-216.3, -319.11], kind: 2, flat: true, wall: [236, 235, 230] },   // 131 (the post office, Domino's, Yeshi Buna): white
+    { at: [-140.38, -331.53], kind: 2, flat: true, wall: [230, 230, 226] },  // 132-146 (Commonwealth Bank): white, a band of high windows
+    { at: [-181.97, -274.88], hip: true, roof: [170, 76, 56] },              // 139 (AMehdi, Elsa Injera): red tiles, hipped, a verandah
+    { at: [-175.23, -254.98], kind: 2, hip: true, roof: [196, 132, 106], wall: [232, 224, 204] },  // 143 (the RSPCA op shop): cream under salmon tiles, hipped
+    { at: [-166.05, -236.45], kind: 2, flat: true, wall: [212, 212, 206] },  // 145-147 (Moorooka Mall): pale grey concrete, two storeys
+    { at: [-92.6, -243.68], kind: 2, flat: true, wall: [228, 216, 192] },    // 180 (Big Boss Pizzas, Kingz): cream render, two storeys
+    { at: [-75.41, -218.78], kind: 2, hip: true, wall: [226, 214, 188] },    // Rooka Acai's corner (Mayfield Road): cream under a low hipped roof
+    { at: [-131.77, -177.47], kind: 2, flat: true, wall: [238, 236, 230] },  // 193 (Roo Kitchen): white, a curved verandah
+    { at: [-122.05, -162.03], kind: 2, flat: true, wall: [130, 118, 104] },  // 201 (Rannchhod Arcade): brown-grey brick, two storeys
+    { at: [-115.58, -143.52], kind: 2, flat: true, wall: [232, 226, 210] },  // 205 (Dinder Giftware): cream
+    { at: [-180.8, -489.8], wall: [236, 233, 224] },                         // 102 (Macro Tax): a white Queenslander
     { at: [-235.32, -517.58], wall: [169, 177, 185], roof: [62, 68, 76], noShop: true, shift: [-4.43, 0.80] },  // Inline Physio (101): a pale grey weatherboard cottage, dark roof; moved 4.5 m back off the road (Ash, 17 November 2026: "Need to move physio back. It's on the road")
     { at: [-1043.28, 31.95], kind: 2, wall: [40, 96, 170] },                 // Waterski & Wake World (1106 Ipswich Road): blue
     { at: [-1027.55, 14.15], kind: 2, wall: [47, 50, 54] },
@@ -9742,7 +9754,7 @@ const handle = async (m, post) => {
     { at: [865.65, 1154.17], kind: 2, wall: [31, 42, 68] },                  // Flowers for Everyone (258 Evans Road, Salisbury): navy, in Street View
     { at: [-1461.05, 892.42], kind: 2, wall: [236, 232, 222] },              // the shops on Medway Street at Ipswich Road (Alice Massage): cream
     { at: [-1600.08, 741.77], kind: 2, wall: [170, 172, 174] },              // 32 Sherwood Road (KD Flower Design): grey cladding
-    { at: [-52.36, -172.61], kind: 2, wall: [232, 196, 172] },               // the Art Deco corner (190-204 Beaudesert Road, on Mayfield Road): salmon render
+    { at: [-52.36, -172.61], kind: 2, flat: true, wall: [232, 196, 172] },   // the Art Deco corner (190-204 Beaudesert Road, on Mayfield Road): salmon render
     { at: [-1067.37, -58.93], kind: 2, wall: [62, 64, 68] },                 // Starbucks' drive-through (1115 Ipswich Road): charcoal
     { at: [-1057.23, -77.04], kind: 2, wall: [96, 110, 104] },               // the Woodworkers Company (1095 Ipswich Road): grey-green
     // Beaudesert Road's houses and the rest of its buildings, each in its colours from Street View (Ash, 19 November 2026: "if you
@@ -9768,7 +9780,7 @@ const handle = async (m, post) => {
     { at: [-178.05, -473.40], wall: [238, 236, 230] },                                // small white weatherboard cottage
     { at: [-161.33, -386.76], wall: [234, 226, 210] },                                // lowset cream brick, red tiles
     { at: [-152.70, -357.20], wall: [242, 242, 238] },                                // white two storeys, dark glass below
-    { at: [-87.32, -232.32], wall: [226, 226, 222] },                                 // pale grey shops
+    { at: [-87.32, -232.32], kind: 2, flat: true, wall: [226, 226, 222] },             // pale grey shops
     { at: [-43.49, -72.69], wall: [238, 238, 234] },                                  // white units, yellow-green feature wall
     { at: [-76.91, -27.71], wall: [240, 236, 226] },                                  // white render, red tile gables
     { at: [-80.36, -10.43], wall: [236, 234, 228] },                                  // white two storeys, red tiles
@@ -9798,7 +9810,7 @@ const handle = async (m, post) => {
     { at: [-297.30, -707.62], wall: [240, 240, 236] },                                // white Queenslander, gables
     { at: [-289.95, -693.25], wall: [242, 240, 236] },                                // white weatherboard
     { at: [-276.50, -658.08], wall: [200, 202, 204] },                                // modern townhouses, grey and white
-    { at: [-154.95, -220.30], wall: [206, 146, 60] },                                 // 167 Beaudesert shops: ochre frame, blue glass upstairs
+    { at: [-154.95, -220.30], kind: 2, flat: true, wall: [206, 146, 60] },             // 167 Beaudesert shops: ochre frame, blue glass upstairs
     { at: [-125.28, -73.03], wall: [188, 196, 200], base: [180, 180, 176] },          // highset pale grey
     { at: [-133.75, -58.65], wall: [206, 186, 160] },                                 // lowset tan
     { at: [-139.25, -45.90], wall: [224, 224, 220] },                                 // pale grey behind a tree
