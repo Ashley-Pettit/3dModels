@@ -1712,6 +1712,20 @@ building, with overhangs, so near a gable end the guess was well below the drawn
   them first. Buildings the model raises another way (the detailed houses near number 6) keep the old guess.
 - On a test, 367 of the 378 roofs within 300 m of the possum were found this way.
 
+## Moorooka: the shopping strip's roofs (19 November 2026)
+
+Checking the Beaudesert Road shops against Street View showed most of them under big gable ends facing the street, like barns, in
+the model's grey-green, where Street View has flat roofs behind parapets in white, cream, pale grey and brick.
+
+- A `MOO_STYLE` entry's `kind: 2` alone does not give a flat roof: a shop with a roof more than 1.3 m high gets a gable over its
+  longer side, which on a narrow, deep shop puts the gable end on the street. Add `flat: true` for a parapet (and air conditioners
+  on the roof).
+- `moorooka-model.js` (`?v=42`, patched in the bundle; rebuilding from source loses it, so put it back): `hip: true` in a
+  `MOO_STYLE` entry gives a hipped roof (the roof-type bits of the building's flags set to hip, and a shop's roof drawn by the
+  house roof code instead of the shop's gable). Used for the RSPCA op shop (143), AMehdi (139) and Rooka Acai's corner.
+- Eighteen buildings styled from Street View: fourteen flat roofs in their real colours along both sides of Beaudesert Road
+  (131 to 205), the RSPCA op shop's salmon tiles, AMehdi's red tiles, and 102's white Queenslander.
+
 ## Moorooka: servo canopies on posts (19 November 2026)
 
 Checking the businesses against Street View (Ash: "check for errors in current ones") showed the BP at 1129 Ipswich Road's canopy
