@@ -10116,8 +10116,17 @@ const handle = async (m, post) => {
     const shade = (hex, k) => "#" + [1, 3, 5].map(i => Math.max(0, Math.min(255, Math.round(parseInt(hex.slice(i, i + 2), 16) * k))).toString(16).padStart(2, "0")).join("");
     const FONT = 'system-ui, -apple-system, "Segoe UI", sans-serif';
     // a sign w by h metres: the name (and a smaller line under it), sized to fit
-    const sign = (w, h, s) => { const H = 192, W = Math.max(192, Math.round(H * w / h)), c = document.createElement("canvas"); c.width = W; c.height = H;
-      const g = c.getContext("2d"), [bg, fg] = s.c; g.fillStyle = bg; g.fillRect(0, 0, W, H);
+    // (each sign's own canvas, 128 px tall and no wider than its words need: Moorooka's 326 signs at 192 px tall and the full length of their
+    // boards came to 460 MB, and the game reloaded on Ash's iPhone, 19 November 2026, "Playing this morning the game was crashing". With
+    // narrow (a board, whose plain colour is drawn behind it anyway), the canvas covers only the middle of the board, and frac says how much)
+    let signM = null; const signMeasure = () => { if (!signM) { const c = document.createElement("canvas"); c.width = c.height = 1; signM = c.getContext("2d"); } return signM; };  // one tiny canvas to measure words with
+    const sign = (w, h, s, narrow) => { const H = 128, face0 = s.script ? '"Segoe Script", "Brush Script MT", "Snell Roundhand", cursive' : FONT; let W = Math.max(H, Math.round(H * w / h));
+      if (narrow && !s.stripe && W > H * 3) { const m = signMeasure(), z = H * (s.sub ? 0.42 : 0.56) * (s.big || 1);
+        m.font = `${s.wt || (s.script ? 400 : 800)} ${z}px ${face0}`; let need = m.measureText(s.parts ? s.parts.map(q => q[0]).join("") : (s.t || s.n || "")).width;
+        if (s.sub) { m.font = `600 ${Math.min(z * 0.62, H * 0.26)}px ${FONT}`; need = Math.max(need, m.measureText(s.sub).width); }
+        W = Math.min(W, Math.max(H * 3, Math.ceil(need + H * (s.post || s.cross ? 1.2 : 0.5)))); }
+      const K = Math.min(1, 2048 / W), c = document.createElement("canvas"); c.width = Math.round(W * K); c.height = H; c.frac = W / Math.max(H, H * w / h);
+      const g = c.getContext("2d"), [bg, fg] = s.c; g.scale(K, 1); g.fillStyle = bg; g.fillRect(0, 0, W, H);
       let x0 = H * 0.12;
       if (s.stripe) { s.stripe.forEach((col, i) => { g.fillStyle = col; g.fillRect(0, H * (0.78 + i * 0.075), W, H * 0.075); }); }
       if (s.post) {  // an envelope, in white: what a post office sign shows, without anyone's logo
@@ -10197,7 +10206,7 @@ const handle = async (m, post) => {
         const nx = f.n[0], nz = f.n[1], nrm = o1 === undefined ? [nx, 0, nz] : [0, 1, 0];
         parts.push({ positions: new Float32Array([...E[0], ...E[1], ...E[2], ...E[0], ...E[2], ...E[3]]), normals: new Float32Array([...nrm, ...nrm, ...nrm, ...nrm, ...nrm, ...nrm]),
           uvs: new Float32Array([0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1]), matrix: I, color: [1, 1, 1], map: canvas, roughness: 0.6, doubleSide: true }); };
-      const board = (x0, x1, y0, y1, o, s) => { box(x0, x1, y0, y1, o - 0.08, o, s.c[0]); pic(x0, x1, y0, y1, o + 0.012, sign(x1 - x0, y1 - y0, s)); };
+      const board = (x0, x1, y0, y1, o, s) => { box(x0, x1, y0, y1, o - 0.08, o, s.c[0]); const cv = sign(x1 - x0, y1 - y0, s, true), hw = (x1 - x0) * Math.min(1, cv.frac) / 2, mx = (x0 + x1) / 2; pic(mx - hw, mx + hw, y0, y1, o + 0.012, cv); };
       const plinth = (x0, x1) => quad(at(x0, -1.6, 0.1), at(x1, -1.6, 0.1), at(x1, 0.02, 0.1), at(x0, 0.02, 0.1), rgb(shade(f.wall, 0.72)));  // down to the ground where it falls away
       const wallH = f.eave ? bsClamp(f.eave - base, 3.2, 9) : 4;
       let x = 0; const where = f.shops.map(s => { const r = [x, x + s.w]; x += s.w; return r; }), k = len / x;  // the shops share the front in proportion
