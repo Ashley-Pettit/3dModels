@@ -1745,3 +1745,5 @@ drawn as a solid 7.5 m block with windows, carrying National Storage's sign, and
   (bottom to top) for a fascia with more than one stripe, the 7-Eleven's green, red and orange.
 - Each canopy stands on a concrete pad (`pad: [r, g, b]` to change it), its corners on the terrain: the ground plan had lawn
   where the block stood.
+- The 7-Eleven at 642 Toohey Road, Salisbury, the same way (Kebabland had been put on its canopy); Kebabland Express is on the
+  building behind it, with the 7-Eleven's shop.

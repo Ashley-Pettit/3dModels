@@ -9130,10 +9130,10 @@ const handle = async (m, post) => {
   const MOO_FRONTS = [
     { kind: "verandah", addr: "131 Beaudesert Road", a: [-207.1, -310.4], b: [-210.5, -335.6], n: [0.991, -0.1337], kerb: 20.29, across: 30.29, eave: 45.9, wall: "#eceae4",
       shops: [{ n: "Yeshi Buna", sub: "ETHIO AFRICAN CAFE", w: 8, c: ["#f4ead8", "#6b2a1a"], what: "Ethiopian cafe and restaurant", jump: true }, { n: "POST OFFICE", w: 9.4, c: ["#d71920", "#ffffff"], post: true }, { n: "Domino's", w: 8, c: ["#0b3a5e", "#ffffff"], what: "Pizza", jump: true }] },
-    { kind: "centre", addr: "132-146 Beaudesert Road", a: [-153.1, -331.1], b: [-139.7, -311.3], n: [-0.8282, 0.5605], kerb: 18.66, across: 28.96, eave: 46.5, band: "#26282d", wall: "#dcd9d2",
-      shops: [{ n: "Commonwealth Bank", w: 9, c: ["#26282d", "#ffcc00"], what: "Bank, in Moorooka Central", jump: true }, { n: "H&R Block", w: 5, c: ["#3a9b35", "#ffffff"], what: "Tax accountants, in Moorooka Central", jump: true },
-        { n: "Aussie", w: 5, c: ["#5b2a86", "#ffffff"], what: "Home loans, in Moorooka Central" }, { n: "Jao Jorm Thai", w: 4.9, c: ["#26282d", "#f3e6c8"], what: "Thai restaurant, in Moorooka Central", jump: true }],
-      tenants: { n: "Moorooka Central", lines: ["Commonwealth Bank", "H&R Block", "Aussie", "Jao Jorm Thai", "Harry's Optometrist", "Moorooka Dental Care"], c: ["#26282d", "#ffffff"], foot: { n: "MOOROOKA CENTRAL", c: ["#ffcc00", "#26282d"] }, x: -1.6, back: 2.2, y: 0.6, w: 1.9 } },
+    { kind: "centre", addr: "138-146 Beaudesert Road", a: [-153.9, -300.9], b: [-141.9, -281.8], n: [-0.8467, 0.5319], kerb: 2.4, across: 20, eave: 48.3, band: "#26282d", wall: "#dcd9d2",  // (Moorooka Central: on the footpath under its charcoal roof, Street View September 2026; it stood on the white building behind the car park to the north)
+      shops: [{ n: "H&R Block", w: 5, c: ["#3a9b35", "#ffffff"], what: "Tax accountants, in Moorooka Central", jump: true }, { n: "Jao Jorm Thai", w: 4.9, c: ["#26282d", "#f3e6c8"], what: "Thai restaurant, in Moorooka Central", jump: true },
+        { n: "Aussie", w: 5, c: ["#5b2a86", "#ffffff"], what: "Home loans, in Moorooka Central" }, { n: "Commonwealth Bank", w: 9, c: ["#26282d", "#ffcc00"], what: "Bank, in Moorooka Central", jump: true }],  // (north to south, as in Street View)
+      tenants: { n: "Moorooka Central", lines: ["Commonwealth Bank", "H&R Block", "Aussie", "Jao Jorm Thai", "Harry's Optometrist", "Moorooka Dental Care"], c: ["#26282d", "#ffffff"], foot: { n: "MOOROOKA CENTRAL", c: ["#ffcc00", "#26282d"] }, x: -1.6, back: 1.0, y: 0.6, w: 1.9 } },
     { kind: "strip", addr: "143 Beaudesert Road", a: [-157.7, -258.7], b: [-164.2, -269.0], n: [0.8457, -0.5337], kerb: 3.98, across: 14.58, eave: 49.5, wall: "#d9cdb8", awning: "#c9c2b4",
       shops: [{ n: "RSPCA Op Shop", w: 12.2, c: ["#1d6fb8", "#ffffff"], what: "Op shop", jump: true }] },
     { kind: "strip", addr: "145-147 Beaudesert Road", a: [-141.4, -235.2], b: [-156.2, -258.7], n: [0.8462, -0.5329], kerb: 2.69, across: 13.29, eave: 50.0, wall: "#e6dfd0", awning: "#d8d4ca", windows: [3.7, 4.7, 6, "#2a3640"],
@@ -9152,7 +9152,7 @@ const handle = async (m, post) => {
     { kind: "sign", addr: "108 Beaudesert Road", a: [-180.7, -464.8], b: [-180.0, -457.0], n: [-0.996, 0.0894], kerb: 15.13, across: 25.93, shops: [{ n: "Little Village", sub: "YOGA \u00b7 COMMUNITY", w: 7.8, c: ["#f4efe4", "#3d6b4f"], what: "Community space: do a yoga class and learn the yoga emote", jump: true }] },  // (it was the Rising Sun church: Ash, 16 November 2026, "The rising sun is now little village. You can do yoga there and learn the yoga emote")
     { kind: "sign", addr: "1115 Ipswich Road", a: [-1068.9, -40.9], b: [-1057.6, -46.7], n: [0.4566, 0.8897], kerb: 14.7, across: 24.3, wall: "#3e4044", glass: "#1f2a33", high: true,
       windows: [3.0, 3.5, 1, "#a8683a", 0.0, 12.7], shops: [{ n: "Starbucks", w: 12.7, c: ["#0f5c3e", "#ffffff"], what: "Coffee, drive-through", jump: true }] },
-    { kind: "row", addr: "398 Tarragindi Road", a: [664.5, 85.7], b: [658.4, 137.6], n: [-0.9932, -0.1167], kerb: 8.96, across: 18.36, shops: [{ n: "Ray White", w: 5, c: ["#ffe512", "#1d1d1d"], what: "Real estate" }, { n: "Vizzeto Woodfire", w: 10, c: ["#1d1d1d", "#e8a33c"], what: "Woodfired pizza", jump: true }, { n: "Go Thai", w: 9, c: ["#6a1b9a", "#ffffff"], what: "Thai" },
+    { kind: "row", addr: "398 Tarragindi Road", a: [664.5, 85.7], b: [658.4, 137.6], n: [-0.9932, -0.1167], kerb: 8.96, across: 18.36, wall: "#ded8ca", fascia: "#2f2b28", shops: [{ n: "Ray White", w: 5, c: ["#ffe512", "#1d1d1d"], what: "Real estate" }, { n: "Vizzeto Woodfire", w: 10, c: ["#1d1d1d", "#e8a33c"], what: "Woodfired pizza", jump: true }, { n: "Go Thai", w: 9, c: ["#6a1b9a", "#ffffff"], what: "Thai" },
       { n: "Todd and Pup", w: 9.3, c: ["#f3efe6", "#2b2b2b"], what: "Cafe" }, { n: "Fade Out", sub: "STUDIO", w: 4.5, c: ["#111111", "#ffffff"], what: "Barber" }, { n: "Sheesh Mahal", w: 10, c: ["#8a1c1c", "#f2c230"], what: "Indian restaurant", jump: true }, { n: "BWS", w: 4.5, c: ["#e2231a", "#ffffff"], what: "Bottle shop" }] },  // (Ray White, Fade Out and BWS in with them: Google Maps, 18 November 2026)
     { kind: "sign", addr: "40 Gainsborough Street", a: [-481.6, 94.0], b: [-493.9, 91.5], n: [0.1992, -0.98], kerb: 10.67, across: 21.27, shops: [{ n: "Moorooka Community Centre", w: 12.6, c: ["#22466e", "#ffffff"] }] },
     // more of Moorooka (Ash, 16 November 2026: "Add in a few more well known businesses in moorooka and the petrol stations", with
@@ -9398,8 +9398,12 @@ const handle = async (m, post) => {
       shops: [{ n: "Bottler", sub: "DRIVE THRU", w: 10, c: ["#111111", "#f2c230"], what: "Bottle shop" }] },
     { kind: "sign", addr: "605 Toohey Road, Salisbury", a: [1340.4, 931.8], b: [1346.2, 896.5], n: [0.9868, 0.1621], kerb: 13.44, across: 19.44, eave: 45.6, wall: "#e2e2df",
       shops: [{ n: "Bailey Print Group", t: "bailey print group", w: 14, c: ["#1d1d1f", "#ffffff"], what: "Printers" }] },
-    { kind: "sign", addr: "642 Toohey Road, Salisbury", a: [1362.7, 1070.2], b: [1358.5, 1093.6], n: [-0.9843, -0.1767], kerb: 16.0, across: 22.0, eave: 38.6, wall: "#ece6d8",
-      shops: [{ n: "Kebabland", w: 10, c: ["#c8102e", "#ffd54f"], what: "Kebabs", jump: true }] },
+    // 642 Toohey Road (Street View, May 2024): the 7-Eleven's canopy over the forecourt (Kebabland stood on it, drawn as a highset house),
+    // and behind it the 7-Eleven's shop with Kebabland Express at its north end, red letters on dark grey
+    { kind: "row", addr: "642 Toohey Road, Salisbury", a: [1387.6, 1067.7], b: [1382.3, 1105.1], n: [-0.99, -0.1403], kerb: 41.0, across: 51.0, eave: 38.2, wall: "#e6e4de", fascia: "#3a3c40",
+      shops: [{ n: "KEBABLAND", sub: "EXPRESS", w: 12, c: ["#3a3c40", "#e53935"], what: "Kebabs", jump: true }, { n: "7-Eleven", w: 14, c: ["#ffffff", "#008163"], fascia: "#f4f4f2", what: "Servo shop" }, { w: 11.8 }] },
+    { kind: "pylon", addr: "642 Toohey Road, Salisbury", a: [1347.0, 1070.0], b: [1349.0, 1070.0], n: [0, 1], kerb: 10, across: 10, wall: "#d9dbde", shops: [{ n: "7-Eleven", w: 2.4, c: ["#ffffff", "#008163"], stripe: ["#f58220", "#ee2737", "#008163"], what: "Petrol station", jump: true }] },
+    { kind: "pylon", addr: "642 Toohey Road, Salisbury", a: [1349.0, 1070.0], b: [1347.0, 1070.0], n: [0, -1], kerb: 10, across: 10, wall: "#d9dbde", shops: [{ n: "7-Eleven", w: 2.4, c: ["#ffffff", "#008163"], stripe: ["#f58220", "#ee2737", "#008163"] }] },
     { kind: "sign", addr: "668 Toohey Road, Salisbury", a: [1383.2, 1225.3], b: [1380.6, 1240.1], n: [-0.9849, -0.173], kerb: 65.36, across: 71.36, eave: 37.6, wall: "#e7e7e4",
       shops: [{ n: "Liquorland", sub: "WAREHOUSE", w: 10, c: ["#e30613", "#ffffff"], what: "Bottle shop" }] },
     // batch 4: the businesses run from home and the units in the back streets get a sign on a post out the front (Ash, 18 November
@@ -9478,9 +9482,9 @@ const handle = async (m, post) => {
       rollers: [[0.9, 5.3, 2.75, "#cfcac0", true], [6.1, 10.5, 2.75, "#cfcac0", true]],
       shops: [{ n: "PAYLESS TYRES", w: 11.8, c: ["#ffffff", "#d71920"], stripe: ["#2e9a4a"], what: "Tyres", jump: true }] },
     { kind: "row", addr: "1311 Ipswich Road (corner of Sherwood Road)", a: [-1435.9, 807.1], b: [-1436.5, 794.4], n: [0.9989, -0.0472], kerb: 6.03, across: 11.23, eave: 16.5, wall: "#e9e4da",
-      shops: [{ n: "CONCEPT TILES", sub: "& BATHROOMS", w: 7.2, c: ["#1d2c52", "#ffffff"], what: "Tiles and bathrooms", jump: true }, { n: "snap", sub: "PRINT & DESIGN", w: 5.5, c: ["#ffd200", "#1d1d1d"], what: "Printing" }],
+      shops: [{ n: "CONCEPT TILES", sub: "AND SURFACES", w: 7.2, c: ["#1d2c52", "#ffffff"], what: "Tiles and bathrooms", jump: true }, { n: "snap", sub: "PRINT & DESIGN", w: 5.5, c: ["#ffd200", "#1d1d1d"], what: "Printing" }],
       tenants: { lines: ["Concept Tiles", "Snap Print", "Fully Promoted"], c: ["#1d2c52", "#ffffff"], foot: { n: "1311 IPSWICH RD", c: ["#ffffff", "#1d2c52"] }, x: -1.6, back: 1.0, w: 1.6 } },
-    { kind: "row", addr: "1319 Ipswich Road (on Medway Street)", a: [-1479.3, 895.5], b: [-1458.6, 898.8], n: [-0.1574, 0.9875], kerb: 3.21, across: 13.81, eave: 13.4, wall: "#ece8df",
+    { kind: "row", addr: "1319 Ipswich Road (on Medway Street)", a: [-1479.3, 895.5], b: [-1458.6, 898.8], n: [-0.1574, 0.9875], kerb: 3.21, across: 13.81, eave: 13.4, wall: "#ece8df", fascia: "#e2ddd2",
       shops: [{ n: "BARBER", w: 5.5, c: ["#c8102e", "#ffffff"], what: "Barber" }, { w: 5 }, { n: "Alice Massage", w: 5.5, c: ["#2a2a2a", "#f3e6c8"], what: "Massage" }, { w: 5 }] },
     { kind: "sign", addr: "32 Sherwood Road", a: [-1570.5, 710.9], b: [-1603.3, 699.2], n: [0.336, -0.9419], kerb: 8.29, across: 14.29, eave: 14.4, wall: "#c9cbcd", noBoard: true,
       pole: { n: "KD Flower Design", c: ["#ffffff", "#b0185a"], x: 4, back: 1.3 },
@@ -9499,7 +9503,7 @@ const handle = async (m, post) => {
       shops: [{ n: "MyOwnVet", sub: "VETERINARY HOSPITAL", cross: "#ffffff", w: 6.2, c: ["#111111", "#ffffff"], what: "Vet, with Pooch Couture grooming", jump: true }] },
     { kind: "sign", addr: "172 Evans Road, Salisbury (the post office)", a: [390.1, 1093.0], b: [428.5, 1100.2], n: [-0.1843, 0.9829], kerb: 24.35, across: 30.35, eave: 38.5, wall: "#e2e2df", bx: 31, bw: 4.2,
       shops: [{ n: "POST", sub: "SALISBURY", post: true, w: 4.2, c: ["#d71920", "#ffffff"], what: "Australia Post, Salisbury Post Office", jump: true }] },
-    { kind: "row", addr: "222 Evans Road, Salisbury", a: [738.0, 1169.6], b: [753.4, 1172.0], n: [-0.154, 0.9881], kerb: 9.66, across: 15.66, eave: 39.8, wall: "#ece8df", windows: [3.8, 4.9, 4, "#26333d"],
+    { kind: "row", addr: "222 Evans Road, Salisbury", a: [738.0, 1169.6], b: [753.4, 1172.0], n: [-0.154, 0.9881], kerb: 9.66, across: 15.66, eave: 39.8, wall: "#ece8df", windows: [3.8, 4.9, 4, "#26333d"], fascia: "#4a3a2c",
       shops: [{ n: "Manna on Evans", sub: "BAKERY & CAFE", w: 7.8, c: ["#f3ead8", "#5a3a1a"], what: "Bakery and cafe", jump: true }, { n: "Tarragindi Music", sub: "STUDIOS UPSTAIRS", w: 7.8, c: ["#1d1d1d", "#ffffff"], what: "Music lessons, upstairs" }] },
     { kind: "sign", addr: "4/121 Evans Road, Salisbury", a: [7.8, 1089.7], b: [-25.9, 1083.7], n: [0.1753, -0.9845], kerb: 22.19, across: 28.19, eave: 26.1, wall: "#2b2d30", band: true, glass: "#1f2a33",
       tenants: { lines: ["Lounge Life", "Alliance Business Technologies"], c: ["#1d1d1d", "#ffffff"], foot: { n: "121 EVANS RD", c: ["#ffffff", "#1d1d1d"] }, x: -2, back: 1.2 },
@@ -9559,7 +9563,7 @@ const handle = async (m, post) => {
     { kind: "sign", addr: "51 Mayfield Road", a: [181.9, -137.3], b: [168.8, -141.6], n: [0.3119, -0.9501], kerb: 13.61, across: 23.01, eave: 54.4, wall: "#ecd7c8",
       pole: { n: "Moorooka Islamic Society", c: ["#ffffff", "#0b6b3a"], x: -1.4, back: 1.3 },
       shops: [{ n: "Moorooka Islamic Society", sub: "MOSQUE", w: 13.8, c: ["#ffffff", "#0b6b3a"], what: "Mosque", jump: true }] },
-    { kind: "row", addr: "100 School Road, Yeronga", a: [-617.4, -1481.1], b: [-639.2, -1485.0], n: [0.1761, -0.9844], kerb: 3.66, across: 13.06, eave: 32.3, wall: "#ece8df", windows: [3.7, 4.7, 5, "#2a3640"],
+    { kind: "row", addr: "100 School Road, Yeronga", a: [-617.4, -1481.1], b: [-639.2, -1485.0], n: [0.1761, -0.9844], kerb: 3.66, across: 13.06, eave: 32.3, wall: "#ece8df", windows: [3.7, 4.7, 5, "#2a3640"], fascia: "#34373c",
       shops: [{ n: "ATLAS", sub: "REAL ESTATE", w: 6, c: ["#1d2c52", "#ffffff"], what: "Real estate" }, { n: "Brushed n Co", w: 7, c: ["#ffffff", "#2e7d32"], what: "Hairdresser" }, { n: "Evo Cafe", w: 9.1, c: ["#1d1d1d", "#f2e6c8"], what: "Cafe", jump: true }] },
     { kind: "sign", addr: "Unit 3/56 Pring Street, Tarragindi", a: [1590.2, -467.5], b: [1575.7, -470.7], n: [0.2155, -0.9765], kerb: 9.6, across: 20.1, eave: 45.1, wall: "#ece8df", noBoard: true,
       pole: { n: "La Belle Designs", c: ["#f7e1ea", "#8a2c4b"], x: 2, back: 1.3 },
@@ -9681,8 +9685,8 @@ const handle = async (m, post) => {
     { at: [-150.6, -206.27], kind: 2, flat: true, wall: [239, 237, 232] },   // 173-175: white, two storeys
     // the rest of the shopping strip from Street View (19 November 2026): flat roofs behind parapets, not gable ends on the street
     { at: [-216.3, -319.11], kind: 2, flat: true, wall: [236, 235, 230] },   // 131 (the post office, Domino's, Yeshi Buna): white
-    { at: [-140.38, -331.53], kind: 2, flat: true, wall: [230, 230, 226] },  // 132-146 (Commonwealth Bank): white, a band of high windows
-    { at: [-133.8, -300.95], kind: 2, flat: true, wall: [72, 74, 78] },      // 138 (H&R Block, Jao Jorm Thai): new, under a wide charcoal roof
+    { at: [-140.38, -331.53], kind: 2, flat: true, wall: [230, 230, 226] },  // 132-136: white, a band of high windows, behind its car park
+    { at: [-133.8, -300.95], kind: 2, flat: true, noShop: true, wall: [72, 74, 78] },      // Moorooka Central (138-146: Commonwealth Bank, H&R Block, Jao Jorm Thai): new, under a wide charcoal roof
     { at: [-181.97, -274.88], hip: true, roof: [170, 76, 56] },              // 139 (AMehdi, Elsa Injera): red tiles, hipped, a verandah
     { at: [-175.23, -254.98], kind: 2, hip: true, roof: [196, 132, 106], wall: [232, 224, 204] },  // 143 (the RSPCA op shop): cream under salmon tiles, hipped
     { at: [-166.05, -236.45], kind: 2, flat: true, wall: [212, 212, 206] },  // 145-147 (Moorooka Mall): pale grey concrete, two storeys
@@ -9739,6 +9743,14 @@ const handle = async (m, post) => {
     { at: [-1137.45, 48.7], kind: 1, flat: true, wall: [244, 245, 242], canopy: { band: 1.2, stripe: [0, 128, 64] } },     // BP (1129 Ipswich Road): green
     { at: [-381.06, 543.81], kind: 1, flat: true, wall: [244, 244, 242], canopy: { band: 1.0, stripe: [214, 30, 38] } },   // Ampol (345 Beaudesert Road): red
     { at: [-470.17, -782.6], kind: 1, flat: true, wall: [244, 244, 242], canopy: { band: 0.9, stripe: [28, 96, 186] } },   // Pearl Energy (930 Ipswich Road): blue
+    { at: [-629.45, -1476.05], kind: 2, flat: true, wall: [236, 232, 220] },  // 100 School Road, Yeronga (Atlas, Brushed n Co, Evo Cafe): cream, two storeys, flat
+    { at: [-1068.21, 56.27], kind: 2, flat: true, wall: [234, 228, 214] },    // 4-9 Chaucer Street (the barber, Saigon Flavour): cream, a flat roof behind a parapet
+    { at: [675.88, 120.55], kind: 2, wall: [222, 216, 202] },                 // 398 Tarragindi Road (Vizzeto, Go Thai, Todd and Pup, Sheesh Mahal): cream
+    { at: [-1449.42, 798.82], kind: 2, flat: true, wall: [226, 218, 200] },   // 1311 Ipswich Road (Concept Tiles): cream render, two storeys, flat
+    { at: [-247.26, -488.51], kind: 2, hip: true, wall: [240, 238, 232] },   // Guardian Childcare (107 Beaudesert Road): white, a low hipped roof
+    { at: [-113.21, -1188.34], kind: 2, flat: true, wall: [238, 232, 222] },  // Red Rooster (838 Ipswich Road): a single-storey restaurant, flat-roofed, not a highset house
+    { at: [1365.4, 1082.75], kind: 1, flat: true, wall: [246, 246, 244], canopy: { band: 1.1, stripes: [[0, 129, 99], [238, 39, 55], [245, 130, 32]] } },  // the 7-Eleven at 642 Toohey Road
+    { at: [1388.58, 1092.87], kind: 2, flat: true, wall: [230, 228, 222] },  // its shop and Kebabland Express behind it
     { at: [748.4, 1153.3], kind: 2, flat: true, wall: [224, 212, 188] },     // 222 Evans Road (Manna on Evans, Tarragindi Music): a cream office block, flat-roofed
     { at: [-14.53, -1344.65], kind: 1, flat: true, wall: [244, 245, 242], canopy: { band: 1.2, stripe: [0, 128, 64] } },   // BP Annerley (810 Ipswich Road): green
     { at: [-237.7, -1183.67], kind: 1, flat: true, wall: [246, 246, 244], canopy: { band: 1.1, stripes: [[0, 129, 99], [238, 39, 55], [245, 130, 32]] } },  // the 7-Eleven (841 Ipswich Road): its green, red and orange
@@ -9759,7 +9771,7 @@ const handle = async (m, post) => {
     { at: [326.9, 1033.88], wall: [168, 92, 60], roof: [150, 62, 46], noShop: true },  // Reload Espresso Bar (9 Chrome Street, Salisbury): red brick, a red roof
     { at: [167.66, -116.38], wall: [236, 215, 200] },                        // the Moorooka Islamic Society (51 Mayfield Road): peach brick
     { at: [865.65, 1154.17], kind: 2, wall: [31, 42, 68] },                  // Flowers for Everyone (258 Evans Road, Salisbury): navy, in Street View
-    { at: [-1461.05, 892.42], kind: 2, wall: [236, 232, 222] },              // the shops on Medway Street at Ipswich Road (Alice Massage): cream
+    { at: [-1461.05, 892.42], kind: 2, flat: true, wall: [236, 232, 222] },  // the shops on Medway Street at Ipswich Road (Alice Massage): cream
     { at: [-1600.08, 741.77], kind: 2, wall: [170, 172, 174] },              // 32 Sherwood Road (KD Flower Design): grey cladding
     { at: [-52.36, -172.61], kind: 2, flat: true, wall: [232, 196, 172] },   // the Art Deco corner (190-204 Beaudesert Road, on Mayfield Road): salmon render
     { at: [-1067.37, -58.93], kind: 2, wall: [62, 64, 68] },                 // Starbucks' drive-through (1115 Ipswich Road): charcoal
