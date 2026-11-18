@@ -9578,7 +9578,105 @@ const handle = async (m, post) => {
     { at: [167.66, -116.38], wall: [236, 215, 200] },                        // the Moorooka Islamic Society (51 Mayfield Road): peach brick
     { at: [865.65, 1154.17], kind: 2, wall: [31, 42, 68] },                  // Flowers for Everyone (258 Evans Road, Salisbury): navy, in Street View
     { at: [-1461.05, 892.42], kind: 2, wall: [236, 232, 222] },              // the shops on Medway Street at Ipswich Road (Alice Massage): cream
-    { at: [-1600.08, 741.77], kind: 2, wall: [170, 172, 174] },              // 32 Sherwood Road (KD Flower Design): grey cladding                 // Motorworld (934 Ipswich Road): yellow                 // Moorooka Foodstore (419, on the corner of Avison Street): brick
+    { at: [-1600.08, 741.77], kind: 2, wall: [170, 172, 174] },              // 32 Sherwood Road (KD Flower Design): grey cladding
+    // Beaudesert Road's houses and the rest of its buildings, each in its colours from Street View (Ash, 19 November 2026: "if you
+    // finish businesses do all Beaudesert rd houses. Not a privacy risk, this is all on google maps anyway"): walls, and for a
+    // highset house the colour under it. The roofs were already the aerial photo's; ones hidden by trees or fences keep the model's own
+    { at: [-266.08, -880.98], wall: [236, 236, 232] },                                // white render, two storeys
+    { at: [-270.71, -859.68], wall: [150, 78, 58] },                                  // red-brown brick, steep gable
+    { at: [-277.79, -829.82], wall: [238, 236, 230] },                                // white, two storeys
+    { at: [-264.99, -808.48], wall: [150, 118, 108] },                                // old corner shop, red fascia
+    { at: [-259.98, -766.85], wall: [234, 229, 214], base: [128, 128, 124] },         // highset, cream over grey
+    { at: [-243.84, -744.34], wall: [232, 222, 196] },                                // cream, green window hoods
+    { at: [-217.07, -666.52], wall: [236, 228, 210] },                                // lowset cream render, red tiles
+    { at: [-211.42, -639.27], wall: [222, 208, 184] },                                // two storeys, beige render
+    { at: [-206.05, -623.00], wall: [214, 178, 160] },                                // two storeys, salmon render
+    { at: [-206.23, -606.53], wall: [196, 214, 192], base: [150, 160, 150] },         // mint green highset Queenslander
+    { at: [-201.65, -595.04], wall: [238, 234, 225] },                                // white, red tiles
+    { at: [-198.65, -579.76], wall: [226, 216, 196] },                                // cream render, red tiles
+    { at: [-197.66, -563.16], wall: [218, 205, 182], base: [190, 170, 150] },         // highset, beige
+    { at: [-190.20, -549.85], wall: [236, 232, 222], base: [166, 82, 62] },           // white over red brick
+    { at: [-192.13, -535.12], wall: [236, 230, 215], base: [160, 78, 58] },           // cream over red brick
+    { at: [-183.51, -520.70], wall: [240, 238, 232] },                                // white, red tiles
+    { at: [-174.18, -505.74], wall: [196, 120, 92] },                                 // lowset orange brick
+    { at: [-178.05, -473.40], wall: [238, 236, 230] },                                // small white weatherboard cottage
+    { at: [-161.33, -386.76], wall: [234, 226, 210] },                                // lowset cream brick, red tiles
+    { at: [-152.70, -357.20], wall: [242, 242, 238] },                                // white two storeys, dark glass below
+    { at: [-87.32, -232.32], wall: [226, 226, 222] },                                 // pale grey shops
+    { at: [-43.49, -72.69], wall: [238, 238, 234] },                                  // white units, yellow-green feature wall
+    { at: [-76.91, -27.71], wall: [240, 236, 226] },                                  // white render, red tile gables
+    { at: [-80.36, -10.43], wall: [236, 234, 228] },                                  // white two storeys, red tiles
+    { at: [-87.49, 3.03], wall: [232, 226, 214] },                                    // lowset white render, red tiles
+    { at: [-129.10, 41.05], wall: [234, 232, 226] },                                  // white, behind a big tree
+    { at: [-116.17, 43.39], wall: [234, 232, 226] },                                  // white, behind a big tree
+    { at: [-143.25, 53.50], wall: [84, 120, 186], base: [230, 228, 220] },            // highset, blue over white
+    { at: [-158.17, 67.40], wall: [176, 190, 200] },                                  // pale blue-grey weatherboard
+    { at: [-162.35, 83.40], wall: [236, 228, 212] },                                  // cream, orange tiles
+    { at: [-177.60, 92.33], wall: [222, 206, 180] },                                  // beige, red tiles
+    { at: [-288.27, 514.48], wall: [200, 196, 186] },                                 // pale grey brick hall behind trees
+    { at: [-282.26, 632.13], wall: [232, 224, 206] },                                 // cream, behind a grey fence
+    { at: [-321.27, 716.59], wall: [226, 214, 168] },                                 // pale yellow weatherboard cottage
+    { at: [-335.05, 732.60], wall: [240, 240, 236] },                                 // white weatherboard cottage
+    { at: [-339.90, 759.68], wall: [242, 240, 234] },                                 // lowset white weatherboard, red roof
+    { at: [-353.88, 834.27], wall: [232, 226, 212] },                                 // cream two storeys, red tiles
+    { at: [-354.72, 871.62], wall: [236, 232, 222] },                                 // white behind a tree
+    { at: [-358.85, 887.15], wall: [232, 222, 188] },                                 // pale yellow weatherboard, grey roof
+    { at: [-351.27, 922.64], wall: [222, 212, 186] },                                 // beige fibro cottage
+    { at: [-349.60, 938.63], wall: [238, 236, 230] },                                 // white, red tiles
+    { at: [-353.75, 1020.40], wall: [236, 234, 228] },                                // small white building at Evans Rd
+    { at: [-327.80, -877.60], wall: [220, 200, 160] },                                // blond brick substation
+    { at: [-331.80, -855.87], wall: [150, 70, 55] },                                  // red brick cottage, red tiles
+    { at: [-329.15, -781.77], wall: [238, 236, 230] },                                // white two storeys
+    { at: [-318.75, -756.98], wall: [240, 240, 236] },                                // white highset Queenslander behind a white wall
+    { at: [-301.23, -722.00], wall: [240, 238, 232] },                                // white lowset Queenslander
+    { at: [-297.30, -707.62], wall: [240, 240, 236] },                                // white Queenslander, gables
+    { at: [-289.95, -693.25], wall: [242, 240, 236] },                                // white weatherboard
+    { at: [-276.50, -658.08], wall: [200, 202, 204] },                                // modern townhouses, grey and white
+    { at: [-154.95, -220.30], wall: [206, 146, 60] },                                 // 167 Beaudesert shops: ochre frame, blue glass upstairs
+    { at: [-125.28, -73.03], wall: [188, 196, 200], base: [180, 180, 176] },          // highset pale grey
+    { at: [-133.75, -58.65], wall: [206, 186, 160] },                                 // lowset tan
+    { at: [-139.25, -45.90], wall: [224, 224, 220] },                                 // pale grey behind a tree
+    { at: [-151.17, -33.10], wall: [226, 206, 150] },                                 // yellow-cream render, red tiles, corner
+    { at: [-174.30, -4.53], wall: [222, 222, 218] },                                  // pale grey, grey roof
+    { at: [-188.94, 15.92], wall: [236, 236, 232] },                                  // lowset white, dark grey roof
+    { at: [-228.70, 42.22], wall: [196, 170, 130] },                                  // two storeys, tan brick
+    { at: [-239.55, 56.90], wall: [150, 80, 60] },                                    // red-brown brick flats
+    { at: [-251.65, 67.25], wall: [200, 200, 198] },                                  // grey apartments, three storeys
+    { at: [-262.10, 79.72], wall: [200, 204, 206] },                                  // light grey weatherboard
+    { at: [-312.78, 134.68], wall: [236, 234, 228] },                                 // white two storeys, mock Tudor gable
+    { at: [-313.75, 146.40], wall: [140, 196, 214], base: [230, 230, 226] },          // aqua highset Queenslander
+    { at: [-352.25, 214.93], wall: [222, 204, 170] },                                 // beige two storeys
+    { at: [-360.32, 224.90], wall: [230, 214, 170], base: [150, 76, 56] },            // cream over dark red brick
+    { at: [-366.82, 238.45], wall: [214, 222, 196] },                                 // lowset pale green, red tiles
+    { at: [-370.85, 256.43], wall: [236, 230, 216] },                                 // lowset cream render, red tiles
+    { at: [-371.15, 310.80], wall: [236, 232, 222], base: [214, 206, 190] },          // two storeys cream render, arched porch
+    { at: [-364.95, 334.80], wall: [214, 198, 172] },                                 // two storeys beige render
+    { at: [-363.43, 352.38], wall: [196, 176, 150] },                                 // tan brick flats, three storeys
+    { at: [-355.85, 418.12], wall: [214, 200, 176] },                                 // beige render wall at the corner
+    { at: [-365.85, 434.33], wall: [238, 236, 230], base: [170, 90, 66] },            // white over red brick, red tiles
+    { at: [-359.03, 448.57], wall: [180, 96, 62] },                                   // lowset orange-red brick, red tiles
+    { at: [-360.80, 464.53], wall: [184, 96, 64] },                                   // two storeys orange brick with arches
+    { at: [-361.95, 480.40], wall: [206, 188, 160] },                                 // lowset beige, dark roof
+    { at: [-363.10, 493.20], wall: [214, 202, 176] },                                 // cream-beige brick
+    { at: [-391.08, 575.36], wall: [236, 230, 214], base: [226, 218, 200] },          // highset cream, green garage door, red tiles
+    { at: [-392.70, 592.70], wall: [198, 172, 132] },                                 // tan brick flats, two storeys
+    { at: [-413.16, 634.99], wall: [236, 232, 222] },                                 // lowset white, red tiles
+    { at: [-419.12, 647.05], wall: [226, 214, 188] },                                 // lowset cream, brown roof
+    { at: [-423.88, 679.88], wall: [228, 216, 170] },                                 // pale yellow weatherboard, dark roof
+    { at: [-437.59, 711.23], wall: [176, 96, 66] },                                   // two storeys red-brown brick
+    { at: [-443.00, 729.13], wall: [176, 98, 68] },                                   // two storeys orange-red brick
+    { at: [-448.03, 746.33], wall: [236, 234, 228], base: [166, 88, 64] },            // white over red brick
+    { at: [-451.51, 763.17], wall: [214, 196, 168] },                                 // lowset beige brick, garage
+    { at: [-458.58, 771.63], wall: [214, 204, 186] },                                 // modern lowset beige, brown garage door
+    { at: [-466.15, 783.55], wall: [120, 124, 128] },                                 // modern two storeys charcoal
+    { at: [-478.40, 792.32], wall: [236, 236, 232] },                                 // small white cottage
+    { at: [-483.75, 808.16], wall: [232, 228, 216] },                                 // two storeys cream behind hedges
+    { at: [-495.12, 822.08], wall: [210, 214, 216] },                                 // two storeys light grey
+    { at: [-496.85, 836.95], wall: [236, 236, 230] },                                 // white two storeys
+    { at: [-506.55, 849.30], wall: [232, 230, 222] },                                 // white two storeys behind trees
+    { at: [-512.25, 865.25], wall: [196, 206, 190], base: [232, 230, 222] },          // highset pale green Queenslander, terracotta roof
+    { at: [-591.45, 1163.25], wall: [240, 240, 236] },                                // the servo's kiosk, white
+    { at: [-624.36, 1232.20], wall: [232, 230, 224] },                                // commercial, white                 // Motorworld (934 Ipswich Road): yellow                 // Moorooka Foodstore (419, on the corner of Avison Street): brick
   ];
   window.anStyle = (x, z) => { for (const q of MOO_STYLE) if (Math.abs(q.at[0] - x) < 0.6 && Math.abs(q.at[1] - z) < 0.6) return q; return null; };
   function townShops(T, m) {
