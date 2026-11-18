@@ -9564,7 +9564,9 @@ const handle = async (m, post) => {
     { kind: "sign", addr: "17 Medway Street, Rocklea", a: [-1540.0, 867.3], b: [-1512.0, 872.0], n: [-0.1655, 0.9862], kerb: 20.73, across: 31.33, eave: 15.9, wall: "#d9dbde", bx: 8, bw: 7,
       rollers: [[15.5, 20.5, 3.4, "#9aa0a6", true], [21.5, 26.5, 3.4, "#9aa0a6"]],
       shops: [{ n: "INDUSTRIAL FITTINGS", sub: "SALES", w: 28.4, c: ["#0b3d91", "#ffffff"], what: "Industrial fittings" }] },
-    { kind: "sign", addr: "51 McCarthy Road, Salisbury", a: [672.4, 1525.7], b: [680.1, 1487.5], n: [0.9803, 0.1976], kerb: 14.86, across: 22.06, eave: 30.6, wall: "#ece8df", bx: 19.5, bw: 6,
+    { kind: "sign", addr: "51 McCarthy Road, Salisbury", a: [672.4, 1525.7], b: [680.1, 1487.5], n: [0.9803, 0.1976], kerb: 14.86, across: 22.06, eave: 30.6, wall: "#f2f1ee", bx: 19.5, bw: 6,
+      posters: [[24.0, 29.5, 4.3, 5.5, "SABO", "", "#f2f1ee", "#a07a4a"]],
+      tenants: { lines: ["Natura Cafe", "Service Today"], c: ["#ffffff", "#1d1d1d"], foot: { n: "51 McCARTHY RD", c: ["#a07a4a", "#ffffff"] }, x: -1.4, back: 1.2, w: 1.9 },
       shops: [{ n: "Natura Cafe", w: 39, c: ["#2e5d34", "#f4efe2"], what: "Cafe", jump: true }] },
     // (a red brick cottage with a verandah across its front, in Street View: the sign stands on the verandah's edge)
     { kind: "sign", addr: "9 Chrome Street, Salisbury", a: [321.1, 1017.7], b: [310.4, 1029.1], n: [-0.7291, -0.6844], kerb: 4.42, across: 12.52, eave: 33.7, wall: "#a85a3c", noBoard: true,
@@ -9645,6 +9647,15 @@ const handle = async (m, post) => {
     { kind: "sign", addr: "13 Davey Street, Salisbury", a: [387.9, 716.5], b: [347.2, 709.0], n: [0.1812, -0.9834], kerb: 8.97, across: 19.57, eave: 40.5, wall: "#d9dcdd", noBoard: true,
       rollers: [[20.0, 25.0, 3.8, "#3b3f45", true]], pole: { n: "WILSON TIMBERS", c: ["#ffffff", "#1f4fa0"], x: 15.0, back: 1.2, big: 1.2 },
       shops: [{ n: "Wilson Timbers", w: 10, c: ["#ffffff", "#1f4fa0"], what: "Timber yard" }] },
+    // Edible Blooms and Gift Basket in the orange brick building at 600 Tarragindi Road, Salisbury, and Lyndall Platt in the Pring Street
+    // shops with La Belle Designs (Google Maps; Street View)
+    { kind: "sign", addr: "600 Tarragindi Road, Salisbury", a: [489.0, 1056.9], b: [485.6, 1076.4], n: [-0.9851, -0.1718], kerb: 18.83, across: 28.23, eave: 43.5, wall: "#b5653f", high: true,
+      tenants: { lines: ["Edible Blooms", "Gift Basket"], c: ["#ffffff", "#1d1d1d"], foot: { n: "600 TARRAGINDI RD", c: ["#b5653f", "#ffffff"] }, x: -1.4, back: 1.2, w: 1.9 },
+      shops: [{ n: "Edible Blooms", w: 9, c: ["#ffffff", "#c2185b"], what: "Chocolate and gift hampers" }] },
+    { kind: "sign", addr: "Shop 1/56 Pring Street, Tarragindi", a: [1590.2, -467.5], b: [1575.7, -470.7], n: [0.2155, -0.9765], kerb: 9.6, across: 20.1, eave: 45.1, wall: "#ece8df", bx: 9.5, bw: 6,
+      shops: [{ n: "Lyndall Platt", sub: "BEAUTY + NUTRITION", w: 6, c: ["#ffffff", "#2b2b2b"], what: "Beauty and nutrition" }] },
+    { kind: "sign", addr: "T17/25 Figtree Street, Yeerongpilly", a: [-1279.1, -1150.5], b: [-1277.1, -1164.4], n: [0.9893, 0.146], kerb: 1.73, across: 8.93, eave: 17.5, wall: "#9a9da0", glass: "#22303a", sy: [3.3, 4.2],
+      shops: [{ n: "Fresh N Local", w: 9, c: ["#2e7d32", "#ffffff"], what: "Supermarket" }] },
     { kind: "sign", addr: "1 Sherley Street", a: [-189.6, 135.3], b: [-208.0, 132.2], n: [0.1661, -0.9861], kerb: 23.11, across: 33.71, eave: 40.5, wall: "#e9dcc4", shops: [{ n: "Moorooka State School", w: 18.7, c: ["#163e7a", "#ffffff"], what: "Primary school (heritage listed)", jump: true }] },
     { kind: "sign", addr: "17 Hawtree Street", a: [-654.6, 331.9], b: [-647.5, 301.6], n: [0.9736, 0.2281], kerb: 10.82, across: 21.42, eave: 41.7, wall: "#e4d6c2", shops: [{ n: "St Brendan's School", w: 31.1, c: ["#7a1c2a", "#ffffff"], what: "Catholic primary school", jump: true }] },
   ];
@@ -9686,6 +9697,8 @@ const handle = async (m, post) => {
     { at: [-642.92, -543.92], wall: [236, 230, 214] },                      // the Moorooka Motel (980 Ipswich Road): cream
     { at: [-1064.5, -279.0], kind: 2, wall: [206, 186, 150] },              // Bandesha Autos (26 Baldock Street): beige brick
     { at: [365.0, 726.62], kind: 2, wall: [217, 220, 221] },                // Wilson Timbers (13 Davey Street): pale grey sheds
+    { at: [518.38, 1071.9], kind: 2, wall: [181, 101, 63] },                // 600 Tarragindi Road (Edible Blooms, Gift Basket): orange brick
+    { at: [631.11, 1507.87], kind: 2, wall: [242, 241, 238] },              // 51 McCarthy Road (SABO, Natura Cafe): white
     { at: [-876.96, -340.86], kind: 1, flat: true, wall: [244, 244, 242], canopy: { band: 1.0, stripe: [214, 30, 38] } },  // Reddy Express (1029 Ipswich Road): red
     { at: [-911.64, -637.63], kind: 2, wall: [214, 202, 174] },             // 281 Station Road: beige over a blue-grey awning
     { at: [1354.06, 1194.91], kind: 2, wall: [239, 237, 232] },             // 660 Toohey Road's shops: white
