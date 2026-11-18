@@ -10605,6 +10605,10 @@ const handle = async (m, post) => {
   const MOO_POSSUM = { x: 393.5, z: 48.4, h: -1.36, name: "Kingwell Street: the possum", what: "A brushtail possum on the front lawn of 16 Kingwell Street. Be the possum to run three times as fast as walking and climb the street lights and roofs",
     stand: { x: 390.5, z: 44.5, yaw: Math.atan2(-3, -3.9) },
     poles: [[415.7, -100.2], [408.7, -61.5], [401.8, -22.8], [394.8, 15.9], [388.8, 49.4]], arm: -1.749 };
+  // the pigeon (Ash, 18 November 2026: "Add a pigeon that I can get in like the possum but can fly"): pecking about on the footpath
+  // of Beaudesert Road by the shops. Be the pigeon to walk, take off with Jump (Flap on a phone), and fly over the roofs; it lands where
+  // it comes down, on the ground, a roof or a tree. `x`, `z` set by MOO_PIGEON_AT below
+  const MOO_PIGEON = { x: -96.5, z: -206.5, h: 0.6, name: "Beaudesert Road: the pigeon", what: "A pigeon pecking about by the shops on Beaudesert Road. Be the pigeon to fly over the roofs of Moorooka" };
   // What there is to drive and fly in each town (Ash, 14 November 2026: "Merge the car and the plane into inverloch and logan. Add
   // 1 plane near the players spawn point and another random plane. The 2nd plane should have a golden stripe and extra fast and
   // mobile"). Moorooka's are above, and its parked cars can be driven too. Inverloch and Logan have no cars of their own to hand
@@ -10643,7 +10647,7 @@ const handle = async (m, post) => {
     return out; };
   const TOWN_RIDES = {
     moo: { planes: [...MOO_PLANES, { x: -464, z: -1533, h: 2.71, heli: true, name: "The helicopter", at: "on the field off School Road", what: "On the open grass off School Road, near Nathan Terrace. Walk up to it and get in" }, ...mooDayRides()],
-      cars: [MOO_RED6, MOO_GOLD_CAR], possum: MOO_POSSUM },  // (the bus drives itself now: townTraffic)
+      cars: [MOO_RED6, MOO_GOLD_CAR], possum: MOO_POSSUM, pigeon: MOO_PIGEON },  // (the bus drives itself now: townTraffic)
     inv: { planes: [{ x: -210, z: -377, h: 1.571, name: "The plane", at: "on the lawn by The Hub", what: "On the lawn by The Hub, off A'Beckett Street. Walk up to it and get in" }],
       cars: [{ x: -228.5, z: -375.5, h: Math.PI, spare: true, name: "The red car", what: "On the lawn by The Hub, beside the plane" }, { x: -232.5, z: -375.5, h: Math.PI, gold: true, name: "The golden car", what: "On the lawn by The Hub. A fifth faster than the red one" }],
       more: { planes: [{ x: -1602.1, z: 422, h: 2.6, heli: true, name: "The helicopter", at: "behind 11 Norman Road", what: "On the grass behind 11 Norman Road" }], cars: [{ x: -214, z: -359.6, h: -1.571, bus: true, name: "The bus", what: "In A'Beckett Street, out the front of The Hub" }] },
@@ -11013,7 +11017,7 @@ const handle = async (m, post) => {
     const V2 = new THREE.Vector3();
     const SHAPES = { walk: (c, lc) => townPlaneParts(c, "person", lc), builder: c => townPlaneParts(c, "builder"), chef: c => townPlaneParts(c, "chef"), car: c => townPlaneParts(c, true), gold: () => townPlaneParts("#e8b923", true), bus: () => townPlaneParts("#2f7fc4", "bus"),
       plane: () => townPlaneParts().slice(0, 1), goldplane: () => townPlaneParts("#e2ad1c").slice(0, 1), heli: () => townPlaneParts("#c8322b", "heli").slice(0, 2), goldheli: () => townPlaneParts("#e2ad1c", "heli").slice(0, 2),
-      possum: () => townPlaneParts(undefined, "possum") };
+      possum: () => townPlaneParts(undefined, "possum"), pigeon: () => townPlaneParts(undefined, "pigeon") };
     const peers = new Map(); let sendEmote = null, emoteAt = 0; const SH = [new THREE.Matrix4().makeTranslation(-0.31, 1.42, 0), new THREE.Matrix4().makeTranslation(0.31, 1.42, 0)], R1 = new THREE.Matrix4(), R2 = new THREE.Matrix4();
     const emoteBtn = $("bsEmoteBtn"), emoteBox = $("bsEmotes"), chatBtn = $("bsChatBtn"), chatBar = $("bsChatBar"), chatIn = $("bsChatIn");
     // Chat (Ash, 15 November 2026: "Add chat, under emote chat. If I press chat then open up the keyboard. Show as cloud box above
@@ -11319,9 +11323,11 @@ const handle = async (m, post) => {
         if (fig) { q.parts.setMatrix(1, M.clone().multiply(SH[0]).multiply(R1.makeRotationZ(-armR)).multiply(R2.makeRotationX(-fwdR)).elements); q.parts.setMatrix(2, M.clone().multiply(SH[1]).multiply(R1.makeRotationZ(armL)).multiply(R2.makeRotationX(-fwdL)).elements); }
         sayIn(q.el, q.name, q.chat, now, sign);
         if (kind === "heli" || kind === "goldheli") q.parts.setMatrix(1, M.clone().multiply(new THREE.Matrix4().makeTranslation(0, 2.45, 0.1)).multiply(new THREE.Matrix4().makeRotationY(now / 60)).elements);
+        if (kind === "pigeon") { const air = s.y - ground(s.x, s.z) > 0.4, fl = air ? 0.25 + 0.75 * Math.sin(now / 45) : -0.15;  // its wings: beating in the air, folded on the ground
+          for (const [i, sx] of [[1, 1], [2, -1]]) q.parts.setMatrix(i, M.clone().multiply(new THREE.Matrix4().makeTranslation(sx * 0.07, 0.31, 0.03)).multiply(new THREE.Matrix4().makeRotationY(air ? 0 : sx * 1.45)).multiply(new THREE.Matrix4().makeRotationZ(sx * fl)).elements); }
         if (kind === "possum") q.parts.setMatrix(1, M.clone().multiply(new THREE.Matrix4().makeTranslation(0, 0, -0.27)).multiply(new THREE.Matrix4().makeRotationY(0.22 * Math.sin(now / 160))).elements);  // its tail, swaying
         // their name over them, where they are on the screen
-        const top = kind === "walk" ? 2.1 : kind === "builder" ? 2.25 : kind === "bus" ? 3.7 : kind === "possum" ? 0.9 : 2.9, dx = s.x - cam.x, dy = s.y + top - cam.y, dz = s.z - cam.z, depth = dx * fx + dy * fy + dz * fz;
+        const top = kind === "walk" ? 2.1 : kind === "builder" ? 2.25 : kind === "bus" ? 3.7 : kind === "possum" ? 0.9 : kind === "pigeon" ? 0.8 : 2.9, dx = s.x - cam.x, dy = s.y + top - cam.y, dz = s.z - cam.z, depth = dx * fx + dy * fy + dz * fz;
         const sx = depth < 1 ? 0 : w / 2 + (dx * rx + dz * rz) / depth * f * (h / 2), sy = depth < 1 ? 0 : h / 2 - (dx * ux + dy * uy + dz * uz) / depth * f * (h / 2);
         const onScreen = depth >= 1 && sx >= -40 && sx <= w + 40 && sy >= 0 && sy <= h, edge = q.el.edge, mine = riders.has(id) && T.car?.in;
         if (!q.name || !onScreen || depth > 1500) q.el.hidden = true;
@@ -11961,6 +11967,25 @@ const handle = async (m, post) => {
       const big = q => { for (let i = 0; i < q.positions.length; i++) q.positions[i] *= 1.35; return q; };
       return [big(b.part({ roughness: 0.95 })), big(tail.part({ roughness: 0.95 }))];
     }
+    if (car === "pigeon") {  // a feral rock pigeon: blue-grey, a darker head, the green and purple sheen on its neck, two dark bars on each
+      // wing, a dark tail band, orange eyes and pink-red feet. About 0.32 m long, drawn half as big again so it reads. Feet on y = 0,
+      // facing +Z. The wings are parts of their own (right, then left), hinged at the shoulder, so they flap
+      const GR = [lin("#8f97a3"), lin("#868e9a"), lin("#99a1ac")], HEAD = [lin("#6f7682"), lin("#666d79")], NECK = [lin("#4f8a6e"), lin("#6a5a8c"), lin("#558f73")], PALE = lin("#b9c0c9"), BAR = lin("#2e3036"),
+        BEAK = lin("#2b2a2c"), CERE = lin("#e8e4dc"), EYE = lin("#e07b1f"), FOOT = lin("#c9505a"), TAILC = [lin("#7d8590"), lin("#747c88")], BAND = lin("#2a2c31");
+      ball(b, 0, 0.17, -0.01, 0.075, 0.072, 0.13, GR, 61, 8, 5, 0.1);  // body
+      ball(b, 0, 0.215, 0.085, 0.056, 0.06, 0.055, NECK, 62, 7, 4, 0.08);  // the sheen on its neck
+      ball(b, 0, 0.27, 0.115, 0.042, 0.042, 0.046, HEAD, 63, 7, 4, 0.06);  // head
+      b.box(-0.009, 0.009, 0.26, 0.274, 0.155, 0.185, BEAK); b.box(-0.012, 0.012, 0.272, 0.284, 0.15, 0.165, CERE);  // beak, and the white bit on top
+      for (const sx of [-1, 1]) { b.box(sx * 0.03 - 0.008, sx * 0.03 + 0.008, 0.275, 0.29, 0.13, 0.142, EYE); b.box(sx * 0.031 - 0.004, sx * 0.031 + 0.004, 0.279, 0.286, 0.142, 0.144, BEAK);
+        b.box(sx * 0.03 - 0.01, sx * 0.03 + 0.01, 0, 0.1, -0.005, 0.015, FOOT); b.box(sx * 0.03 - 0.016, sx * 0.03 + 0.016, 0, 0.012, -0.01, 0.05, FOOT); }  // eyes; legs and toes
+      b.box(-0.05, 0.05, 0.15, 0.17, -0.25, -0.1, TAILC[0]); b.box(-0.052, 0.052, 0.148, 0.168, -0.25, -0.215, BAND);  // the tail, with its dark band
+      // a wing: from the shoulder out along +X (the left one is turned round), pale grey with two dark bars and dark tips
+      const wing = sx => { const w = mesh(), X = (a0, a1, ...r) => w.box(Math.min(sx * a0, sx * a1), Math.max(sx * a0, sx * a1), ...r);
+        X(0, 0.12, -0.012, 0.012, -0.11, 0.05, GR[2]); X(0.12, 0.24, -0.01, 0.01, -0.12, 0.03, PALE); X(0.24, 0.31, -0.008, 0.008, -0.11, 0.0, BAR);
+        X(0.03, 0.15, 0.012, 0.016, -0.06, -0.04, BAR); X(0.03, 0.15, 0.012, 0.016, -0.1, -0.08, BAR); return w.part({ roughness: 0.9 }); };
+      const big = q => { for (let i = 0; i < q.positions.length; i++) q.positions[i] *= 1.5; return q; };
+      return [big(b.part({ roughness: 0.9 })), big(wing(1)), big(wing(-1))];
+    }
     if (car === "lightpole") {  // a street light: a grey steel pole 8.2 m tall on a concrete footing, its arm reaching 1.8 m along +Z with the lamp on the end
       const STEEL = lin("#8e9396"), FOOT = lin("#a7a49c"), HEAD = lin("#4a4e52");
       b.box(-0.17, 0.17, -0.3, 0.12, -0.17, 0.17, FOOT);
@@ -12251,6 +12276,8 @@ const handle = async (m, post) => {
       if (m.solidAt?.(x, z) || T.solid?.(x, z)) y = Math.max(y, roofAt(x, z) ?? m.groundAt(x, z) + 4.5);
       return y; };
     const pos = PS ? { x: PS.x, z: PS.z, h: PS.h, y: 0, p: 0, r: 0, v: 0, vy: 0, t: 0, mode: "ground", wall: null, jumped: false } : null;
+    // the pigeon (Moorooka: MOO_PIGEON): walks, and flies with Jump; built the first time you come within 400 m of it
+    const PG = RIDES.pigeon, pg = PG ? { x: PG.x, z: PG.z, h: PG.h, y: 0, p: 0, r: 0, v: 0, vy: 0, t: 0, mode: "ground", air: false, flapped: false } : null; let pigeonMesh = null;
     const TAIL = new THREE.Matrix4(), TURN = new THREE.Matrix4();
     const showPossum = () => { if (!possumMesh) return; const bob = pos.mode === "ground" ? Math.min(0.06, Math.abs(pos.v) / 400) * Math.abs(Math.sin(pos.t * 16)) : 0;
       M.compose(V.set(pos.x, pos.y + bob + (pos.flip != null ? 0.25 : 0), pos.z), Q.setFromEuler(E.set(-pos.p - (pos.flip != null ? pos.flip * Math.PI * 2 : 0), pos.h, pos.r, "YXZ")), ONE); possumMesh.setMatrix(0, M.elements.slice());
@@ -12344,6 +12371,14 @@ const handle = async (m, post) => {
     const goldPossum = () => { if (!possumMesh) return; try { possumMesh.remove(); } catch {} possumMesh = m.addParts(townPlaneParts("gold", "possum").map(q => ({ ...q, matrix: M.identity().elements.slice() }))); showPossum(); };
     const possumHome = () => { Object.assign(pos, { x: PS.x, z: PS.z, h: PS.h, p: 0, r: 0, v: 0, vy: 0, mode: "ground", wall: null, sit: false }); pos.y = surf(pos.x, pos.z); showPossum(); };
     if (pos) possumHome();
+    const WING = new THREE.Matrix4(), WY = new THREE.Matrix4(), WZ = new THREE.Matrix4();
+    const showPigeon = () => { if (!pigeonMesh) return; const P = pg, bob = P.mode === "ground" ? Math.min(0.04, Math.abs(P.v) / 120) * Math.abs(Math.sin(P.t * 14)) : 0;
+      M.compose(V.set(P.x, P.y + bob, P.z), Q.setFromEuler(E.set(-P.p, P.h, P.r, "YXZ")), ONE); pigeonMesh.setMatrix(0, M.elements.slice());
+      // the wings: folded back along its sides on the ground; out and beating while it flaps up, held out a touch raised as it glides
+      const fold = P.air ? 0 : 1.45, ang = !P.air ? -0.15 : P.flap ? 0.25 + 0.85 * Math.sin(P.t * 22) : 0.12 + 0.05 * Math.sin(P.t * 3);
+      for (const [i, sx] of [[1, 1], [2, -1]]) pigeonMesh.setMatrix(i, M.clone().multiply(WING.makeTranslation(sx * 0.07, 0.31, 0.03)).multiply(WY.makeRotationY(sx * fold)).multiply(WZ.makeRotationZ(sx * ang)).elements.slice()); };
+    const pigeonHome = () => { Object.assign(pg, { x: PG.x, z: PG.z, h: PG.h, p: 0, r: 0, v: 0, vy: 0, mode: "ground", air: false, flap: 0 }); pg.y = ground(pg.x, pg.z); showPigeon(); };
+    const wakePigeon = () => { if (pigeonMesh || !pg) return; pigeonMesh = m.addParts(townPlaneParts(undefined, "pigeon").map(q => ({ ...q, matrix: M.identity().elements.slice() }))); pigeonHome(); };
     const wake = () => { if (possumMesh || !pos) return;  // the possum and the lights, built the first time you come near
       poleMesh = m.addParts(poles.flatMap(q => townPlaneParts(undefined, "lightpole").map(part => ({ ...part, matrix: M.compose(V.set(q.x, q.y, q.z), Q.setFromEuler(E.set(0, PS.arm, 0, "YXZ")), ONE).elements.slice() }))));
       possumMesh = m.addParts(townPlaneParts(undefined, "possum").map(q => ({ ...q, matrix: M.identity().elements.slice() }))); showPossum(); satRoof(); };
@@ -12385,10 +12420,11 @@ const handle = async (m, post) => {
     KEYS_FEW.bus = KEYS_FEW.gold = KEYS_FEW.car;
     KEYS.bus = KEYS.car; KEYS.gold = [...KEYS.car.slice(0, 4), [["X"], "180: hop and spin round, still going"], ...KEYS.car.slice(4)];
     KEYS.possum = [[["W", "A", "S", "D"], "Run that way, from where you're looking (the arrows too)"], [["W"], "Into a street light or a wall: climb it"], [["S"], "Walk backwards (on a wall: let go)"], [["Space"], "Jump (off a wall too)"], [["Shift"], "Boost"], [["Q"], "Grippy on or off: holds on to cars, planes and tree tops (on or against a car you hold on; only Grippy off lets go)"], [["Drag"], "Look around"], [["E"], "Human again"]];
+    KEYS.pigeon = [[["W", "A", "S", "D"], "Walk, or fly, that way from where you're looking"], [["Space"], "Flap: take off, and fly up"], [["C"], "Dive"], [["Shift"], "Faster"], [["E"], "Human again"]];
     // (only the sky rings' count and way: no tips bottom left, Ash, 16 November 2026, "The bottom left tooltips other that ? Aren't needed")
     const hint = text0 => { const text = /^Ring \d/.test(text0 || "") ? text0 : ""; if (keysNow.textContent !== text) { keysNow.textContent = text; if (touch) keysBox.hidden = !text; } };
     const keysOff = off => { keysBox.classList.toggle("off", off); keysQ.textContent = "? hides the buttons"; };
-    const showKeys = kind => { keysNow.textContent = ""; keysOff(false); keysBox.hidden = !kind || touch || kind === "possum";  // (no list for the possum: Ash, 16 November 2026, "I don't think any are needed")  // (on a phone it shows once there is something to say)
+    const showKeys = kind => { keysNow.textContent = ""; keysOff(false); keysBox.hidden = !kind || touch || kind === "possum" || kind === "pigeon";  // (no list for the possum: Ash, 16 November 2026, "I don't think any are needed")  // (on a phone it shows once there is something to say)
       const RODMAP = (() => { if (!townIsRod()) return null; const L = rodLayout(), cx = kind === "walk" ? "walk" : /^(car|bus|gold)$/.test(kind) ? "car" : null; if (!cx) return null;
         const by = { W: "KeyW", A: "KeyA", S: "KeyS", D: "KeyD", Shift: "ShiftLeft", Space: "Space" }, m = {}; for (const [id, def] of ROD_ACTIONS[cx]) { const lab = Object.keys(by).find(k => by[k] === def); if (lab && L[cx]?.[id]) m[lab] = keyName(L[cx][id]); } return m; })();
       keysList.replaceChildren(...(KEYS_FEW[kind] || []).map(([ks, what]) => [RODMAP ? ks.map(k => RODMAP[k] || k) : ks, what]).filter(([ks]) => !(kind === "plane" && plane && !canBoost(plane) && ks[0] === "Shift")).flatMap(([ks, what]) => { const dt = document.createElement("dt"), dd = document.createElement("dd");
@@ -12396,7 +12432,7 @@ const handle = async (m, post) => {
       // the stick and the Up and Down buttons say what they do in it
       if (joyName) joyName.textContent = kind === "plane" ? "Power and turn" : kind === "heli" ? "Go and turn" : kind === "car" ? "Drive" : kind === "possum" ? "Run and turn" : "Move";
       if (udName.length === 2) { udName[0].textContent = kind === "plane" ? "Climb" : kind === "possum" ? "Jump" : "Up"; udName[1].textContent = kind === "plane" ? "Dive" : kind === "possum" ? "Let go" : "Down"; } };
-    C.probe = () => ({ pos, surf, roofAt, solid, loadRoofs, treeAt, loadTrees, mission: () => mission });  // (for checking the possum's footing in tests)
+    C.probe = () => ({ pos, pg, surf, roofAt, solid, loadRoofs, treeAt, loadTrees, mission: () => mission });  // (for checking the possum's footing in tests)
     C.walkKeys = on => { if (!veh) showKeys(on ? "walk" : null); }; if (T.walk) showKeys("walk");
     C.keys = () => { if (!veh) return false; keysOff(!keysBox.classList.contains("off")); return true; };  // "?" hides the list and brings it back
     // ---- the boost's charge: a fine ring of 48 slanted ticks on the ground round the car, lit as far round as there is charge
@@ -12447,7 +12483,7 @@ const handle = async (m, post) => {
       if (on && car) M.compose(V.set(car.x, car.y, car.z), Q.setFromEuler(E.set(-car.p, car.h, car.r, "YXZ")), BEAT.set(beat * (car.bus ? 2.1 : 1), 1, beat * (car.bus ? 2.1 : 1)));
       for (let i = 0; i <= RING; i++) { const show = !!on && !!car && (i === 0 || i <= full); if (show || lit[i]) { ring.setMatrix(i, show ? M.elements.slice() : NONE); lit[i] = show; } }
       const pc = Math.round(charge * 100) + "%"; if (boostBtn.style.getPropertyValue("--charge") !== pc) boostBtn.style.setProperty("--charge", pc); };
-    const leave = step => { if (!veh) return; const was = veh; if (was === "possum" && pos?.cling) { try { T.peers?.ride?.(pos.cling.id, false); } catch {} pos.cling = null; }  // (it stayed stuck to the driver: Ash, 18 November 2026) if (held) { document.body.classList.remove("bsheld"); held = null; } rockets(false); if (sky) { skyEnd(); skyTried = false; } for (let i = 0; i < FXN; i++) if (sparks[i]) { sparks[i] = null; fx.setMatrix(i, NONE); } if (was !== "possum" && was !== "ride") snd.door(); snd.stop();
+    const leave = step => { if (!veh) return; const was = veh; if (was === "possum" && pos?.cling) { try { T.peers?.ride?.(pos.cling.id, false); } catch {} pos.cling = null; }  // (it stayed stuck to the driver: Ash, 18 November 2026) if (held) { document.body.classList.remove("bsheld"); held = null; } rockets(false); if (sky) { skyEnd(); skyTried = false; } for (let i = 0; i < FXN; i++) if (sparks[i]) { sparks[i] = null; fx.setMatrix(i, NONE); } if (was !== "possum" && was !== "pigeon" && was !== "ride") snd.door(); snd.stop();
       if (was === "ride") { const q = ride.q; if (ride.local) { ride.local.rider = false; snd.door(); } else T.peers?.ride?.(ride.id, false);
         if (step && q && ride.local) { F.pos.x = q.x - Math.cos(q.h) * 2.6; F.pos.z = q.z + Math.sin(q.h) * 2.6; F.yaw = q.h - Math.PI / 2; F.pitch = -0.04; }  // off the bus's kerb-side door
         else if (step && q) { const back = RIDE_UP[q.k] > 1 ? 2.4 : 1.2; F.pos.x = q.x - Math.cos(q.h) * back; F.pos.z = q.z + Math.sin(q.h) * back; F.yaw = q.h + Math.PI; F.pitch = -0.04; }
@@ -12458,6 +12494,12 @@ const handle = async (m, post) => {
           // you stand where the view was (behind it, clear of the building it is on); facing it
           if (solid(F.pos.x, F.pos.z) || !inside(F.pos.x, F.pos.z)) { F.pos.x = PS.stand.x; F.pos.z = PS.stand.z; }
           F.yaw = Math.atan2(F.pos.x - P.x, F.pos.z - P.z); F.pitch = -0.08; } }
+      else if (was === "pigeon") { const P = pg; P.v = 0; P.flap = 0;
+        if (!step) pigeonHome();  // flying off as the camera, a jump to a place or starting again: back to the shops
+        else { if (P.mode === "air") { P.y = surf(P.x, P.z); P.vy = 0; P.mode = "ground"; P.air = false; } P.p = P.r = 0; showPigeon();  // it stays where it landed
+          // you stand just behind it (on the ground below, if it's up on a roof), clear of any building, facing it
+          let sx = P.x - Math.sin(P.h) * 1.4, sz = P.z - Math.cos(P.h) * 1.4; for (let k = 0; (solid(sx, sz) || !inside(sx, sz)) && k < 64; k++) { const r = 1.4 + Math.floor(k / 8) * 2.5, a = P.h + k * Math.PI / 4; sx = P.x + Math.sin(a) * r; sz = P.z + Math.cos(a) * r; }
+          F.pos.x = sx; F.pos.z = sz; F.yaw = Math.atan2(F.pos.x - P.x, F.pos.z - P.z); F.pitch = -0.08; } }
       else if (was === "car") { car.v = 0; car.flip = null; car.hop = 0; sit(0); showRing(false); if (step) { F.pos.x = car.x - Math.cos(car.h) * (car.bus ? 2.6 : 1.8); F.pos.z = car.z + Math.sin(car.h) * (car.bus ? 2.6 : 1.8); F.yaw = car.h + Math.PI; F.pitch = -0.04; } }  // out of the driver's door, on the right, facing the way the car does
       else { const P = plane; if (P.air) { P.x = P.home.x; P.z = P.home.z; P.h = P.home.h; P.air = false; }  // left in the air (you flew off as the camera, or jumped somewhere): it is back where it lives
         P.v = 0; P.spin = 0; const [y, p, r] = lie(P, 2, 1.2); P.y = y; P.p = p; P.r = r;
@@ -12671,6 +12713,31 @@ const handle = async (m, post) => {
         if ((gripLook -= dt) <= 0) { gripLook = 0.25; gripBtn.hidden = false; const tx = grippy ? "Grippy: on" : "Grippy: off"; if (gripBtn.textContent !== tx) gripBtn.textContent = tx; gripBtn.classList.toggle("on", grippy); }
         o = P; D = P.cling || P.grip ? 9 : 3.4 + Math.min(3, Math.abs(P.v) / 12); text = P.cling ? `Holding on to ${P.cling.name} \u00b7 ${Math.round(P.v * 3.6)} km/h` : P.grip ? `Gripping the car \u00b7 ${Math.round(P.v * 3.6)} km/h` : P.mode === "climb" ? "Climbing \u00b7 " + Math.round(up) + " m" : Math.round(Math.abs(P.v) * 3.6) + " km/h" + (up > 1.5 ? " \u00b7 " + Math.round(up) + " m up" : "");
         if (mission) text = `\ud83d\udfe1 ${mission.got}/${mission.rings.length} rings \u00b7 ${Math.max(0, Math.ceil(mission.t))} s \u00b7 ` + text;
+      } else if (veh === "pigeon") { const P = pg, flapK = has("Space") || !!F.boost, dive = has("KeyC"), fast = has("ShiftLeft", "ShiftRight");
+        P.t += dt; const mag = Math.min(1, Math.hypot(str, thr)), goH = mag > 0.15 ? F.yaw + Math.PI + Math.atan2(-str, thr) : P.h, turn = wrap(goH - P.h);
+        if (P.mode === "ground") {  // walking: it turns quick to the way the stick points and potters off; Jump (Flap) takes off
+          if (mag > 0.15) P.h += Math.sign(turn) * Math.min(Math.abs(turn), 5 * dt);
+          const want = mag > 0.15 ? (fast ? 7 : 4) * mag * Math.max(0.1, Math.cos(turn)) ** 2 : 0; P.v += (want - P.v) * Math.min(1, dt * 10);
+          if (flapK && !P.flapped) { P.mode = "air"; P.vy = 5.5; P.v = Math.max(P.v, 7); snd.whoosh(); } }
+        else {  // flying: it heads the way you point it (from where you're looking) and swings round to it; hold Flap to climb, let go to glide down, C to dive
+          if (mag > 0.15) P.h += Math.sign(turn) * Math.min(Math.abs(turn), 1.9 * dt);
+          const want = (dive ? 26 : fast ? 24 : 15) * (mag > 0.15 ? 1 : 0.65); P.v += (want - P.v) * Math.min(1, dt * 1.6);
+          if (flapK) P.vy = Math.min(6, P.vy + 16 * dt); else if (dive) P.vy = Math.max(-12, P.vy - 20 * dt); else P.vy += (-2.2 - P.vy) * Math.min(1, dt * 2);
+          if (P.y - ground(P.x, P.z) > 150 && P.vy > 0) P.vy = 0;  // (no higher than 150 m)
+          P.y += P.vy * dt; }
+        for (let n = Math.max(1, Math.ceil(Math.abs(P.v) * dt / 0.4)), i = 0, st = dt / n; i < n; i++) {  // in steps of 40 cm, so it cannot fly through a wall
+          const x = P.x + Math.sin(P.h) * P.v * st, z = P.z + Math.cos(P.h) * P.v * st;
+          if (!inside(x, z)) { P.v = 0; break; }
+          const s = surf(x, z);
+          if (s > P.y + (P.mode === "ground" ? 0.45 : 0.15)) { if (P.mode === "air" && s - P.y < 1.2) P.y = s; else { if (P.mode === "air" && P.v > 10) snd.thud(0.4); P.v = 0; break; } }  // just over the edge of a roof: up on to it; a wall: it stops
+          P.x = x; P.z = z;
+          if (P.mode === "ground" && s < P.y - 0.6) { P.mode = "air"; P.vy = 0; } }  // walked off the edge of a roof: it glides
+        { const s = surf(P.x, P.z); if (P.mode === "air" && P.y <= s && P.vy <= 0.5) { P.y = s; P.vy = 0; P.mode = "ground"; P.v = Math.min(P.v, 3); } else if (P.mode === "ground") P.y += (s - P.y) * Math.min(1, dt * 20); if (P.y < s) P.y = s; }
+        P.flapped = flapK; P.air = P.mode === "air"; P.flap = flapK && P.air ? 1 : 0;
+        const tp = P.air ? bsClamp(P.vy * 0.05, -0.5, 0.35) : 0, tr = P.air && mag > 0.15 ? bsClamp(turn * 0.8, -0.7, 0.7) : 0; P.p += (tp - P.p) * Math.min(1, dt * 6); P.r += (tr - P.r) * Math.min(1, dt * 5);
+        showPigeon(); hint("");
+        const up = P.y - ground(P.x, P.z);
+        o = P; D = P.air ? 4.5 + Math.min(4, P.v / 6) : 2.6; text = Math.round(Math.abs(P.v) * 3.6) + " km/h" + (up > 1.5 ? " \u00b7 " + Math.round(up) + " m up" : "");
       } else { const P = plane, K = P.k, jet = boost && canBoost(P), top = ((jet ? JET : CRUISE) + (P.teamTil > performance.now() ? (P.teamK || 1) * (R.teamBoostExtra / 3.6 + R.teamBoostShare / 100 * (JET - CRUISE)) : 0)) * K;  // (only the golden plane has a boost; a passenger's power-up: 2 km/h and half a boost more)
         if (P.trick) { P.trick.t += dt; const n2 = P.trick.turns || 1, f = Math.min(1, P.trick.t / (1.2 * n2)); P.roll = Math.PI * 2 * n2 * f * f * (3 - 2 * f); if (f >= 1) { P.trick = null; P.roll = 0; } }  // a passenger's spin: a roll right round
         // the nose: the down arrow lifts it and the up arrow lowers it, as pulling back and pushing on a plane's stick does
@@ -12730,7 +12797,7 @@ const handle = async (m, post) => {
       if (idle > 1.2 && o.v > 1) { const e = Math.min(1, dt * 2.5); off[0] -= off[0] * e; off[1] -= off[1] * e; }  // left alone, the view settles back behind
       // the view: behind and above, swinging round after it; closer in where a building is behind, so it is not from inside one
       camYaw += wrap(o.h + Math.PI - camYaw) * Math.min(1, dt * 3.5);
-      const critter = veh === "possum" || (veh === "ride" && ride.k === "possum"), high = critter && o.y - ground(o.x, o.z) > 1.2;  // (the possum: close behind it, looking up a wall it is climbing)
+      const critter = veh === "possum" || veh === "pigeon" || (veh === "ride" && ride.k === "possum"), high = critter && o.y - ground(o.x, o.z) > 1.2;  // (the possum: close behind it, looking up a wall it is climbing)
       const yaw = camYaw + off[0], pitch = bsClamp((veh === "possum" && pos.mode === "climb" ? 0.3 : -0.2) + off[1], -1.2, 0.35), cp = Math.cos(pitch), sx = Math.sin(yaw) * cp, sz = Math.cos(yaw) * cp;
       if (!o.air && !high) while (D > 2.5 && (solid(o.x + sx * D, o.z + sz * D) || solid(o.x + sx * D * 0.55, o.z + sz * D * 0.55))) D -= 1.25;
       const px = o.x + sx * D, pz = o.z + sz * D, py = Math.max(o.y + (veh === "ride" ? RIDE_UP[ride.k] : veh === "car" ? (car.bus ? 3.4 : 1.5) : critter ? 0.9 : 2.4) - Math.sin(pitch) * D, critter ? surf(px, pz) + 0.5 : ground(px, pz) + 0.7);
@@ -12748,7 +12815,8 @@ const handle = async (m, post) => {
     // (cars from 5.6 m, 30% closer than the 8 they were: Ash, 17 November 2026, "Make get in the car only work from a closer radius. Not too
     // close but about 30% less")
     const reach = () => { const c0 = parked(F.pos.x, F.pos.z, 5.6), [G, dg] = nearOwn(), c = G && dg < (G.bus ? 15 : 5.6) && (!c0 || dg < c0.distance) ? { own: G, gold: G.gold, distance: dg } : c0, [P, d] = nearPlane(), r = d < 11 && (!c || d - 2 < c.distance) ? { plane: P } : c;
-      const dp = possumMesh ? Math.hypot(pos.x - F.pos.x, pos.z - F.pos.z) : Infinity, r2 = dp < 6 && (!r || r.plane || dp < r.distance) ? { possum: pos, distance: dp } : r;  // the possum, within 6 m
+      const dp0 = possumMesh ? Math.hypot(pos.x - F.pos.x, pos.z - F.pos.z) : Infinity, r1 = dp0 < 6 && (!r || r.plane || dp0 < r.distance) ? { possum: pos, distance: dp0 } : r;  // the possum, within 6 m
+      const dq = pigeonMesh ? Math.hypot(pg.x - F.pos.x, pg.z - F.pos.z) : Infinity, r2 = dq < 4.5 && pg.y - ground(pg.x, pg.z) < 8 && (!r1 || r1.plane || dq < r1.distance) ? { pigeon: pg, distance: dq } : r1;  // the pigeon, within 4.5 m
       // another player's car, bus, plane, helicopter or possum, near enough, and not up in the air (Ash, 15 November 2026: "Make it so
       // I can get into a car or plane or possum that another player is driving")
       let best = null; for (const q of T.peers?.list?.() || []) { if (!RIDE_REACH[q.k]) continue; const d = Math.hypot(q.x - F.pos.x, q.z - F.pos.z);
@@ -12777,6 +12845,9 @@ const handle = async (m, post) => {
         document.body.classList.add("bsdrive", "bsride"); T.peers?.ride?.(q.id, true); toast(`You're riding with ${q.name}. Look around with the right stick.`, 3000); }
       else if (c.possum) { if (!townPerks().wasPossum) townPerkSet("wasPossum", true); veh = "possum"; pos.v = 0; pos.jumped = true; camYaw = pos.h + Math.PI; document.body.classList.add("bsdrive", "bspossum");
         loadTrees(); const wait = loadRoofs(); if (wait) { toast("Loading the roofs\u2026", 8000); wait.then(() => { if (veh === "possum") toast("Ready.", 1200); }); } }  // (no Up and Down: Jump sits where Boost does, over the right stick)
+      else if (c.pigeon) { veh = "pigeon"; pg.v = 0; pg.flapped = true; camYaw = pg.h + Math.PI; document.body.classList.add("bsdrive", "bspossum");
+        loadTrees(); const wait = loadRoofs(); if (wait) { toast("Loading the roofs\u2026", 8000); wait.then(() => { if (veh === "pigeon") toast("Ready.", 1200); }); }
+        if (!townPerks().wasPigeon) { townPerkSet("wasPigeon", true); setTimeout(() => veh === "pigeon" && toast(touch ? "You're the pigeon! Hold Flap to take off and climb, push the stick to fly that way, and let go of Flap to glide down." : "You're the pigeon! Space flaps (take off, fly up), W flies the way you're looking, C dives. E to be human again.", 6500), wait ? 2500 : 0); } }
       else if (c.plane) { plane = c.plane; veh = "plane"; if (T.cfg?.place === "moo") loadRoofs(); /* (Moorooka's roofs, so planes and helicopters meet them) */ plane.v = 0; plane.spin = 0; plane.turn = 0; camYaw = plane.h + Math.PI; document.body.classList.add("bsdrive", "bsplane"); boostBtn.style.setProperty("--charge", "100%"); }
       else { if (c.own && !owns.includes(c.own)) { const G = T.traffic?.take?.(c.own); if (!G) return true; owns.push(G); c.own = G; }
         car = c.own ? { own: c.own, gold: c.own.gold, bus: c.own.bus, x: c.own.x, z: c.own.z, h: c.own.h, dir: c.own.h, y: c.own.y, p: c.own.p, r: c.own.r, v: 0, steer: 0 } : { id: c.id, bus: !!c.bus, x: c.x, z: c.z, h: c.heading, dir: c.heading, y: ground(c.x, c.z) + 0.05, p: 0, r: 0, v: 0, steer: 0 };
@@ -12785,18 +12856,20 @@ const handle = async (m, post) => {
         veh = "car"; camYaw = car.h + Math.PI; document.body.classList.add("bsdrive"); showRing(charge < 0.999); }
       C.in = true; camOff = null; off = [wrap(F.yaw - camYaw), bsClamp(F.pitch + 0.2, -1, 0.55)]; idle = 0; last = [F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch];
       F.stick.x = F.stick.y = F.lookStick.x = F.lookStick.y = 0; F.vert = 0; F.boost = false; F.keys.clear(); F.drive = tick;
-      btn.textContent = veh === "possum" ? "Human" /* (Ash, 16 November 2026: "Make hop out say human") */ : veh === "ride" && ride?.local ? "Get off" : "Get out"; btn.hidden = false; handBtn.hidden = veh !== "car" && veh !== "possum"; handBtn.textContent = veh === "possum" ? "Boost" : "Handbrake"; handBtn.dataset.key = veh === "possum" ? "Shift" : "Space"; flipBtn.hidden = !(veh === "car" && car?.gold); plantBtn.hidden = !(veh === "possum" && T.admin?.plant); gripBtn.hidden = true; boostBtn.hidden = veh === "ride" || (veh === "plane" && !canBoost(plane));
-      boostBtn.textContent = veh === "possum" ? "Jump" : "Boost"; boostBtn.dataset.key = veh === "possum" ? "Space" : "Shift";
-      if (veh === "ride") { if (RIDE_UP[ride.k] > 1) snd.door(); } else if (veh !== "possum") { snd.door(); snd.start(veh === "plane" && plane.heli ? "heli" : veh); } showKeys(veh === "plane" && plane.heli ? "heli" : veh === "ride" ? null : veh === "car" && car.gold ? "gold" : veh);
+      btn.textContent = veh === "possum" || veh === "pigeon" ? "Human" /* (Ash, 16 November 2026: "Make hop out say human") */ : veh === "ride" && ride?.local ? "Get off" : "Get out"; btn.hidden = false; handBtn.hidden = veh !== "car" && veh !== "possum"; handBtn.textContent = veh === "possum" ? "Boost" : "Handbrake"; handBtn.dataset.key = veh === "possum" ? "Shift" : "Space"; flipBtn.hidden = !(veh === "car" && car?.gold); plantBtn.hidden = !(veh === "possum" && T.admin?.plant); gripBtn.hidden = true; boostBtn.hidden = veh === "ride" || (veh === "plane" && !canBoost(plane));
+      boostBtn.textContent = veh === "possum" ? "Jump" : veh === "pigeon" ? "Flap" : "Boost"; boostBtn.dataset.key = veh === "possum" || veh === "pigeon" ? "Space" : "Shift";
+      if (veh === "ride") { if (RIDE_UP[ride.k] > 1) snd.door(); } else if (veh !== "possum" && veh !== "pigeon") { snd.door(); snd.start(veh === "plane" && plane.heli ? "heli" : veh); } showKeys(veh === "plane" && plane.heli ? "heli" : veh === "ride" ? null : veh === "car" && car.gold ? "gold" : veh);
       // on a phone, a word about the sticks (on a desktop the list of keys has just come up, bottom left)
-      if (touch && veh !== "ride" && veh !== "possum") toast(veh === "plane" && plane.heli ? "Hold Up to lift off. Left stick: forward to go, sideways to turn. Down lands it." : veh === "plane" ? "Left stick: forward for power, sideways to turn. Climb lifts the nose once you are fast." : "Left stick to drive, right stick to look around. Hold Boost for the mega boost.", 5500);
+      if (touch && veh !== "ride" && veh !== "possum" && veh !== "pigeon") toast(veh === "plane" && plane.heli ? "Hold Up to lift off. Left stick: forward to go, sideways to turn. Down lands it." : veh === "plane" ? "Left stick: forward for power, sideways to turn. Climb lifts the nose once you are fast." : "Left stick to drive, right stick to look around. Hold Boost for the mega boost.", 5500);
       return true; };
     // the Get in button: there while something is in reach of where you are walking (looked for a few times a second)
     C.frame = () => { followGrip(); if (veh) return; const now = performance.now(); if (now - at < 300) return; at = now;
       if (pos) { const d = Math.hypot(pos.x - F.pos.x, pos.z - F.pos.z), dh = Math.hypot(PS.x - F.pos.x, PS.z - F.pos.z);
         if (!possumMesh && Math.min(d, dh) < 400) wake(); if (d < 80) { loadRoofs(); loadTrees(); }
         if ((pos.x !== PS.x || pos.z !== PS.z) && d > 150) possumHome(); }  // left behind, the possum goes home to number 16
-      const near = T.walk && !T.tween ? reach() : null; shownRide = near?.ride ? { id: near.ride.id, t: now } : null; const say = near?.ride ? `Ride with ${near.ride.name}` : near?.possum ? "Be the possum" : near?.plane ? (near.plane.heli ? (near.plane.gold ? "Get in the golden helicopter" : "Get in the helicopter") : "Get in the plane") : near?.bus?.x != null ? (near.bus.v > 1.5 ? "Bus coming: wait for it to stop" : "Get on the bus") : near?.own?.bus || near?.bus ? "Get in the bus" : near?.gold ? "Get in the golden car" : "Get in the car";
+      if (pg) { const d = Math.hypot(pg.x - F.pos.x, pg.z - F.pos.z), dh = Math.hypot(PG.x - F.pos.x, PG.z - F.pos.z); if (!pigeonMesh && Math.min(d, dh) < 400) wakePigeon();
+        if ((pg.x !== PG.x || pg.z !== PG.z) && d > 150) pigeonHome(); }  // and the pigeon back to the shops
+      const near = T.walk && !T.tween ? reach() : null; shownRide = near?.ride ? { id: near.ride.id, t: now } : null; const say = near?.ride ? `Ride with ${near.ride.name}` : near?.possum ? "Be the possum" : near?.pigeon ? "Be the pigeon" : near?.plane ? (near.plane.heli ? (near.plane.gold ? "Get in the golden helicopter" : "Get in the helicopter") : "Get in the plane") : near?.bus?.x != null ? (near.bus.v > 1.5 ? "Bus coming: wait for it to stop" : "Get on the bus") : near?.own?.bus || near?.bus ? "Get in the bus" : near?.gold ? "Get in the golden car" : "Get in the car";
       if (btn.hidden !== !near) btn.hidden = !near; if (near && btn.textContent !== say) btn.textContent = say; };
     btn.onclick = () => { C.enter(); btn.blur(); };
     const hold = on => e => { F.boost = on && !!veh; boostBtn.classList.toggle("on", F.boost); e.preventDefault(); };
@@ -12869,7 +12942,7 @@ const handle = async (m, post) => {
       else if (peerShown && !(veh === "car" && rkOn)) { peerShown = false; rk.setMatrix(0, NONE); rk.setMatrix(1, NONE); }
       peerRk = null; };
     let peerShown = false;
-    C.pose = () => veh === "ride" ? null : veh === "possum" ? { k: "possum", x: pos.x, y: pos.y, z: pos.z, h: pos.h, p: pos.p, r: 0 } : veh === "car" ? { k: car.bus ? "bus" : car.gold ? "gold" : "car", x: car.x, y: car.y, z: car.z, h: car.h + (car.spinY || 0), p: car.p, r: car.r + (car.roll || 0) }
+    C.pose = () => veh === "ride" ? null : veh === "possum" ? { k: "possum", x: pos.x, y: pos.y, z: pos.z, h: pos.h, p: pos.p, r: 0 } : veh === "pigeon" ? { k: "pigeon", x: pg.x, y: pg.y, z: pg.z, h: pg.h, p: pg.p, r: pg.r } : veh === "car" ? { k: car.bus ? "bus" : car.gold ? "gold" : "car", x: car.x, y: car.y, z: car.z, h: car.h + (car.spinY || 0), p: car.p, r: car.r + (car.roll || 0) }
       : veh ? { k: plane.heli ? (plane.gold ? "goldheli" : "heli") : plane.gold ? "goldplane" : "plane", x: plane.x, y: plane.y, z: plane.z, h: plane.h, p: plane.p, r: plane.r + (plane.roll || 0) } : null;
     C.where = () => veh === "ride" ? { kind: "ride", with: ride.name } : veh === "possum" ? { kind: "possum", x: pos.x, y: pos.y, z: pos.z, heading: pos.h, speed: pos.v, mode: pos.mode, up: pos.y - ground(pos.x, pos.z) } : veh === "car" ? { kind: "car", gold: !!car.gold, bus: !!car.bus, x: car.x, z: car.z, heading: car.h, dir: car.dir, speed: car.v, charge } : veh ? { kind: "plane", heli: !!plane.heli, x: plane.x, y: plane.y, z: plane.z, heading: plane.h, pitch: plane.p, speed: plane.v, air: plane.air } : null;  // for checking
     C.reread = () => Object.assign(R, townPerkRide(rideSettings()));  // a number changed in Settings: the ones read as it goes (turning) apply straight away
