@@ -1466,12 +1466,17 @@ body.bscam #bsTown .bs-review, body.bscam #bsTown .bs-ridecard { visibility: hid
 .bs-review button:focus-visible { outline: 2px solid #ffd166; outline-offset: 2px; }
 /* Moorooka's locals: what each offers (the mechanic's and the vet's five upgrades as a list), and the post office's letters */
 .bs-offer { max-height: calc(100% - 300px); overflow-y: auto; }
+/* (a phone on its side: room for the card, and its buttons kept in sight at the bottom as the rest scrolls: Ash, 18 November 2026, the
+   hairdresser's Do my hair was out of sight) */
+@media (max-height: 520px) { .bs-offer { max-height: calc(100% - 136px); } }
+.bs-offer > div:last-child { position: sticky; bottom: -12px; padding-bottom: 2px; background: inherit; }
 .bs-offer .bs-opts { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
 .bs-offer .bs-opts button { display: block; text-align: left; padding: 8px 12px; min-height: 48px; }
 .bs-offer .bs-opts button small { display: block; font-weight: 500; color: inherit; opacity: 0.85; }
 .bs-offer .bs-chips { display: flex; flex-wrap: wrap; gap: 6px; } .bs-offer .bs-chips button { min-height: 40px; padding: 0 12px; font-size: 0.8rem; }
 .bs-offer .bs-hairs > small { margin-top: 4px; }
-.bs-offer .bs-hairs .bs-chips button { min-height: 34px; padding: 0 9px; }
+.bs-offer .bs-hairs .bs-chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }  /* (one row each, swiped sideways, so Do my hair stays in sight: Ash, 18 November 2026) */
+.bs-offer .bs-hairs .bs-chips button { flex: none; min-height: 36px; padding: 0 10px; }
 .bs-mail { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
 .bs-mail p { margin: 0; padding: 6px 8px; border-radius: 8px; background: rgba(255, 255, 255, 0.08); font-size: 0.84rem; } .bs-mail p.new { background: rgba(255, 209, 102, 0.22); }
 .bs-mail label { display: flex; flex-direction: column; gap: 3px; font-size: 0.78rem; color: #c9cfe0; }
@@ -8793,6 +8798,7 @@ const handle = async (m, post) => {
           mine.push({ name: G.name, group: "Things to drive and fly", what: G.what, walk: { x: G.x + dx, z: G.z + dz, yaw: Math.atan2(dx, dz), pitch: -0.1 }, target: [G.x, G.z] }); }
         // the possum (Moorooka): on the footpath in Kingwell Street, a few steps from it
         if (rides?.possum) { const S = rides.possum; mine.push({ name: S.name, group: "Things to drive and fly", what: S.what, walk: { ...S.stand, pitch: -0.12 }, target: [S.x, S.z] }); }
+        if (rides?.pigeon) { const S = rides.pigeon; mine.push({ name: S.name, group: "Things to drive and fly", what: S.what, walk: { ...S.stand, pitch: -0.25 }, target: [S.x, S.z] }); }
         // Places to jump to: each as somewhere to stand (walking) and a view from above (flying). Where the model knows a
         // spot on the kerb of the nearest street (Moorooka's does), you stand there; otherwise a few steps back from the place.
         // (Logan's list starts with the whole city, which is only ever seen from the air, like the water.)
@@ -10608,7 +10614,8 @@ const handle = async (m, post) => {
   // the pigeon (Ash, 18 November 2026: "Add a pigeon that I can get in like the possum but can fly"): pecking about on the footpath
   // of Beaudesert Road by the shops. Be the pigeon to walk, take off with Jump (Flap on a phone), and fly over the roofs; it lands where
   // it comes down, on the ground, a roof or a tree. `x`, `z` set by MOO_PIGEON_AT below
-  const MOO_PIGEON = { x: -96.5, z: -206.5, h: 0.6, name: "Beaudesert Road: the pigeon", what: "A pigeon pecking about by the shops on Beaudesert Road. Be the pigeon to fly over the roofs of Moorooka" };
+  const MOO_PIGEON = { x: -96.5, z: -206.5, h: 0.6, name: "Beaudesert Road: the pigeon", what: "A pigeon pecking about by the shops on Beaudesert Road. Be the pigeon to fly over the roofs of Moorooka",
+    stand: { x: -93, z: -207.5, yaw: Math.atan2(3.5, -1) } };  // (where Jump to puts you, 3.6 m from it, looking at it: Ash, 18 November 2026, "Add a teleport to pigeon")
   // What there is to drive and fly in each town (Ash, 14 November 2026: "Merge the car and the plane into inverloch and logan. Add
   // 1 plane near the players spawn point and another random plane. The 2nd plane should have a golden stripe and extra fast and
   // mobile"). Moorooka's are above, and its parked cars can be driven too. Inverloch and Logan have no cars of their own to hand
@@ -12730,7 +12737,7 @@ const handle = async (m, post) => {
         if ((gripLook -= dt) <= 0) { gripLook = 0.25; gripBtn.hidden = false; const tx = grippy ? "Grippy: on" : "Grippy: off"; if (gripBtn.textContent !== tx) gripBtn.textContent = tx; gripBtn.classList.toggle("on", grippy); }
         o = P; D = P.cling || P.grip ? 9 : 3.4 + Math.min(3, Math.abs(P.v) / 12); text = P.cling ? `Holding on to ${P.cling.name} \u00b7 ${Math.round(P.v * 3.6)} km/h` : P.grip ? `Gripping the car \u00b7 ${Math.round(P.v * 3.6)} km/h` : P.mode === "climb" ? "Climbing \u00b7 " + Math.round(up) + " m" : Math.round(Math.abs(P.v) * 3.6) + " km/h" + (up > 1.5 ? " \u00b7 " + Math.round(up) + " m up" : "");
         if (mission) text = `\ud83d\udfe1 ${mission.got}/${mission.rings.length} rings \u00b7 ${Math.max(0, Math.ceil(mission.t))} s \u00b7 ` + text;
-      } else if (veh === "pigeon") { const P = pg, flapK = has("Space") || !!F.boost, dive = has("KeyC"), fast = has("ShiftLeft", "ShiftRight");
+      } else if (veh === "pigeon") { const P = pg, flapK = has("Space") || !!F.boost, dive = has("KeyC") || !!F.hand, fast = has("ShiftLeft", "ShiftRight");  // (Dive: C, or the Dive button. Ash, 18 November 2026: "Pigeon needs a dive button that speeds him towards the ground. Not too fast")
         P.t += dt; const mag = Math.min(1, Math.hypot(str, thr)), goH = mag > 0.15 ? F.yaw + Math.PI + Math.atan2(-str, thr) : P.h, turn = wrap(goH - P.h);
         if (P.mode === "ground") {  // walking: it turns quick to the way the stick points and potters off; Jump (Flap) takes off
           if (mag > 0.15) P.h += Math.sign(turn) * Math.min(Math.abs(turn), 5 * dt);
@@ -12738,8 +12745,8 @@ const handle = async (m, post) => {
           if (flapK && !P.flapped) { P.mode = "air"; P.vy = 5.5; P.v = Math.max(P.v, 7); snd.whoosh(); } }
         else {  // flying: it heads the way you point it (from where you're looking) and swings round to it; hold Flap to climb, let go to glide down, C to dive
           if (mag > 0.15) P.h += Math.sign(turn) * Math.min(Math.abs(turn), 1.9 * dt);
-          const want = (dive ? 26 : fast ? 24 : 15) * (mag > 0.15 ? 1 : 0.65); P.v += (want - P.v) * Math.min(1, dt * 1.6);
-          if (flapK) P.vy = Math.min(6, P.vy + 16 * dt); else if (dive) P.vy = Math.max(-12, P.vy - 20 * dt); else P.vy += (-2.2 - P.vy) * Math.min(1, dt * 2);
+          const want = dive ? 21 : (fast ? 24 : 15) * (mag > 0.15 ? 1 : 0.65); P.v += (want - P.v) * Math.min(1, dt * 1.6);
+          if (flapK) P.vy = Math.min(6, P.vy + 16 * dt); else if (dive) P.vy = Math.max(-8, P.vy - 12 * dt); else P.vy += (-2.2 - P.vy) * Math.min(1, dt * 2);
           if (P.y - ground(P.x, P.z) > 150 && P.vy > 0) P.vy = 0;  // (no higher than 150 m)
           P.y += P.vy * dt; }
         for (let n = Math.max(1, Math.ceil(Math.abs(P.v) * dt / 0.4)), i = 0, st = dt / n; i < n; i++) {  // in steps of 40 cm, so it cannot fly through a wall
@@ -12874,7 +12881,7 @@ const handle = async (m, post) => {
         veh = "car"; camYaw = car.h + Math.PI; document.body.classList.add("bsdrive"); showRing(charge < 0.999); }
       C.in = true; camOff = null; off = [wrap(F.yaw - camYaw), bsClamp(F.pitch + 0.2, -1, 0.55)]; idle = 0; last = [F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch];
       F.stick.x = F.stick.y = F.lookStick.x = F.lookStick.y = 0; F.vert = 0; F.boost = false; F.keys.clear(); F.drive = tick;
-      btn.textContent = veh === "possum" || veh === "pigeon" ? "Human" /* (Ash, 16 November 2026: "Make hop out say human") */ : veh === "ride" && ride?.local ? "Get off" : "Get out"; btn.hidden = false; handBtn.hidden = veh !== "car" && veh !== "possum"; handBtn.textContent = veh === "possum" ? "Boost" : "Handbrake"; handBtn.dataset.key = veh === "possum" ? "Shift" : "Space"; flipBtn.hidden = !(veh === "car" && car?.gold); plantBtn.hidden = !(veh === "possum" && T.admin?.plant); gripBtn.hidden = true; boostBtn.hidden = veh === "ride" || (veh === "plane" && !canBoost(plane));
+      btn.textContent = veh === "possum" || veh === "pigeon" ? "Human" /* (Ash, 16 November 2026: "Make hop out say human") */ : veh === "ride" && ride?.local ? "Get off" : "Get out"; btn.hidden = false; handBtn.hidden = veh !== "car" && veh !== "possum" && veh !== "pigeon"; handBtn.textContent = veh === "possum" ? "Boost" : veh === "pigeon" ? "Dive" : "Handbrake"; handBtn.dataset.key = veh === "possum" ? "Shift" : veh === "pigeon" ? "C" : "Space"; flipBtn.hidden = !(veh === "car" && car?.gold); plantBtn.hidden = !(veh === "possum" && T.admin?.plant); gripBtn.hidden = true; boostBtn.hidden = veh === "ride" || (veh === "plane" && !canBoost(plane));
       boostBtn.textContent = veh === "possum" ? "Jump" : veh === "pigeon" ? "Flap" : "Boost"; boostBtn.dataset.key = veh === "possum" || veh === "pigeon" ? "Space" : "Shift";
       if (veh === "ride") { if (RIDE_UP[ride.k] > 1) snd.door(); } else if (veh !== "possum" && veh !== "pigeon") { snd.door(); snd.start(veh === "plane" && plane.heli ? "heli" : veh); } showKeys(veh === "plane" && plane.heli ? "heli" : veh === "ride" ? null : veh === "car" && car.gold ? "gold" : veh);
       // on a phone, a word about the sticks (on a desktop the list of keys has just come up, bottom left)
@@ -12893,7 +12900,7 @@ const handle = async (m, post) => {
     const hold = on => e => { F.boost = on && !!veh; boostBtn.classList.toggle("on", F.boost); e.preventDefault(); };
     const press = { pointerdown: hold(true), pointerup: hold(false), pointercancel: hold(false), pointerleave: hold(false), contextmenu: e => e.preventDefault() };
     Object.entries(press).forEach(([k, f]) => boostBtn.addEventListener(k, f));
-    const handBtn = $("bsHandBtn"), pull = on => e => { F.hand = on && (veh === "car" || veh === "possum"); handBtn.classList.toggle("on", !!F.hand); e.preventDefault(); };
+    const handBtn = $("bsHandBtn"), pull = on => e => { F.hand = on && (veh === "car" || veh === "possum" || veh === "pigeon"); handBtn.classList.toggle("on", !!F.hand); e.preventDefault(); };
     const handPress = { pointerdown: pull(true), pointerup: pull(false), pointercancel: pull(false), pointerleave: pull(false), contextmenu: e => e.preventDefault() };
     Object.entries(handPress).forEach(([k, f]) => handBtn.addEventListener(k, f));
     // the possum plants things (Ash, 15 November 2026: "also plant trees or bushes or flowers"): Plant (or G) opens four choices; what
