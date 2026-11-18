@@ -9103,7 +9103,8 @@ const handle = async (m, post) => {
       shops: [{ n: "The Willow Hotel", sub: "BAR \u00b7 BISTRO", w: 20.1, c: ["#7a1616", "#ffffff"], what: "Pub: have a few at the bar", jump: true }] },  // (it was the Red Lion: Ash, 16 November 2026, "Update this to be the willow hotel")
     { kind: "sign", addr: "108 Beaudesert Road", a: [-180.7, -464.8], b: [-180.0, -457.0], n: [-0.996, 0.0894], kerb: 15.13, across: 25.93, shops: [{ n: "Little Village", sub: "YOGA \u00b7 COMMUNITY", w: 7.8, c: ["#f4efe4", "#3d6b4f"], what: "Community space: do a yoga class and learn the yoga emote", jump: true }] },  // (it was the Rising Sun church: Ash, 16 November 2026, "The rising sun is now little village. You can do yoga there and learn the yoga emote")
     { kind: "sign", addr: "1115 Ipswich Road", a: [-1068.9, -40.9], b: [-1057.6, -46.7], n: [0.4566, 0.8897], kerb: 14.7, across: 24.3, shops: [{ n: "Starbucks", w: 12.7, c: ["#0f5c3e", "#ffffff"], what: "Coffee, drive-through", jump: true }] },
-    { kind: "row", addr: "398 Tarragindi Road", a: [664.5, 85.7], b: [658.4, 137.6], n: [-0.9932, -0.1167], kerb: 8.96, across: 18.36, shops: [{ n: "Vizzeto Woodfire", w: 15, c: ["#1d1d1d", "#e8a33c"], what: "Woodfired pizza", jump: true }, { n: "Go Thai", w: 12, c: ["#6a1b9a", "#ffffff"], what: "Thai" }, { n: "Sheesh Mahal", w: 13, c: ["#8a1c1c", "#f2c230"], what: "Indian restaurant", jump: true }, { n: "Todd and Pup", w: 12.3, c: ["#f3efe6", "#2b2b2b"], what: "Cafe" }] },
+    { kind: "row", addr: "398 Tarragindi Road", a: [664.5, 85.7], b: [658.4, 137.6], n: [-0.9932, -0.1167], kerb: 8.96, across: 18.36, shops: [{ n: "Ray White", w: 5, c: ["#ffe512", "#1d1d1d"], what: "Real estate" }, { n: "Vizzeto Woodfire", w: 10, c: ["#1d1d1d", "#e8a33c"], what: "Woodfired pizza", jump: true }, { n: "Go Thai", w: 9, c: ["#6a1b9a", "#ffffff"], what: "Thai" },
+      { n: "Todd and Pup", w: 9.3, c: ["#f3efe6", "#2b2b2b"], what: "Cafe" }, { n: "Fade Out", sub: "STUDIO", w: 4.5, c: ["#111111", "#ffffff"], what: "Barber" }, { n: "Sheesh Mahal", w: 10, c: ["#8a1c1c", "#f2c230"], what: "Indian restaurant", jump: true }, { n: "BWS", w: 4.5, c: ["#e2231a", "#ffffff"], what: "Bottle shop" }] },  // (Ray White, Fade Out and BWS in with them: Google Maps, 18 November 2026)
     { kind: "sign", addr: "40 Gainsborough Street", a: [-481.6, 94.0], b: [-493.9, 91.5], n: [0.1992, -0.98], kerb: 10.67, across: 21.27, shops: [{ n: "Moorooka Community Centre", w: 12.6, c: ["#22466e", "#ffffff"] }] },
     // more of Moorooka (Ash, 16 November 2026: "Add in a few more well known businesses in moorooka and the petrol stations", with
     // Street View photos of Advance Mechanical Centre, the vet on the corner of Durack Street, Cr Steve Griffiths' ward office and
@@ -9276,6 +9277,40 @@ const handle = async (m, post) => {
       shops: [{ n: "GM SMASH REPAIRS", w: 8.6, c: ["#e30613", "#ffffff"], what: "Smash repairs" }] },
     { kind: "sign", addr: "30 Unwin Street", a: [-1131.5, -81.3], b: [-1154.8, -130.3], n: [0.9031, -0.4294], kerb: 5.12, across: 15.22, eave: 16.7, wall: "#e0ded8",
       shops: [{ n: "CARMEND", sub: "SMASH REPAIRS", w: 12, c: ["#0a0a0a", "#ffffff"], what: "Smash repairs" }] },
+    // batch 3: Tarragindi Road, Fegen Drive and Currey Avenue, the childcares and a church, Gladstone Street, and Evans and Toohey roads in
+    // Salisbury at the south-east corner (Google Maps, 18 November 2026)
+    { kind: "sign", addr: "Shop 1/5 Currey Avenue", a: [-244.8, 574.5], b: [-255.8, 575.9], n: [-0.1263, -0.992], kerb: 7.02, across: 17.62, eave: 24.8, wall: "#ecebe6",
+      shops: [{ n: "RE/MAX", sub: "HRG", w: 6, c: ["#003da5", "#ffffff"], what: "Real estate" }] },
+    { kind: "strip", addr: "8-10 Fegen Drive", a: [-237.2, 608.6], b: [-219.9, 611.2], n: [-0.1486, 0.9889], kerb: 0.83, across: 11.43, eave: 26.4, wall: "#ebe7de", awning: "#4a4a4a",
+      shops: [{ n: "Moorooka Family Vet", w: 9, c: ["#ffffff", "#2b7a4b"], what: "Vet" }, { n: "Bauer's Hardware", sub: "COLLECTIONS", w: 8, c: ["#1d1d1d", "#f2c14e"], what: "Door and cabinet hardware" }] },
+    { kind: "sign", addr: "14 Sherley Street", a: [-121.2, 102.8], b: [-114.1, 103.7], n: [-0.1258, 0.9921], kerb: 10.29, across: 20.89, eave: 44.9, wall: "#f3efe6",
+      shops: [{ n: "Moorooka", sub: "EARLY LEARNING CENTRE", w: 6.6, c: ["#ffffff", "#2c8fc9"], what: "Childcare" }] },
+    { kind: "sign", addr: "135 Keats Street", a: [-390.5, 305.2], b: [-409.5, 302.8], n: [0.1253, -0.9921], kerb: 9.02, across: 19.62, eave: 38.9, wall: "#f3efe6",
+      shops: [{ n: "Alma Kids", sub: "EARLY EDUCATION", w: 8, c: ["#ffffff", "#e0457b"], what: "Childcare" }] },
+    { kind: "sign", addr: "27 Hawtree Street", a: [-667.7, 388.2], b: [-666.1, 379.2], n: [0.9846, 0.175], kerb: 15.55, across: 26.15, eave: 41.1, wall: "#e8e1d3",
+      shops: [{ n: "Moorooka Presbyterian", sub: "CHURCH", w: 8.4, c: ["#ffffff", "#1f3a68"], what: "Church" }] },
+    { kind: "sign", addr: "22 Gladstone Street", a: [-663.3, 1149.8], b: [-667.9, 1162.8], n: [-0.9427, -0.3336], kerb: 9.07, across: 18.47, eave: 14.1, wall: "#d8d2c4",
+      shops: [{ n: "GARDE TIMBER", w: 10, c: ["#3d2a14", "#f2d8a7"], what: "Timber yard" }] },
+    { kind: "sign", addr: "211 Evans Road, Salisbury", a: [621.1, 1201.4], b: [538.6, 1185.5], n: [0.1892, -0.9819], kerb: 24.33, across: 30.33, eave: 36.7, wall: "#ecebe6",
+      shops: [{ n: "ROYAL FURNITURE", w: 22, c: ["#1d1d1d", "#d4af37"], what: "Furniture", jump: true }] },
+    { kind: "sign", addr: "241 Evans Road, Salisbury", a: [728.3, 1209.3], b: [693.4, 1203.6], n: [0.1612, -0.9869], kerb: 13.49, across: 19.49, eave: 38.0, wall: "#e2e2df",
+      shops: [{ n: "Lawrence & Hanson", w: 14, c: ["#e30613", "#ffffff"], what: "Electrical wholesaler" }] },
+    { kind: "sign", addr: "5/233 Evans Road, Salisbury", a: [684.0, 1200.9], b: [651.4, 1195.8], n: [0.1546, -0.988], kerb: 13.31, across: 19.31, eave: 36.3, wall: "#e2e2df",
+      shops: [{ n: "The Thrifty Mumma", w: 11, c: ["#f7d6e0", "#8a2c4b"], what: "Op shop" }] },
+    { kind: "sign", addr: "218 Evans Road, Salisbury", a: [659.4, 1155.3], b: [709.2, 1163.1], n: [-0.1547, 0.988], kerb: 9.86, across: 15.86, eave: 39.8, wall: "#e2e2df",
+      shops: [{ n: "CREATIVE CUISINE", w: 14, c: ["#2b2b2b", "#f2a33a"], what: "Food supplier" }] },
+    { kind: "sign", addr: "172 Evans Road, Salisbury", a: [390.1, 1093.0], b: [428.5, 1100.2], n: [-0.1843, 0.9829], kerb: 24.35, across: 30.35, eave: 38.5, wall: "#e2e2df",
+      shops: [{ n: "PRINT SYSTEMS", sub: "AUSTRALIA", w: 12, c: ["#003b71", "#ffffff"], what: "Printers" }] },
+    { kind: "sign", addr: "163 Evans Road, Salisbury", a: [311.6, 1136.8], b: [287.3, 1133.1], n: [0.1505, -0.9886], kerb: 16.07, across: 22.07, eave: 32.5, wall: "#e2e2df",
+      shops: [{ n: "Richmond Rolling Solutions", w: 14, c: ["#1d1d1d", "#ffffff"], what: "Steel rolling" }] },
+    { kind: "sign", addr: "1337 Ipswich Road, Rocklea", a: [-1487.8, 965.1], b: [-1471.3, 969.3], n: [-0.2467, 0.9691], kerb: 55.31, across: 59.91, eave: 13.9, wall: "#d9d2c3",
+      shops: [{ n: "Bottler", sub: "DRIVE THRU", w: 10, c: ["#111111", "#f2c230"], what: "Bottle shop" }] },
+    { kind: "sign", addr: "605 Toohey Road, Salisbury", a: [1340.4, 931.8], b: [1346.2, 896.5], n: [0.9868, 0.1621], kerb: 13.44, across: 19.44, eave: 45.6, wall: "#e2e2df",
+      shops: [{ n: "BAILEY PRINT GROUP", w: 14, c: ["#ffffff", "#c8102e"], what: "Printers" }] },
+    { kind: "sign", addr: "642 Toohey Road, Salisbury", a: [1362.7, 1070.2], b: [1358.5, 1093.6], n: [-0.9843, -0.1767], kerb: 16.0, across: 22.0, eave: 38.6, wall: "#ece6d8",
+      shops: [{ n: "Kebabland", w: 10, c: ["#c8102e", "#ffd54f"], what: "Kebabs", jump: true }] },
+    { kind: "sign", addr: "668 Toohey Road, Salisbury", a: [1383.2, 1225.3], b: [1380.6, 1240.1], n: [-0.9849, -0.173], kerb: 65.36, across: 71.36, eave: 37.6, wall: "#e7e7e4",
+      shops: [{ n: "Liquorland", sub: "WAREHOUSE", w: 10, c: ["#e30613", "#ffffff"], what: "Bottle shop" }] },
     { kind: "sign", addr: "1 Sherley Street", a: [-189.6, 135.3], b: [-208.0, 132.2], n: [0.1661, -0.9861], kerb: 23.11, across: 33.71, eave: 40.5, wall: "#e9dcc4", shops: [{ n: "Moorooka State School", w: 18.7, c: ["#163e7a", "#ffffff"], what: "Primary school (heritage listed)", jump: true }] },
     { kind: "sign", addr: "17 Hawtree Street", a: [-654.6, 331.9], b: [-647.5, 301.6], n: [0.9736, 0.2281], kerb: 10.82, across: 21.42, eave: 41.7, wall: "#e4d6c2", shops: [{ n: "St Brendan's School", w: 31.1, c: ["#7a1c2a", "#ffffff"], what: "Catholic primary school", jump: true }] },
   ];
