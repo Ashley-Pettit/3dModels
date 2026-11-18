@@ -10827,6 +10827,22 @@ const handle = async (m, post) => {
     ["dive", "Dive bomber", "Dives a third faster"]];
   const PIGEON_TIPS = ["Hold Flap to climb, then let go and he glides a long way.", "Dive to drop fast, then Flap to pull out of it.", "Glide down on to a roof and he'll land on it. Great for a rest.",
     "Shift flies faster. Hold it with W for a real burst.", "Land somewhere quiet and make a nest. Ten minutes later there's a little one!"];
+  // the golden pigeon's quest (Ash, 18 November 2026: "We need a way to turn the pigeon into the golden pigeon. If Im a pigeon and I go to
+  // big boss and I eat the chips, start the quest. The quest is to find your home. It's a pigeon loft found in one of 10 houses rolled
+  // randomly. The quest is a riddle that is one of 10 scenarios where the person needs to solve the riddle to work out the location of
+  // their home"): ten back yards, each a house about 60 to 100 m from a landmark, and the riddle that leads there. The loft shows once
+  // you're within 60 m; land on it and you come out golden
+  const PIGEON_LOFTS = [
+    { x: 351.7, z: 102.8, riddle: "A furry climber naps on a Kingwell Street lawn, under a row of street lights. From his bed, flap about 80 m south-west and look over the back fences." },
+    { x: -226.8, z: -900.4, riddle: "Across the road from where Flick throws her crumbs, a red car sleeps backwards in a driveway. From that driveway, fly about 100 m south and peek into the back yards." },
+    { x: -156.7, z: 90.5, riddle: "Bells ring, kids run, and lessons end at three on Sherley Street. From the school, fly about 65 m north-east, then look behind the houses." },
+    { x: -601.2, z: 285.5, riddle: "A saint's name on a school and a church on Hawtree Street. From there, fly about 80 m north-east and check the back yards." },
+    { x: -427.0, z: 114.8, riddle: "Where Moorooka meets for a cuppa and a chat on Gainsborough Street. From that hall, fly about 75 m east, out the back." },
+    { x: 177.4, z: -323.6, riddle: "Flat whites and a clubhouse on Koala Road, where the grass is kept short. From the clubhouse, about 65 m south-west, behind a house." },
+    { x: -395.1, z: 471.0, riddle: "Where cars stop for a drink on the corner of Beaudesert and Hamilton roads. From the bowsers, about 80 m north-west, in a back yard." },
+    { x: -219.4, z: 674.2, riddle: "A vet on Fegen Drive patches up the neighbourhood's pets. From the vet's, about 85 m south, out the back of a house." },
+    { x: -142.5, z: -64.4, riddle: "Where the Willow pours a cold one on Beaudesert Road. From the pub, fly about 80 m south-west and look behind the houses." },
+    { x: -135.4, z: -939.2, riddle: "Fresh bread and a brisk walk: Sue's stretch of Bohain Street. From the middle of her walk, about 85 m south-east, in a back yard." } ];
   // your look (Made in Africa's clothes, A La Mode's hairdos, and Sue's bread for a minute), carried to other players in your figure's kind
   // as "walk~top.hair.colour" (".g" on the end: a giant); copies of the app from before take it as plain "walk"
   const TOWN_OUTFITS = { kente: ["Kente cloth shirt", "#e3a21a", ["#1f7a3d", "#b5121b", "#111111"]], dashiki: ["Dashiki", "#b5121b", [], "#f2c230"], ankara: ["Ankara print shirt", "#1f4fa8", ["#f28c28", "#f2c230"]],
@@ -11099,7 +11115,7 @@ const handle = async (m, post) => {
     const V2 = new THREE.Vector3();
     const SHAPES = { walk: (c, lc) => townPlaneParts(c, "person", lc), builder: c => townPlaneParts(c, "builder"), chef: c => townPlaneParts(c, "chef"), car: c => townPlaneParts(c, true), gold: () => townPlaneParts("#e8b923", true), bus: () => townPlaneParts("#2f7fc4", "bus"),
       plane: () => townPlaneParts().slice(0, 1), goldplane: () => townPlaneParts("#e2ad1c").slice(0, 1), heli: () => townPlaneParts("#c8322b", "heli").slice(0, 2), goldheli: () => townPlaneParts("#e2ad1c", "heli").slice(0, 2),
-      possum: () => townPlaneParts(undefined, "possum"), pigeon: () => townPlaneParts(undefined, "pigeon") };
+      possum: () => townPlaneParts(undefined, "possum"), pigeon: () => townPlaneParts(undefined, "pigeon"), goldpigeon: () => townPlaneParts("gold", "pigeon") };
     const peers = new Map(); let sendEmote = null, emoteAt = 0; const SH = [new THREE.Matrix4().makeTranslation(-0.31, 1.42, 0), new THREE.Matrix4().makeTranslation(0.31, 1.42, 0)], R1 = new THREE.Matrix4(), R2 = new THREE.Matrix4();
     const emoteBtn = $("bsEmoteBtn"), emoteBox = $("bsEmotes"), chatBtn = $("bsChatBtn"), chatBar = $("bsChatBar"), chatIn = $("bsChatIn");
     // Chat (Ash, 15 November 2026: "Add chat, under emote chat. If I press chat then open up the keyboard. Show as cloud box above
@@ -11405,11 +11421,11 @@ const handle = async (m, post) => {
         if (fig) { q.parts.setMatrix(1, M.clone().multiply(SH[0]).multiply(R1.makeRotationZ(-armR)).multiply(R2.makeRotationX(-fwdR)).elements); q.parts.setMatrix(2, M.clone().multiply(SH[1]).multiply(R1.makeRotationZ(armL)).multiply(R2.makeRotationX(-fwdL)).elements); }
         sayIn(q.el, q.name, q.chat, now, sign);
         if (kind === "heli" || kind === "goldheli") q.parts.setMatrix(1, M.clone().multiply(new THREE.Matrix4().makeTranslation(0, 2.45, 0.1)).multiply(new THREE.Matrix4().makeRotationY(now / 60)).elements);
-        if (kind === "pigeon") { const air = s.y - ground(s.x, s.z) > 0.4, fl = air ? 0.25 + 0.75 * Math.sin(now / 45) : -0.15;  // its wings: beating in the air, folded on the ground
+        if (kind === "pigeon" || kind === "goldpigeon") { const air = s.y - ground(s.x, s.z) > 0.4, fl = air ? 0.25 + 0.75 * Math.sin(now / 45) : -0.15;  // its wings: beating in the air, folded on the ground
           for (const [i, sx] of [[1, 1], [2, -1]]) q.parts.setMatrix(i, M.clone().multiply(new THREE.Matrix4().makeTranslation(sx * 0.07, 0.31, 0.03)).multiply(new THREE.Matrix4().makeRotationY(air ? 0 : sx * 1.45)).multiply(new THREE.Matrix4().makeRotationZ(sx * fl)).elements); }
         if (kind === "possum") q.parts.setMatrix(1, M.clone().multiply(new THREE.Matrix4().makeTranslation(0, 0, -0.27)).multiply(new THREE.Matrix4().makeRotationY(0.22 * Math.sin(now / 160))).elements);  // its tail, swaying
         // their name over them, where they are on the screen
-        const top = kind === "walk" ? 2.1 : kind === "builder" ? 2.25 : kind === "bus" ? 3.7 : kind === "possum" ? 0.9 : kind === "pigeon" ? 0.8 : 2.9, dx = s.x - cam.x, dy = s.y + top - cam.y, dz = s.z - cam.z, depth = dx * fx + dy * fy + dz * fz;
+        const top = kind === "walk" ? 2.1 : kind === "builder" ? 2.25 : kind === "bus" ? 3.7 : kind === "possum" ? 0.9 : kind === "pigeon" || kind === "goldpigeon" ? 0.8 : 2.9, dx = s.x - cam.x, dy = s.y + top - cam.y, dz = s.z - cam.z, depth = dx * fx + dy * fy + dz * fz;
         const sx = depth < 1 ? 0 : w / 2 + (dx * rx + dz * rz) / depth * f * (h / 2), sy = depth < 1 ? 0 : h / 2 - (dx * ux + dy * uy + dz * uz) / depth * f * (h / 2);
         const onScreen = depth >= 1 && sx >= -40 && sx <= w + 40 && sy >= 0 && sy <= h, edge = q.el.edge, mine = riders.has(id) && T.car?.in;
         if (!q.name || !onScreen || depth > 1500) q.el.hidden = true;
@@ -11706,7 +11722,7 @@ const handle = async (m, post) => {
     { id: "vet", name: "Vet", kind: "person", top: "#2f8f6f", x: -226.2, z: -467.0, yaw: 1.401, possum: 6 },
     { id: "chem", name: "Pharmacist", kind: "person", top: "#f2f2f2", x: -165.1, z: -412.6, yaw: -1.377 },
     { id: "bar", name: "Bartender", kind: "person", top: "#1d1d1d", x: -90.6, z: -126.5, yaw: 1.461 },
-    { id: "pizza", name: "Big Boss Pizzas", kind: "chef", top: "#f6f5f0", x: -109.3, z: -230.8, yaw: -0.976 },
+    { id: "pizza", name: "Big Boss Pizzas", kind: "chef", top: "#f6f5f0", x: -109.3, z: -230.8, yaw: -0.976, pigeon: 6 },
     // (Ash, 16 November 2026: "Make it so you can go to the dr near the Woolworths to remove drunk. Can't drive until you do", "Add a real
     // shop on Beaudesert rd. An African store where I can get new clothes", "Add a hairdresser, a real one where I can change my hairdo",
     // "add 'Venky' here. An Indian man 45 years old" (out the back of number 10), "Add sue walking up and down bohmain av. Female 55 blonde
@@ -11818,6 +11834,11 @@ const handle = async (m, post) => {
       if (q.id === "chem") { const n = k.potions | 0; return show(q, `Love potion? Give it to another player near you (Emotes, T) and they'll follow you around for 30 seconds.${n ? ` You've got ${n}.` : ""}`,
         [[n >= 3 ? "You've got plenty" : "Buy a love potion", () => { if (n >= 3) return; townPerkSet("potions", n + 1); toast(`💘 A love potion! You've got ${n + 1}. Use it from Emotes (T) near another player.`, 4000); }, "ok"], ["No thanks", () => {}]]); }
       if (q.id === "bar") return show(q, "What'll it be?", [["A beer", () => drink(1), "ok"], ["A cocktail", () => drink(2), "ok"], ["Just a water", () => toast(BS.fly.drunk ? "Water helps, but you'll still need the doctor at the Moorooka Medical Hub (by Woolworths) before you drive." : "Refreshing.", 3000)]]);
+      if (q.id === "pizza" && /pigeon$/.test(T.car?.pose?.()?.k || "")) { const Qs = k.pigeonQuest;
+        if (k.goldPigeon) return show(q, "Well I'll be! The golden pigeon of Moorooka! On the house, mate.", [["Cheers", () => {}]]);
+        if (Qs && PIGEON_LOFTS[Qs.i]) return show(q, `Still looking for your home? Here's that riddle again: ${PIGEON_LOFTS[Qs.i].riddle}`, [["Off I fly", () => {}]]);
+        return show(q, "A pigeon! You look starving, mate. Want some of the best chips ever?", [["Eat the chips", () => { const i = Math.floor(Math.random() * PIGEON_LOFTS.length); townPerkSet("pigeonQuest", { i, t: Date.now() });
+          show(q, `The best chips ever! Something stirs in you: every pigeon has a home loft, and yours is out there. Find it and land on it, and you'll come out golden. Here's the riddle: ${PIGEON_LOFTS[i].riddle}`, [["Off I fly", () => {}, "ok"]]); return "keep"; }, "ok"], ["No thanks", () => {}]]); }
       if (q.id === "pizza") return show(q, k.chef ? "Back for more of the best chips ever?" : "What can I get you?",
         [["The best chips ever", () => { townPerkSet("chef", true); toast("🍟 Best chips ever! You're a pizza chef now: whites, the hat and a big moustache. Everyone can see.", 4500); }, "ok"], ...(k.chef ? [["Take off the chef's whites", () => { townPerkSet("chef", null); toast("Back to your old self.", 2000); }]] : []), ["Just looking", () => {}]]);
       if (q.id === "gym") return k.fit ? show(q, "Looking strong! You're already 10% quicker on your feet.", [["Thanks!", () => {}]])
@@ -11972,7 +11993,7 @@ const handle = async (m, post) => {
         // the green mark: they've news for you
         { const s = q.news && d < 220 && up < 150 ? onScreen(q.x, g(q.x, q.z) + (d < 60 && q.id !== "pandy" ? 3.1 : 2.4), q.z) : null; if (q.dot.hidden === !!s) q.dot.hidden = !s; if (s) q.dot.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; }
         // walk up (or drive up to the mechanic, or run up as the possum to the vet) and they talk to you, once a visit
-        const r = me.k === "walk" ? (q.r || 3.4) : me.k === "possum" ? q.possum : /^(car|gold|bus)$/.test(me.k) ? q.car : 0;
+        const r = me.k === "walk" ? (q.r || 3.4) : me.k === "possum" ? q.possum : /pigeon$/.test(me.k) ? q.pigeon : /^(car|gold|bus)$/.test(me.k) ? q.car : 0;
         if (r && d < r) { if (!q.near && !q.done && !open) { q.near = true; talk(q); } }
         // (step back a metre and a half and they'll talk again, not eight: Ash, 18 November 2026, "When I leave a vendor and try and come
         // back, show the chat a bit faster or lower radius". The card still only shuts once you're well away)
@@ -12110,7 +12131,8 @@ const handle = async (m, post) => {
     if (car === "pigeon") {  // a feral rock pigeon: blue-grey, a darker head, the green and purple sheen on its neck, two dark bars on each
       // wing, a dark tail band, orange eyes and pink-red feet. About 0.32 m long, drawn half as big again so it reads. Feet on y = 0,
       // facing +Z. The wings are parts of their own (right, then left), hinged at the shoulder, so they flap
-      const GR = [lin("#8f97a3"), lin("#868e9a"), lin("#99a1ac")], HEAD = [lin("#6f7682"), lin("#666d79")], NECK = [lin("#4f8a6e"), lin("#6a5a8c"), lin("#558f73")], PALE = lin("#b9c0c9"), BAR = lin("#2e3036"),
+      const Gd = stripe === "gold";  // the golden pigeon (home to its loft)
+      const GR = Gd ? [lin("#e8b923"), lin("#d9a520"), lin("#f0c63a")] : [lin("#8f97a3"), lin("#868e9a"), lin("#99a1ac")], HEAD = Gd ? [lin("#d4a017"), lin("#c99a12")] : [lin("#6f7682"), lin("#666d79")], NECK = Gd ? [lin("#fff1a8"), lin("#f5d76e"), lin("#ffe680")] : [lin("#4f8a6e"), lin("#6a5a8c"), lin("#558f73")], PALE = lin(Gd ? "#fff4c2" : "#b9c0c9"), BAR = lin(Gd ? "#a8790f" : "#2e3036"),
         BEAK = lin("#2b2a2c"), CERE = lin("#e8e4dc"), EYE = lin("#e07b1f"), FOOT = lin("#c9505a"), TAILC = [lin("#7d8590"), lin("#747c88")], BAND = lin("#2a2c31");
       ball(b, 0, 0.17, -0.01, 0.075, 0.072, 0.13, GR, 61, 8, 5, 0.1);  // body
       ball(b, 0, 0.215, 0.085, 0.056, 0.06, 0.055, NECK, 62, 7, 4, 0.08);  // the sheen on its neck
@@ -12125,6 +12147,14 @@ const handle = async (m, post) => {
         X(0.03, 0.15, 0.012, 0.016, -0.06, -0.04, BAR); X(0.03, 0.15, 0.012, 0.016, -0.1, -0.08, BAR); return w.part({ roughness: 0.9 }); };
       const big = q => { for (let i = 0; i < q.positions.length; i++) q.positions[i] *= 1.5; return q; };
       return [big(b.part({ roughness: 0.9 })), big(wing(1)), big(wing(-1))];
+    }
+    if (car === "loft") {  // a backyard pigeon loft: a timber box on legs, about 1.8 m wide, with a wire front of little doorways, a landing board and a sloped roof. Facing +Z
+      const WD = lin("#e9e3d2"), TR = lin("#6b4a2b"), RF = lin("#7d8a95"), HOLE = lin("#232323"), WIRE = lin("#9aa0a6");
+      for (const sx of [-0.85, 0.85]) for (const sz of [-0.55, 0.55]) b.box(sx - 0.05, sx + 0.05, 0, 0.75, sz - 0.05, sz + 0.05, TR);  // legs
+      b.box(-0.9, 0.9, 0.75, 1.95, -0.6, 0.6, WD); b.hull([-0.7, 1.05, 1.95, 2.05], [0.75, 1.05, 2.3, 2.4], RF);  // the box and its roof, sloping up to the front
+      for (let i = 0; i < 4; i++) for (let j = 0; j < 2; j++) b.box(-0.72 + i * 0.4, -0.5 + i * 0.4, 1.05 + j * 0.42, 1.3 + j * 0.42, 0.6, 0.62, HOLE);  // its little doorways
+      b.box(-0.88, 0.88, 1.88, 1.92, 0.6, 0.63, WIRE); b.box(-0.95, 0.95, 0.95, 1.0, 0.6, 0.95, TR);  // a rail; the landing board
+      return [b.part({ roughness: 0.9 })];
     }
     if (car === "nest") {  // the pigeon's nest: a loose ring of twigs about 0.4 m across, and (a part of its own) a white egg in it. On y = 0
       const TW = [lin("#7a5a36"), lin("#6a4c2c"), lin("#8b6a43"), lin("#5d4227")];
@@ -12525,8 +12555,16 @@ const handle = async (m, post) => {
       // the wings: folded back along its sides on the ground; out and beating while it flaps up, held out a touch raised as it glides
       const fold = P.air ? 0 : 1.45, ang = !P.air ? -0.15 : P.flap ? 0.25 + 0.85 * Math.sin(P.t * 22) : 0.12 + 0.05 * Math.sin(P.t * 3);
       for (const [i, sx] of [[1, 1], [2, -1]]) pigeonMesh.setMatrix(i, M.clone().multiply(WING.makeTranslation(sx * 0.07, 0.31, 0.03)).multiply(WY.makeRotationY(sx * fold)).multiply(WZ.makeRotationZ(sx * ang)).elements.slice()); };
+    // the golden pigeon's quest: the loft, shown once you're within 60 m of it while the quest is on, and the golden pigeon once you've landed on it
+    let loftMesh = null, loftI = -1;
+    const loftTick = (x, z, quest) => { const L = quest ? PIGEON_LOFTS[quest.i] : null, near = L && Math.hypot(L.x - x, L.z - z) < 60;
+      if (!near) { if (loftMesh) { try { loftMesh.remove(); } catch {} loftMesh = null; loftI = -1; } return L; }
+      if (loftI !== quest.i) { try { loftMesh?.remove(); } catch {} loftI = quest.i; loftMesh = m.addParts(townPlaneParts(undefined, "loft").map(q => ({ ...q, matrix: M.identity().elements.slice() })));
+        M.compose(V.set(L.x, ground(L.x, L.z), L.z), Q.setFromEuler(E.set(0, Math.random() * Math.PI * 2, 0, "YXZ")), ONE); loftMesh.setMatrix(0, M.elements.slice()); }
+      return L; };
+    const pigeonLook = gold => { if (!pigeonMesh || pigeonMesh.gold === gold) return; try { pigeonMesh.remove(); } catch {} pigeonMesh = m.addParts(townPlaneParts(gold ? "gold" : undefined, "pigeon").map(q => ({ ...q, matrix: M.identity().elements.slice() }))); pigeonMesh.gold = gold; showPigeon(); };
     const pigeonHome = () => { Object.assign(pg, { x: PG.x, z: PG.z, h: PG.h, p: 0, r: 0, v: 0, vy: 0, mode: "ground", air: false, flap: 0 }); pg.y = ground(pg.x, pg.z); showPigeon(); };
-    const wakePigeon = () => { if (pigeonMesh || !pg) return; pigeonMesh = m.addParts(townPlaneParts(undefined, "pigeon").map(q => ({ ...q, matrix: M.identity().elements.slice() }))); pigeonHome(); };
+    const wakePigeon = () => { if (pigeonMesh || !pg) return; pigeonMesh = m.addParts(townPlaneParts(undefined, "pigeon").map(q => ({ ...q, matrix: M.identity().elements.slice() }))); pigeonMesh.gold = false; pigeonHome(); pigeonLook(!!townPerks().goldPigeon); };
     const wake = () => { if (possumMesh || !pos) return;  // the possum and the lights, built the first time you come near
       poleMesh = m.addParts(poles.flatMap(q => townPlaneParts(undefined, "lightpole").map(part => ({ ...part, matrix: M.compose(V.set(q.x, q.y, q.z), Q.setFromEuler(E.set(0, PS.arm, 0, "YXZ")), ONE).elements.slice() }))));
       possumMesh = m.addParts(townPlaneParts(undefined, "possum").map(q => ({ ...q, matrix: M.identity().elements.slice() }))); showPossum(); satRoof(); };
@@ -12878,7 +12916,7 @@ const handle = async (m, post) => {
         if ((gripLook -= dt) <= 0) { gripLook = 0.25; gripBtn.hidden = false; const tx = grippy ? "Grippy: on" : "Grippy: off"; if (gripBtn.textContent !== tx) gripBtn.textContent = tx; gripBtn.classList.toggle("on", grippy); }
         o = P; D = P.cling || P.grip ? 9 : 3.4 + Math.min(3, Math.abs(P.v) / 12); text = P.cling ? `Holding on to ${P.cling.name} \u00b7 ${Math.round(P.v * 3.6)} km/h` : P.grip ? `Gripping the car \u00b7 ${Math.round(P.v * 3.6)} km/h` : P.mode === "climb" ? "Climbing \u00b7 " + Math.round(up) + " m" : Math.round(Math.abs(P.v) * 3.6) + " km/h" + (up > 1.5 ? " \u00b7 " + Math.round(up) + " m up" : "");
         if (mission) text = `\ud83d\udfe1 ${mission.got}/${mission.rings.length} rings \u00b7 ${Math.max(0, Math.ceil(mission.t))} s \u00b7 ` + text;
-      } else if (veh === "pigeon") { const P = pg, U = P.up, flapK = has("Space") || !!F.boost, dive = has("KeyC") || !!F.hand, fast = has("ShiftLeft", "ShiftRight");  // (Dive: C, or the Dive button. Ash, 18 November 2026: "Pigeon needs a dive button that speeds him towards the ground. Not too fast")
+      } else if (veh === "pigeon") { const P = pg, U = P.up, G = P.gold ? 1.35 : 1, flapK = has("Space") || !!F.boost, dive = has("KeyC") || !!F.hand, fast = has("ShiftLeft", "ShiftRight");  // (Dive: C, or the Dive button. Ash, 18 November 2026: "Pigeon needs a dive button that speeds him towards the ground. Not too fast")
         P.t += dt; const mag = Math.min(1, Math.hypot(str, thr)), goH = mag > 0.15 ? F.yaw + Math.PI + Math.atan2(-str, thr) : P.h, turn = wrap(goH - P.h);
         if (P.mode === "ground") {  // walking: it turns quick to the way the stick points and potters off; Jump (Flap) takes off
           if (mag > 0.15) P.h += Math.sign(turn) * Math.min(Math.abs(turn), 5 * dt);
@@ -12887,8 +12925,8 @@ const handle = async (m, post) => {
         else {  // flying: it heads the way you point it (from where you're looking) and swings round to it; hold Flap to climb, let go to glide down, C to dive
           if (mag > 0.15) P.h += Math.sign(turn) * Math.min(Math.abs(turn), 1.9 * dt);
           // (Flick's pigeon food: Strong wings, Big flaps, Long glide or Dive bomber)
-          const want = (dive ? 21 * (U === "dive" ? 1.33 : 1) : (fast ? 24 : 15) * (mag > 0.15 ? 1 : 0.65)) * (U === "wings" ? 1.25 : 1); P.v += (want - P.v) * Math.min(1, dt * 1.6);
-          const fu = U === "flap" ? 1.5 : 1; if (flapK) P.vy = Math.min(6 * fu, P.vy + 16 * fu * dt); else if (dive) P.vy = Math.max(-8 * (U === "dive" ? 1.33 : 1), P.vy - 12 * dt); else P.vy += ((U === "glide" ? -1.1 : -2.2) - P.vy) * Math.min(1, dt * 2);
+          const want = (dive ? 21 * (U === "dive" ? 1.33 : 1) : (fast ? 24 : 15) * (mag > 0.15 ? 1 : 0.65)) * (U === "wings" ? 1.25 : 1) * G;  // (golden: a third faster again) P.v += (want - P.v) * Math.min(1, dt * 1.6);
+          const fu = (U === "flap" ? 1.5 : 1) * (P.gold ? 1.3 : 1); if (flapK) P.vy = Math.min(6 * fu, P.vy + 16 * fu * dt); else if (dive) P.vy = Math.max(-8 * (U === "dive" ? 1.33 : 1), P.vy - 12 * dt); else P.vy += ((U === "glide" ? -1.1 : -2.2) - P.vy) * Math.min(1, dt * 2);
           if (P.y - ground(P.x, P.z) > 150 && P.vy > 0) P.vy = 0;  // (no higher than 150 m)
           P.y += P.vy * dt; }
         for (let n = Math.max(1, Math.ceil(Math.abs(P.v) * dt / 0.4)), i = 0, st = dt / n; i < n; i++) {  // in steps of 40 cm, so it cannot fly through a wall
@@ -12902,6 +12940,13 @@ const handle = async (m, post) => {
         P.flapped = flapK; P.air = P.mode === "air"; P.flap = flapK && P.air ? 1 : 0;
         const tp = P.air ? bsClamp(P.vy * 0.05, -0.5, 0.35) : 0, tr = P.air && mag > 0.15 ? bsClamp(turn * 0.8, -0.7, 0.7) : 0; P.p += (tp - P.p) * Math.min(1, dt * 6); P.r += (tr - P.r) * Math.min(1, dt * 5);
         showPigeon(); hint("");
+        // the quest: find the loft and land on it (or right by it) and you're the golden pigeon
+        if ((P.qAt = (P.qAt ?? 0) - dt) <= 0) { P.qAt = 1; const k = townPerks(); P.quest = k.pigeonQuest || null; if (!!k.goldPigeon !== !!P.gold) { P.gold = !!k.goldPigeon; pigeonLook(P.gold); } }
+        { const L = loftTick(P.x, P.z, P.quest);
+          if (L && !P.loftSeen && Math.hypot(L.x - P.x, L.z - P.z) < 45) { P.loftSeen = true; toast("\ud83d\udc40 That's it! A pigeon loft. Your home! Land on it.", 3500); }
+          if (L && Math.hypot(L.x - P.x, L.z - P.z) < 4 && P.y - ground(L.x, L.z) < 4.5) { townPerkSet("pigeonQuest", null); townPerkSet("goldPigeon", true); P.quest = null; P.gold = true; pigeonLook(true); loftTick(P.x, P.z, null);
+            gBurst(P, 6, 9, 0.5); snd.whoosh(); toast("\u2728 You found your home! You're the golden pigeon now: a third faster, stronger flaps and a trail of gold.", 6000); } }
+        if (P.gold && P.air && Math.random() < dt * 22) gAdd(P.x - Math.sin(P.h) * 0.6 + (Math.random() - 0.5) * 0.6, P.y + 0.3, P.z - Math.cos(P.h) * 0.6 + (Math.random() - 0.5) * 0.6, (Math.random() - 0.5), -0.5, (Math.random() - 0.5), 0.9);  // golden: a glitter trail
         // a nest (Ash, 18 November 2026: "The pigeon should be able to make a nest, after 10mins the nest creates a mini pigeon"): on the
         // ground, a roof or a tree, the Make a nest button (Q) lays an egg there; townLocals hatches it ten minutes on into your chick
         if (nestAsk) { nestAsk = false; const N = townPerks().nest;
@@ -13019,7 +13064,8 @@ const handle = async (m, post) => {
         document.body.classList.add("bsdrive", "bsride"); T.peers?.ride?.(q.id, true); toast(`You're riding with ${q.name}. Look around with the right stick.`, 3000); }
       else if (c.possum) { if (!townPerks().wasPossum) townPerkSet("wasPossum", true); veh = "possum"; pos.v = 0; pos.jumped = true; camYaw = pos.h + Math.PI; document.body.classList.add("bsdrive", "bspossum");
         loadTrees(); const wait = loadRoofs(); if (wait) { toast("Loading the roofs\u2026", 8000); wait.then(() => { if (veh === "possum") toast("Ready.", 1200); }); } }  // (no Up and Down: Jump sits where Boost does, over the right stick)
-      else if (c.pigeon) { veh = "pigeon"; pg.v = 0; pg.flapped = true; pg.up = townPerks().pigeon || null; gripLook = 0; camYaw = pg.h + Math.PI; document.body.classList.add("bsdrive", "bspossum");
+      else if (c.pigeon) { veh = "pigeon"; pg.v = 0; pg.flapped = true; pg.up = townPerks().pigeon || null; gripLook = 0; pg.qAt = 0; pg.loftSeen = false;
+        { const Qs = townPerks().pigeonQuest; if (Qs && PIGEON_LOFTS[Qs.i]) setTimeout(() => veh === "pigeon" && toast(`Find your home loft: ${PIGEON_LOFTS[Qs.i].riddle}`, 9000), 1500); } camYaw = pg.h + Math.PI; document.body.classList.add("bsdrive", "bspossum");
         loadTrees(); const wait = loadRoofs(); if (wait) { toast("Loading the roofs\u2026", 8000); wait.then(() => { if (veh === "pigeon") toast("Ready.", 1200); }); }
         if (!townPerks().wasPigeon) { townPerkSet("wasPigeon", true); setTimeout(() => veh === "pigeon" && toast(touch ? "You're the pigeon! Hold Flap to take off and climb, push the stick to fly that way, and let go of Flap to glide down." : "You're the pigeon! Space flaps (take off, fly up), W flies the way you're looking, C dives. E to be human again.", 6500), wait ? 2500 : 0); } }
       else if (c.plane) { plane = c.plane; veh = "plane"; if (T.cfg?.place === "moo") loadRoofs(); /* (Moorooka's roofs, so planes and helicopters meet them) */ plane.v = 0; plane.spin = 0; plane.turn = 0; camYaw = plane.h + Math.PI; document.body.classList.add("bsdrive", "bsplane"); boostBtn.style.setProperty("--charge", "100%"); }
@@ -13119,7 +13165,7 @@ const handle = async (m, post) => {
       peerGold = null;
       peerRk = null; };
     let peerShown = false;
-    C.pose = () => veh === "ride" ? null : veh === "possum" ? { k: "possum", x: pos.x, y: pos.y, z: pos.z, h: pos.h, p: pos.p, r: 0 } : veh === "pigeon" ? { k: "pigeon", x: pg.x, y: pg.y, z: pg.z, h: pg.h, p: pg.p, r: pg.r } : veh === "car" ? { k: car.bus ? "bus" : car.gold ? "gold" : "car", x: car.x, y: car.y, z: car.z, h: car.h + (car.spinY || 0), p: car.p, r: car.r + (car.roll || 0) }
+    C.pose = () => veh === "ride" ? null : veh === "possum" ? { k: "possum", x: pos.x, y: pos.y, z: pos.z, h: pos.h, p: pos.p, r: 0 } : veh === "pigeon" ? { k: pg.gold ? "goldpigeon" : "pigeon", x: pg.x, y: pg.y, z: pg.z, h: pg.h, p: pg.p, r: pg.r } : veh === "car" ? { k: car.bus ? "bus" : car.gold ? "gold" : "car", x: car.x, y: car.y, z: car.z, h: car.h + (car.spinY || 0), p: car.p, r: car.r + (car.roll || 0) }
       : veh ? { k: plane.heli ? (plane.gold ? "goldheli" : "heli") : plane.gold ? "goldplane" : "plane", x: plane.x, y: plane.y, z: plane.z, h: plane.h, p: plane.p, r: plane.r + (plane.roll || 0) } : null;
     C.where = () => veh === "ride" ? { kind: "ride", with: ride.name } : veh === "possum" ? { kind: "possum", x: pos.x, y: pos.y, z: pos.z, heading: pos.h, speed: pos.v, mode: pos.mode, up: pos.y - ground(pos.x, pos.z) } : veh === "car" ? { kind: "car", gold: !!car.gold, bus: !!car.bus, x: car.x, z: car.z, heading: car.h, dir: car.dir, speed: car.v, charge } : veh ? { kind: "plane", heli: !!plane.heli, x: plane.x, y: plane.y, z: plane.z, heading: plane.h, pitch: plane.p, speed: plane.v, air: plane.air } : null;  // for checking
     C.reread = () => Object.assign(R, townPerkRide(rideSettings()));  // a number changed in Settings: the ones read as it goes (turning) apply straight away
