@@ -9385,6 +9385,46 @@ const handle = async (m, post) => {
       rollers: [[9.6, 13.6, 4.2, "#9da3a8"]],
       tenants: { lines: ["WorkCon", "Labour hire", "Traffic control"], c: ["#ffffff", "#1d2c52"], foot: { n: "12 ENTERPRISE ST", c: ["#1d2c52", "#ffffff"] }, x: 4, o: 23, w: 2.0 },
       shops: [{ n: "WorkCon", w: 23.2, c: ["#1d2c52", "#ffffff"], what: "Labour hire and traffic control" }] },
+    // Trio Brothers Trading's long white building behind its black fence at 9 Railway Terrace, Rocklea, no sign of its own (Street View),
+    // so a board at the fence; and Tier 1 Painting, run from 6 Avison Street, a sign on a post out the front
+    { kind: "sign", addr: "9 Railway Terrace, Rocklea", a: [-699.3, 1352.5], b: [-699.5, 1417.9], n: [-1.0, -0.0031], kerb: 21.14, across: 30.54, eave: 16.7, wall: "#e8eaea", noBoard: true,
+      windows: [[3.3, 4.2, 1, "#3a3d42", 0.0, 65.4], [1.0, 2.4, 6, "#2a3640", 38, 62]],
+      tenants: { lines: ["Trio Brothers Trading", "Wholesale"], c: ["#ffffff", "#1d1d1d"], foot: { n: "9 RAILWAY TCE", c: ["#1d1d1d", "#ffffff"] }, x: 30, back: 1.0, w: 2.4 },
+      shops: [{ n: "Trio Brothers Trading", w: 65.4, c: ["#ffffff", "#1d1d1d"], what: "Wholesaler" }] },
+    { kind: "sign", addr: "6 Avison Street", a: [-606.5, 935.6], b: [-612.4, 934.7], n: [0.1508, -0.9886], kerb: 10.94, across: 21.54, eave: 20.1, wall: "#e9e6df", noBoard: true,
+      pole: { n: "Tier 1 Painting", c: ["#ffffff", "#1d2c52"], x: 3, back: 1.3 },
+      shops: [{ n: "Tier 1 Painting", w: 6, c: ["#ffffff", "#1d2c52"], what: "Painters" }] },
+    // Carsy Car Rentals & Mechanicals on the De Hayr Street side of the same lime green building as Simran Auto Care (Street View,
+    // September 2022), and Aus Solar Energy Group's grey units at 54 Annie Street, Rocklea
+    { kind: "sign", addr: "16 De Hayr Street, Rocklea", a: [-1352.7, 1051.2], b: [-1353.8, 1059.5], n: [-0.9913, -0.1314], kerb: 7.06, across: 14.26, eave: 12.5, wall: "#7cbf3c",
+      shops: [{ n: "CARSY", sub: "CAR RENTALS & MECHANICALS", w: 8.4, c: ["#ffffff", "#2e7d32"], what: "Car hire and mechanic", jump: true }] },
+    { kind: "sign", addr: "54 Annie Street, Rocklea", a: [-973.0, 1330.3], b: [-957.8, 1343.2], n: [-0.6471, 0.7624], kerb: 12.6, across: 23.2, eave: 17.2, wall: "#9a9da1", high: true, bx: 13.5, bw: 6,
+      rollers: [[1.2, 5.2, 4.0, "#b9bcbf"]], windows: [4.6, 5.8, 4, "#2a3640", 7, 19],
+      shops: [{ n: "AUS SOLAR", sub: "ENERGY GROUP", w: 19.9, c: ["#ffffff", "#1f4fa0"], what: "Solar panels and batteries", jump: true }] },
+    // the Rocklea Showgrounds (1430 Ipswich Road; markets and shows): its name on a big sign by Ipswich Road at the way in (no wall
+    // here: the line a to b just stands the sign by the road)
+    { kind: "sign", addr: "1430 Ipswich Road, Rocklea", a: [-1550.6, 1473.9], b: [-1552.6, 1485.7], n: [-0.986, -0.165], kerb: 5.5, across: 25, wall: "#e9e6df", noBoard: true,
+      pole: { n: "ROCKLEA SHOWGROUNDS", sub: "1430 IPSWICH RD", c: ["#1f5f3a", "#ffffff"], x: 6, o: 2.5, big: 2.2 },
+      shops: [{ n: "Rocklea Showgrounds", w: 12, c: ["#1f5f3a", "#ffffff"], what: "Showgrounds: markets and events", jump: true }] },
+    // AUSERVIN, the removalists, at 22 Evesham Street: no sign of its own in Street View (October 2024), so a sign on a post out the front
+    { kind: "sign", addr: "22 Evesham Street", a: [-1061.7, -153.8], b: [-1067.5, -166.2], n: [0.9058, -0.4237], kerb: 15.93, across: 26.53, eave: 15.2, wall: "#e2e2df", noBoard: true,
+      pole: { n: "AUSERVIN", sub: "REMOVALISTS & STORAGE", c: ["#1d2c52", "#ffffff"], x: 3, back: 1.4 },
+      shops: [{ n: "AUSERVIN", sub: "REMOVALISTS & STORAGE", w: 13.7, c: ["#1d2c52", "#ffffff"], what: "Removalists and storage", jump: true }] },
+    // Pro Honda: signed Pro Motorcycles on a charcoal band along its white showroom at 1019-1023 Ipswich Road, a Honda sign by the road at
+    // its south end and bikes out the front (Street View, September 2026); and Archer Glass's white shed at 3 Jaybel Street, Salisbury
+    { kind: "sign", addr: "1019 Ipswich Road", a: [-838.2, -383.0], b: [-815.2, -416.0], n: [0.8204, 0.5718], kerb: 9.3, across: 20.0, eave: 24.8, wall: "#f2f2f0", band: true, glass: "#22303a",
+      pole: { n: "HONDA", sub: "MOTORCYCLES", c: ["#ffffff", "#cc0000"], x: -1.2, back: 1.4, big: 1.3 },
+      shops: [{ n: "Pro Honda", t: "PRO MOTORCYCLES", w: 40.2, c: ["#3a3d42", "#ffffff"], what: "Motorcycle dealer (Honda, KTM)", jump: true }] },
+    { kind: "sign", addr: "3 Jaybel Street, Salisbury", a: [1176.6, 902.4], b: [1180.5, 881.8], n: [0.9825, 0.186], kerb: 12.81, across: 23.41, eave: 50.7, wall: "#f0f0ee", high: true, bx: 14, bw: 6,
+      rollers: [[4.4, 8.4, 4.2, "#2b2e31", true]],
+      shops: [{ n: "ARCHER GLASS", w: 21, c: ["#ffffff", "#0f7c7a"], what: "Glass and glazing", jump: true }] },
+    // Blinds N Curtains in the units down the driveway beside the house at 17 Fairlawn Street (Street View, September 2026): a board at the driveway
+    { kind: "sign", addr: "17 Fairlawn Street, Salisbury", a: [1429.8, 1097.4], b: [1412.5, 1095.5], n: [0.1092, -0.994], kerb: 38.16, across: 48.76, eave: 37.8, wall: "#e4e5e6", noBoard: true,
+      tenants: { lines: ["Blinds N Curtains"], c: ["#ffffff", "#1d2c52"], foot: { n: "17 FAIRLAWN ST", c: ["#1d2c52", "#ffffff"] }, x: 18.5, o: 36.5, w: 2.0 },
+      shops: [{ n: "Blinds N Curtains", w: 17.4, c: ["#ffffff", "#1d2c52"], what: "Blinds and curtains" }] },
+    // WoodworkersXS, the Woodworkers Company's clearance store, in the green building at 34 Evesham Street (Street View, October 2024)
+    { kind: "sign", addr: "34 Evesham Street", a: [-1089.2, -185.1], b: [-1094.9, -197.0], n: [0.902, -0.432], kerb: 16.1, across: 26.7, eave: 16.3, wall: "#8ab048", band: true,
+      shops: [{ n: "WoodworkersXS", t: "woodworkers XS", w: 13.2, c: ["#7cb342", "#ffffff"], what: "Woodworking tools and timber, clearance", jump: true }] },
     { kind: "sign", addr: "107 Beaudesert Road", a: [-228.1, -477.6], b: [-226.8, -486.7], n: [0.9899, 0.1414], kerb: 5.8, across: 16.3, eave: 39.6, wall: "#f3efe6", noBoard: true,  // (on a pole by the fence: its porch roof hid a sign on the wall)
       pole: { n: "Guardian", sub: "CHILDCARE & EDUCATION", c: ["#ffffff", "#5b2a86"], x: 4.6, back: 2 },
       shops: [{ n: "Guardian", sub: "CHILDCARE & EDUCATION", w: 7.5, c: ["#ffffff", "#5b2a86"], what: "Childcare" }] },
@@ -9730,7 +9770,8 @@ const handle = async (m, post) => {
       shops: [{ n: "Woolworths", w: 12, c: ["#178841", "#ffffff"], what: "Supermarket", jump: true }] },
     { kind: "row", addr: "26 Queens Way, Yeerongpilly", a: [-1354.5, -1182.0], b: [-1361.9, -1132.5], n: [-0.9891, -0.147], kerb: 6.34, across: 16.94, eave: 17.5, wall: "#9a9da0", fascia: "#5a5f66",
       shops: [{ w: 8 }, { n: "Figtree Social", w: 8, c: ["#2f4a3a", "#ffffff"], what: "Cafe", jump: true }, { n: "Bureau of Beauty", w: 8, c: ["#1d1d1d", "#ffffff"], what: "Beauty salon" },
-        { w: 6 }, { n: "Jessica James", sub: "HAIR", w: 8, c: ["#ffffff", "#1d1d1d"], what: "Hairdresser" }, { w: 12 }] },
+        { w: 6 }, { n: "Jessica James", sub: "HAIR", w: 8, c: ["#ffffff", "#1d1d1d"], what: "Hairdresser" }, { w: 2 },
+        { n: "Jimmy Rods", sub: "BARBERSHOP", w: 8, c: ["#141414", "#ffffff"], what: "Barber", jump: true }, { w: 2 }] },
     // Sundays Cafe on the corner of Brooke Street and Pegg Road, Rocklea (Street View, 2024: a pale blue-grey corner shop under a flat
     // awning, then signed Rocklea Rail Takeaway), and Future Auto in the long white building at the Moorooka Servo (485 Beaudesert Road)
     { kind: "sign", addr: "59 Brooke Street, Rocklea", a: [-1205.5, 1153.4], b: [-1213.6, 1146.8], n: [0.6317, -0.7752], kerb: 0.3, across: 10.49, eave: 11.9, wall: "#b8c7d0", noBoard: true,
@@ -9738,6 +9779,7 @@ const handle = async (m, post) => {
       shops: [{ n: "Sundays Cafe", sub: "ROCKLEA", w: 9, c: ["#ffffff", "#2b2b2b"], what: "Cafe", jump: true }] },
     { kind: "sign", addr: "485 Beaudesert Road (Future Auto)", a: [-610.9, 1197.2], b: [-594.4, 1147.3], n: [0.9494, 0.3139], kerb: 17.9, across: 27.5, eave: 15.7, wall: "#eeede9", high: true, bx: 10, bw: 9,
       rollers: [[3.5, 7.5, 3.3, "#d2d4d6", true]], windows: [[0.0, 2.4, 1, "#2a3640", 9.0, 11.4], [3.45, 3.6, 1, "#c8102e", 0.0, 52.6]],
+      tenants: { lines: ["Future Auto", "Acacia Automatics"], c: ["#ffffff", "#1d1d1d"], foot: { n: "485 BEAUDESERT RD", c: ["#c8102e", "#ffffff"] }, x: 14, back: 1.2, w: 2.2 },  // (Acacia Automatics, the transmission shop, is here too: Google Maps)
       shops: [{ n: "FUTURE AUTO", sub: "TYRES & MECHANICAL", w: 9, c: ["#ffffff", "#c8102e"], what: "Tyres and mechanic" }] },
     // PSBROS Auto Care in the grey iron shed at 23 Sherwood Road, Rocklea: a workshop door open, yellow and white flags out the front
     { kind: "sign", addr: "U2/23 Sherwood Road, Rocklea", a: [-1551.1, 670.2], b: [-1524.0, 680.1], n: [-0.3431, 0.9393], kerb: 19.08, across: 25.08, eave: 13.2, wall: "#c4c8cc", high: true, bx: 14, bw: 8,
@@ -9883,6 +9925,11 @@ const handle = async (m, post) => {
     { at: [62.94, -1461.4], kind: 2, wall: [230, 222, 206] },                // Annerley Glassworx (770 Ipswich Road): an old cream shop, its gable over the awning
     { at: [227.28, 1156.05], kind: 2, flat: true, wall: [232, 226, 210] },   // Bolts & Industrial Supplies (5 Project Street): a cream shed
     { at: [-1106.25, -122.35], kind: 2, wall: [230, 230, 226] },             // Strut Specialists (23 Unwin Street): white
+    { at: [-659.06, 1374.61], kind: 2, flat: true, wall: [232, 234, 234] }, // Trio Brothers Trading (9 Railway Terrace): long and white, a dark band along the top
+    { at: [-956.25, 1326.0], kind: 2, flat: true, wall: [154, 157, 161] },   // Aus Solar Energy Group (54 Annie Street, Rocklea): grey units
+    { at: [-845.55, -412.0], kind: 2, flat: true, wall: [242, 242, 240] },  // Pro Honda (1019 Ipswich Road): a white showroom, flat behind its band
+    { at: [1168.02, 882.27], kind: 2, wall: [240, 240, 238] },               // Archer Glass (3 Jaybel Street): a white shed
+    { at: [-1100.62, -191.78], kind: 2, wall: [138, 176, 72] },             // WoodworkersXS (34 Evesham Street): green
     { at: [748.4, 1153.3], kind: 2, flat: true, wall: [224, 212, 188] },     // 222 Evans Road (Manna on Evans, Tarragindi Music): a cream office block, flat-roofed
     { at: [-14.53, -1344.65], kind: 1, flat: true, wall: [244, 245, 242], canopy: { band: 1.2, stripe: [0, 128, 64] } },   // BP Annerley (810 Ipswich Road): green
     { at: [-237.7, -1183.67], kind: 1, flat: true, wall: [246, 246, 244], canopy: { band: 1.1, stripes: [[0, 129, 99], [238, 39, 55], [245, 130, 32]] } },  // the 7-Eleven (841 Ipswich Road): its green, red and orange
