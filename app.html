@@ -9607,7 +9607,8 @@ const handle = async (m, post) => {
         if (f.kerbPaint) box(-1, len + 1, 0, 0.04, f.kerb - 0.25, f.kerb, f.kerbPaint);
       }
       // in Jump to: across the street (or on the near footpath, when the shop stands well back), looking at the shop's sign
-      shops.forEach((s, i) => { if (s.n && where[i]) { const q = at((where[i][0] + where[i][1]) / 2, signY + signH + 0.35, 0.3); T.shopTags.push({ n: s.n === "POST OFFICE" ? "Post Office" : s.n, x: q[0], y: q[1], z: q[2] }); }
+      // (a shop on a post out the front: its tag over the post, not over the wall behind it)
+      shops.forEach((s, i) => { if (s.n && where[i]) { const pk = f.pole?.big || 1, q = f.pole && f.noBoard ? at(f.pole.x ?? -1.6, 1.15 + 1.45 * pk + 0.15 + 0.8 * pk + 0.35, bsClamp(f.kerb - (f.pole.back ?? 1.6), 2, 9)) : at((where[i][0] + where[i][1]) / 2, signY + signH + 0.35, 0.3); T.shopTags.push({ n: s.n === "POST OFFICE" ? "Post Office" : s.n, x: q[0], y: q[1], z: q[2] }); }
         if (!s.jump) return;
         const cx = (where[i][0] + where[i][1]) / 2, D = f.across + 1.6 <= 22 ? f.across + 1.6 : Math.max(6, f.kerb - 1.5), p = at(cx, 0, D), q = at(cx, 0, 0);
         out.push({ name: s.n === "POST OFFICE" ? "Moorooka Post Office" : s.n, group: "Shops and places", what: `${s.what}, ${f.addr}`, walk: { x: p[0], z: p[2], yaw: Math.atan2(f.n[0], f.n[1]), pitch: Math.atan2(signY + signH / 2 - 1.7, D) * 0.8 }, target: [q[0], q[2]] }); });
@@ -11292,7 +11293,11 @@ const handle = async (m, post) => {
       askBox.append(q, inp, go, skip); chatBar.parentElement.appendChild(askWrap); try { inp.focus({ preventScroll: true }); } catch {} }, 1800);
     const label = id => { const el = document.createElement("div"); el.className = "bs-peer bs-player"; el.hidden = true; box.appendChild(el);
       const edge = el.edge = document.createElement("div"); edge.className = "bs-peer-edge"; edge.hidden = true; box.appendChild(edge); return el; };
-    const drop = id => { riders?.delete(id); const q = peers.get(id); if (!q) return; try { q.parts?.remove(); } catch {} q.el.edge?.remove(); q.el.remove(); peers.delete(id); P.count = peers.size; };
+    // (someone getting into a car, plane, helicopter, the possum, the pigeon or the drone: your own copy of it is hidden while they have
+    // it, and when they leave it it's moved to where they left it. README "Known gaps": "a vehicle someone else is in is drawn as well as
+    // your own copy of it standing where it lives; cars others drive off still stand in your copy of the town")
+    const RIDEK = new Set(["car", "gold", "bus", "plane", "goldplane", "heli", "goldheli", "possum", "pigeon", "goldpigeon", "drone"]);
+    const drop = id => { riders?.delete(id); const q = peers.get(id); if (!q) return; if (RIDEK.has(String(q.kind || "").split("~")[0])) try { T.car?.peerLeft?.(id, q.shown || q.b); } catch {} try { q.parts?.remove(); } catch {} q.el.edge?.remove(); q.el.remove(); peers.delete(id); P.count = peers.size; };
     const got = (a, id) => { if (!Array.isArray(a) || a.length < 7 || !a.slice(0, 4).every(Number.isFinite)) return;
       let q = peers.get(id); if (!q) { if (peers.size >= 12) return; q = { el: label(id), name: "", kind: "", parts: null, a: null, b: null, colour: TOPS[[...String(id)].reduce((n, ch) => n + ch.charCodeAt(0), 0) % TOPS.length] }; peers.set(id, q); P.count = peers.size; }
       const now = performance.now(), s = { x: a[0], y: a[1], z: a[2], h: a[3], p: +a[5] || 0, r: +a[6] || 0, fx: (+a[7] || 0) & 7, k: SHAPES[String(a[4]).split("~")[0]] ? String(a[4]).slice(0, 40) : a[4] === "none" ? "none" : "walk", t: now };
@@ -11491,11 +11496,16 @@ const handle = async (m, post) => {
       let bold = null; { const L = []; for (const [id, q] of peers) { const s0 = q.shown || q.b; if (q.b && q.b.k !== "none" && s0) L.push([Math.hypot(s0.x - cam.x, s0.z - cam.z), id]); }
         if (L.length >= 3) bold = new Set(L.sort((a, b) => a[0] - b[0]).slice(0, 2).map(e => e[1])); }
       T.car?.fxFrame?.(Math.min(0.1, (now - (P.fxLast || now)) / 1000)); P.fxLast = now;
+      // (players no longer walk through each other: on foot, within 0.7 m of another player on foot, you're eased out of them. README
+      // "Known gaps": "players pass through each other")
+      if (T.walk && !T.car?.in && !F.home) for (const q of peers.values()) { const s2 = q.shown; if (!s2 || !/^(walk|builder|chef)/.test(String(q.kind || ""))) continue;
+        const dx = F.pos.x - s2.x, dz = F.pos.z - s2.z, d = Math.hypot(dx, dz); if (d > 0.01 && d < 0.7) { const k = (0.7 - d) / d; F.pos.x += dx * k; F.pos.z += dz * k; } }
       for (const [id, q] of peers) { if (!q.b) continue;
         if (now - q.b.t > 12000) { drop(id); continue; }  // not heard from: gone
         { const quiet = !!bold && !bold.has(id); if (q.el.classList.contains("far") !== quiet) { q.el.classList.toggle("far", quiet); q.el.edge?.classList.toggle("far", quiet); } }
         const kind = q.b.k, [base, lc] = String(kind).split("~"), fig = base === "walk" || base === "builder" || base === "chef", big = fig && lc && townLookOf(lc).giant ? 3 : 1;
-        if (kind !== q.kind) { try { q.parts?.remove(); } catch {} q.parts = null; q.kind = kind; if (SHAPES[base]) q.parts = m.addParts(SHAPES[base](q.colour, lc).map(part => ({ ...part, matrix: NONE.slice() }))); q.a = q.b; }
+        if (kind !== q.kind) { const was = String(q.kind || "").split("~")[0]; try { if (RIDEK.has(was)) T.car?.peerLeft?.(id, q.shown || q.a || q.b); if (RIDEK.has(base)) T.car?.peerTook?.(id, base, q.b.x, q.b.z); } catch {}
+          try { q.parts?.remove(); } catch {} q.parts = null; q.kind = kind; if (SHAPES[base]) q.parts = m.addParts(SHAPES[base](q.colour, lc).map(part => ({ ...part, matrix: NONE.slice() }))); q.a = q.b; }
         if (!q.parts) { q.el.hidden = true; continue; }
         // a fifth of a second behind, gliding from where they were shown to the newest word of them
         const t = Math.min(1, (now - q.from) / 220), a = q.a || q.b, b = q.b, far = Math.hypot(b.x - a.x, b.z - a.z) > 60, k = far ? 1 : t;
@@ -12483,7 +12493,9 @@ const handle = async (m, post) => {
     const M = new THREE.Matrix4(), M2 = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), ONE = new THREE.Vector3(1, 1, 1);
     const hub = new THREE.Matrix4().makeTranslation(0, 1.31, 2.74), mast = new THREE.Matrix4().makeTranslation(0, 2.45, 0.1);
     let plane = null;
-    const showPlane = P => { M.compose(V.set(P.x, P.y, P.z), Q.setFromEuler(E.set(-P.p, P.h, P.r + (P.roll || 0), "YXZ")), ONE); P.parts.setMatrix(0, M.elements.slice());  // (a copy each time: what is set is kept, to be set again if the model is swapped for a sharper one)
+    const taken = new Map();  // another player's id -> your copy of what they're in
+    const hideAll = (parts, n) => { for (let i = 0; i < n; i++) parts.setMatrix(i, NONE); };
+    const showPlane = P => { if (P.takenBy) return hideAll(P.parts, 3); M.compose(V.set(P.x, P.y, P.z), Q.setFromEuler(E.set(-P.p, P.h, P.r + (P.roll || 0), "YXZ")), ONE); P.parts.setMatrix(0, M.elements.slice());  // (a copy each time: what is set is kept, to be set again if the model is swapped for a sharper one)
       const fast = P === plane && P.spin > 0.2; M2.copy(M).multiply(P.heli ? mast : hub);
       P.parts.setMatrix(1, fast ? M2.clone().scale(V.set(0, 0, 0)).elements : M2.clone().multiply(P.heli ? new THREE.Matrix4().makeRotationY(P.ang || 0) : new THREE.Matrix4().makeRotationZ(P.ang || 0)).elements);  // the blades, or the blur they make
       P.parts.setMatrix(2, fast ? M2.elements.slice() : M2.clone().scale(V.set(0, 0, 0)).elements); };
@@ -12505,7 +12517,7 @@ const handle = async (m, post) => {
       P.heli = !!home.heli;
       P.parts = m.addParts((P.heli ? townPlaneParts(P.gold ? "#e2ad1c" : "#c8322b", "heli") : townPlaneParts(P.gold ? "#e2ad1c" : undefined)).map(q => ({ ...q, matrix: M.identity().elements.slice() }))); showPlane(P); return P; });
     // ---- the golden car, the app's own mesh too: twice the top speed and the acceleration of a parked car
-    const showOwn = G => { M.compose(V.set(G.x, G.y, G.z), Q.setFromEuler(E.set(-G.p, G.h, G.r, "YXZ")), ONE); G.parts.setMatrix(0, M.elements.slice()); };
+    const showOwn = G => { if (G.takenBy) return hideAll(G.parts, G.np || 1); M.compose(V.set(G.x, G.y, G.z), Q.setFromEuler(E.set(-G.p, G.h, G.r, "YXZ")), ONE); G.parts.setMatrix(0, M.elements.slice()); };
     // a golden car that parks somewhere different each visit: in the place of a parked car near one of the town's places
     const parkAt = home => { if (!home.park || !m.nearestCar || !m.spots) return home; const spots = m.spots().filter(s => s.kind !== "water" && Math.hypot(s.tx - home.x, s.tz - home.z) < 1200);  // (near its usual place: Logan's places run out to Jimboomba)
       for (let t = 0; t < 24 && spots.length; t++) { const s = spots[Math.floor(Math.random() * spots.length)], c = m.nearestCar(s.tx, s.tz, 120);
@@ -12515,7 +12527,7 @@ const handle = async (m, post) => {
       T.hideCars = [[home.x, home.z]]; return home; };  // (where it stands then is a parked car of the model's: that one goes)
     const owns = RIDES.cars.filter(home => !home.spare || !m.nearestCar).map(parkAt).map(home => { const G = { x: home.x, z: home.z, h: home.h, y: 0, p: 0, r: 0, gold: !!home.gold, bus: !!home.bus };
       const [y, p, r] = G.bus ? lie(G, 3.6, 1.1) : lie(G, 1.3, 0.8); G.y = y; G.p = p; G.r = r;
-      G.parts = m.addParts((G.bus ? townPlaneParts("#2f7fc4", "bus") : townPlaneParts(G.gold ? "#e8b923" : "#c8322b", true)).map(q => ({ ...q, matrix: M.identity().elements.slice() }))); showOwn(G); return G; });
+      { const L = G.bus ? townPlaneParts("#2f7fc4", "bus") : townPlaneParts(G.gold ? "#e8b923" : "#c8322b", true); G.np = L.length; G.parts = m.addParts(L.map(q => ({ ...q, matrix: M.identity().elements.slice() }))); } showOwn(G); return G; });
     const gold = owns.find(G => G.gold) || owns[0];
     // where a plane or helicopter (one at random), or a golden one, is now: for the locals' news (townLocals)
     C.rideSpot = heli => { const L = planes.filter(P => !P.gold && !!P.heli === heli); const P = L[Math.floor(Math.random() * L.length)]; return P ? { x: P.x, z: P.z, name: P.home.name } : null; };
@@ -12603,12 +12615,12 @@ const handle = async (m, post) => {
       if (DR.pad) { const L = T.pads?.[0]; if (!L) return null; const fx = L.s, fz = L.c, lx = L.c, lz = -L.s; remoteAt = { x: L.x + fx * DR.pad[1] + lx * DR.pad[0], z: L.z + fz * DR.pad[1] + lz * DR.pad[0], h: Math.atan2(fx, fz) }; }
       else { const q = DR.spots[Math.floor(Math.random() * DR.spots.length)]; remoteAt = { x: q[0], z: q[1], h: Math.random() * Math.PI * 2 }; }
       Object.assign(dr, { x: remoteAt.x + Math.cos(remoteAt.h) * 1.4, z: remoteAt.z - Math.sin(remoteAt.h) * 1.4, h: remoteAt.h }); dr.y = surf(dr.x, dr.z); return remoteAt; };
-    const showDrone = () => { if (!droneMesh) return; M.compose(V.set(dr.x, dr.y, dr.z), Q.setFromEuler(E.set(-dr.p, dr.h, dr.r, "YXZ")), ONE); droneMesh.setMatrix(0, M.elements.slice()); droneMesh.setMatrix(1, M.clone().multiply(TURN.makeRotationY(dr.spin)).elements.slice()); };
+    const showDrone = () => { if (!droneMesh) return; if (dr.takenBy) return hideAll(droneMesh, 2); M.compose(V.set(dr.x, dr.y, dr.z), Q.setFromEuler(E.set(-dr.p, dr.h, dr.r, "YXZ")), ONE); droneMesh.setMatrix(0, M.elements.slice()); droneMesh.setMatrix(1, M.clone().multiply(TURN.makeRotationY(dr.spin)).elements.slice()); };
     const wakeDrone = () => { if (droneMesh || !droneSpot()) return; droneMesh = m.addParts(townPlaneParts(undefined, "drone").map(q => ({ ...q, matrix: M.identity().elements.slice() })));
       remoteMesh = m.addParts(townPlaneParts(undefined, "remote").map(q => ({ ...q, matrix: M.identity().elements.slice() }))); M.compose(V.set(remoteAt.x, ground(remoteAt.x, remoteAt.z), remoteAt.z), Q.setFromEuler(E.set(0, remoteAt.h, 0, "YXZ")), ONE); remoteMesh.setMatrix(0, M.elements.slice()); showDrone(); };
     const PG = RIDES.pigeon, pg = PG ? { x: PG.x, z: PG.z, h: PG.h, y: 0, p: 0, r: 0, v: 0, vy: 0, t: 0, mode: "ground", air: false, flapped: false } : null; let pigeonMesh = null;
     const TAIL = new THREE.Matrix4(), TURN = new THREE.Matrix4();
-    const showPossum = () => { if (!possumMesh) return; const bob = pos.mode === "ground" ? Math.min(0.06, Math.abs(pos.v) / 400) * Math.abs(Math.sin(pos.t * 16)) : 0;
+    const showPossum = () => { if (!possumMesh) return; if (pos?.takenBy) return hideAll(possumMesh, 2); const bob = pos.mode === "ground" ? Math.min(0.06, Math.abs(pos.v) / 400) * Math.abs(Math.sin(pos.t * 16)) : 0;
       M.compose(V.set(pos.x, pos.y + bob + (pos.flip != null ? 0.25 : 0), pos.z), Q.setFromEuler(E.set(-pos.p - (pos.flip != null ? pos.flip * Math.PI * 2 : 0), pos.h, pos.r, "YXZ")), ONE); possumMesh.setMatrix(0, M.elements.slice());
       const sway = pos.mode === "climb" ? 0.18 * Math.sin(pos.t * 4) : Math.min(0.45, Math.abs(pos.v) / 50) * Math.sin(pos.t * 13) + 0.1 * Math.sin(pos.t * 1.7);
       possumMesh.setMatrix(1, M.clone().multiply(TAIL.makeTranslation(0, 0, -0.27)).multiply(TURN.makeRotationY(sway)).elements.slice()); };
@@ -12701,7 +12713,7 @@ const handle = async (m, post) => {
     const possumHome = () => { Object.assign(pos, { x: PS.x, z: PS.z, h: PS.h, p: 0, r: 0, v: 0, vy: 0, mode: "ground", wall: null, sit: false }); pos.y = surf(pos.x, pos.z); showPossum(); };
     if (pos) possumHome();
     const WING = new THREE.Matrix4(), WY = new THREE.Matrix4(), WZ = new THREE.Matrix4();
-    const showPigeon = () => { if (!pigeonMesh) return; const P = pg, bob = P.mode === "ground" ? Math.min(0.04, Math.abs(P.v) / 120) * Math.abs(Math.sin(P.t * 14)) : 0;
+    const showPigeon = () => { if (!pigeonMesh) return; if (pg.takenBy) return hideAll(pigeonMesh, 3); const P = pg, bob = P.mode === "ground" ? Math.min(0.04, Math.abs(P.v) / 120) * Math.abs(Math.sin(P.t * 14)) : 0;
       M.compose(V.set(P.x, P.y + bob, P.z), Q.setFromEuler(E.set(-P.p, P.h, P.r, "YXZ")), ONE); pigeonMesh.setMatrix(0, M.elements.slice());
       // the wings: folded back along its sides on the ground; out and beating while it flaps up, held out a touch raised as it glides
       const fold = P.air ? 0 : 1.45, ang = !P.air ? -0.15 : P.flap ? 0.25 + 0.85 * Math.sin(P.t * 22) : 0.12 + 0.05 * Math.sin(P.t * 3);
@@ -12800,6 +12812,20 @@ const handle = async (m, post) => {
       // the stick and the Up and Down buttons say what they do in it
       if (joyName) joyName.textContent = kind === "plane" ? "Power and turn" : kind === "heli" ? "Go and turn" : kind === "car" ? "Drive" : kind === "possum" ? "Run and turn" : "Move";
       if (udName.length === 2) { udName[0].textContent = kind === "plane" ? "Climb" : kind === "possum" ? "Jump" : "Up"; udName[1].textContent = kind === "plane" ? "Dive" : kind === "possum" ? "Let go" : "Down"; } };
+    // which of your copies another player has just got into: the one of that kind nearest where they are (within 25 m; the possum, the
+    // pigeon and the drone are one of a kind), never the one you're in
+    C.peerTook = (id, k, x, z) => { let obj = null;
+      if (k === "possum") obj = veh === "possum" ? null : pos; else if (k === "pigeon" || k === "goldpigeon") obj = veh === "pigeon" ? null : pg; else if (k === "drone") obj = veh === "drone" ? null : dr;
+      else { const L = /plane|heli/.test(k) ? planes.filter(P => !!P.heli === /heli/.test(k) && !!P.gold === /^gold/.test(k) && P !== plane) : owns.filter(G => !!G.bus === (k === "bus") && !!G.gold === (k === "gold") && G !== car?.own);
+        let far = 25; for (const o of L) { if (o.takenBy) continue; const d = Math.hypot(o.x - x, o.z - z); if (d < far) { far = d; obj = o; } } }
+      if (!obj || obj.takenBy) return; obj.takenBy = id; taken.set(id, obj); redraw(obj); };
+    C.peerLeft = (id, at) => { const obj = taken.get(id); if (!obj) return; taken.delete(id); obj.takenBy = null;
+      if (at && at.x != null && Math.hypot(at.x - obj.x, at.z - obj.z) < 3000) { obj.x = at.x; obj.z = at.z; if (at.h != null) obj.h = at.h;
+        if (obj === pos || obj === pg || obj === dr) { obj.y = surf(obj.x, obj.z); if (obj.mode) obj.mode = "ground"; obj.air = false; obj.p = obj.r = 0; obj.v = 0; }
+        else if (planes.includes(obj)) { obj.air = false; obj.v = 0; const [y, p, r] = lie(obj, 2, 1.2); obj.y = y; obj.p = p; obj.r = r; }
+        else { obj.v = 0; obj.y = ground(obj.x, obj.z) + 0.05; obj.p = obj.r = 0; } }
+      redraw(obj); };
+    const redraw = obj => { if (obj === pos) showPossum(); else if (obj === pg) showPigeon(); else if (obj === dr) showDrone(); else if (planes.includes(obj)) showPlane(obj); else if (obj.parts) showOwn(obj); };
     C.probe = () => ({ pos, pg, dr, remote: () => remoteAt, game: () => game, surf, roofAt, solid, loadRoofs, treeAt, loadTrees, mission: () => mission });  // (for checking the possum's footing in tests)
     C.walkKeys = on => { if (!veh) showKeys(on ? "walk" : null); }; if (T.walk) showKeys("walk");
     C.keys = () => { if (!veh) return false; keysOff(!keysBox.classList.contains("off")); return true; };  // "?" hides the list and brings it back
@@ -13240,15 +13266,15 @@ const handle = async (m, post) => {
       F.pos.x = o.x + camOff[0]; F.pos.y = Math.max(o.y + camOff[1], (critter ? surf(F.pos.x, F.pos.z) + 0.5 : ground(F.pos.x, F.pos.z) + 0.7)); F.pos.z = o.z + camOff[2]; F.yaw = yaw; F.pitch = pitch;
       last = [F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch]; };
     // what is in reach of where you stand: a plane within 11 m, a parked car within 8 m, whichever is nearer
-    const nearPlane = () => { let best = null, far = Infinity; for (const P of planes) { const d = Math.hypot(P.x - F.pos.x, P.z - F.pos.z); if (d < far) { far = d; best = P; } } return [best, far]; };
+    const nearPlane = () => { let best = null, far = Infinity; for (const P of planes) { if (P.takenBy) continue; const d = Math.hypot(P.x - F.pos.x, P.z - F.pos.z); if (d < far) { far = d; best = P; } } return [best, far]; };
     // (the moving cars count too: getting into one takes it out of the traffic)
-    const nearOwn = () => { let best = null, far = Infinity; for (const G of [...owns, ...(T.traffic?.cars || []).filter(D => D.x != null && !D.away && !D.bus)]) { const d = Math.hypot(G.x - F.pos.x, G.z - F.pos.z); if (d < far) { far = d; best = G; } } return [best, far]; };
+    const nearOwn = () => { let best = null, far = Infinity; for (const G of [...owns.filter(G => !G.takenBy), ...(T.traffic?.cars || []).filter(D => D.x != null && !D.away && !D.bus)]) { const d = Math.hypot(G.x - F.pos.x, G.z - F.pos.z); if (d < far) { far = d; best = G; } } return [best, far]; };
     // (cars from 5.6 m, 30% closer than the 8 they were: Ash, 17 November 2026, "Make get in the car only work from a closer radius. Not too
     // close but about 30% less")
     const reach = () => { const c0 = parked(F.pos.x, F.pos.z, 5.6), [G, dg] = nearOwn(), c = G && dg < (G.bus ? 15 : 5.6) && (!c0 || dg < c0.distance) ? { own: G, gold: G.gold, distance: dg } : c0, [P, d] = nearPlane(), r = d < 11 && (!c || d - 2 < c.distance) ? { plane: P } : c;
-      const dp0 = possumMesh ? Math.hypot(pos.x - F.pos.x, pos.z - F.pos.z) : Infinity, r1 = dp0 < 6 && (!r || r.plane || dp0 < r.distance) ? { possum: pos, distance: dp0 } : r;  // the possum, within 6 m
-      const dd0 = remoteMesh ? Math.hypot(remoteAt.x - F.pos.x, remoteAt.z - F.pos.z) : Infinity, r0 = dd0 < 3.5 && (!r1 || r1.plane || dd0 < r1.distance) ? { remote: true, distance: dd0 } : null;
-      const dq = pigeonMesh ? Math.hypot(pg.x - F.pos.x, pg.z - F.pos.z) : Infinity, r2 = dq < 4.5 && pg.y - ground(pg.x, pg.z) < 8 && (!r1 || r1.plane || dq < r1.distance) ? { pigeon: pg, distance: dq } : r0 || r1;  // the pigeon, within 4.5 m (or the drone's remote, within 3.5 m)
+      const dp0 = possumMesh && !pos.takenBy ? Math.hypot(pos.x - F.pos.x, pos.z - F.pos.z) : Infinity, r1 = dp0 < 6 && (!r || r.plane || dp0 < r.distance) ? { possum: pos, distance: dp0 } : r;  // the possum, within 6 m
+      const dd0 = remoteMesh && !dr.takenBy ? Math.hypot(remoteAt.x - F.pos.x, remoteAt.z - F.pos.z) : Infinity, r0 = dd0 < 3.5 && (!r1 || r1.plane || dd0 < r1.distance) ? { remote: true, distance: dd0 } : null;
+      const dq = pigeonMesh && !pg.takenBy ? Math.hypot(pg.x - F.pos.x, pg.z - F.pos.z) : Infinity, r2 = dq < 4.5 && pg.y - ground(pg.x, pg.z) < 8 && (!r1 || r1.plane || dq < r1.distance) ? { pigeon: pg, distance: dq } : r0 || r1;  // the pigeon, within 4.5 m (or the drone's remote, within 3.5 m)
       // another player's car, bus, plane, helicopter or possum, near enough, and not up in the air (Ash, 15 November 2026: "Make it so
       // I can get into a car or plane or possum that another player is driving")
       let best = null; for (const q of T.peers?.list?.() || []) { if (!RIDE_REACH[q.k]) continue; const d = Math.hypot(q.x - F.pos.x, q.z - F.pos.z);
