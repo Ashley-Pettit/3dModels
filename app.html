@@ -1496,6 +1496,8 @@ body.bsheld .bs-fly-x.bs-plant, body.bsheld .bs-fly-x.bs-pw, body.bsheld .bs-fly
 .bs-news { position: absolute; left: 0; top: 0; z-index: 3; width: 18px; height: 18px; border-radius: 50%; background: #22a95b; box-shadow: 0 0 0 2px #fff, 0 2px 6px rgba(0, 0, 0, 0.35); pointer-events: none; }
 .bs-news::after { content: "!"; display: block; color: #fff; font: 800 12px/18px var(--ui); text-align: center; } .bs-news[hidden] { display: none; } .bs-ptr-a { display: inline-block; font-size: 1.15rem; line-height: 1; }
 .bs-fly-x.bs-sprint.on { background: #8fd12e; } .bs-fly-x.bs-jumpb { bottom: calc(254px + env(safe-area-inset-bottom)); background: #fff; color: #1b1830; } .bs-fly-x.bs-sprint[hidden] { display: none; }
+/* (only on foot as yourself: not in a car, a plane, or as the possum or the pigeon. Ash, 18 November 2026) */
+body.bsdrive .bs-fly-x.bs-sprint, body.bsdrive .bs-fly-x.bs-jumpb { display: none !important; }
 .bs-askname { flex-wrap: wrap; } .bs-askname p { flex: 1 0 100%; margin: 2px 4px 2px; color: #fff; font: 700 0.86rem var(--ui); }
 .bs-askname .skip { background: rgba(255, 255, 255, 0.16); color: #fff; }
 /* the player name, asked once before you play: over everything until you type a name or Skip (Ash, 16 November 2026: "Make the
@@ -10872,6 +10874,11 @@ const handle = async (m, post) => {
   // to 3 targets at a time, humans, walking humans, cars, moving cars etc"): eat Big Boss's chips as the pigeon and you've two minutes
   // to poop on ten things; three at a time are marked, 40 to 200 m from you; a hit counts within 2.2 m of a person or 2.8 m of a car
   const POOP_SECS = 120, POOP_GOAL = 10;
+  const GOLD_POWERS = { blink: ["Blink", "Zip 35 m ahead in a flash of gold."], rocket: ["Rocket", "Four seconds of rocket speed."], firework: ["Firework", "A gold firework bursts over you."],
+    roll: ["Barrel roll", "A spinning roll in a shower of glitter."] };
+  // (the golden pigeon is now won at the poop game: anyone made golden by the old loft riddle goes back to grey, once. Ash, 18 November
+  // 2026, "Pigeon is bugged, spawned as golden. Expect normal")
+  try { const k0 = JSON.parse(localStorage.getItem("an3d-perks") || "{}"); if (!k0.gp2) { delete k0.goldPigeon; delete k0.goldPower; delete k0.pigeonQuest; k0.gp2 = 1; localStorage.setItem("an3d-perks", JSON.stringify(k0)); } } catch {}
   // your look (Made in Africa's clothes, A La Mode's hairdos, and Sue's bread for a minute), carried to other players in your figure's kind
   // as "walk~top.hair.colour" (".g" on the end: a giant); copies of the app from before take it as plain "walk"
   const TOWN_OUTFITS = { kente: ["Kente cloth shirt", "#e3a21a", ["#1f7a3d", "#b5121b", "#111111"]], dashiki: ["Dashiki", "#b5121b", [], "#f2c230"], ankara: ["Ankara print shirt", "#1f4fa8", ["#f28c28", "#f2c230"]],
@@ -11537,7 +11544,9 @@ const handle = async (m, post) => {
         n.connect(f); f.connect(g); g.connect(master); n.start(t); n.stop(t + 0.6); this.tone(500, 1400, 0.4, 0.05, "triangle"); },
       boing() { this.tone(180, 620, 0.35, 0.1, "sine"); },
       // the pigeon's coo-roo-coo (Ash, 18 November 2026: "Make a noise on request that other players can hear. Like a pigeon sound")
-      coo(k = 1) { this.tone(360, 420, 0.2, 0.12 * k, "sine"); setTimeout(() => this.tone(440, 300, 0.34, 0.14 * k, "sine"), 210); setTimeout(() => this.tone(380, 340, 0.24, 0.1 * k, "sine"), 600); },
+      // (louder and longer: Ash, 18 November 2026, "Make coo a bit louder and longer")
+      coo(k = 1) { this.tone(360, 430, 0.3, 0.22 * k, "sine"); setTimeout(() => this.tone(450, 300, 0.5, 0.26 * k, "sine"), 300); setTimeout(() => this.tone(390, 350, 0.34, 0.2 * k, "sine"), 860);
+        setTimeout(() => this.tone(420, 300, 0.55, 0.22 * k, "sine"), 1260); },
       woof() { hit(0.11, 900, 0.32, 230); setTimeout(() => hit(0.13, 800, 0.36, 200), 170); },
       pop() { this.tone(900, 1300, 0.08, 0.06, "sine"); },
       click() { hit(0.02, 4000, 0.12, 0); },
@@ -11771,6 +11780,10 @@ const handle = async (m, post) => {
     // Flick (Ash, 18 November 2026: "Have a person called flick 30 yr female who is feeding the pigeon. She walks around the park and feeds
     // him often. If you run into her she points you towards the pigeon", "Flick long brown female 30, white, thin"): round Stimpson Park,
     // and at each lap she stops by the pigeon and throws it some food
+    // Anna (Ash, 18 November 2026: "Add Anna the violin teacher, place her somewhere around the shops. 25 yo female, long curly brown
+    // hair, cute and shortish", "Anna should say, I teach music in moorooka! In the real world!"): on the footpath outside 156 Beaudesert
+    // Road, a little shorter than the others, with her violin
+    { id: "anna", name: "Anna", kind: "anna", top: "#c8a2d6", x: -134.6, z: -268.3, yaw: -1.024, scale: 0.92 },
     { id: "flick", name: "Flick", kind: "flick", top: "#e9a3b8", x: -309, z: -962, yaw: 0, loop: [[-309, -962], [-311, -933], [-330, -933], [-318.4, -946.1]], feedAt: 3 },
     { id: "post", name: "Postie", kind: "person", top: "#d71920", x: -206.3, z: -323.3, yaw: 1.705 },
     // locals who pass on what they've heard, a different thing each time (Ash, 16 November 2026: "add some vendors that give information
@@ -11796,6 +11809,7 @@ const handle = async (m, post) => {
     const THREE = BS.B.THREE, g = (x, z) => m.groundAt(x, z), M = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), ONE = new THREE.Vector3(1, 1, 1);
     const FAR = new THREE.Matrix4().makeTranslation(0, -1e5, 0).elements, wrap = a => Math.atan2(Math.sin(a), Math.cos(a)), box = $("bsTown") || document.body;
     const SHP = [new THREE.Matrix4().makeTranslation(-0.31, 1.42, 0), new THREE.Matrix4().makeTranslation(0.31, 1.42, 0)], SHA = [new THREE.Matrix4().makeTranslation(-0.25, 1.36, 0), new THREE.Matrix4().makeTranslation(0.25, 1.36, 0)];
+    const V2S = new THREE.Vector3();
     const folk = MOO_LOCALS.map(q => ({ ...q, look: q.yaw || 0, shown: false, parts: null, tag: Object.assign(document.createElement("div"), { className: "bs-peer bs-mayor", textContent: q.name, hidden: true }), near: false }));
     T.folk = () => folk;  // (the pigeon's game aims at them)
     folk.forEach(q => { q.dot = Object.assign(document.createElement("div"), { className: "bs-news", hidden: true, title: "Has news for you" }); box.append(q.tag, q.dot); });
@@ -11851,6 +11865,9 @@ const handle = async (m, post) => {
       const near = NEWS_SPOTS.filter(([x, z]) => Math.hypot(x - G.x, z - G.z) > 250 && Math.hypot(x - q.x, z - q.z) > 120), wrong = Math.random() < 0.65 && near.length ? near[Math.floor(Math.random() * near.length)] : null, at = wrong || [G.x, G.z];
       show(q, `Shh, don't tell anyone... the mega mysterious Moorooka golden ${nm} is out there. I reckon it's ${howFar(q, at[0], at[1])}. Want me to point the way?`,
         [["Show me the way", () => { guide = { x: G.x, z: G.z, decoy: wrong ? { x: wrong[0], z: wrong[1] } : null, who: q.name, label: `Golden ${nm}?`, found: `\u2728 You found the mega mysterious Moorooka golden ${nm}!` }; toast(`Follow the arrow. ${q.name} reckons it's there.`, 2600); }, "ok"], ["Not now", () => {}]]); return true; };
+    // Anna's tune on her violin: a few bars, bowed (a soft sawtooth that swells in), on the shared sounds
+    const annaTune = () => { const N = { C: 523, D: 587, E: 659, F: 698, G: 784, A: 880 }, tune = "C C G G A A G - F F E E D D C".split(" "); let t = 0;
+      for (const n of tune) { if (n !== "-") setTimeout(() => T.snd?.tone?.(N[n], N[n] * 1.006, 0.42, 0.05, "sawtooth"), t); t += 330; } };
     const talk = q => { const k = perks(); if (q.news && gossip(q)) return;
       // (the cordial lasts 10 minutes: Ash, 16 November 2026, "Make pandy's potion only last 10 mins")
       if (q.id === "pandy") { const left = cordialLeft(); return show(q, left ? `Back for another? You've ${Math.ceil(left / 60000)} minutes of sprint left. Top you up?` : "Hello love! Would you like a nice glass of lime cordial?",
@@ -11897,6 +11914,7 @@ const handle = async (m, post) => {
       if (q.id === "yoga") return k.yoga ? show(q, "Namaste! Lovely to see you again. Breathe in\u2026 and out. Your yoga's in Emotes.", [["Namaste", () => {}]])
         : show(q, "Welcome to Little Village! Join the yoga class? You'll learn the moves.", [["Join the class", () => { yogaClass(q); return "keep"; }, "ok"], ["Another time", () => {}]]);
       if (q.id === "venky") return show(q, "Hello, hello! I'm Venky, from out the back of number 10. Lovely day for it. Would you like a chai?", [["Yes please", () => { toast("\u2615 Venky's masala chai: sweet, spicy and just right. You feel ready for anything.", 3500); }, "ok"], ["Another time", () => {}]]);
+      if (q.id === "anna") return show(q, "I teach music in Moorooka! In the real world! \ud83c\udfbb Want to hear a little tune?", [["Play me something", () => { annaTune(); toast("\ud83c\udfb5 Anna plays you a little tune on her violin.", 3000); }, "ok"], ["Maybe later", () => {}]]);
       if (q.id === "flick") { const S = TOWN_RIDES.moo.pigeon, at = T.car?.probe?.()?.pg || S;
         if (!k.wasPigeon) return show(q, "Hi, I'm Flick! I feed the pigeon here every day. He's a beautiful flyer. Walk up to him and be the pigeon. Want me to point you to him?",
           [["Show me", () => { guide = { x: at.x, z: at.z, label: "The pigeon", found: "There he is! Walk up to him and be the pigeon." }; toast("Follow the arrow to the pigeon.", 2400); }, "ok"], ["Maybe later", () => {}]]);
@@ -12021,8 +12039,8 @@ const handle = async (m, post) => {
             if (q.path) { const [A, B] = q.path, L = Math.hypot(B[0] - A[0], B[1] - A[1]); q.s ??= 0; q.dir ??= 1;
               if (d > 6) { q.s += q.dir * 1.25 * dt; if (q.s > L || q.s < 0) { q.s = bsClamp(q.s, 0, L); q.dir = -q.dir; } q.x = A[0] + (B[0] - A[0]) * q.s / L; q.z = A[1] + (B[1] - A[1]) * q.s / L; q.yaw = Math.atan2((B[0] - A[0]) * q.dir, (B[1] - A[1]) * q.dir); moved = true; q.st = (q.st || 0) + dt * 6.5; sw = Math.sin(q.st) * 0.35; } }
             const want = d < 14 ? Math.atan2(dx, dz) : q.yaw, turn = wrap(want - q.look);
-            if (!q.shown || moved || Math.abs(turn) > 0.01) { q.look += turn * Math.min(1, dt * (moved ? 6 : 3)) + (q.shown ? 0 : turn); q.shown = true; const S = /^(steve|venky|sue|flick)$/.test(q.kind) ? SHA : SHP;
-              M.compose(V.set(q.x, g(q.x, q.z), q.z), Q.setFromEuler(E.set(0, q.look, 0, "YXZ")), ONE); q.parts.setMatrix(0, M.elements.slice());
+            if (!q.shown || moved || Math.abs(turn) > 0.01) { q.look += turn * Math.min(1, dt * (moved ? 6 : 3)) + (q.shown ? 0 : turn); q.shown = true; const S = /^(steve|venky|sue|flick|anna)$/.test(q.kind) ? SHA : SHP;
+              M.compose(V.set(q.x, g(q.x, q.z), q.z), Q.setFromEuler(E.set(0, q.look, 0, "YXZ")), q.scale ? V2S.set(q.scale, q.scale, q.scale) : ONE); q.parts.setMatrix(0, M.elements.slice());
               q.parts.setMatrix(1, M.clone().multiply(S[0]).multiply(new THREE.Matrix4().makeRotationZ(-0.06)).multiply(new THREE.Matrix4().makeRotationX(toss ?? sw)).elements); q.parts.setMatrix(2, M.clone().multiply(S[1]).multiply(new THREE.Matrix4().makeRotationZ(0.06)).multiply(new THREE.Matrix4().makeRotationX(-sw)).elements); } } }
         // their name over their head while you're near enough to read it (Pandy's is townHome6's)
         if (q.id !== "pandy") { const s = d < 60 && up < 120 ? onScreen(q.x, g(q.x, q.z) + 2.15, q.z) : null; q.tag.hidden = !s; if (s) q.tag.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; }
@@ -12102,13 +12120,13 @@ const handle = async (m, post) => {
         R[j].push([cx + Math.sin(ph) * Math.sin(th) * rx * k, cy + Math.cos(ph) * ry * k, cz + Math.sin(ph) * Math.cos(th) * rz * k]); } }
       for (let j = 0; j < nr; j++) for (let i = 0; i < ns; i++) { const a = R[j][i], b2 = R[j][(i + 1) % ns], c = R[j + 1][(i + 1) % ns], d = R[j + 1][i], cl = Array.isArray(col[0]) ? col[(i + j) % col.length] : col;
         if (j === 0) B.tri(a, c, d, cl); else if (j === nr - 1) B.tri(a, b2, d, cl); else B.quad(a, b2, c, d, cl); } };
-    if (car === "ash" || car === "pandy" || car === "steve" || car === "venky" || car === "sue" || car === "flick") {  // Ash (6 Beaudesert Road: short curly brown hair) or Pandy (24 Beaudesert Road: long brown hair), about 1.7 m, feet on y = 0, facing +Z, a top in the colour given
+    if (car === "ash" || car === "pandy" || car === "steve" || car === "venky" || car === "sue" || car === "flick" || car === "anna") {  // Ash (6 Beaudesert Road: short curly brown hair) or Pandy (24 Beaudesert Road: long brown hair), about 1.7 m, feet on y = 0, facing +Z, a top in the colour given
       // (or Cr Steve Griffiths, at his ward office: short grey hair, a shirt and tie, dark trousers. Ash, 16 November 2026)
       // (and Venky, out the back of number 10: short black hair and a moustache; and Sue on Bohain Street: straight blonde hair. Ash, 16 November 2026)
       // (and Flick in Stimpson Park: 30, fair, slim, long brown hair. Ash, 18 November 2026)
-      const fk = car === "flick", su = car === "sue", she = car === "pandy" || su || fk, st = car === "steve", vk = car === "venky", TOP = lin(stripe), JEAN = lin(su ? "#5d6b7a" : she ? "#33405a" : st ? "#2e3440" : vk ? "#7a6a52" : "#3d5878"), SHOE = lin(su ? "#d9d4ca" : she ? "#7a5236" : st ? "#1b1b1b" : vk ? "#3a2a1e" : "#ece9e2"), SOLE = lin("#9a948a"),
-        SKIN = lin(fk ? "#f3d2bd" : su ? "#ecc2a4" : she ? "#e8bd9e" : st ? "#e6b896" : vk ? "#9a6644" : "#e2b393"),
-        HAIR = su ? [lin("#d8bd78"), lin("#e4cc8c"), lin("#cbb06a")] : she ? [lin("#5b3a26"), lin("#664330"), lin("#4e3222")] : st ? [lin("#a7a39c"), lin("#b6b2ab"), lin("#97938c")] : vk ? [lin("#1a1512"), lin("#221b17"), lin("#141010")] : [lin("#5a3b24"), lin("#6b4529"), lin("#4c3220")], EYE = lin("#2a1f1a"), LIP = lin("#b06a64");
+      const an = car === "anna", fk = car === "flick" || an, su = car === "sue", she = car === "pandy" || su || fk, st = car === "steve", vk = car === "venky", TOP = lin(stripe), JEAN = lin(su ? "#5d6b7a" : she ? "#33405a" : st ? "#2e3440" : vk ? "#7a6a52" : "#3d5878"), SHOE = lin(su ? "#d9d4ca" : she ? "#7a5236" : st ? "#1b1b1b" : vk ? "#3a2a1e" : "#ece9e2"), SOLE = lin("#9a948a"),
+        SKIN = lin(an ? "#f0c9ad" : fk ? "#f3d2bd" : su ? "#ecc2a4" : she ? "#e8bd9e" : st ? "#e6b896" : vk ? "#9a6644" : "#e2b393"),
+        HAIR = an ? [lin("#5a361f"), lin("#6b4227"), lin("#4a2b18")] : su ? [lin("#d8bd78"), lin("#e4cc8c"), lin("#cbb06a")] : she ? [lin("#5b3a26"), lin("#664330"), lin("#4e3222")] : st ? [lin("#a7a39c"), lin("#b6b2ab"), lin("#97938c")] : vk ? [lin("#1a1512"), lin("#221b17"), lin("#141010")] : [lin("#5a3b24"), lin("#6b4529"), lin("#4c3220")], EYE = lin("#2a1f1a"), LIP = lin("#b06a64");
       for (const sx of [-1, 1]) { b.box(sx * 0.1 - 0.06, sx * 0.1 + 0.06, 0, 0.035, -0.09, 0.15, SOLE); b.box(sx * 0.1 - 0.055, sx * 0.1 + 0.055, 0.035, 0.09, -0.085, 0.14, SHOE);
         b.box(sx * 0.1 - 0.07, sx * 0.1 + 0.07, 0.09, 0.84, -0.075, 0.075, JEAN); }
       b.box(-0.19, 0.19, 0.8, 0.9, -0.11, 0.11, JEAN);  // hips
@@ -12117,7 +12135,12 @@ const handle = async (m, post) => {
       else { b.hull([0.12, 0.2, 0.88, 1.38], [-0.12, 0.2, 0.88, 1.38], TOP); b.box(-0.255, 0.255, 1.2, 1.4, -0.125, 0.125, TOP); }  // his, broad at the shoulders
       b.box(-0.06, 0.06, 1.39, 1.48, -0.055, 0.055, SKIN);
       ball(b, 0, 1.575, 0.005, 0.098, 0.12, 0.108, SKIN, 3, 8, 5, 0.04);  // head
-      if (she) { ball(b, 0, 1.6, -0.018, 0.108, 0.108, 0.114, HAIR, 5, 8, 4, 0.06);  // long brown hair: over the top, down her back past the shoulders, and either side of her face
+      if (an) { ball(b, 0, 1.62, -0.025, 0.118, 0.1, 0.112, HAIR, 81, 8, 4, 0.12);  // Anna's long curly brown hair: a mop of curls on top (clear of her face), and ringlets round the sides and back
+        for (let i = 0; i < 16; i++) { const a = 1.3 + i * (3.7 / 15), r = 0.118 + (i % 2) * 0.012, y = 1.56 - (i % 3) * 0.07; ball(b, Math.sin(a) * r, y, Math.cos(a) * r - 0.02, 0.045, 0.05, 0.045, HAIR, 82 + i, 6, 3, 0.3); }
+        for (const [x, y, z] of [[-0.06, 1.42, -0.1], [0.06, 1.42, -0.1], [0, 1.32, -0.11], [-0.08, 1.27, -0.09], [0.08, 1.27, -0.09], [-0.03, 1.2, -0.1], [0.04, 1.18, -0.1], [-0.115, 1.42, -0.03], [0.115, 1.42, -0.03]]) ball(b, x, y, z, 0.048, 0.055, 0.045, HAIR, 101 + Math.round(y * 100 + x * 50), 6, 3, 0.3);
+        b.box(-0.022, 0.022, 1.51, 1.52, 0.1, 0.108, LIP);
+        b.box(0.12, 0.32, 1.33, 1.41, 0.02, 0.2, lin("#8a4b1c")); b.box(0.12, 0.17, 1.35, 1.39, 0.2, 0.45, lin("#2a1a10")); }  // her violin, tucked up on her shoulder
+      else if (she) { ball(b, 0, 1.6, -0.018, 0.108, 0.108, 0.114, HAIR, 5, 8, 4, 0.06);  // long brown hair: over the top, down her back past the shoulders, and either side of her face
         b.hull([-0.04, 0.115, fk ? 1.08 : 1.2, 1.62], [-0.13, 0.11, fk ? 1.06 : 1.18, 1.6], HAIR[0], HAIR[1]);  // (Flick's longer, half way down her back)
         for (const sx of [-1, 1]) b.box(sx * 0.098 - 0.026, sx * 0.098 + 0.026, 1.3, 1.6, -0.06, 0.07, HAIR[2]);
         b.box(-0.022, 0.022, 1.51, 1.52, 0.1, 0.108, LIP); }
@@ -12981,7 +13004,7 @@ const handle = async (m, post) => {
         if (P.mode === "ground") {  // walking: it turns quick to the way the stick points and potters off; Jump (Flap) takes off
           if (mag > 0.15) P.h += Math.sign(turn) * Math.min(Math.abs(turn), 5 * dt);
           const want = mag > 0.15 ? (fast ? 7 : 4) * mag * Math.max(0.1, Math.cos(turn)) ** 2 : 0; P.v += (want - P.v) * Math.min(1, dt * 10);
-          if (flapK && !P.flapped) { P.mode = "air"; P.vy = 5.5; P.v = Math.max(P.v, 7); snd.whoosh(); } }
+          if (flapK && !P.flapped) { P.mode = "air"; P.vy = 5.5; P.v = Math.max(P.v, 7); } }  // (quietly: Ash, 18 November 2026, "Remove flap noise")
         else {  // flying: it heads the way you point it (from where you're looking) and swings round to it; hold Flap to climb, let go to glide down, C to dive
           if (mag > 0.15) P.h += Math.sign(turn) * Math.min(Math.abs(turn), 1.9 * dt);
           // (Flick's pigeon food: Strong wings, Big flaps, Long glide or Dive bomber)
