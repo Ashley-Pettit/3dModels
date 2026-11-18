@@ -1740,3 +1740,8 @@ drawn as a solid 7.5 m block with windows, carrying National Storage's sign, and
   National Storage's sign is on its own three-storey charcoal building behind the BP.
 - The Coles Express at 1029 Ipswich Road is a Reddy Express now (Street View, September 2024): renamed, its canopy done the same way
   with Reddy's red stripe, and its shops in their order along the front (Subway, Reddy Express, Gloria Jean's drive-through).
+- Two more canopies (Street View): BP Annerley (810 Ipswich Road) in BP's green, with its pylon by the footpath (it had none, and
+  Bold's post stood on a solid block), and the 7-Eleven at 841 Ipswich Road. `moorooka-model.js` `?v=43`: `stripes: [[r, g, b], ...]`
+  (bottom to top) for a fascia with more than one stripe, the 7-Eleven's green, red and orange.
+- Each canopy stands on a concrete pad (`pad: [r, g, b]` to change it), its corners on the terrain: the ground plan had lawn
+  where the block stood.

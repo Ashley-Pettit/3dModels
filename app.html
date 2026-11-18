@@ -8636,7 +8636,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=20", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=42", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=43", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -9252,6 +9252,9 @@ const handle = async (m, post) => {
     { kind: "pylon", addr: "1129 Ipswich Road", a: [-1113.5, 54.6], b: [-1115.5, 53.4], n: [0.5107, -0.8598], kerb: 10, across: 10, wall: "#d9dbde", shops: [{n:  "BP",  w:  2.4,  c:  ["#0d7a3a",  "#ffffff"],  stripe:  ["#f6d000"]}] },
     { kind: "pylon", addr: "345 Beaudesert Road (corner of Hamilton Road)", a: [-367.8, 553.6], b: [-370.0, 552.8], n: [0.3094, -0.9509], kerb: 10, across: 10, wall: "#d9dbde", shops: [{ n: "Ampol", w: 2.4, c: ["#0a2f6b",  "#ffffff"], stripe: ["#e2231a"], what: "Petrol station", jump: true }] },
     { kind: "pylon", addr: "345 Beaudesert Road (corner of Hamilton Road)", a: [-370.0, 552.8], b: [-367.8, 553.6], n: [-0.3094, 0.9509], kerb: 10, across: 10, wall: "#d9dbde", shops: [{ n: "Ampol", w: 2.4, c: ["#0a2f6b",  "#ffffff"], stripe: ["#e2231a"] }] },
+    // BP Annerley (810 Ipswich Road; Street View, September 2026): its pylon at the north end of the forecourt, by the footpath
+    { kind: "pylon", addr: "810 Ipswich Road", a: [-32.9, -1357.2], b: [-34.5, -1358.4], n: [0.5887, -0.8084], kerb: 10, across: 10, wall: "#d9dbde", shops: [{ n: "BP", w: 2.4, c: ["#0d7a3a", "#ffffff"], stripe: ["#f6d000"], what: "Petrol station", jump: true }] },
+    { kind: "pylon", addr: "810 Ipswich Road", a: [-34.5, -1358.4], b: [-32.9, -1357.2], n: [-0.5887, 0.8084], kerb: 10, across: 10, wall: "#d9dbde", shops: [{ n: "BP", w: 2.4, c: ["#0d7a3a", "#ffffff"], stripe: ["#f6d000"] }] },
     { kind: "pylon", addr: "841 Ipswich Road", a: [-223.5, -1172.3], b: [-225.5, -1173.7], n: [0.5896, -0.8077], kerb: 10, across: 10, wall: "#d9dbde", shops: [{ n: "7-Eleven", w: 2.4, c: ["#ffffff",  "#008163"], stripe: ["#f58220",  "#ee2737",  "#008163"], what: "Petrol station", jump: true }] },
     { kind: "pylon", addr: "841 Ipswich Road", a: [-225.5, -1173.7], b: [-223.5, -1172.3], n: [-0.5896, 0.8077], kerb: 10, across: 10, wall: "#d9dbde", shops: [{ n: "7-Eleven", w: 2.4, c: ["#ffffff",  "#008163"], stripe: ["#f58220",  "#ee2737",  "#008163"] }] },
     { kind: "pylon", addr: "1029 Ipswich Road", a: [-869.6, -329.8], b: [-871.6, -331.2], n: [0.5452, -0.8383], kerb: 10, across: 10, wall: "#d9dbde", shops: [{ n: "Reddy Express", w: 2.4, c: ["#e01a22",  "#ffffff"], what: "Petrol station", jump: true }] },
@@ -9547,7 +9550,7 @@ const handle = async (m, post) => {
       pole: { n: "FF Electrical", sub: "CONTRACTING", c: ["#f2c200", "#1d1d1d"], x: -0.5, back: 2.4 },
       shops: [{ n: "FF Electrical", w: 7.5, c: ["#f2c200", "#1d1d1d"], what: "Electrician" }] },
     { kind: "sign", addr: "810 Ipswich Road", a: [-28.3, -1353.9], b: [-35.0, -1344.7], n: [-0.8084, -0.5887], kerb: 8.72, across: 18.32, eave: 34.5, wall: "#ece8df", noBoard: true,
-      pole: { n: "Bold", sub: "MOBILE CAR DETAILING", c: ["#0b0b0b", "#e53935"], x: 1, o: 4.7 },
+      pole: { n: "Bold", sub: "MOBILE CAR DETAILING", c: ["#0b0b0b", "#e53935"], x: 10, o: 4.7 },
       shops: [{ n: "Bold", w: 11.4, c: ["#0b0b0b", "#e53935"], what: "Mobile car detailing" }] },
     { kind: "sign", addr: "Shop 2/5 Currey Avenue", a: [-244.8, 574.5], b: [-255.8, 575.9], n: [-0.1263, -0.992], kerb: 7.02, across: 17.62, eave: 24.8, wall: "#ecebe6", bx: 8.4, bw: 4.6,
       shops: [{ n: "Harlequin Hair", w: 11.1, c: ["#1d1d1d", "#f2c6d6"], what: "Hairdresser" }] },
@@ -9679,6 +9682,7 @@ const handle = async (m, post) => {
     // the rest of the shopping strip from Street View (19 November 2026): flat roofs behind parapets, not gable ends on the street
     { at: [-216.3, -319.11], kind: 2, flat: true, wall: [236, 235, 230] },   // 131 (the post office, Domino's, Yeshi Buna): white
     { at: [-140.38, -331.53], kind: 2, flat: true, wall: [230, 230, 226] },  // 132-146 (Commonwealth Bank): white, a band of high windows
+    { at: [-133.8, -300.95], kind: 2, flat: true, wall: [72, 74, 78] },      // 138 (H&R Block, Jao Jorm Thai): new, under a wide charcoal roof
     { at: [-181.97, -274.88], hip: true, roof: [170, 76, 56] },              // 139 (AMehdi, Elsa Injera): red tiles, hipped, a verandah
     { at: [-175.23, -254.98], kind: 2, hip: true, roof: [196, 132, 106], wall: [232, 224, 204] },  // 143 (the RSPCA op shop): cream under salmon tiles, hipped
     { at: [-166.05, -236.45], kind: 2, flat: true, wall: [212, 212, 206] },  // 145-147 (Moorooka Mall): pale grey concrete, two storeys
@@ -9735,6 +9739,9 @@ const handle = async (m, post) => {
     { at: [-1137.45, 48.7], kind: 1, flat: true, wall: [244, 245, 242], canopy: { band: 1.2, stripe: [0, 128, 64] } },     // BP (1129 Ipswich Road): green
     { at: [-381.06, 543.81], kind: 1, flat: true, wall: [244, 244, 242], canopy: { band: 1.0, stripe: [214, 30, 38] } },   // Ampol (345 Beaudesert Road): red
     { at: [-470.17, -782.6], kind: 1, flat: true, wall: [244, 244, 242], canopy: { band: 0.9, stripe: [28, 96, 186] } },   // Pearl Energy (930 Ipswich Road): blue
+    { at: [748.4, 1153.3], kind: 2, flat: true, wall: [224, 212, 188] },     // 222 Evans Road (Manna on Evans, Tarragindi Music): a cream office block, flat-roofed
+    { at: [-14.53, -1344.65], kind: 1, flat: true, wall: [244, 245, 242], canopy: { band: 1.2, stripe: [0, 128, 64] } },   // BP Annerley (810 Ipswich Road): green
+    { at: [-237.7, -1183.67], kind: 1, flat: true, wall: [246, 246, 244], canopy: { band: 1.1, stripes: [[0, 129, 99], [238, 39, 55], [245, 130, 32]] } },  // the 7-Eleven (841 Ipswich Road): its green, red and orange
     { at: [-748.17, -551.93], kind: 2, wall: [156, 198, 186] },             // Moorooka Car Clinic (4 Lucy Street): mint-green iron over blockwork
     { at: [-935.70, -391.88], kind: 2, wall: [236, 235, 231] },             // South Brisbane Mechanical (18 Dexter Street): white
     { at: [-1148.38, -206.88], kind: 2, wall: [60, 62, 68] },               // GM Smash Repairs (37 Unwin Street): charcoal cladding
