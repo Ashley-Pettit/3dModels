@@ -10927,7 +10927,7 @@ const handle = async (m, post) => {
   // and is difficult to win. Maybe like poop on 10 different things with poop only a unlocked during this, count a hit if close, show up
   // to 3 targets at a time, humans, walking humans, cars, moving cars etc"): eat Big Boss's chips as the pigeon and you've two minutes
   // to poop on ten things; three at a time are marked, 40 to 200 m from you; a hit counts within 2.2 m of a person or 2.8 m of a car
-  const POOP_SECS = 120, POOP_GOAL = 10;
+  const POOP_SECS = 135, POOP_GOAL = 10;  // (15 seconds more: Ash, 18 November 2026, "Give the player another 15 secs for the pigeon quest")
   const GOLD_POWERS = { blink: ["Blink", "Zip 35 m ahead in a flash of gold."], rocket: ["Rocket", "Four seconds of rocket speed."], firework: ["Firework", "A gold firework bursts over you."],
     roll: ["Barrel roll", "A spinning roll in a shower of glitter."] };
   // (the golden pigeon is now won at the poop game: anyone made golden by the old loft riddle goes back to grey, once. Ash, 18 November
@@ -11950,7 +11950,7 @@ const handle = async (m, post) => {
         if (k.goldPigeon) return show(q, "Well I'll be! The golden pigeon of Moorooka! On the house, mate.", [["Cheers", () => {}]]);
         if (T.car?.poopOn?.()) return show(q, "Go on, off you go! The clock's ticking.", [["On it", () => {}]]);
         return show(q, "A pigeon! You look starving, mate. Want some of the best chips ever? Fair warning: they go straight through you.", [["Eat the chips", () => {
-          show(q, `Uh oh. You've got ${POOP_SECS / 60} minutes and a full tank. Poop on ${POOP_GOAL} things: people, cars, anything marked. Hit them all and you'll be the golden pigeon. Poop is the \ud83d\udca9 button (Q) while you fly.`, [["Bombs away", () => { T.car?.poopStart?.(); }, "ok"]]); return "keep"; }, "ok"], ["No thanks", () => {}]]); }
+          show(q, `Uh oh. You've got 2 minutes 15 and a full tank. Poop on ${POOP_GOAL} things: people, cars, anything marked. Hit them all and you'll be the golden pigeon. Poop is the \ud83d\udca9 button (Q) while you fly.`, [["Bombs away", () => { T.car?.poopStart?.(); }, "ok"]]); return "keep"; }, "ok"], ["No thanks", () => {}]]); }
       if (q.id === "pizza") return show(q, k.chef ? "Back for more of the best chips ever?" : "What can I get you?",
         [["The best chips ever", () => { townPerkSet("chef", true); toast("🍟 Best chips ever! You're a pizza chef now: whites, the hat and a big moustache. Everyone can see.", 4500); }, "ok"], ...(k.chef ? [["Take off the chef's whites", () => { townPerkSet("chef", null); toast("Back to your old self.", 2000); }]] : []), ["Just looking", () => {}]]);
       if (q.id === "gym") return k.fit ? show(q, "Looking strong! You're already 10% quicker on your feet.", [["Thanks!", () => {}]])
@@ -12708,7 +12708,10 @@ const handle = async (m, post) => {
       for (const [i, sx] of [[1, 1], [2, -1]]) pigeonMesh.setMatrix(i, M.clone().multiply(WING.makeTranslation(sx * 0.07, 0.31, 0.03)).multiply(WY.makeRotationY(sx * fold)).multiply(WZ.makeRotationZ(sx * ang)).elements.slice()); };
     // the poop game (POOP_SECS, POOP_GOAL): targets marked by a red arrow over them, the poops falling from you
     let game = null;
-    let MK = null, PO = null;  // (made the first time a game starts)
+    let MK = null, PO = null, BM = null;  // (made the first time a game starts)
+    // (each target also gets a tall see-through red beam up into the sky, so it's easy to spot from a distance, and its arrow grows
+    // with distance: Ash, 18 November 2026, "try to make the target a little easier to locate. Like an indicator")
+    const BMS = new THREE.Vector3();
     const MKS = new THREE.Vector3(1, 0.6, 1);
     const poopPick = (P, taken) => { const out = [], far = (x, z) => { const d = Math.hypot(x - P.x, z - P.z); return d > 40 && d < 200; }, used = r => taken.some(t => t.ref === r);
       for (const q of T.folk?.() || []) if (q.x != null && far(q.x, q.z) && !used(q)) out.push({ ref: q, label: q.loop || q.path ? `${q.name}, out walking` : q.name, r: 2.2, top: 1.8 });
@@ -12718,9 +12721,11 @@ const handle = async (m, post) => {
       return out.length ? out[Math.floor(Math.random() * out.length)] : null; };
     C.poopOn = () => !!game;
     C.poopStart = () => { if (veh !== "pigeon") return false;
+      if (!BM) { BM = m.addParts(Array.from({ length: 3 }, () => ({ ...cube("#ff3b30", 0.5, 1, 0.5, 0), opacity: 0.45 }))); }
+      for (let i = 0; i < 3; i++) BM.setMatrix(i, NONE);
       if (!MK) { MK = m.addParts(Array.from({ length: 3 }, () => cube("#ff3b30", 0.9, 0.9, 0.9, 0, [[0, 1.0, 0], [0, 0.35, 0], [0, -0.15, 0]]))); PO = m.addParts(Array.from({ length: 6 }, () => cube("#f2f0e8", 0.22, 0.22, 0.22, 0, [[0, 0, 0], [0.12, 0.1, 0.05]]))); }
-      for (let i = 0; i < 3; i++) MK.setMatrix(i, NONE); for (let i = 0; i < 6; i++) PO.setMatrix(i, NONE); game = { t: POOP_SECS, hits: 0, targets: [], poops: [], cool: 0 }; snd.boing(); toast(`\ud83d\udca9 Two minutes! Poop on ${POOP_GOAL} things: follow the arrow, fly over a red marker and press \ud83d\udca9 (Q).`, 5000); return true; };
-    const poopEnd = (won, why) => { if (!game) return; const g0 = game; game = null; T.aimAt?.(null); if (MK) { for (let i = 0; i < 3; i++) MK.setMatrix(i, NONE); for (let i = 0; i < 6; i++) PO.setMatrix(i, NONE); }
+      for (let i = 0; i < 3; i++) MK.setMatrix(i, NONE); for (let i = 0; i < 6; i++) PO.setMatrix(i, NONE); game = { t: POOP_SECS, hits: 0, targets: [], poops: [], cool: 0 }; snd.boing(); toast(`\ud83d\udca9 2 minutes 15! Poop on ${POOP_GOAL} things: follow the arrow, fly over a red marker and press \ud83d\udca9 (Q).`, 5000); return true; };
+    const poopEnd = (won, why) => { if (!game) return; const g0 = game; game = null; T.aimAt?.(null); if (MK) { for (let i = 0; i < 3; i++) { MK.setMatrix(i, NONE); BM.setMatrix(i, NONE); } for (let i = 0; i < 6; i++) PO.setMatrix(i, NONE); }
       if (won) { townPerkSet("goldPigeon", true); pg.gold = true; pigeonLook(true); gBurst(pg, 6, 9, 0.5); snd.whoosh(); toast(`\u2728 ${POOP_GOAL} out of ${POOP_GOAL}! You're the golden pigeon now: faster, stronger flaps, and a golden power.`, 6500); }
       else toast(why || `Time's up! ${g0.hits} of ${POOP_GOAL}. Eat Big Boss's chips to have another go.`, 5000); };
     const poopTick = (P, dt, drop) => { const G = game; G.t -= dt; G.cool -= dt;
@@ -12732,8 +12737,10 @@ const handle = async (m, post) => {
           if (G.hits >= POOP_GOAL) return poopEnd(true); toast(`\ud83d\udca9 Direct hit on ${hit.label}! ${G.hits} of ${POOP_GOAL}.`, 1800); continue; }
         if (q.y <= surf(q.x, q.z)) { G.poops[i] = null; PO.setMatrix(i, NONE); continue; }  // splat: a miss
         M.compose(V.set(q.x, q.y, q.z), Q0.identity(), ONE); PO.setMatrix(i, M.elements.slice()); }
-      const now = performance.now(); G.targets.forEach((t, i) => { M.compose(V.set(t.ref.x, ground(t.ref.x, t.ref.z) + t.top + 1.6 + 0.3 * Math.sin(now / 250 + i), t.ref.z), Q0.setFromEuler(E.set(0, now / 600, 0, "YXZ")), MKS); MK.setMatrix(i, M.elements.slice()); });
-      for (let i = G.targets.length; i < 3; i++) MK.setMatrix(i, NONE);
+      const now = performance.now(); G.targets.forEach((t, i) => { const gy = ground(t.ref.x, t.ref.z), dd = Math.hypot(t.ref.x - P.x, t.ref.z - P.z), k = 1 + Math.min(2, dd / 60);
+        M.compose(V.set(t.ref.x, gy + t.top + 1.6 * k + 0.3 * Math.sin(now / 250 + i), t.ref.z), Q0.setFromEuler(E.set(0, now / 600, 0, "YXZ")), MKS.set(k, 0.6 * k, k)); MK.setMatrix(i, M.elements.slice());
+        const bh = 40, bw = 1 + Math.min(3, dd / 50); M.compose(V.set(t.ref.x, gy + t.top + 3 + bh / 2, t.ref.z), Q0.identity(), BMS.set(bw, bh, bw)); BM.setMatrix(i, M.elements.slice()); });
+      for (let i = G.targets.length; i < 3; i++) { MK.setMatrix(i, NONE); BM.setMatrix(i, NONE); }
       let near = null, nd = Infinity; for (const t of G.targets) { const d = Math.hypot(t.ref.x - P.x, t.ref.z - P.z); if (d < nd) { nd = d; near = t; } } T.aimAt?.(near ? { x: near.ref.x, z: near.ref.z, label: near.label } : null);
       if (G.t <= 0) poopEnd(false); };
     const pigeonLook = gold => { if (!pigeonMesh || pigeonMesh.gold === gold) return; try { pigeonMesh.remove(); } catch {} pigeonMesh = m.addParts(townPlaneParts(gold ? "gold" : undefined, "pigeon").map(q => ({ ...q, matrix: M.identity().elements.slice() }))); pigeonMesh.gold = gold; showPigeon(); };
