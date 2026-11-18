@@ -9699,6 +9699,8 @@ const handle = async (m, post) => {
       shops: [{ n: "Flowers for Everyone", w: 31.8, c: ["#ffffff", "#c2185b"], what: "Florist", jump: true }] },
     { kind: "sign", addr: "14 Chrome Street, Salisbury", a: [340.2, 980.3], b: [393.9, 935.4], n: [0.6414, 0.7672], kerb: 4.71, across: 12.81, eave: 33.0, wall: "#e6e7e9", bx: 20.3, bw: 6,
       shops: [{ n: "Dance Pointe", w: 40.6, c: ["#2b1a3d", "#f7c6e0"], what: "Dance school", jump: true }, { w: 29.4 }] },  // (split so Jump to looks at the sign)
+    { kind: "sign", addr: "14A Chrome Street, Salisbury", a: [340.2, 980.3], b: [393.9, 935.4], n: [0.6414, 0.7672], kerb: 4.71, across: 12.81, eave: 33.0, wall: "#e6e7e9", bx: 31, bw: 5,
+      shops: [{ n: "Kustomize It", w: 61.4, c: ["#8bc34a", "#1d1d1d"], what: "Custom printing and merchandise", jump: true }, { w: 8.6 }] },  // (in the same olive green units, where Google Maps has it; split so Jump to looks at the sign)
     { kind: "sign", addr: "51 Flanders Street, Salisbury", a: [1034.9, 809.3], b: [1059.4, 813.7], n: [-0.1768, 0.9843], kerb: 13.32, across: 23.92, eave: 62.3, wall: "#dcdad3", bx: 8, bw: 7,
       rollers: [[13.5, 18.5, 3.2, "#9aa0a6", true]],
       shops: [{ n: "DAVE HARVEY", sub: "ENGINEERING", w: 24.9, c: ["#1d3a6b", "#ffffff"], what: "Engineering workshop" }] },
@@ -9981,6 +9983,7 @@ const handle = async (m, post) => {
     { at: [-1112.9, -137.6], kind: 2, wall: [52, 54, 58] },                  // Tint a Car (25 Unwin Street): black, gabled
     { at: [-953.98, -363.67], kind: 2, wall: [58, 61, 66] },                // The Carpet Man (19 Michlin Street): a charcoal shed, its gable on the street
     { at: [-816.3, -437.75], kind: 2, flat: true, wall: [242, 242, 240] },  // Pedders (1013 Ipswich Road): white, flat behind its black band (it was drawn as a house)
+    { at: [358.32, 947.42], kind: 2, wall: [138, 148, 112] },               // the units at 14 Chrome Street, Salisbury (Dance Pointe, Kustomize It): olive green (Street View)
     { at: [748.4, 1153.3], kind: 2, flat: true, wall: [224, 212, 188] },     // 222 Evans Road (Manna on Evans, Tarragindi Music): a cream office block, flat-roofed
     { at: [-14.53, -1344.65], kind: 1, flat: true, wall: [244, 245, 242], canopy: { band: 1.2, stripe: [0, 128, 64] } },   // BP Annerley (810 Ipswich Road): green
     { at: [-237.7, -1183.67], kind: 1, flat: true, wall: [246, 246, 244], canopy: { band: 1.1, stripes: [[0, 129, 99], [238, 39, 55], [245, 130, 32]] } },  // the 7-Eleven (841 Ipswich Road): its green, red and orange
