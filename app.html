@@ -5893,7 +5893,25 @@ const handle = async (m, post) => {
     if (c?.temperature_2m != null) { const s = shift(String(c.time || hr.time?.[0] || "").slice(0, 10), c.temperature_2m); c.temperature_2m = r1(c.temperature_2m + s); if (c.apparent_temperature != null) c.apparent_temperature = r1(c.apparent_temperature + s); }
     return { ...w, d, tuned: true };
   }
+  // The 3D site: no weather service at all, just a fine day, made up here, so a town opens straight away (no waiting on the
+  // forecast, which could stop it opening) and nothing rains, storms or clouds over in it (Ash, 19 November 2026: "We can drop weather
+  // from inside the 3d models as to save processing power and load time"). Shaped like the forecast the weather service sends.
+  const fairWx = c => { const tz = ["vic", "inv", "tas"].includes(S.region) ? "Australia/Melbourne" : "Australia/Brisbane", now = new Date();
+    const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: tz, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).formatToParts(now).map(q => [q.type, q.value]));
+    const off = Math.round((Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute) - now.getTime()) / 60000) * 60, day0 = Date.UTC(+p.year, +p.month - 1, +p.day);
+    const iso = ms => new Date(ms).toISOString().slice(0, 16), hr = h => new Date(h).getUTCHours(), H = [], D = [];  // (in the place's own clock time, as the service gives it)
+    for (let k = 0; k < 7 * 24; k++) H.push(day0 + k * 3600000); for (let k = 0; k < 7; k++) D.push(day0 + k * 86400000);
+    const temp = h => Math.round((21 + 5 * Math.sin((hr(h) - 9) / 24 * 2 * Math.PI)) * 10) / 10, uv = h => Math.max(0, Math.round(10 * Math.sin((hr(h) - 6) / 13 * Math.PI))), all = v => H.map(() => v), each = v => D.map(() => v);
+    const hourly = { time: H.map(iso), temperature_2m: H.map(temp), apparent_temperature: H.map(temp), weather_code: all(1), precipitation_probability: all(0), precipitation: all(0), is_day: H.map(h => hr(h) >= 6 && hr(h) < 19 ? 1 : 0),
+      uv_index: H.map(uv), wind_speed_10m: all(9), wind_direction_10m: all(110), wind_gusts_10m: all(18), relative_humidity_2m: all(55), cloud_cover: all(12) };
+    const daily = { time: D.map(d => iso(d).slice(0, 10)), weather_code: each(1), temperature_2m_max: each(26), temperature_2m_min: each(16), apparent_temperature_max: each(26), precipitation_probability_max: each(0), precipitation_sum: each(0),
+      precipitation_hours: each(0), uv_index_max: each(10), sunrise: D.map(d => iso(d + 5 * 3600000)), sunset: D.map(d => iso(d + 18.5 * 3600000)), daylight_duration: each(13.5 * 3600), wind_speed_10m_max: each(12), wind_gusts_10m_max: each(22), wind_direction_10m_dominant: each(110) };
+    const j = Math.max(0, H.findIndex(h => h + 3600000 > now.getTime() + off * 1000));
+    const current = { time: hourly.time[j], temperature_2m: hourly.temperature_2m[j], apparent_temperature: hourly.apparent_temperature[j], relative_humidity_2m: 55, dew_point_2m: 12, wind_speed_10m: 9, wind_direction_10m: 110, wind_gusts_10m: 18,
+      weather_code: 1, is_day: hourly.is_day[j], uv_index: hourly.uv_index[j], precipitation: 0, cloud_cover: 12, pressure_msl: 1016, visibility: 30000 };
+    return { latitude: c[1], longitude: c[2], timezone: tz, utc_offset_seconds: off, current, hourly, daily, fair: true }; };
   async function loadWeather() {
+    if (NO_NEWS) { const c = CITY[S.region] || CITY.qld; state.wx = { at: Date.now(), d: fairWx(c), city: c[0], tuned: true }; renderWxChip(); if (openSheet === "weather") renderWeather(); return; }
     const c = CITY[S.region];
     if (!c) { state.wx = null; renderWxChip(); return; }
     const key = "brief.wx3." + S.region;
@@ -8462,7 +8480,9 @@ const handle = async (m, post) => {
     if (!BS.B) return;
     const B = BS.B, W = BS.W, r = B.renderer, cam = B.camera, U = B.skyU, st = BS.state, tg = BS.target;
     const w = r.domElement.clientWidth, h = r.domElement.clientHeight;
-    if (r.domElement.width !== Math.floor(w * r.getPixelRatio()) || r.domElement.height !== Math.floor(h * r.getPixelRatio())) { r.setSize(w, h, false); cam.aspect = w / h; cam.fov = w / h < 0.8 ? 76 : 60; cam.updateProjectionMatrix(); }
+    // (while a town is up the weather's canvas isn't drawn at all, so it's kept one pixel big: its full-screen buffers are given back)
+    if (BS.town?.on && BS.fly) { if (r.domElement.width > 1) r.setSize(1, 1, false); }
+    else if (r.domElement.width !== Math.floor(w * r.getPixelRatio()) || r.domElement.height !== Math.floor(h * r.getPixelRatio())) { r.setSize(w, h, false); cam.aspect = w / h; cam.fov = w / h < 0.8 ? 76 : 60; cam.updateProjectionMatrix(); }
     // In Listen's quick run through the day the forecast changes every few frames, so cloud cover and wind follow more
     // gently (clouds drift in and out instead of popping and jumping about).
     const fast = !!(v.play && v.jump), k = 1 - Math.pow(0.03, dt), kc = fast ? 1 - Math.pow(0.55, dt) : k;
@@ -8578,8 +8598,21 @@ const handle = async (m, post) => {
     BS.D = bsData(); bsPlace();
     bsHUD();
     if (!BS.raf) { BS.lastT = performance.now() / 1000; BS.raf = requestAnimationFrame(bsLoop); }
-    if (!BS.B) bsLoadThree().then(T => { if (T && !BS.B && !bsBuild(T)) $("bsNoGl").hidden = false; if (!T) $("bsNoGl").hidden = false; });
+    if (!BS.B) bsLoadThree().then(T => { if (T && !BS.B && !bsBuild(T)) $("bsNoGl").hidden = false; if (!T) $("bsNoGl").hidden = false; bsLite(); });
   }
+  // The 3D site never shows the weather's own scene, only a town over it: once it's built, the parts no town here needs are let go
+  // (their shapes freed from memory and the graphics card): the motorway drives always, the other towns' weather views, and for
+  // Inverloch its beach (its town centre stays: the whole-town model copies it). Opening another town afterwards loads its own page.
+  // (Ash, 19 November 2026: "It looks like we are rendering two models still ... I think we are wasting ram here")
+  const BS_EMPTY = { g: null };
+  function bsLite() { const W = BS.W, B = BS.B; if (!NO_NEWS || !B || !W || BS.liteFor) return; const keep = BS.exploreOnly; if (!keep) return;
+    const empty = BS_EMPTY.g || (BS_EMPTY.g = new B.THREE.BufferGeometry());
+    const free = o => { if (!o) return; o.traverse(m => { if (m.geometry && m.geometry !== empty) { try { m.geometry.dispose(); } catch {} m.geometry = empty; } }); o.visible = false; };
+    [W.drive, W.driveInv, W.mooTraffic].forEach(free);
+    if (keep !== "moo") free(W.moo); free(W.mooBowls);  // (the bowls club is only ever a weather view)
+    if (keep !== "logan") free(W.logan);
+    if (keep !== "inv") free(W.inv); else free(W.invBeach);
+    BS.liteFor = keep; }
   // Inverloch: the town and the surf beach take turns; Moorooka: the landmarks and the bowls club. Each time the weather opens, the other one.
   const bsTurn = k => { const v = !store.get(k, false); store.set(k, v); return v; };
   // ---- The whole-town models (Admin > 3D scenes > Inverloch 3D model, Moorooka 3D model, Logan 3D model) ----
@@ -8631,6 +8664,7 @@ const handle = async (m, post) => {
   const exploreSite = k => EXPLORE_HOME + ({ moo: "moorooka", logan: "logan", inv: "inverloch" }[k] || "inverloch") + "/explore/";
   function townModelOpen(viaExplore, which) {
     if (BS.town) return;
+    if (NO_NEWS && BS.liteFor && BS.liteFor !== (TOWNS[which] ? TOWNS[which].place : which)) { location.href = exploreSite(TOWNS[which] ? which : "inv"); return; }  // (bsLite let this one's weather view go)
     if (exploreMoved) { location.href = exploreSite(TOWNS[which] ? which : "inv"); return; }
     if (viaExplore) try { sessionStorage.setItem("an-ex-town", TOWNS[which] ? which : "inv"); } catch {}  // (for a reload mid-game: exReload)
     townAssetWatch();
@@ -8641,7 +8675,7 @@ const handle = async (m, post) => {
         else { BS.wxWait = null; exLoadDone(); toast("The 3D model couldn't load. Check your connection and try again."); } };
       BS.wxWait(); return; }
     openWeather(); if ($("weather").hidden) return;
-    BS.invBeach = false; BS.mooAlt = false; BS.exploreOnly = cfg.place; if (BS.B) bsPlace();  // Inverloch's town, not its beach; Moorooka's streets, not its bowls club
+    BS.invBeach = false; BS.mooAlt = false; BS.exploreOnly = cfg.place; if (BS.B) { bsPlace(); bsLite(); }  // Inverloch's town, not its beach; Moorooka's streets, not its bowls club
     const T = BS.town = { on: false, model: null, dead: false, keep: !!viaExplore, cfg };
     { const mine = exTimeSaved(); BS.exTimeSet = mine != null;  // (each town opens at midday, or at an admin's own time)
       if (mine != null && BS.view) { BS.view.ms = bsMidnight(BS.view.day || bsKey(BS.view.ms)) + mine * 60000; const ti = $("bsFlyTime"); if (ti) ti.value = mine; } }
