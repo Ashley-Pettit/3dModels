@@ -11384,7 +11384,7 @@ const handle = async (m, post) => {
       return { names: map.roadNames, roads };
     }
     const t = await fetch(townAsset(cfg, "town.json")).then(r => { if (!r.ok) throw new Error("town"); return r.json(); });
-    return { names: t.names, roads: t.roads.map(r => ({ cls: r[0], name: r[4], pts: Float32Array.from(r[5], v => v / 10) })), town: t };
+    return { names: t.names, roads: t.roads.map(r => ({ cls: r[0], name: r[4], one: !!(r[2] & 4), pts: Float32Array.from(r[5], v => v / 10) })), town: t };  // one: a one-way carriageway, its points in the direction of travel
   }
   // What can stand between you and a street when you're down near the ground: each building's outline (Moorooka; Inverloch's
   // bigger buildings), a disc inside each Inverloch house, and Logan's buildings as turned boxes. In a 40 m grid.
@@ -12162,17 +12162,21 @@ const handle = async (m, post) => {
       for (let t = 0; t < 40; t++) { const r = roads[Math.floor(Math.random() * roads.length)], i = Math.floor(Math.random() * (r.n - 1)), x = r.p[i * 2], z = r.p[i * 2 + 1];
         if (Math.hypot(x - home[0], z - home[1]) > R) continue;
         if (P.cars.some(D => D !== C && D.x != null && Math.hypot(D.x - x, D.z - z) < 40)) continue;  // not on top of another
-        Object.assign(C, { r, i, d: Math.random() < 0.5 ? 1 : -1, s: 0, v: 0, y: null, p: null, rl: null, still: 0, x, z }); if (C.d < 0) C.i = i + 1; C.h = null; return true; }
+        Object.assign(C, { r, i, d: r.one || Math.random() < 0.5 ? 1 : -1, s: 0, v: 0, y: null, p: null, rl: null, still: 0, x, z }); if (C.d < 0) C.i = i + 1; C.h = null; return true; }
       return false; };
     const seg = C => { const r = C.r, a = C.i, b = C.i + C.d; return [r.p[a * 2], r.p[a * 2 + 1], r.p[b * 2], r.p[b * 2 + 1]]; };
+    // Divided roads (Beaudesert, Ipswich and Fairfield Roads and the rest) are two one-way carriageways: a car drives each only the way it
+    // runs, in its left lane (Ash, 19 November 2026: "Moorooka cars are definitely driving wrong. They are on the right side of the road.
+    // Driving like in America": each carriageway had cars both ways, so half of them were on the far side of the road)
     const next = C => { // reached vertex C.i + C.d: carry on, or turn into a street that meets here
       const r = C.r, at = C.i + C.d, x = r.p[at * 2], z = r.p[at * 2 + 1], here = nodes.get(key(x, z)) || [], end = at === 0 || at === r.n - 1;
       // the ways out: anything but straight back the way it came, mostly straight on, now and then a turn
       const hIn = Math.atan2(x - r.p[C.i * 2], z - r.p[C.i * 2 + 1]), ways = [];
-      for (const [r2, j] of here) { if (r2 === r && j === at) continue; for (const d of [1, -1]) { const k = j + d; if (k < 0 || k >= r2.n) continue;
+      for (const [r2, j] of here) { if (r2 === r && j === at) continue; for (const d of r2.one ? [1] : [1, -1]) { const k = j + d; if (k < 0 || k >= r2.n) continue;
         const turn = Math.abs(wrap(Math.atan2(r2.p[k * 2] - x, r2.p[k * 2 + 1] - z) - hIn)); if (turn < 2.4) ways.push([r2, j, d, turn]); } }
       if (ways.length && (end || Math.random() < 0.3)) { ways.sort((a, b) => a[3] - b[3]); const w = end && Math.random() < 0.6 ? ways[0] : ways[Math.floor(Math.random() * ways.length)]; C.r = w[0]; C.i = w[1]; C.d = w[2]; return; }
       if (!end) { C.i = at; return; }
+      if (r.one && start(C)) return;  // the end of a one-way carriageway with nowhere to go: start again elsewhere, never back up it
       C.i = at; C.d = -C.d; };  // a dead end: turn round
     setTimeout(async () => { if (dead) return;
       let d; try { d = await townStreetData(cfg); } catch { return; } if (dead) return;
@@ -12181,7 +12185,7 @@ const handle = async (m, post) => {
       let list = pick(2); if (list.length < 20) list = pick(3);  // the main roads (classes 0 to 2) where there are enough of them
       // the streets within 800 m of where you are (again whenever you've gone 450 m on: the traffic comes with you, rather than staying
       // round where you started. Ash, 16 November 2026: "There's no cars in moorooka moving anymore", away from number 6)
-      reroad = () => { const R2 = []; for (const r of list) { const p = r.pts; let near = false; for (let k = 0; k < p.length; k += 2) if (Math.hypot(p[k] - home[0], p[k + 1] - home[1]) < FAR) { near = true; break; } if (near) R2.push({ p, n: p.length / 2, lane: r.wd > 3 ? bsClamp(r.wd / 4, 1.5, 3.2) : 1.9 }); }
+      reroad = () => { const R2 = []; for (const r of list) { const p = r.pts; let near = false; for (let k = 0; k < p.length; k += 2) if (Math.hypot(p[k] - home[0], p[k + 1] - home[1]) < FAR) { near = true; break; } if (near) R2.push({ p, n: p.length / 2, one: !!r.one, lane: r.one ? (r.wd > 3 ? bsClamp(r.wd / 4, 0.9, 2.6) : 1.2) : r.wd > 3 ? bsClamp(r.wd / 4, 1.5, 3.2) : 1.9 }); }
         if (R2.length < 3) return false; roads = R2; nodes = new Map(); for (const r of roads) for (let j = 0; j < r.n; j++) { const k = key(r.p[j * 2], r.p[j * 2 + 1]); let a = nodes.get(k); if (!a) nodes.set(k, a = []); a.push([r, j]); } return true; };
       if (!reroad()) return;
       for (let i = 0; i < N; i++) { const C = { col: COLS[i % COLS.length], top: 8 + Math.random() * 6 }; if (!start(C)) continue;
