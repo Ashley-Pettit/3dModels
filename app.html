@@ -1680,6 +1680,10 @@ body.bstown.bsadmin-tool #bsTown { pointer-events: auto; touch-action: none; cur
 /* a shop's name over its sign when you're close (two at most): like the street names, with a little storefront mark */
 .bs-shoptag { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; white-space: nowrap; font: 600 11px/1 var(--ui); color: #23272f; padding: 3px 7px 3px 6px; border-radius: 9px; background: rgba(255,255,255,0.8); box-shadow: 0 1px 3px rgba(0,0,0,0.15); opacity: 0; visibility: hidden; transition: opacity .5s, visibility 0s .5s; }
 .bs-shoptag.on { opacity: 1; visibility: visible; transition: opacity .5s; }
+.bs-here { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none; white-space: nowrap; font: 700 12px/1 var(--ui); color: #fff; padding: 5px 10px; border-radius: 999px; background: #d93025; box-shadow: 0 2px 6px rgba(0,0,0,0.35); will-change: transform; }
+.bs-here::after { content: ""; position: absolute; left: 50%; bottom: -6px; margin-left: -6px; border: 6px solid transparent; border-bottom: 0; border-top-color: #d93025; }
+.bs-here.edge::after { display: none; }
+.bs-here[hidden] { display: none; }
 .bs-shoptag::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 2px; background: #e8a33c; vertical-align: 0; }
 .bs-shoptag[hidden] { display: none; }
 @media (prefers-reduced-motion: reduce) { .bs-streets span { transition: none; } }
@@ -9078,6 +9082,7 @@ const handle = async (m, post) => {
         if (!OFF.has("rides")) try { T.car = townCar(T, m, F, ground, cfg.place); } catch (e) { console.warn("Town model: driving couldn't start", e); }
         if (TOWN_TOGETHER.includes(cfg.place) && !OFF.has("players")) try { T.peers = townPeers(T, m, F, ground, cfg.place, box); } catch (e) { console.warn("Town model: other players couldn't start", e); }
         if (!OFF.has("me")) try { T.me = townMe(T, m, F, ground); } catch (e) { console.warn("Town model: the construction worker couldn't start", e); }
+        try { T.here = townHere(T, m); } catch (e) { console.warn("Town model: You are here couldn't start", e); }
         if (!OFF.has("traffic")) try { T.traffic = townTraffic(T, m, F, ground, cfg); } catch (e) { console.warn("Town model: the traffic couldn't start", e); }
         if (cfg.place === "logan") try { T.mayor = townMayor(T, m); } catch (e) { console.warn("Town model: the Mayor couldn't start", e); }
         if (cfg.place === "logan") try { T.council = townCouncil(T, m, ground); } catch (e) { console.warn("Town model: the council's doors couldn't start", e); }
@@ -13244,6 +13249,25 @@ const handle = async (m, post) => {
     ["Sue bakes bread on Bohain Street that puts a real spring in your step.", "sue"],
     ["Pandy's lime cordial will have you sprinting, I swear.", "pandy"],
     ["Councillor Steve does a 360 kick. Ask him nicely and he'll teach you.", "steve"]];
+  // You are here (Ash, 19 November 2026, "when in explore mode i want a you are here"): a red pin over where your player stands while you look
+  // round from above in Explore mode, in every town; off the screen, it waits at the edge pointing the way
+  function townHere(T, m) {
+    const P = { frame() {}, dispose() {} }; if (!m.getCamera || !m.groundAt) return P;
+    const box = $("bsTown") || document.body, here = Object.assign(document.createElement("div"), { className: "bs-here", hidden: true, textContent: "You are here" }); box.append(here);
+    const hide = () => { if (!here.hidden) here.hidden = true; };
+    P.frame = () => { const F = BS.fly, H = F && !T.walk && F.home, cam = H && m.getCamera(); if (!H || !cam) return hide();
+      const w = box.clientWidth, h = box.clientHeight, f = 1 / Math.tan(((m.fov ? m.fov() : 50) * Math.PI) / 360), y = m.groundAt(H.x, H.z) + 2.4;
+      const cp = Math.cos(cam.pitch), fx = -Math.sin(cam.yaw) * cp, fy = Math.sin(cam.pitch), fz = -Math.cos(cam.yaw) * cp, rx = Math.cos(cam.yaw), rz = -Math.sin(cam.yaw), ux = -fy * rz, uy = rz * fx - rx * fz, uz = fy * rx;
+      const ax = H.x - cam.x, ay = y - cam.y, az = H.z - cam.z, depth = ax * fx + ay * fy + az * fz;
+      let s = depth < 1 ? null : [Math.round(w / 2 + (ax * rx + az * rz) / depth * f * (h / 2)), Math.round(h / 2 - (ax * ux + ay * uy + az * uz) / depth * f * (h / 2))], tx = "You are here", edge = false;
+      if (!s || s[0] < 30 || s[0] > w - 30 || s[1] < 80 || s[1] > h - 40) { const side = ax * rx + az * rz, fwd = -ax * Math.sin(cam.yaw) - az * Math.cos(cam.yaw), an = Math.atan2(side, fwd);
+        s = [Math.round(w / 2 + Math.sin(an) * (w / 2 - 70)), Math.round(h / 2 - Math.cos(an) * (h / 2 - (Math.cos(an) < 0 ? 210 : 90)))]; edge = true;
+        tx = ["\u25b2 You are here", "You are here \u25b6", "\u25bc You are here", "\u25c0 You are here"][Math.round(((an + Math.PI * 2) % (Math.PI * 2)) / (Math.PI / 2)) % 4]; }
+      if (here.hidden) here.hidden = false; if (here.textContent !== tx) here.textContent = tx; if (here.classList.contains("edge") !== edge) here.classList.toggle("edge", edge);
+      here.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, ${edge ? "-50%" : "-100%"})`; };
+    P.dispose = () => here.remove();
+    return P;
+  }
   function townLocals(T, m) {
     const P = { frame() {}, dispose() {} }; if (!m.addParts || !m.groundAt) return P;
     const THREE = BS.B.THREE, g = (x, z) => m.groundAt(x, z), M = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), ONE = new THREE.Vector3(1, 1, 1);
@@ -14905,7 +14929,7 @@ const handle = async (m, post) => {
     T.streets?.update();
     // (the worker view sets the camera first, so names and bubbles are placed from where you really look; the traffic, the animal,
     // number 6 and the people out the front had been left out of every frame by a note on the same line, from #128 to 15 November 2026)
-    T.car?.frame(); T.me?.frame(); T.peers?.frame();
+    T.car?.frame(); T.me?.frame(); T.peers?.frame(); T.here?.frame();
     T.traffic?.frame(); T.critter?.frame(); T.no6?.frame(); T.home6?.frame(); T.mayor?.frame(); T.council?.frame(); T.locals?.frame();
     // flying: held down at the lowest you can fly (Down, or C) for a moment, and you are on foot there
     if (!T.walk && !T.tween && !F.drive && F.floor && F.hot?.f) { const low = F.pos.y <= F.floor() + 0.1, down = F.vert < -0.3 || F.keys.has("KeyC"), now = performance.now();
@@ -14925,7 +14949,7 @@ const handle = async (m, post) => {
     BS.town = null; T.dead = true; T.on = false; T.ungest?.(); T.unlay?.(); T.unflood?.();
     T.streets?.dispose(); T.streets = null; $("bsNamesBtn").hidden = true;
     T.admin?.dispose(); T.admin = null;
-    T.car?.dispose(); T.car = null; T.peers?.dispose(); T.peers = null; T.me?.dispose(); T.me = null; T.traffic?.dispose(); T.traffic = null; T.mayor?.dispose(); T.mayor = null; T.council?.dispose(); T.council = null; T.critter?.dispose(); T.critter = null; T.home6?.dispose(); T.home6 = null; T.locals?.dispose(); T.locals = null; T.mail?.dispose(); T.mail = null;
+    T.car?.dispose(); T.car = null; T.peers?.dispose(); T.peers = null; T.me?.dispose(); T.me = null; T.here?.dispose(); T.here = null; T.traffic?.dispose(); T.traffic = null; T.mayor?.dispose(); T.mayor = null; T.council?.dispose(); T.council = null; T.critter?.dispose(); T.critter = null; T.home6?.dispose(); T.home6 = null; T.locals?.dispose(); T.locals = null; T.mail?.dispose(); T.mail = null;
     T.unbar?.();
     if (BS.fly) { const F = BS.fly; F.walk = F.speed = F.floor = F.hot = F.drive = null; F.ceil = 0; F.lim = null; }  // Explore, if it carries on, is its old self
     try { T.model?.dispose(); } catch {}
