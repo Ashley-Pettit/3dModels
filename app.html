@@ -12948,10 +12948,12 @@ const handle = async (m, post) => {
     const V2S = new THREE.Vector3();
     const folk = MOO_LOCALS.map(q => ({ ...q, look: q.yaw || 0, shown: false, parts: null, tag: Object.assign(document.createElement("div"), { className: "bs-peer bs-mayor", textContent: q.name, hidden: true }), near: false }));
     T.folk = () => folk;  // (the pigeon's game aims at them)
-    // little name tags over the shops near you, like the street names (Ash, 18 November 2026: "If I'm close to a business show up to a max
-    // of two businesses with little indicators like the street signs. if there isn't already a person or marker near it already so that
-    // it doesn't get too busy"): the nearest two within 30 m, skipping any with a local, a player or the arrow's mark within 7 m
-    const shopEl = [0, 1].map(() => Object.assign(document.createElement("div"), { className: "bs-shoptag", hidden: true })); shopEl.forEach(e => box.append(e));
+    // little name tags on businesses further off, so you know roughly where you are (Ash, 19 November 2026: "Often it shows me the sign
+    // when I can already see the sign, the idea is for it to be a reference point so the player knows their rough position"; before
+    // that, 18 November, "show up to a max of two businesses ... if there isn't already a person or marker near it"): up to three on
+    // screen, 45 to 400 m away, at least 60 m apart and not overlapping, each with how far it is; none with a local, a player or the
+    // arrow's mark within 7 m
+    const shopEl = [0, 1, 2].map(() => Object.assign(document.createElement("div"), { className: "bs-shoptag", hidden: true })); shopEl.forEach(e => box.append(e));
     let shopAt = 0, shopsOn = [];
     folk.forEach(q => { q.dot = Object.assign(document.createElement("div"), { className: "bs-news", hidden: true, title: "Has news for you" }); box.append(q.tag, q.dot); });
     // where a point is on the screen, or null behind you
@@ -13155,13 +13157,16 @@ const handle = async (m, post) => {
       // tipsy: you sway as you walk, and it wears off
       if (now > newsAt) { newsAt = now + 300000; newsRoll(); }
       nestFrame(now, dt, me, up, F);
-      if (now - shopAt > 300) { shopAt = now; shopsOn = []; const near = [];
-        if (up < 40) for (const t of T.shopTags || []) { const d = Math.hypot(t.x - me.x, t.z - me.z); if (d < 30) near.push([d, t]); }
-        near.sort((a, b) => a[0] - b[0]); const others = T.peers?.list?.() || [];
-        for (const [, t] of near) { if (shopsOn.length >= 2) break; const by = (x, z, r) => Math.hypot(x - t.x, z - t.z) < r;
-          if (folk.some(q => q.x != null && by(q.x, q.z, 7)) || others.some(q => by(q.x, q.z, 7)) || (guide && by(guide.x, guide.z, 7)) || (aimPt && by(aimPt.x, aimPt.z, 7)) || shopsOn.some(o => by(o.x, o.z, 5))) continue;
-          shopsOn.push(t); } }
-      shopEl.forEach((e, i) => { const t = shopsOn[i], s = t ? onScreen(t.x, t.y, t.z) : null; if (e.hidden === !!s) e.hidden = !s; if (s) { if (e.textContent !== t.n) e.textContent = t.n; e.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; } });
+      if (now - shopAt > 300) { shopAt = now; shopsOn = []; const far = [], w = box.clientWidth, h = box.clientHeight;
+        if (up < 60) for (const t of T.shopTags || []) { const d = Math.hypot(t.x - me.x, t.z - me.z); if (d < 45 || d > 400) continue;
+          const s = onScreen(t.x, t.y, t.z); if (!s || s[0] < 40 || s[0] > w - 40 || s[1] < 70 || s[1] > h - 60) continue; far.push([d, t, s]); }
+        far.sort((a, b) => a[0] - b[0]); const others = T.peers?.list?.() || [];
+        for (const [, t, s] of far) { if (shopsOn.length >= 3) break; const by = (x, z, r) => Math.hypot(x - t.x, z - t.z) < r;
+          if (folk.some(q => q.x != null && by(q.x, q.z, 7)) || others.some(q => by(q.x, q.z, 7)) || (guide && by(guide.x, guide.z, 7)) || (aimPt && by(aimPt.x, aimPt.z, 7))) continue;
+          if (shopsOn.some(o => by(o.t.x, o.t.z, 60) || (Math.abs(o.s[0] - s[0]) < 120 && Math.abs(o.s[1] - s[1]) < 28))) continue;
+          shopsOn.push({ t, s }); } }
+      shopEl.forEach((e, i) => { const o = shopsOn[i], t = o?.t, s = t ? onScreen(t.x, t.y, t.z) : null; if (e.hidden === !!s) e.hidden = !s;
+        if (s) { const d = Math.hypot(t.x - me.x, t.z - me.z), tx = `${t.n} \u00b7 ${d < 95 ? Math.round(d / 5) * 5 : Math.round(d / 10) * 10} m`; if (e.textContent !== tx) e.textContent = tx; e.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; } });
       // a local's news you said yes to: the pointer leads there (via the wrong place first, two times in three, for the golden one)
       if (guide && !F.drunk) { const tg = guide.decoy || guide, gd = Math.hypot(tg.x - me.x, tg.z - me.z);
         if (gd < 22) { if (guide.decoy) { guide.decoy = null; toast(`\ud83d\udcde ${guide.who}: Oh no, wrong spot, sorry! I'm sure it'll be at the next place. Follow the arrow.`, 5000); }
