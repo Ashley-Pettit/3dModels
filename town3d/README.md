@@ -1736,6 +1736,8 @@ drawn as a solid 7.5 m block with windows, carrying National Storage's sign, and
   edge (`band` metres deep, white with the brand's `stripe` across it), its inside face, the underside (lit as if it faced up, and
   glowing at night like the canopy's lamps) and two rows of posts down to the forecourt. `K_` (the solid test) skips canopies, so
   you can walk and drive under them. Give a canopy `kind: 1` and `flat: true` so it gets a flat roof and no windows.
+  The inside face sits 8 cm in from the fascia (`?v=45`): on the same outline the two flickered through each other on an iPhone
+  (Ash, 19 November 2026: "This issue occurs a bit", at the Moorooka Servo).
 - The BP's pylon is where Street View has it, on the grass between the driveways (it stood 40 m up the road, placed by number), and
   National Storage's sign is on its own three-storey charcoal building behind the BP.
 - The Coles Express at 1029 Ipswich Road is a Reddy Express now (Street View, September 2024): renamed, its canopy done the same way
