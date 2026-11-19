@@ -1678,7 +1678,8 @@ body.bstown.bsadmin-tool #bsTown { pointer-events: auto; touch-action: none; cur
 .bs-streets span.major { font-size: 13px; font-weight: 700; }
 .bs-streets span.on { opacity: 1; }
 /* a shop's name over its sign when you're close (two at most): like the street names, with a little storefront mark */
-.bs-shoptag { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; white-space: nowrap; font: 600 12px/1 var(--ui); color: #23272f; padding: 3px 7px 3px 6px; border-radius: 9px; background: rgba(255,255,255,0.86); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+.bs-shoptag { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; white-space: nowrap; font: 600 11px/1 var(--ui); color: #23272f; padding: 3px 7px 3px 6px; border-radius: 9px; background: rgba(255,255,255,0.8); box-shadow: 0 1px 3px rgba(0,0,0,0.15); opacity: 0; visibility: hidden; transition: opacity .5s, visibility 0s .5s; }
+.bs-shoptag.on { opacity: 1; visibility: visible; transition: opacity .5s; }
 .bs-shoptag::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 2px; background: #e8a33c; vertical-align: 0; }
 .bs-shoptag[hidden] { display: none; }
 @media (prefers-reduced-motion: reduce) { .bs-streets span { transition: none; } }
@@ -13256,8 +13257,9 @@ const handle = async (m, post) => {
     // that, 18 November, "show up to a max of two businesses ... if there isn't already a person or marker near it"): up to three on
     // screen, 45 to 400 m away, at least 60 m apart and not overlapping, each with how far it is; none with a local, a player or the
     // arrow's mark within 7 m
-    const shopEl = [0, 1, 2].map(() => Object.assign(document.createElement("div"), { className: "bs-shoptag", hidden: true })); shopEl.forEach(e => box.append(e));
-    let shopAt = 0, shopsOn = [];
+    const shopEl = [0, 1].map(() => Object.assign(document.createElement("div"), { className: "bs-shoptag" })); shopEl.forEach(e => box.append(e));
+    // quieter tags (Ash, 19 November 2026, "the business indicators are a little noisy"): two at most, a tag stays until it leaves the view, a new one has to hold still a moment before it shows, and they fade
+    let shopAt = 0, shopAdd = 0, shopPend = null; const slots = shopEl.map(e => ({ e, t: null }));
     folk.forEach(q => { q.dot = Object.assign(document.createElement("div"), { className: "bs-news", hidden: true, title: "Has news for you" }); box.append(q.tag, q.dot); });
     // where a point is on the screen, or null behind you
     const onScreen = (x, y, z) => { const cam = m.getCamera?.(); if (!cam) return null; const w = box.clientWidth, h = box.clientHeight, f = 1 / Math.tan(((m.fov ? m.fov() : 50) * Math.PI) / 360);
@@ -13460,16 +13462,20 @@ const handle = async (m, post) => {
       // tipsy: you sway as you walk, and it wears off
       if (now > newsAt) { newsAt = now + 300000; newsRoll(); }
       nestFrame(now, dt, me, up, F);
-      if (now - shopAt > 300) { shopAt = now; shopsOn = []; const far = [], w = box.clientWidth, h = box.clientHeight;
-        if (up < 60) for (const t of T.shopTags || []) { const d = Math.hypot(t.x - me.x, t.z - me.z); if (d < 45 || d > 400) continue;
-          const s = onScreen(t.x, t.y, t.z); if (!s || s[0] < 40 || s[0] > w - 40 || s[1] < 70 || s[1] > h - 60) continue; far.push([d, t, s]); }
-        far.sort((a, b) => a[0] - b[0]); const others = T.peers?.list?.() || [];
-        for (const [, t, s] of far) { if (shopsOn.length >= 3) break; const by = (x, z, r) => Math.hypot(x - t.x, z - t.z) < r;
-          if (folk.some(q => q.x != null && by(q.x, q.z, 7)) || others.some(q => by(q.x, q.z, 7)) || (guide && by(guide.x, guide.z, 7)) || (aimPt && by(aimPt.x, aimPt.z, 7))) continue;
-          if (shopsOn.some(o => by(o.t.x, o.t.z, 60) || (Math.abs(o.s[0] - s[0]) < 120 && Math.abs(o.s[1] - s[1]) < 28))) continue;
-          shopsOn.push({ t, s }); } }
-      shopEl.forEach((e, i) => { const o = shopsOn[i], t = o?.t, s = t ? onScreen(t.x, t.y, t.z) : null; if (e.hidden === !!s) e.hidden = !s;
-        if (s) { const d = Math.hypot(t.x - me.x, t.z - me.z), tx = `${t.n} \u00b7 ${d < 95 ? Math.round(d / 5) * 5 : Math.round(d / 10) * 10} m`; if (e.textContent !== tx) e.textContent = tx; e.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; } });
+      if (now - shopAt > 300) { shopAt = now; const w = box.clientWidth, h = box.clientHeight, others = T.peers?.list?.() || [];
+        const dist = t => Math.hypot(t.x - me.x, t.z - me.z), near = (t, x, z, r) => Math.hypot(x - t.x, z - t.z) < r;
+        const busy = t => folk.some(q => q.x != null && near(t, q.x, q.z, 7)) || others.some(q => near(t, q.x, q.z, 7)) || (guide && near(t, guide.x, guide.z, 7)) || (aimPt && near(t, aimPt.x, aimPt.z, 7));
+        const fits = (s, m) => s && s[0] > m && s[0] < w - m && s[1] > 60 && s[1] < h - 50;
+        for (const sl of slots) if (sl.t) { const d = dist(sl.t); if (up >= 60 || d < 35 || d > 450 || !fits(onScreen(sl.t.x, sl.t.y, sl.t.z), 10) || busy(sl.t)) sl.t = null; }
+        let best = null;
+        if (up < 60 && now - shopAdd > 2500 && slots.some(sl => !sl.t)) { const far = [];
+          for (const t of T.shopTags || []) { const d = dist(t); if (d < 60 || d > 400) continue; const s = onScreen(t.x, t.y, t.z); if (fits(s, 40)) far.push([d, t, s]); }
+          far.sort((p, q) => p[0] - q[0]);
+          for (const [, t, s] of far) { if (busy(t) || slots.some(sl => { if (!sl.t) return false; if (sl.t === t || near(t, sl.t.x, sl.t.z, 80)) return true; const o = onScreen(sl.t.x, sl.t.y, sl.t.z); return o && Math.abs(o[0] - s[0]) < 140 && Math.abs(o[1] - s[1]) < 30; })) continue; best = t; break; } }
+        if (best && shopPend?.t === best) { if (now - shopPend.at > 1200) { slots.find(sl => !sl.t).t = best; shopAdd = now; shopPend = null; } }
+        else shopPend = best ? { t: best, at: now } : null; }
+      for (const { e, t } of slots) { const s = t ? onScreen(t.x, t.y, t.z) : null; if (e.classList.contains("on") !== !!s) e.classList.toggle("on", !!s);
+        if (s) { const d = Math.hypot(t.x - me.x, t.z - me.z), tx = `${t.n} \u00b7 ${d < 100 ? Math.round(d / 10) * 10 : Math.round(d / 50) * 50} m`; if (e.textContent !== tx) e.textContent = tx; e.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; } }
       // a local's news you said yes to: the pointer leads there (via the wrong place first, two times in three, for the golden one)
       if (guide && !F.drunk) { const tg = guide.decoy || guide, gd = Math.hypot(tg.x - me.x, tg.z - me.z);
         if (gd < 22) { if (guide.decoy) { guide.decoy = null; toast(`\ud83d\udcde ${guide.who}: Oh no, wrong spot, sorry! I'm sure it'll be at the next place. Follow the arrow.`, 5000); }
