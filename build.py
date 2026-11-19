@@ -215,5 +215,10 @@ if os.path.exists(os.path.join(here, "local", "brands.json")):
                            "display": "standalone", "background_color": "#0e0d16", "theme_color": "#0e0d16",
                            "icons": [{"src": "explore-icon-192.png", "sizes": "192x192", "type": "image/png"}, {"src": "explore-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"}]}, f)
         print(f"Built {out}/index.html")
+# Moorooka AI (Ash, 20 November 2026): the chat guide to Moorooka at /moorooka-ai/, built by its own script from its folder.
+# Its Local directory reads this app.html (the 3D model's shop signs and MOO_FOOD), so it grows as Explore does.
+if os.path.exists(os.path.join(here, "moorooka-ai", "build.py")):
+    import subprocess
+    subprocess.run([sys.executable, os.path.join(here, "moorooka-ai", "build.py"), "--out", os.path.join(site, "moorooka-ai")], check=True)
 open(os.path.join(site, ".nojekyll"), "w").close()
 print(f"Built {site}/index.html")
