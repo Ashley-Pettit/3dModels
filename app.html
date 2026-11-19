@@ -9129,6 +9129,7 @@ const handle = async (m, post) => {
         if (cfg.place === "logan") try { T.council = townCouncil(T, m, ground); } catch (e) { console.warn("Town model: the council's doors couldn't start", e); }
         if (cfg.place === "moo" && !OFF.has("home6")) try { T.home6 = townHome6(T, m); } catch (e) { console.warn("Town model: Ash and Arlo couldn't start", e); }
         if (cfg.place === "moo" && !OFF.has("locals")) try { T.locals = townLocals(T, m); } catch (e) { console.warn("Town model: the locals couldn't start", e); }
+        if (cfg.place === "moo" && !OFF.has("yards")) try { T.yards = townMagicMile(T, m); } catch (e) { console.warn("Town model: the Magic Mile couldn't start", e); }
         if (!OFF.has("mail")) try { T.mail = townMail(T); } catch (e) { console.warn("Town model: the post couldn't start", e); }
         if (!OFF.has("animal")) try { T.critter = townCritter(T, m, ground, cfg.place); } catch (e) { console.warn("Town model: the animal couldn't start", e); }
         F.hot = { f: () => toMode(!T.walk),
@@ -13317,6 +13318,47 @@ const handle = async (m, post) => {
     P.dispose = () => here.remove();
     return P;
   }
+  // The Magic Mile brought to life (Ash, 19 November 2026: "bring the magic mile a bit to life, its very dull. Without using much ram/mb"):
+  // its car yards were bare asphalt. Now rows of cars for sale stand on each yard, every one with a price sticker, all merged into one
+  // shape (one draw call, nothing to download), and a dancing tube man waves at the road outside each of them, moving only while near
+  function townMagicMile(T, m) {
+    const P = { frame() {}, dispose() {} }; if (!m.addParts || !m.groundAt) return P;
+    const THREE = BS.B.THREE, M = new THREE.Matrix4(), R = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), ONE = new THREE.Vector3(1, 1, 1);
+    const FAR = new THREE.Matrix4().makeTranslation(0, -1e5, 0).elements;
+    const yards = MOO_FRONTS.filter(f => f.flags && /car|dealer/i.test(f.shops?.[0]?.what || "") && f.kerb > 7);
+    if (!yards.length) return P;
+    const COLS = ["#f2f2ee", "#b8bcc2", "#1d1f24", "#2d5ea8", "#a8262c", "#5c6670", "#e4e1d6", "#3f6b4a", "#8c8f94", "#1f3a66", "#d9d9d4", "#7a1f24"];
+    const shapes = COLS.map(c => townPlaneParts(c, "yardcar")[0]);
+    let rnd = 7; const ran = () => (rnd = (rnd * 16807) % 2147483647) / 2147483647;  // the same yards every time
+    const pos = [], nor = [], col = [], dancers = [];
+    for (const f of yards) { const X = [f.n[1], -f.n[0]], left = (f.b[0] - f.a[0]) * X[0] + (f.b[1] - f.a[1]) * X[1] >= 0 ? f.a : f.b;
+      const at = (x, o) => [left[0] + X[0] * x + f.n[0] * o, left[1] + X[1] * x + f.n[1] * o];
+      const [x0, x1] = f.flags, h = Math.atan2(f.n[0], f.n[1]);  // nose to the street
+      for (let o = f.kerb - 3.4, row = 0; o > 3.5 && row < 3; o -= 6.2, row++) for (let x = x0 + 1.6; x <= x1 - 1.4; x += 2.75) { if (ran() < 0.12) continue;  // a gap or two (three rows at most)
+        const [px, pz] = at(x, o); if (m.solidAt?.(px, pz) || m.nearestCar?.(px, pz, 2.6)) continue;
+        const s = shapes[Math.floor(ran() * shapes.length)], y = m.groundAt(px, pz) + 0.02, hh = h + (ran() - 0.5) * 0.06;
+        M.compose(V.set(px, y, pz), Q.setFromEuler(E.set(0, hh, 0)), ONE); R.extractRotation(M);
+        const e = M.elements, r = R.elements, sp = s.positions, sn = s.normals;
+        for (let i = 0; i < sp.length; i += 3) { const a0 = sp[i], a1 = sp[i + 1], a2 = sp[i + 2], n0 = sn[i], n1 = sn[i + 1], n2 = sn[i + 2];
+          pos.push(e[0] * a0 + e[4] * a1 + e[8] * a2 + e[12], e[1] * a0 + e[5] * a1 + e[9] * a2 + e[13], e[2] * a0 + e[6] * a1 + e[10] * a2 + e[14]);
+          nor.push(r[0] * n0 + r[4] * n1 + r[8] * n2, r[1] * n0 + r[5] * n1 + r[9] * n2, r[2] * n0 + r[6] * n1 + r[10] * n2); }
+        for (const c of s.colors) col.push(c); }
+      // the tube man: on the yard's front, a third of the way along
+      const [tx, tz] = at(x0 + (x1 - x0) * 0.33, Math.max(1.2, f.kerb - 1.6)); if (!m.solidAt?.(tx, tz)) dancers.push({ x: tx, z: tz, h, y: m.groundAt(tx, tz), ph: ran() * 9, col: ["#e8231d", "#ffd000", "#1e88e5", "#2bb34a", "#ff6f00"][dancers.length % 5] }); }
+    let cars = null; if (pos.length) cars = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.35, doubleSide: true, matrix: new THREE.Matrix4().elements }]);
+    T.yardCars = pos.length / 3 / (shapes[0].positions.length / 3);
+    for (const d of dancers) { const parts = townPlaneParts(d.col, "tubeman"); d.parts = m.addParts(parts.map(p => ({ ...p, matrix: FAR.slice() }))); d.on = false; }
+    const B = new THREE.Matrix4(), U = new THREE.Matrix4(), A = new THREE.Matrix4();
+    P.frame = () => { const F = BS.fly; if (!F) return; const t = performance.now() / 1000, cam = m.getCamera?.() || { x: F.pos.x, z: F.pos.z };
+      for (const d of dancers) { const near = Math.hypot(d.x - cam.x, d.z - cam.z) < 320;
+        if (!near) { if (d.on) { for (let i = 0; i < 3; i++) d.parts.setMatrix(i, FAR.slice()); d.on = false; } continue; } d.on = true;
+        const k = t * 1.0 + d.ph, flop = Math.max(0, Math.sin(k * 0.37)) ** 6;  // now and then he folds right over, then springs back up
+        B.compose(V.set(d.x, d.y, d.z), Q.setFromEuler(E.set(0, d.h, 0)), ONE); d.parts.setMatrix(0, B.elements.slice());
+        U.copy(B).multiply(M.makeTranslation(0, 2.2, 0)).multiply(R.makeRotationFromEuler(E.set(0.25 * Math.sin(k * 2.3) + 1.6 * flop, 0, 0.35 * Math.sin(k * 3.1) + 0.15 * Math.sin(k * 5.7), "XYZ"))); d.parts.setMatrix(1, U.elements.slice());
+        A.copy(U).multiply(M.makeTranslation(0, 1.6, 0)).multiply(R.makeRotationZ(0.7 * Math.sin(k * 6.3))); d.parts.setMatrix(2, A.elements.slice()); } };
+    P.dispose = () => { try { cars?.remove(); } catch {} for (const d of dancers) try { d.parts?.remove(); } catch {} };
+    return P;
+  }
   function townLocals(T, m) {
     const P = { frame() {}, dispose() {} }; if (!m.addParts || !m.groundAt) return P;
     const THREE = BS.B.THREE, g = (x, z) => m.groundAt(x, z), M = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), ONE = new THREE.Vector3(1, 1, 1);
@@ -13889,6 +13931,25 @@ const handle = async (m, post) => {
       const BARK = lin("#7a5b3f"), L1 = lin("#4c7a33"), L2 = lin("#5b8d3e"), L3 = lin("#6a9f48");
       b.box(-0.15, 0.15, 0, 2.6, -0.15, 0.15, BARK); ball(b, 0, 3.35, 0, 1.65, 1.25, 1.6, [L1, L2, L1], 91, 9, 5, 0.2); ball(b, 0.5, 4.1, 0.3, 0.95, 0.75, 0.9, [L2, L3, L2], 92, 7, 4, 0.22); ball(b, -0.55, 3.9, -0.35, 0.85, 0.7, 0.85, [L2, L3, L1], 93, 7, 4, 0.22);
       return [b.part({ roughness: 0.9 })]; }
+    if (car === "yardcar") {  // a car for sale on the Magic Mile, simpler than the traffic's (it's one of many in a merged row): a body, its glass,
+      // four wheels and a yellow price sticker on the windscreen. Nose to +Z, wheels on y = 0
+      const BODY = lin(stripe), Y = lin("#ffd400");
+      b.hull([2.1, 0.84, 0.3, 0.78], [-2.1, 0.86, 0.3, 0.88], BODY);  // (few triangles: about 180 cars share one shape)
+      b.hull([0.95, 0.78, 0.86, 0.9], [0.35, 0.72, 0.88, 1.36], GLASS, GLASS); b.hull([0.35, 0.72, 0.88, 1.36], [-1.6, 0.76, 0.88, 1.0], GLASS, BODY);
+      for (const sx of [-1, 1]) for (const z of [1.3, -1.3]) b.box(sx * 0.8 - 0.12, sx * 0.8 + 0.12, 0, 0.62, z - 0.31, z + 0.31, TYRE);
+      b.box(-0.3, 0.3, 1.0, 1.2, 0.6, 0.7, Y);
+      return [b.part({ roughness: 0.35 })];
+    }
+    if (car === "tubeman") {  // a dancing inflatable tube man for the car yards, in the colour given: [0] the fan and his legs, [1] his body and face
+      // (its foot, y = 0, is where it bends), [2] his arms (their middle, y = 0, is where they flap). Each part on its own, so they move
+      const C0 = lin(stripe), WH = lin("#ffffff"), BK = lin("#111111"), FAN = lin("#3a3d42");
+      const one = fn => { const q = mesh(); fn(q); return q.part({ roughness: 0.6 }); };
+      return [one(q => { q.box(-0.35, 0.35, 0, 0.45, -0.35, 0.35, FAN); q.hull([0.22, 0.24, 0.45, 2.2], [-0.22, 0.24, 0.45, 2.2], C0); }),
+        one(q => { q.hull([0.22, 0.24, 0, 2.5], [-0.22, 0.24, 0, 2.5], C0); q.box(-0.16, -0.04, 2.0, 2.16, 0.22, 0.25, WH); q.box(0.04, 0.16, 2.0, 2.16, 0.22, 0.25, WH);
+          q.box(-0.12, -0.07, 2.04, 2.1, 0.25, 0.27, BK); q.box(0.07, 0.12, 2.04, 2.1, 0.25, 0.27, BK); q.box(-0.12, 0.12, 1.78, 1.84, 0.22, 0.25, BK);
+          for (let i = 0; i < 6; i++) { const x = -0.24 + i * 0.096; q.box(x, x + 0.05, 2.5, 2.75 + (i % 2) * 0.1, -0.05, 0.05, C0); } }),
+        one(q => { q.hull([0.07, 1.05, -0.07, 0.07], [-0.07, 1.05, -0.07, 0.07], C0); q.box(-1.2, -1.02, -0.1, 0.1, -0.1, 0.1, C0); q.box(1.02, 1.2, -0.1, 0.1, -0.1, 0.1, C0); })];
+    }
     if (car === "sedan") {  // an everyday car for the traffic: a plain sedan in the colour given. Nose to +Z, wheels on y = 0
       const BODY = lin(stripe);
       b.hull([2.2, 0.82, 0.3, 0.7], [1.25, 0.88, 0.28, 0.86], BODY); b.hull([1.25, 0.88, 0.28, 0.86], [-1.7, 0.88, 0.28, 0.9], BODY); b.hull([-1.7, 0.88, 0.28, 0.9], [-2.2, 0.84, 0.32, 0.84], BODY);
@@ -14991,7 +15052,7 @@ const handle = async (m, post) => {
     // (the worker view sets the camera first, so names and bubbles are placed from where you really look; the traffic, the animal,
     // number 6 and the people out the front had been left out of every frame by a note on the same line, from #128 to 15 November 2026)
     T.car?.frame(); T.me?.frame(); T.peers?.frame(); T.here?.frame();
-    T.traffic?.frame(); T.critter?.frame(); T.no6?.frame(); T.home6?.frame(); T.mayor?.frame(); T.council?.frame(); T.locals?.frame();
+    T.traffic?.frame(); T.critter?.frame(); T.no6?.frame(); T.home6?.frame(); T.mayor?.frame(); T.council?.frame(); T.locals?.frame(); T.yards?.frame();
     // flying: held down at the lowest you can fly (Down, or C) for a moment, and you are on foot there
     if (!T.walk && !T.tween && !F.drive && F.floor && F.hot?.f) { const low = F.pos.y <= F.floor() + 0.1, down = F.vert < -0.3 || F.keys.has("KeyC"), now = performance.now();
       if (!(low && down)) T.downAt = 0; else if (!T.downAt) T.downAt = now; else if (now - T.downAt > 1200) { T.downAt = 0; F.hot.f(); } }
@@ -15010,7 +15071,7 @@ const handle = async (m, post) => {
     BS.town = null; T.dead = true; T.on = false; T.ungest?.(); T.unlay?.(); T.unflood?.();
     T.streets?.dispose(); T.streets = null; $("bsNamesBtn").hidden = true;
     T.admin?.dispose(); T.admin = null;
-    T.car?.dispose(); T.car = null; T.peers?.dispose(); T.peers = null; T.me?.dispose(); T.me = null; T.here?.dispose(); T.here = null; T.traffic?.dispose(); T.traffic = null; T.mayor?.dispose(); T.mayor = null; T.council?.dispose(); T.council = null; T.critter?.dispose(); T.critter = null; T.home6?.dispose(); T.home6 = null; T.locals?.dispose(); T.locals = null; T.mail?.dispose(); T.mail = null;
+    T.car?.dispose(); T.car = null; T.peers?.dispose(); T.peers = null; T.me?.dispose(); T.me = null; T.here?.dispose(); T.here = null; T.yards?.dispose(); T.yards = null; T.traffic?.dispose(); T.traffic = null; T.mayor?.dispose(); T.mayor = null; T.council?.dispose(); T.council = null; T.critter?.dispose(); T.critter = null; T.home6?.dispose(); T.home6 = null; T.locals?.dispose(); T.locals = null; T.mail?.dispose(); T.mail = null;
     T.unbar?.();
     if (BS.fly) { const F = BS.fly; F.walk = F.speed = F.floor = F.hot = F.drive = null; F.ceil = 0; F.lim = null; }  // Explore, if it carries on, is its old self
     try { T.model?.dispose(); } catch {}
