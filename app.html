@@ -1704,10 +1704,9 @@ body.bstown.bsgmap.bsheld .bs-joy, body.bstown.bsgmap.bsheld .bs-ud { display: n
 /* a shop's name over its sign when you're close (two at most): like the street names, with a little storefront mark */
 .bs-shoptag { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; white-space: nowrap; font: 600 11px/1 var(--ui); color: #23272f; padding: 3px 7px 3px 6px; border-radius: 9px; background: rgba(255,255,255,0.8); box-shadow: 0 1px 3px rgba(0,0,0,0.15); opacity: 0; visibility: hidden; transition: opacity .5s, visibility 0s .5s; }
 .bs-shoptag.on { opacity: 1; visibility: visible; transition: opacity .5s; }
-.bs-here { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none; white-space: nowrap; font: 700 12px/1 var(--ui); color: #fff; padding: 5px 10px; border-radius: 999px; background: #d93025; box-shadow: 0 2px 6px rgba(0,0,0,0.35); will-change: transform; }
-.bs-here::after { content: ""; position: absolute; left: 50%; bottom: -6px; margin-left: -6px; border: 6px solid transparent; border-bottom: 0; border-top-color: #d93025; }
-.bs-here.edge::after { display: none; }
-.bs-here[hidden] { display: none; }
+.bs-findme { pointer-events: auto; position: absolute; z-index: 3; right: max(16px, env(safe-area-inset-right)); top: calc(118px + env(safe-area-inset-top)); width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%;
+  background: #fff; color: #1a73e8; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); cursor: pointer; }
+.bs-findme svg { width: 24px; height: 24px; } .bs-findme:hover { background: #eef3fe; } .bs-findme[hidden], body.bswalk .bs-findme, body.bscam .bs-findme { display: none; }
 .bs-shoptag::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 2px; background: #e8a33c; vertical-align: 0; }
 .bs-shoptag[hidden] { display: none; }
 @media (prefers-reduced-motion: reduce) { .bs-streets span { transition: none; } }
@@ -13299,23 +13298,38 @@ const handle = async (m, post) => {
     ["Sue bakes bread on Bohain Street that puts a real spring in your step.", "sue"],
     ["Pandy's lime cordial will have you sprinting, I swear.", "pandy"],
     ["Councillor Steve does a 360 kick. Ask him nicely and he'll teach you.", "steve"]];
-  // You are here (Ash, 19 November 2026, "when in explore mode i want a you are here"): a red pin over where your player stands while you look
-  // round from above in Explore mode, in every town; off the screen, it waits at the edge pointing the way
+  // You are here (Ash, 19 November 2026, "when in explore mode i want a you are here", then "I don't like how you are here displays, try a
+  // diff route"): in Explore mode, a blue dot on the ground where your player stands, as on a map: a white rim, a soft pulsing halo and a
+  // cone the way you face, kept the same size on the screen however high you are. A Find me button (the map's location button) glides the
+  // view back over it
   function townHere(T, m) {
-    const P = { frame() {}, dispose() {} }; if (!m.getCamera || !m.groundAt) return P;
-    const box = $("bsTown") || document.body, here = Object.assign(document.createElement("div"), { className: "bs-here", hidden: true, textContent: "You are here" }); box.append(here);
-    const hide = () => { if (!here.hidden) here.hidden = true; };
-    P.frame = () => { const F = BS.fly, H = F && !T.walk && F.home, cam = H && m.getCamera(); if (!H || !cam) return hide();
-      const w = box.clientWidth, h = box.clientHeight, f = 1 / Math.tan(((m.fov ? m.fov() : 50) * Math.PI) / 360), y = m.groundAt(H.x, H.z) + 2.4;
-      const cp = Math.cos(cam.pitch), fx = -Math.sin(cam.yaw) * cp, fy = Math.sin(cam.pitch), fz = -Math.cos(cam.yaw) * cp, rx = Math.cos(cam.yaw), rz = -Math.sin(cam.yaw), ux = -fy * rz, uy = rz * fx - rx * fz, uz = fy * rx;
-      const ax = H.x - cam.x, ay = y - cam.y, az = H.z - cam.z, depth = ax * fx + ay * fy + az * fz;
-      let s = depth < 1 ? null : [Math.round(w / 2 + (ax * rx + az * rz) / depth * f * (h / 2)), Math.round(h / 2 - (ax * ux + ay * uy + az * uz) / depth * f * (h / 2))], tx = "You are here", edge = false;
-      if (!s || s[0] < 30 || s[0] > w - 30 || s[1] < 80 || s[1] > h - 40) { const side = ax * rx + az * rz, fwd = -ax * Math.sin(cam.yaw) - az * Math.cos(cam.yaw), an = Math.atan2(side, fwd);
-        s = [Math.round(w / 2 + Math.sin(an) * (w / 2 - 70)), Math.round(h / 2 - Math.cos(an) * (h / 2 - (Math.cos(an) < 0 ? 210 : 90)))]; edge = true;
-        tx = ["\u25b2 You are here", "You are here \u25b6", "\u25bc You are here", "\u25c0 You are here"][Math.round(((an + Math.PI * 2) % (Math.PI * 2)) / (Math.PI / 2)) % 4]; }
-      if (here.hidden) here.hidden = false; if (here.textContent !== tx) here.textContent = tx; if (here.classList.contains("edge") !== edge) here.classList.toggle("edge", edge);
-      here.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, ${edge ? "-50%" : "-100%"})`; };
-    P.dispose = () => here.remove();
+    const P = { frame() {}, dispose() {} }; if (!m.addParts || !m.getCamera || !m.groundAt) return P;
+    const THREE = BS.B.THREE, M = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), S = new THREE.Vector3();
+    const FAR = new THREE.Matrix4().makeTranslation(0, -1e5, 0).elements;
+    const lin = hex => { const v = parseInt(hex.slice(1), 16); return [((v >> 16) & 255) / 255, ((v >> 8) & 255) / 255, (v & 255) / 255].map(c => Math.pow(c, 2.2)); };
+    const disc = (r, y, hex, n = 28, a0 = 0, a1 = Math.PI * 2, r0 = 0) => { const p = [], nn = [], c = [], col = lin(hex);
+      for (let i = 0; i < n; i++) { const t0 = a0 + (a1 - a0) * i / n, t1 = a0 + (a1 - a0) * (i + 1) / n;
+        const pts = r0 ? [[Math.sin(t0) * r0, Math.cos(t0) * r0], [Math.sin(t0) * r, Math.cos(t0) * r], [Math.sin(t1) * r, Math.cos(t1) * r], [Math.sin(t0) * r0, Math.cos(t0) * r0], [Math.sin(t1) * r, Math.cos(t1) * r], [Math.sin(t1) * r0, Math.cos(t1) * r0]]
+          : [[0, 0], [Math.sin(t0) * r, Math.cos(t0) * r], [Math.sin(t1) * r, Math.cos(t1) * r]];
+        for (const [x, z] of pts) { p.push(x, y, z); nn.push(0, 1, 0); c.push(...col); } }
+      return { positions: new Float32Array(p), normals: new Float32Array(nn), colors: new Float32Array(c), color: [1, 1, 1], unlit: true, doubleSide: true, matrix: FAR.slice() }; };
+    // [0] the halo, [1] the cone ahead, [2] the white rim, [3] the blue dot (each a little above the last, so they don't flicker)
+    const parts = m.addParts([{ ...disc(1, 0, "#4285f4"), opacity: 0.22 }, { ...disc(3.2, 0.01, "#4285f4", 10, -0.5, 0.5, 0.9), opacity: 0.35 }, disc(1, 0.02, "#ffffff"), disc(0.78, 0.03, "#1a73e8")]);
+    // Find me: in Explore mode, above Flood; the view glides back over your player
+    const box = $("bsTown") || document.body, btn = document.createElement("button"); btn.type = "button"; btn.className = "bs-findme"; btn.hidden = true; btn.title = "Back to where your player is";
+    btn.setAttribute("aria-label", "Find me"); btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/></svg>';
+    ($("bsTownMode")?.parentElement || box).append(btn);  // (not in the view's own box: its drag takes every press in Explore mode)
+    btn.onclick = () => { const F = BS.fly, H = F?.home; if (!H || T.walk) return; const cp = Math.cos(F.pitch), d = [-Math.sin(F.yaw) * cp, Math.sin(F.pitch), -Math.cos(F.yaw) * cp], gy = m.groundAt(H.x, H.z);
+      const R = d[1] < -0.12 ? bsClamp((F.pos.y - m.groundAt(F.pos.x, F.pos.z)) / -d[1], 40, 900) : 160, dd = d[1] < -0.12 ? d : [d[0] * 0.8, -0.6, d[2] * 0.8];
+      T.tween = { a: { x: F.pos.x, y: F.pos.y, z: F.pos.z, yaw: F.yaw, pitch: F.pitch }, b: { x: H.x - dd[0] * R, y: gy - dd[1] * R, z: H.z - dd[2] * R, yaw: F.yaw, pitch: d[1] < -0.12 ? F.pitch : Math.asin(-0.6) }, t0: performance.now(), ms: 900 }; btn.blur(); };
+    let shown = false;
+    P.frame = () => { const F = BS.fly, H = F && !T.walk && F.home, cam = H && m.getCamera();
+      if (btn.hidden === !!H) btn.hidden = !H;
+      if (!H || !cam) { if (shown) { for (let i = 0; i < 4; i++) parts.setMatrix(i, FAR.slice()); shown = false; } return; }
+      const y = m.groundAt(H.x, H.z) + 0.12, d = Math.hypot(H.x - cam.x, y - cam.y, H.z - cam.z), s = bsClamp(d * 0.016, 0.6, 60), t = performance.now() / 1000;
+      Q.setFromEuler(E.set(0, H.yaw + Math.PI, 0)); const put = (i, k, lift) => { M.compose(V.set(H.x, y + lift * s, H.z), Q, S.set(s * k, 1, s * k)); parts.setMatrix(i, M.elements.slice()); };
+      put(0, 2.2 + 0.5 * Math.sin(t * 2.6), 0); put(1, 1.6, 0.01); put(2, 1, 0.02); put(3, 1, 0.03); shown = true; };
+    P.dispose = () => { try { parts.remove(); } catch {} btn.remove(); };
     return P;
   }
   // The Magic Mile brought to life (Ash, 19 November 2026: "bring the magic mile a bit to life, its very dull. Without using much ram/mb"):
@@ -13374,7 +13388,7 @@ const handle = async (m, post) => {
     // arrow's mark within 7 m
     const shopEl = [0, 1].map(() => Object.assign(document.createElement("div"), { className: "bs-shoptag" })); shopEl.forEach(e => box.append(e));
     // quieter tags (Ash, 19 November 2026, "the business indicators are a little noisy"): two at most, a tag stays until it leaves the view, a new one has to hold still a moment before it shows, and they fade
-    let shopAt = 0, shopAdd = 0, shopPend = null; const slots = shopEl.map(e => ({ e, t: null }));
+    let shopAt = 0, shopAdd = 0, shopPend = null; const slots = shopEl.map(e => ({ e, t: null })), seen = new Map();  // (a name, once gone, rests 20 s, and never shows twice at once: the servos, chemists and 7-Elevens have two or more tags, and they took turns: Ash, 19 November 2026, "Sometimes the business icons repeat now")
     folk.forEach(q => { q.dot = Object.assign(document.createElement("div"), { className: "bs-news", hidden: true, title: "Has news for you" }); box.append(q.tag, q.dot); });
     // where a point is on the screen, or null behind you
     const onScreen = (x, y, z) => { const cam = m.getCamera?.(); if (!cam) return null; const w = box.clientWidth, h = box.clientHeight, f = 1 / Math.tan(((m.fov ? m.fov() : 50) * Math.PI) / 360);
@@ -13581,12 +13595,12 @@ const handle = async (m, post) => {
         const dist = t => Math.hypot(t.x - me.x, t.z - me.z), near = (t, x, z, r) => Math.hypot(x - t.x, z - t.z) < r;
         const busy = t => folk.some(q => q.x != null && near(t, q.x, q.z, 7)) || others.some(q => near(t, q.x, q.z, 7)) || (guide && near(t, guide.x, guide.z, 7)) || (aimPt && near(t, aimPt.x, aimPt.z, 7));
         const fits = (s, m) => s && s[0] > m && s[0] < w - m && s[1] > 60 && s[1] < h - 50;
-        for (const sl of slots) if (sl.t) { const d = dist(sl.t); if (up >= 60 || d < 35 || d > 450 || !fits(onScreen(sl.t.x, sl.t.y, sl.t.z), 10) || busy(sl.t)) sl.t = null; }
+        for (const sl of slots) if (sl.t) { const d = dist(sl.t); if (up >= 60 || d < 35 || d > 450 || !fits(onScreen(sl.t.x, sl.t.y, sl.t.z), 10) || busy(sl.t)) { seen.set(sl.t.n, now + 20000); sl.t = null; } }
         let best = null;
         if (up < 60 && now - shopAdd > 2500 && slots.some(sl => !sl.t)) { const far = [];
-          for (const t of T.shopTags || []) { const d = dist(t); if (d < 60 || d > 400) continue; const s = onScreen(t.x, t.y, t.z); if (fits(s, 40)) far.push([d, t, s]); }
+          for (const t of T.shopTags || []) { const d = dist(t); if (d < 60 || d > 400 || (seen.get(t.n) || 0) > now) continue; const s = onScreen(t.x, t.y, t.z); if (fits(s, 40)) far.push([d, t, s]); }
           far.sort((p, q) => p[0] - q[0]);
-          for (const [, t, s] of far) { if (busy(t) || slots.some(sl => { if (!sl.t) return false; if (sl.t === t || near(t, sl.t.x, sl.t.z, 80)) return true; const o = onScreen(sl.t.x, sl.t.y, sl.t.z); return o && Math.abs(o[0] - s[0]) < 140 && Math.abs(o[1] - s[1]) < 30; })) continue; best = t; break; } }
+          for (const [, t, s] of far) { if (busy(t) || slots.some(sl => { if (!sl.t) return false; if (sl.t === t || sl.t.n === t.n || near(t, sl.t.x, sl.t.z, 80)) return true; const o = onScreen(sl.t.x, sl.t.y, sl.t.z); return o && Math.abs(o[0] - s[0]) < 140 && Math.abs(o[1] - s[1]) < 30; })) continue; best = t; break; } }
         if (best && shopPend?.t === best) { if (now - shopPend.at > 1200) { slots.find(sl => !sl.t).t = best; shopAdd = now; shopPend = null; } }
         else shopPend = best ? { t: best, at: now } : null; }
       for (const { e, t } of slots) { const s = t ? onScreen(t.x, t.y, t.z) : null; if (e.classList.contains("on") !== !!s) e.classList.toggle("on", !!s);
