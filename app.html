@@ -9129,6 +9129,7 @@ const handle = async (m, post) => {
         if (cfg.place === "moo" && !OFF.has("home6")) try { T.home6 = townHome6(T, m); } catch (e) { console.warn("Town model: Ash and Arlo couldn't start", e); }
         if (cfg.place === "moo" && !OFF.has("locals")) try { T.locals = townLocals(T, m); } catch (e) { console.warn("Town model: the locals couldn't start", e); }
         if (cfg.place === "moo" && !OFF.has("yards")) try { T.yards = townMagicMile(T, m); } catch (e) { console.warn("Town model: the Magic Mile couldn't start", e); }
+        if (cfg.place === "moo" && !OFF.has("walkers")) try { T.walkers = townWalkers(T, m, cfg); } catch (e) { console.warn("Town model: the walkers couldn't start", e); }
         if (!OFF.has("mail")) try { T.mail = townMail(T); } catch (e) { console.warn("Town model: the post couldn't start", e); }
         if (!OFF.has("animal")) try { T.critter = townCritter(T, m, ground, cfg.place); } catch (e) { console.warn("Town model: the animal couldn't start", e); }
         F.hot = { f: () => toMode(!T.walk),
@@ -12504,7 +12505,8 @@ const handle = async (m, post) => {
     // car"): walk out in front of one and it stops for you; Get in the car takes it over (P.take) and it is yours from then on.
     // (a light amount again, seven: Ash, 15 November 2026: "Add back some of the traffic so there is a light amount of cars around.
     // Careful not to cause lag". Each is a few draw calls, and one more than 450 m away is not drawn)
-    let home = T.spawn || [F.pos.x, F.pos.z]; const N = T.cfg?.place === "moo" ? 5 : 7, NEAR = 300, FAR = 800, NONE = new THREE.Matrix4().makeScale(0, 0, 0).elements;
+    // (Moorooka a few more again, lighter on a phone: Ash, 19 November 2026, "mooroka needs a few more moving cars and people but consider lag impacts")
+    let home = T.spawn || [F.pos.x, F.pos.z]; const N = T.cfg?.place === "moo" ? (matchMedia("(pointer: coarse)").matches ? 7 : 9) : 7, NEAR = 300, FAR = 800, NONE = new THREE.Matrix4().makeScale(0, 0, 0).elements;
     if (!N) return P;  // nothing to load or draw
     let roads = null, nodes = null, dead = false, last = 0, reroad = null, moveAt = 0;
     const key = (x, z) => Math.round(x / 2) + "," + Math.round(z / 2);
@@ -13335,6 +13337,50 @@ const handle = async (m, post) => {
   // The Magic Mile brought to life (Ash, 19 November 2026: "bring the magic mile a bit to life, its very dull. Without using much ram/mb"):
   // its car yards were bare asphalt. Now rows of cars for sale stand on each yard, every one with a price sticker, all merged into one
   // shape (one draw call, nothing to download), and a dancing tube man waves at the road outside each of them, moving only while near
+  // People walking the footpaths of Moorooka's busy streets: the shops on Beaudesert Road and Moorooka Road, and the Magic Mile on
+  // Ipswich Road (Ash, 19 November 2026: "mooroka needs a few more moving cars and people but consider lag impacts"). Six on a phone,
+  // ten on a computer; each a few parts, drawn only within 300 m of the view and parked out of sight beyond
+  function townWalkers(T, m, cfg) {
+    const P = { frame() {}, dispose() {} }; if (!m.addParts || !m.groundAt) return P;
+    const THREE = BS.B.THREE, M = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), ONE = new THREE.Vector3(1, 1, 1);
+    const FAR = new THREE.Matrix4().makeTranslation(0, -1e5, 0).elements, K = matchMedia("(pointer: coarse)").matches ? 6 : 10;
+    const ZONES = [[-180, -400, 380], [-700, -450, 330], [-470, -760, 220]], TOPS = ["#c0392b", "#2e86ab", "#f2c200", "#3f7f3a", "#8e44ad", "#e67e22", "#f4f4f2", "#1d1f24", "#d35b8a", "#5c6670"];
+    let dead = false, walkers = [], last = performance.now();
+    townStreetData(cfg).then(d => { if (dead) return; const want = /^(Beaudesert Road|Moorooka Road|Ipswich Road|Sherley Street|Evesham Street|Lucy Street|Station Road|Mayfield Road)$/i;
+      // every road's segments in a 40 m grid, with half its width, so a footpath can be told from a road (a divided road's two
+      // carriageways are two roads: the footpath is only on the outer side of each)
+      const grid = new Map(), cell = (x, z) => Math.floor(x / 40) + "," + Math.floor(z / 40);
+      d.roads.forEach((r, i) => { const hw = (d.town?.roads?.[i]?.[3] || 70) / 20, p = r.pts; for (let k = 0; k + 3 < p.length; k += 2) { const s = [p[k], p[k + 1], p[k + 2], p[k + 3], hw];
+        const x0 = Math.min(s[0], s[2]) - hw, x1 = Math.max(s[0], s[2]) + hw, z0 = Math.min(s[1], s[3]) - hw, z1 = Math.max(s[1], s[3]) + hw;
+        for (let gx = Math.floor(x0 / 40); gx <= Math.floor(x1 / 40); gx++) for (let gz = Math.floor(z0 / 40); gz <= Math.floor(z1 / 40); gz++) { const key = gx + "," + gz; if (!grid.has(key)) grid.set(key, []); grid.get(key).push(s); } } });
+      const onRoad = (x, z) => (grid.get(cell(x, z)) || []).some(([ax, az, bx, bz, hw]) => { const dx = bx - ax, dz = bz - az, L2 = dx * dx + dz * dz || 1, t = bsClamp(((x - ax) * dx + (z - az) * dz) / L2, 0, 1); return Math.hypot(x - ax - dx * t, z - az - dz * t) < hw + 0.5; });
+      const ways = []; d.roads.forEach((r, i) => { const nm = d.names?.[r.name] || ""; if (!want.test(nm) || r.pts.length < 4) return; const w = (d.town?.roads?.[i]?.[3] || 70) / 10;
+        const p = r.pts, inZone = k => ZONES.some(([x, z, R]) => Math.hypot(p[k] - x, p[k + 1] - z) < R); let any = false; for (let k = 0; k < p.length; k += 2) if (inZone(k)) { any = true; break; } if (!any) return;
+        for (const side of [1, -1]) { let n = 0, bad = 0; const off = w / 2 + 1.8;  // walk along it; a side that's mostly on a road (or in a building) isn't a footpath
+          for (let k = 0; k + 3 < p.length; k += 2) { const L = Math.hypot(p[k + 2] - p[k], p[k + 3] - p[k + 1]) || 1, ux = (p[k + 2] - p[k]) / L, uz = (p[k + 3] - p[k + 1]) / L;
+            for (let s = 0; s < L; s += 8) { const x = p[k] + ux * s + uz * off * side, z = p[k + 1] + uz * s - ux * off * side; n++; if (onRoad(x, z) || m.solidAt?.(x, z)) bad++; } }
+          if (n && bad / n < 0.25) ways.push({ p, off, side }); } });
+      if (!ways.length) return;
+      for (let i = 0; i < K; i++) { const wy = ways[Math.floor(Math.random() * ways.length)], n = wy.p.length / 2, seg = Math.floor(Math.random() * (n - 1));
+        const parts = townPlaneParts(TOPS[i % TOPS.length], "person"); walkers.push({ wy, seg, t: Math.random(), dir: Math.random() < 0.5 ? 1 : -1, side: wy.side, sp: 1.1 + Math.random() * 0.5, ph: Math.random() * 6,
+          h: m.addParts(parts.map(q => ({ ...q, matrix: FAR.slice() }))), n: parts.length, on: false }); } }).catch(() => {});
+    const place = w => { const p = w.wy.p, i = w.seg * 2, ax = p[i], az = p[i + 1], bx = p[i + 2], bz = p[i + 3], L = Math.hypot(bx - ax, bz - az) || 1, ux = (bx - ax) / L, uz = (bz - az) / L;
+      return { x: ax + (bx - ax) * w.t + uz * w.off * w.side, z: az + (bz - az) * w.t - ux * w.off * w.side, L, h: Math.atan2(ux * w.dir, uz * w.dir) }; };
+    P.frame = () => { const now = performance.now(), dt = Math.min(0.1, (now - last) / 1000); last = now; const cam = m.getCamera?.(); if (!cam || !walkers.length) return;
+      for (const w of walkers) { w.off = w.off ?? w.wy.off; let q = place(w);
+        w.t += w.dir * w.sp * dt / q.L;  // along the street, segment by segment; at its end, or at a wall in the way, turn back
+        if (w.t > 1) { if (w.seg < w.wy.p.length / 2 - 2) { w.seg++; w.t = 0; } else { w.t = 1; w.dir = -1; } }
+        if (w.t < 0) { if (w.seg > 0) { w.seg--; w.t = 1; } else { w.t = 0; w.dir = 1; } }
+        q = place(w); if (m.solidAt?.(q.x, q.z)) { w.dir = -w.dir; w.t = bsClamp(w.t + w.dir * 0.02, 0, 1); }
+        if (!ZONES.some(([x, z, R]) => Math.hypot(q.x - x, q.z - z) < R + 60)) { w.dir = -w.dir; }  // stays round the shops
+        const near = Math.hypot(q.x - cam.x, q.z - cam.z) < 300;
+        if (!near) { if (w.on) { for (let k = 0; k < w.n; k++) w.h.setMatrix(k, FAR.slice()); w.on = false; } continue; }
+        const st = now / 1000 * w.sp * 5.2 + w.ph, y = m.groundAt(q.x, q.z) + Math.abs(Math.sin(st)) * 0.04;
+        M.compose(V.set(q.x, y, q.z), Q.setFromEuler(E.set(0, q.h, Math.sin(st) * 0.03)), ONE); for (let k = 0; k < w.n; k++) w.h.setMatrix(k, M.elements.slice()); w.on = true; } };
+    P.list = () => walkers.map(w => ({ ...place(w), on: w.on }));
+    P.dispose = () => { dead = true; for (const w of walkers) try { w.h.remove(); } catch {} };
+    return P;
+  }
   function townMagicMile(T, m) {
     const P = { frame() {}, dispose() {} }; if (!m.addParts || !m.groundAt) return P;
     const THREE = BS.B.THREE, M = new THREE.Matrix4(), R = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), ONE = new THREE.Vector3(1, 1, 1);
@@ -15066,7 +15112,7 @@ const handle = async (m, post) => {
     // (the worker view sets the camera first, so names and bubbles are placed from where you really look; the traffic, the animal,
     // number 6 and the people out the front had been left out of every frame by a note on the same line, from #128 to 15 November 2026)
     T.car?.frame(); T.me?.frame(); T.peers?.frame(); T.here?.frame();
-    T.traffic?.frame(); T.critter?.frame(); T.no6?.frame(); T.home6?.frame(); T.mayor?.frame(); T.council?.frame(); T.locals?.frame(); T.yards?.frame();
+    T.traffic?.frame(); T.critter?.frame(); T.no6?.frame(); T.home6?.frame(); T.mayor?.frame(); T.council?.frame(); T.locals?.frame(); T.yards?.frame(); T.walkers?.frame();
     // flying: held down at the lowest you can fly (Down, or C) for a moment, and you are on foot there
     if (!T.walk && !T.tween && !F.drive && F.floor && F.hot?.f) { const low = F.pos.y <= F.floor() + 0.1, down = F.vert < -0.3 || F.keys.has("KeyC"), now = performance.now();
       if (!(low && down)) T.downAt = 0; else if (!T.downAt) T.downAt = now; else if (now - T.downAt > 1200) { T.downAt = 0; F.hot.f(); } }
@@ -15085,7 +15131,7 @@ const handle = async (m, post) => {
     BS.town = null; T.dead = true; T.on = false; T.ungest?.(); T.unlay?.(); T.unflood?.();
     T.streets?.dispose(); T.streets = null; $("bsNamesBtn").hidden = true;
     T.admin?.dispose(); T.admin = null;
-    T.car?.dispose(); T.car = null; T.peers?.dispose(); T.peers = null; T.me?.dispose(); T.me = null; T.here?.dispose(); T.here = null; T.yards?.dispose(); T.yards = null; T.traffic?.dispose(); T.traffic = null; T.mayor?.dispose(); T.mayor = null; T.council?.dispose(); T.council = null; T.critter?.dispose(); T.critter = null; T.home6?.dispose(); T.home6 = null; T.locals?.dispose(); T.locals = null; T.mail?.dispose(); T.mail = null;
+    T.car?.dispose(); T.car = null; T.peers?.dispose(); T.peers = null; T.me?.dispose(); T.me = null; T.here?.dispose(); T.here = null; T.yards?.dispose(); T.yards = null; T.walkers?.dispose(); T.walkers = null; T.traffic?.dispose(); T.traffic = null; T.mayor?.dispose(); T.mayor = null; T.council?.dispose(); T.council = null; T.critter?.dispose(); T.critter = null; T.home6?.dispose(); T.home6 = null; T.locals?.dispose(); T.locals = null; T.mail?.dispose(); T.mail = null;
     T.unbar?.();
     if (BS.fly) { const F = BS.fly; F.walk = F.speed = F.floor = F.hot = F.drive = null; F.ceil = 0; F.lim = null; }  // Explore, if it carries on, is its old self
     try { T.model?.dispose(); } catch {}
