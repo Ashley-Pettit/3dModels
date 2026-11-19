@@ -9919,6 +9919,7 @@ const handle = async (m, post) => {
     { at: [-1298.44, -1182.92], kind: 2, wall: [150, 154, 158] },           // YG Riverside Village (Yeerongpilly): grey precast concrete
     { at: [-1210.47, 1156.48], kind: 2, wall: [184, 199, 208] },            // Sundays Cafe (59 Brooke Street, Rocklea): pale blue-grey
     { at: [-606.21, 1160.49], kind: 2, wall: [238, 237, 233] },             // the Moorooka Servo's building (485 Beaudesert Road): white
+    { at: [-591.45, 1163.25], kind: 1, flat: true, wall: [244, 244, 242], canopy: { band: 1.0, stripe: [31, 79, 160] } },  // the Moorooka Servo's canopy over the pumps: white, a blue stripe (Street View)
     { at: [-1529.3, 652.6], kind: 2, wall: [196, 200, 204] },               // 23 Sherwood Road, Rocklea (PSBROS Auto Care): grey iron
     { at: [-315.09, 1097.44], kind: 2, wall: [239, 238, 234] },             // Dragonfly's depot (35 Evans Road): a white warehouse
     { at: [-1128.11, 286.96], kind: 2, wall: [240, 239, 236] },             // Motorama (1160 Ipswich Road): white
@@ -10424,6 +10425,7 @@ const handle = async (m, post) => {
   // top with each change worth a look, and take off what Ash has seen (Ash, 19 November 2026: "I want you to have a btn for the player with
   // name ash that jumps to new features so I can quickly review")
   const MOO_NEW = [
+    ["Beaudesert Road, every address", "46 more houses, units and businesses: fences, walls and forecourts; the Moorooka Servo's canopy", -568.7, 1174.5, 1.238, 0.05],
     ["Shops checked on Google", "Mim Halal Group, the butcher's new name; Aussie and Market Flowers gone", -142.0, -263.7, -1.024, 0.06],
     ["Beaudesert Road, south end", "14 more houses' fences and driveways (383 to 397 and on)", -470.1, 836.2, 1.023, 0.1],
     ["Beaudesert Road's fences", "91 houses' front fences and driveways, from Street View", -305.7, -864.1, -1.727, 0.1],
@@ -10535,6 +10537,54 @@ const handle = async (m, post) => {
     { N: [-366.74, 933.1], S: [-362.1, 949.01], f: ["s",  "#a65a40",  0.9], d: [6.7,  9.9,  10.9] },
     { N: [-362.1, 949.01], S: [-356.88, 966.85], f: ["s",  "#3f6b4a",  1.6] },
     { N: [-570.0, 978.22], S: [-551.1, 946.57], f: ["s",  "#7c8a7c",  1.6] },
+    // the rest of Beaudesert Road from the address register (Ash, 19 November 2026: "List out In the excel every address and business and
+    // work through them in low res. Max 2kb"), Street View: from, to and gap are metres along the front; p: flat forecourts
+    { N: [-258.21, -1004.0], S: [-261.38, -986.09], f: ["t", "#26282b", 1.2] },  // 6 Beaudesert Road
+    { N: [-264.12, -986.58], S: [-267.25, -969.32], f: ["s", "#e9e8e2", 1.1] },  // 10 Beaudesert Road
+    { N: [-269.87, -969.8], S: [-272.88, -953.19], f: ["s", "#e9e8e2", 1.0] },  // 14 Beaudesert Road
+    { N: [-280.92, -938.36], S: [-284.41, -919.09], f: ["s", "#6f866a", 1.8], from: 3.5, d: [0.0, 3.1, 5] },  // 22 Beaudesert Road
+    { N: [-320.67, -796.49], S: [-328.99, -826.87], f: ["t", "#eeeeea", 1.2], from: 14.2, to: 19.5 },  // 49 Beaudesert Road
+    { N: [-313.91, -784.65], S: [-318.51, -797.11], f: ["s", "#8b8070", 1.6] },  // 51 Beaudesert Road
+    { N: [-306.09, -766.38], S: [-309.91, -775.75], f: ["s", "#ebebe7", 1.3], from: 3.2, d: [0.0, 3.0, 30] },  // 55 Beaudesert Road
+    { N: [-297.02, -744.47], S: [-302.03, -756.78], f: ["s", "#ebebe7", 1.0], gap: [5.3, 10.0], d: [5.3, 10.0, 20] },  // 59 Beaudesert Road
+    { N: [-260.7, -654.54], S: [-266.94, -670.1], f: ["s", "#ecebe6", 1.8], gap: [7.6, 9.2] },  // 79 Beaudesert Road
+    { N: [-253.96, -637.55], S: [-260.76, -654.51], f: ["s", "#e8e8e4", 1.8] },  // 81 Beaudesert Road
+    { N: [-245.68, -584.99], S: [-255.26, -637.0], f: ["s", "#cdbfa8", 1.1], to: 42.3, gap: [24.3, 27.5], d: [43.4, 52.9, 20] },  // 87-91 Beaudesert Road
+    { N: [-239.55, -551.22], S: [-245.77, -584.98], p: [[0.0, 34.3, 0, 9, "#8a4d3c"]] },  // 93 Beaudesert Road
+    { N: [-229.88, -507.69], S: [-232.63, -524.08], f: ["s", "#7a5a3e", 1.8, "#9c4a35", 0.5], to: 9.1 },  // 101 Beaudesert Road
+    { N: [-226.65, -491.91], S: [-229.32, -507.79], f: ["s", "#8a6a4a", 1.5], to: 11.3 },  // 105 Beaudesert Road
+    { N: [-223.75, -476.89], S: [-226.28, -491.98], f: ["s", "#eeeeea", 1.5], gap: [6.9, 8.0] },  // 107 Beaudesert Road
+    { N: [-220.39, -458.25], S: [-223.53, -476.93], f: ["s", "#e6e6e2", 1.5] },  // 109 Beaudesert Road
+    { N: [-173.34, -363.69], S: [-171.44, -353.82], f: ["s", "#e8e8e4", 0.8], to: 2.5, p: [[2.5, 10.0, 0, 8, "#b5b2aa"]] },  // 124 Beaudesert Road
+    { N: [-55.78, -150.63], S: [-52.96, -116.58], f: ["t", "#c0392b", 1.1], gap: [8.6, 25.7], p: [[8.6, 25.7, 0, 7, "#45474b"]] },  // 212 Beaudesert Road
+    { N: [-99.03, -21.25], S: [-109.25, -6.15], f: ["s", "#9a4b38", 1.2], from: 4.9, d: [0.0, 4.5, 25] },  // 228 Beaudesert Road
+    { N: [-109.06, -6.01], S: [-113.89, 1.13], f: ["s", "#9a5040", 1.0], to: 6.0, d: [6.2, 8.2, 20] },  // 230 Beaudesert Road
+    { N: [-246.5, 85.83], S: [-234.16, 75.33], f: ["s", "#e6e4de", 0.9] },  // 253 Beaudesert Road
+    { N: [-228.42, 106.45], S: [-282.85, 183.62], f: ["t", "#2b2e2b", 1.8] },  // 274 Beaudesert Road
+    { N: [-362.3, 285.86], S: [-361.89, 274.14], p: [[0.0, 7.0, 0, 6, "#b8b4ab"]] },  // 293 Beaudesert Road
+    { N: [-348.48, 354.91], S: [-350.67, 342.94], f: ["s", "#cfcac2", 1.0], from: 5.5, d: [0.6, 4.9, 12] },  // 305 Beaudesert Road
+    { N: [-346.31, 366.88], S: [-348.5, 354.91], f: ["s", "#b9b4ad", 1.6], gap: [4.9, 7.9], d: [4.9, 7.9, 10] },  // 307 Beaudesert Road
+    { N: [-341.96, 390.82], S: [-344.15, 378.85], f: ["s", "#3c4a3c", 1.8] },  // 311 Beaudesert Road
+    { N: [-318.42, 628.22], S: [-327.68, 650.41], f: ["s", "#2e3033", 1.8], from: 5.3, d: [0.0, 4.8, 15] },  // 350 Beaudesert Road
+    { N: [-394.06, 629.81], S: [-390.02, 619.09], f: ["t", "#26282b", 1.0] },  // 355 Beaudesert Road
+    { N: [-351.51, 738.96], S: [-357.21, 759.63], f: ["s", "#cbb6a6", 1.0] },  // 360 Beaudesert Road
+    { N: [-368.04, 821.01], S: [-369.91, 840.29], f: ["s", "#d8d1bd", 1.8] },  // 374 Beaudesert Road
+    { N: [-515.25, 888.78], S: [-508.75, 878.61], f: ["s", "#7d7f80", 1.8], gap: [5.4, 6.7] },  // 403 Beaudesert Road
+    { N: [-567.58, 1093.29], S: [-555.73, 1063.76], p: [[0.0, 31.8, 0, 14, "#3e4044"]] },  // 453 Beaudesert Road
+    { N: [-572.04, 1104.98], S: [-567.38, 1093.37], p: [[0.0, 12.5, 0, 10, "#b8b4ab"]] },  // 457 Beaudesert Road
+    { N: [-581.44, 1143.43], S: [-578.33, 1133.85], p: [[0.0, 10.1, 0, 8, "#bdb9b0"]] },  // 477 Beaudesert Road
+    { N: [-584.62, 1152.98], S: [-581.52, 1143.4], p: [[0.0, 10.1, 0, 14, "#bdb9b0"]] },  // 479 Beaudesert Road
+    { N: [-587.91, 1162.49], S: [-584.62, 1152.98], p: [[0.0, 10.1, 0, 14, "#bdb9b0"]] },  // 481 Beaudesert Road
+    { N: [-591.09, 1172.04], S: [-587.8, 1162.53], p: [[0.0, 10.1, 0, 14, "#bdb9b0"]] },  // 483 Beaudesert Road
+    { N: [-594.24, 1181.51], S: [-590.98, 1172.08], p: [[0.0, 10.0, 0, 14, "#bdb9b0"]] },  // 485 Beaudesert Road
+    { N: [-597.4, 1190.97], S: [-594.14, 1181.54], p: [[0.0, 10.0, 0, 10, "#bdb9b0"]] },  // 487 Beaudesert Road
+    { N: [-600.56, 1200.43], S: [-597.3, 1191.0], p: [[0.0, 10.0, 0, 10, "#bdb9b0"]] },  // 489 Beaudesert Road
+    { N: [-603.73, 1209.89], S: [-600.46, 1200.46], p: [[0.0, 10.0, 0, 9, "#bdb9b0"]] },  // 491 Beaudesert Road
+    { N: [-610.11, 1228.8], S: [-603.59, 1209.94], f: ["s", "#e6e5e0", 1.5], to: 10.0 },  // 493 Beaudesert Road
+    { N: [-614.24, 1241.29], S: [-609.94, 1228.86], p: [[0.0, 13.2, 0, 8, "#bdb9b0"]] },  // 495 Beaudesert Road
+    { N: [-617.98, 1252.51], S: [-614.11, 1241.34], p: [[0.0, 11.8, 0, 7, "#a99f8d"]] },  // 497 Beaudesert Road
+    { N: [-622.34, 1264.54], S: [-617.8, 1252.57], p: [[0.0, 12.8, 0, 7, "#bdb9b0"]] },  // 499 Beaudesert Road
+    { N: [-633.33, 1298.29], S: [-627.23, 1280.82], f: ["s", "#e4e3df", 2.0] },  // 511 Beaudesert Road
   ];
   function townHousesLite(T, m) {
     if (!m.addParts || !m.groundAt) return;
@@ -10544,13 +10594,17 @@ const handle = async (m, post) => {
     for (const H of MOO_LITE) {
       const { N, S } = H, L = Math.hypot(S[0] - N[0], S[1] - N[1]), u = [(S[0] - N[0]) / L, (S[1] - N[1]) / L], n = [u[1], -u[0]];
       const xz = (a, d) => [N[0] + u[0] * a + n[0] * d, N[1] + u[1] * a + n[1] * d], g = (a, d) => m.groundAt(...xz(a, d)), pt = (a, d, y) => { const [x, z] = xz(a, d); return [x, y, z]; };
-      if (H.f) { const [kind, col, h, bcol, bh] = H.f, a0 = H.from || 0, ga = g(a0, 0.25), gb = g(L, 0.25), lo = bcol ? bh : -0.3, w = 0.25;
-        if (bcol) quad(parts.s, pt(a0, w, ga - 0.3), pt(L, w, gb - 0.3), pt(L, w, gb + bh), pt(a0, w, ga + bh), lin(bcol));
-        if (kind === "t") {  // tubular steel: its top rail, and its bottom rail where there's no wall under it (a see-through panel didn't draw)
-          quad(parts.s, pt(a0, w, ga + h - 0.07), pt(L, w, gb + h - 0.07), pt(L, w, gb + h), pt(a0, w, ga + h), lin(col));
-          if (!bcol) quad(parts.s, pt(a0, w, ga + 0.08), pt(L, w, gb + 0.08), pt(L, w, gb + 0.15), pt(a0, w, ga + 0.15), lin(col)); }
-        else quad(parts.s, pt(a0, w, ga + lo), pt(L, w, gb + lo), pt(L, w, gb + h), pt(a0, w, ga + h), lin(col)); }
+      if (H.f) { const [kind, col, h, bcol, bh] = H.f, lo = bcol ? bh : -0.3, w = 0.25, A = H.from || 0, B = H.to ?? L;
+        // the fence from A to B along the front, in two pieces either side of a gateway or drive (gap) if it has one
+        for (const [a0, a1] of H.gap ? [[A, H.gap[0]], [H.gap[1], B]] : [[A, B]]) { const ga = g(a0, 0.25), gb = g(a1, 0.25);
+          if (bcol) quad(parts.s, pt(a0, w, ga - 0.3), pt(a1, w, gb - 0.3), pt(a1, w, gb + bh), pt(a0, w, ga + bh), lin(bcol));
+          if (kind === "t") {  // tubular steel: its top rail, and its bottom rail where there's no wall under it (a see-through panel didn't draw)
+            quad(parts.s, pt(a0, w, ga + h - 0.07), pt(a1, w, gb + h - 0.07), pt(a1, w, gb + h), pt(a0, w, ga + h), lin(col));
+            if (!bcol) quad(parts.s, pt(a0, w, ga + 0.08), pt(a1, w, gb + 0.08), pt(a1, w, gb + 0.15), pt(a0, w, ga + 0.15), lin(col)); }
+          else quad(parts.s, pt(a0, w, ga + lo), pt(a1, w, gb + lo), pt(a1, w, gb + h), pt(a0, w, ga + h), lin(col)); } }
       if (H.d) { const [a0, a1, dd] = H.d, q = (a, d) => pt(a, d, g(a, d) + 0.06); quad(parts.s, q(a0, 0), q(a1, 0), q(a1, dd), q(a0, dd), lin("#b9b5ac")); }
+      // a business's forecourt or car park: a flat surface (a0..a1 along the front, d0..d1 in from it)
+      for (const [a0, a1, d0, d1, col] of H.p || []) { const q = (a, d) => pt(a, d, g(a, d) + 0.05); quad(parts.s, q(a0, d0), q(a1, d0), q(a1, d1), q(a0, d1), lin(col)); }
     }
     const I = new BS.B.THREE.Matrix4().elements, out = [];
     for (const [k, Q] of Object.entries(parts)) if (Q.I.length) out.push({ positions: new Float32Array(Q.P), colors: new Float32Array(Q.C), indices: Q.I, matrix: I, color: [1, 1, 1], roughness: 0.85, doubleSide: true, flatShading: true });
