@@ -9305,7 +9305,7 @@ const handle = async (m, post) => {
     { kind: "strip", addr: "4-9 Chaucer Street", a: [-1073.1, 62.9], b: [-1050.3, 66.9], n: [-0.1728, 0.985], kerb: 1.82, across: 12.42, eave: 16.5, wall: "#e6e1d6", awning: "#ece8de",
       shops: [{ n: "Stevo's Barbershop", t: "BARBER SHOP", w: 5, c: ["#ffffff", "#c8102e"], what: "Barber" }, { n: "", w: 5, c: ["#8d8f92", "#ffffff"] }, { n: "Saigon Flavour", w: 6, c: ["#efe3c4", "#7a2a1a"], what: "Vietnamese restaurant", jump: true }, { n: "", w: 7.1, c: ["#b9a27a", "#ffffff"] }] },
     { kind: "strip", addr: "419 Beaudesert Road (corner of Avison Street)", a: [-557.6, 913.5], b: [-538.0, 925.4], n: [-0.519, 0.8548], kerb: 5.03, across: 15.63, eave: 18.0, wall: "#b5653f", awning: "#f2c230",
-      shops: [{ n: "moorooka foodstore", sub: "NEWS & LOTTO", w: 22.9, c: ["#f2c230", "#c8102e"], what: "Corner store, newsagent and lotto", jump: true }] },
+      shops: [{ n: "", w: 13.4 }, { n: "moorooka foodstore", sub: "NEWS & LOTTO", w: 9.5, c: ["#f2c230", "#c8102e"], what: "Corner store, newsagent and lotto", jump: true }] },  // (its name on the right of the fascia, as in Street View)
     { kind: "strip", addr: "407-419 Beaudesert Road", a: [-538.0, 925.4], b: [-521.1, 896.5], n: [0.8632, 0.5048], kerb: 4.35, across: 18.35, eave: 18.0, wall: "#b5653f", awning: "#2a2a2a",  // (the same building's front to Beaudesert Road: the cafe's tables under umbrellas)
       shops: [{ n: "", w: 11, c: ["#2a2a2a", "#ffffff"] }, { n: "Ah-Nook Cafe", w: 12, c: ["#2a2a2a", "#ffffff"], what: "Cafe", jump: true }, { n: "Brisbane Vintage & Collectables", sub: "OP SHOP", w: 10.5, c: ["#f4efe4", "#7a2f2c"], what: "Vintage op shop", jump: true }] },
     { kind: "sign", addr: "Beaudesert Road at Mayfield Road", a: [-91.7, -214.1], b: [-84.9, -210.0], n: [-0.5163, 0.8564], kerb: 7.88, across: 18.18, eave: 51.7, wall: "#efeae0", high: true, shops: [{ n: "Rooka Acai", w: 7.9, c: ["#5b2a86", "#ffffff"], what: "Acai bowls", jump: true }] },
@@ -9464,7 +9464,7 @@ const handle = async (m, post) => {
     { kind: "sign", addr: "16 De Hayr Street, Rocklea", a: [-1352.7, 1051.2], b: [-1353.8, 1059.5], n: [-0.9913, -0.1314], kerb: 7.06, across: 14.26, eave: 12.5, wall: "#7cbf3c",
       shops: [{ n: "CARSY", sub: "CAR RENTALS & MECHANICALS", w: 8.4, c: ["#ffffff", "#2e7d32"], what: "Car hire and mechanic", jump: true }] },
     { kind: "sign", addr: "54 Annie Street, Rocklea", a: [-973.0, 1330.3], b: [-957.8, 1343.2], n: [-0.6471, 0.7624], kerb: 12.6, across: 23.2, eave: 17.2, wall: "#9a9da1", high: true, bx: 13.5, bw: 6,
-      rollers: [[1.2, 5.2, 4.0, "#b9bcbf"]], windows: [4.6, 5.8, 4, "#2a3640", 7, 19],
+      rollers: [[1.2, 5.2, 4.0, "#b9bcbf"]], windows: [4.2, 5.3, 4, "#2a3640", 7, 19],  // (under its roof line: they stood a little above it)
       shops: [{ n: "AUS SOLAR", sub: "ENERGY GROUP", w: 19.9, c: ["#ffffff", "#1f4fa0"], what: "Solar panels and batteries", jump: true }] },
     // the Rocklea Showgrounds (1430 Ipswich Road; markets and shows): its name on a big sign by Ipswich Road at the way in (no wall
     // here: the line a to b just stands the sign by the road)
@@ -9523,7 +9523,7 @@ const handle = async (m, post) => {
       tenants: { lines: ["Get Skilled Training", "Kallibr Training", "Future Skills", "Fire & Safety Australia", "Global Institute of Education"], c: ["#ffffff", "#1d3f8f"], foot: { n: "460 BEAUDESERT RD", c: ["#1d3f8f", "#ffffff"] }, x: 50, o: 34, w: 2.6 },
       shops: [{ n: "The Construction Training Centre", t: "CONSTRUCTION TRAINING CENTRE", w: 53.2, c: ["#1d3f8f", "#ffffff"], what: "Trade training: Get Skilled, Kallibr, Future Skills and more", jump: true }] },
     // Pedders at 1013 Ipswich Road: a white building, its name in red on a black band along the top (Street View)
-    { kind: "sign", addr: "1013 Ipswich Road", a: [-809.3, -426.2], b: [-803.7, -433.1], n: [0.7765, 0.6302], kerb: 11.03, across: 21.73, eave: 24.1, wall: "#f2f2f0", band: true,
+    { kind: "sign", addr: "1013 Ipswich Road", a: [-809.3, -426.2], b: [-803.7, -433.1], n: [0.7765, 0.6302], kerb: 11.03, across: 21.73, eave: 24.9, wall: "#f2f2f0", band: true, sy: [3.2, 4.0],
       rollers: [[1.6, 7.2, 3.4, "#2b2e31", true]],
       shops: [{ n: "Pedders", t: "PEDDERS", sub: "SUSPENSION & BRAKES", w: 8.9, c: ["#1d1d1d", "#e31b23"], what: "Suspension and brakes", jump: true }] },
     { kind: "sign", addr: "107 Beaudesert Road", a: [-228.1, -477.6], b: [-226.8, -486.7], n: [0.9899, 0.1414], kerb: 5.8, across: 16.3, eave: 39.6, wall: "#f3efe6", noBoard: true,  // (on a pole by the fence: its porch roof hid a sign on the wall)
@@ -9548,7 +9548,7 @@ const handle = async (m, post) => {
     { kind: "sign", addr: "1089 Ipswich Road", a: [-1046.2, -83.8], b: [-1041.9, -89.8], n: [0.8128, 0.5825], kerb: 20.42, across: 30.02, eave: 15.2, wall: "#ecebe6", noBoard: true, pole: { n: "Selected Quality Cars", c: ["#0b2f5b", "#ffffff"], x: 3.7, back: 1.5 },
       flags: [-6, 12, ["#0b2f5b", "#f2c200"]],
       shops: [{ n: "Selected Quality Cars", w: 6.6, c: ["#0b2f5b", "#ffffff"], what: "Used cars" }] },
-    { kind: "sign", addr: "1095 Ipswich Road", a: [-1047.6, -52.2], b: [-1041.7, -62.4], n: [0.8656, 0.5007], kerb: 5.73, across: 15.33, eave: 17.3, wall: "#5f6e68", high: true,
+    { kind: "sign", addr: "1095 Ipswich Road", a: [-1047.6, -52.2], b: [-1041.7, -62.4], n: [0.8656, 0.5007], kerb: 5.73, across: 15.33, eave: 18.6, wall: "#5f6e68", high: true,  // (eave raised to two storeys: its upstairs windows stood over the roof)
       windows: [[0.8, 2.3, 4, "#24303a"], [4.6, 5.9, 4, "#24303a"]],
       shops: [{ n: "The Woodworkers Company", w: 9, c: ["#3b2a1a", "#f2d8a7"], what: "Woodworking tools and timber", jump: true }] },
     { kind: "sign", addr: "1098 Ipswich Road", a: [-1039.1, 1.1], b: [-1047.1, 18.6], n: [-0.9095, -0.4158], kerb: 11.51, across: 21.11, eave: 17.7, wall: "#2f3236", glass: "#1f2a33",
@@ -9671,8 +9671,8 @@ const handle = async (m, post) => {
     { kind: "sign", addr: "7/112 Hansen Street", a: [-210.1, -161.2], b: [-200.6, -155.7], n: [-0.501, 0.8654], kerb: 6.46, across: 16.96, eave: 47.7, wall: "#e9e6df", noBoard: true,
       pole: { n: "Cleansed", sub: "MOBILE DETAILING", c: ["#0b3d91", "#ffffff"], x: 7.3, back: 1.3 },
       shops: [{ n: "Cleansed", sub: "MOBILE DETAILING", w: 6, c: ["#0b3d91", "#ffffff"], what: "Car detailing" }] },
-    { kind: "sign", addr: "51 Avison Street", a: [-557.6, 913.5], b: [-538.0, 925.4], n: [-0.519, 0.8548], kerb: 5.03, across: 15.63, eave: 18.0, wall: "#e9e6df", noBoard: true,
-      pole: { n: "The Sewing Lair", c: ["#1f6f78", "#ffffff"], x: 11.2, back: 1.3 },
+    { kind: "sign", addr: "51 Avison Street", a: [-557.6, 913.5], b: [-538.0, 925.4], n: [-0.519, 0.8548], kerb: 5.03, across: 15.63, eave: 18.0, wall: "#e9e6df",
+      bx: 8.9, bw: 2.6, sy: [1.9, 2.6],  // a small board on the brick wall under the awning, as in Street View (it stood on a pole in front of the foodstore's own sign)
       shops: [{ n: "The Sewing Lair", w: 6, c: ["#1f6f78", "#ffffff"], what: "Sewing supplies and classes" }] },
     { kind: "sign", addr: "11 Baldock Street", a: [-983.8, -241.8], b: [-968.6, -233.6], n: [-0.4748, 0.8801], kerb: 16.07, across: 23.97, eave: 13.7, wall: "#e9e6df", noBoard: true,
       pole: { n: "RJ Auto Care", c: ["#c8102e", "#ffffff"], x: 8.6, back: 1.3 }, rollers: [[6.4, 11.0, 3.6, "#2b2e31", true]],
@@ -9941,7 +9941,7 @@ const handle = async (m, post) => {
     { at: [-117.95, -266.95], kind: 2, flat: true, wall: [196, 84, 52] },    // 156: red-orange, a white parapet
     { at: [-108.4, -264.12], kind: 2, flat: true, wall: [212, 212, 208] },   // La Pupetta (160): light grey render, a flat roof behind its parapet
     { at: [-100.4, -257.5], kind: 2, flat: true, wall: [236, 230, 212] },    // the chiropractor (166-168): cream, two storeys
-    { at: [-150.6, -206.27], kind: 2, flat: true, wall: [239, 237, 232] },   // 173-175: white, two storeys
+    { at: [-150.6, -206.27], kind: 2, flat: true, wall: [239, 237, 232], eave: 52.4, ridge: 52.6 },   // 173-175: white, two storeys (eave raised: the survey had it one storey, so its upstairs windows floated over the roof)
     // the rest of the shopping strip from Street View (19 November 2026): flat roofs behind parapets, not gable ends on the street
     { at: [-216.3, -319.11], kind: 2, flat: true, wall: [236, 235, 230] },   // 131 (the post office, Domino's, Yeshi Buna): white
     { at: [-140.38, -331.53], kind: 2, flat: true, wall: [230, 230, 226] },  // 132-136: white, a band of high windows, behind its car park
@@ -9952,7 +9952,7 @@ const handle = async (m, post) => {
     { at: [-92.6, -243.68], kind: 2, flat: true, wall: [228, 216, 192] },    // 180 (Big Boss Pizzas, Kingz): cream render, two storeys
     { at: [-75.41, -218.78], kind: 2, hip: true, wall: [226, 214, 188] },    // Rooka Acai's corner (Mayfield Road): cream under a low hipped roof
     { at: [-131.77, -177.47], kind: 2, flat: true, wall: [238, 236, 230] },  // 193 (Roo Kitchen): white, a curved verandah
-    { at: [-122.05, -162.03], kind: 2, flat: true, wall: [130, 118, 104] },  // 201 (Rannchhod Arcade): brown-grey brick, two storeys
+    { at: [-122.05, -162.03], kind: 2, flat: true, wall: [130, 118, 104], eave: 52.6, ridge: 52.8 },  // 201 (Rannchhod Arcade): brown-grey brick, two storeys (eave raised to two storeys, as in Street View)
     { at: [-115.58, -143.52], kind: 2, flat: true, wall: [232, 226, 210] },  // 205 (Dinder Giftware): cream
     { at: [-180.8, -489.8], wall: [236, 233, 224] },                         // 102 (Macro Tax): a white Queenslander
     { at: [-235.32, -517.58], wall: [169, 177, 185], roof: [62, 68, 76], noShop: true, shift: [-4.43, 0.80] },
@@ -10050,7 +10050,7 @@ const handle = async (m, post) => {
     { at: [-408.62, -817.0], kind: 2, flat: true, wall: [58, 61, 66] },     // DriveSound (7 Colebrook Avenue): charcoal
     { at: [-1112.9, -137.6], kind: 2, wall: [52, 54, 58] },                  // Tint a Car (25 Unwin Street): black, gabled
     { at: [-953.98, -363.67], kind: 2, wall: [58, 61, 66] },                // The Carpet Man (19 Michlin Street): a charcoal shed, its gable on the street
-    { at: [-816.3, -437.75], kind: 2, flat: true, wall: [242, 242, 240] },  // Pedders (1013 Ipswich Road): white, flat behind its black band (it was drawn as a house)
+    { at: [-816.3, -437.75], kind: 2, flat: true, wall: [242, 242, 240], eave: 24.9, ridge: 25.1 },  // Pedders (1013 Ipswich Road): white, flat behind its black band (it was drawn as a house); as tall as Street View has it, so the band is on the wall, not over the roof
     { at: [358.32, 947.42], kind: 2, wall: [138, 148, 112] },               // the units at 14 Chrome Street, Salisbury (Dance Pointe, Kustomize It): olive green (Street View)
     { at: [-266.08, -880.98], kind: 0, hip: true, roof: [184, 96, 64], wall: [241, 241, 237], base: [236, 235, 230], eave: 30.2, ridge: 32.9 },  // 26 Beaudesert Road: white, two storeys (the survey has it as one), terracotta tiles (Street View)
     { at: [-269.54, -905.04], kind: 0, hip: true, roof: [192, 104, 66], wall: [232, 221, 199] },  // 24 Beaudesert Road (Pandy's): terracotta tiles (satellite); the walls are a guess, hidden by bamboo
@@ -10080,7 +10080,7 @@ const handle = async (m, post) => {
     { at: [-1600.08, 741.77], kind: 2, wall: [196, 192, 182] },              // 32 Sherwood Road (realtime flowers): pale grey-beige cladding
     { at: [-52.36, -172.61], kind: 2, flat: true, wall: [232, 196, 172] },   // the Art Deco corner (190-204 Beaudesert Road, on Mayfield Road): salmon render
     { at: [-1067.37, -58.93], kind: 2, wall: [62, 64, 68] },                 // Starbucks' drive-through (1115 Ipswich Road): charcoal
-    { at: [-1057.23, -77.04], kind: 2, wall: [96, 110, 104] },               // the Woodworkers Company (1095 Ipswich Road): grey-green
+    { at: [-1057.23, -77.04], kind: 2, wall: [96, 110, 104], eave: 18.6 },               // the Woodworkers Company (1095 Ipswich Road): grey-green
     // Beaudesert Road's houses and the rest of its buildings, each in its colours from Street View (Ash, 19 November 2026: "if you
     // finish businesses do all Beaudesert rd houses. Not a privacy risk, this is all on google maps anyway"): walls, and for a
     // highset house the colour under it. The roofs were already the aerial photo's; ones hidden by trees or fences keep the model's own
