@@ -1531,6 +1531,7 @@ body:not(.bstown) .bs-share-btn { display: none; }
 .bs-fly-x.bs-me-btn svg { width: 19px; height: 19px; }
 .bs-fly-x.bs-me-btn[aria-expanded="true"] { background: #fff; color: #1b1830; }
 body.bsme #bsFlyX, body.bsme #bsTimeBtn, body.bsme #bsFlyTimeBox { display: none !important; }
+body.bsfly #bsTimeBtn, body.bsfly #bsFlyTimeBox { display: none !important; }  /* always day in Explore (Ash, 19 November 2026) */
 body.bstown.bswalk:not(.bsdrive) .bs-ud { display: none !important; }
 body.bsnoplaces #bsTown .inv-embed-labels { display: none !important; }
 /* Place names keep clear of the buttons along the top (and of the sticks on a touch screen) by a fixed clip on their layer:
@@ -8077,7 +8078,7 @@ const handle = async (m, post) => {
     // "Let's make the time stay daytime unless as an admin I change it")
     // (an admin's own time, once moved, is kept for next time: Ash, 15 November 2026, "When I adjust a setting, make that the default
     // for next time the app opens")
-    BS.flyView = BS.view; { const v = BS.view, day = v.day || bsKey(v.ms), mine = exTimeSaved(), m2 = mine ?? 12 * 60; BS.exTimeSet = mine != null;
+    BS.flyView = BS.view; { const v = BS.view, day = v.day || bsKey(v.ms), mine = null, m2 = 12 * 60; BS.exTimeSet = false;  // always midday, for admins too (Ash, 19 November 2026: "Make it always day. So we don't need to render nighttime models")
       BS.view = { mode: "day", day, ms: bsMidnight(day) + m2 * 60000, play: false }; bsApply(true);
       const ti = $("bsFlyTime"), to = $("bsFlyTimeOut"); ti.value = m2; to.textContent = bsTime(BS.view.ms);
       const tb = $("bsTimeBtn"), tbox = $("bsFlyTimeBox"); $("bsTimeBtnT").textContent = bsTime(BS.view.ms); tbox.hidden = true; tb.setAttribute("aria-expanded", "false");
@@ -12410,7 +12411,7 @@ const handle = async (m, post) => {
       const tm = el("div", "bs-me-sec"), th = el("div", "bs-me-time"), tl = el("label", "bs-me-lbl", "Time of day"), tout = el("output", "", BS.exTimeSet ? $("bsFlyTimeOut")?.textContent || "" : "12:00 pm"), tr = el("input");
       tr.type = "range"; tr.id = "bsMeTime"; tl.htmlFor = "bsMeTime"; tr.min = "0"; tr.max = "1439"; tr.step = "5"; tr.value = BS.exTimeSet ? $("bsFlyTime")?.value || "720" : "720";
       tr.oninput = () => { const ti = $("bsFlyTime"); if (!ti) return; ti.value = tr.value; ti.dispatchEvent(new Event("input")); tout.textContent = $("bsFlyTimeOut").textContent; };
-      th.append(tl, tout); tm.append(th, tr); if (!isAdmin()) tm.hidden = true;  // (admins only: for everyone else it stays midday)
+      th.append(tl, tout); tm.append(th, tr); tm.hidden = true;  // (always day now, for everyone: Ash, 19 November 2026)
       // make the 3D model an app on the phone's home screen, from its own page (/<suburb>/explore/), which has its own manifest
       const app = el("div", "bs-me-sec"); app.append(el("span", "bs-me-lbl", "Make it an app"));
       // (Ash, 15 November 2026: "The make it an app instructions don't work". On an iPhone it has to be added from Safari itself,
