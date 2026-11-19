@@ -8873,7 +8873,8 @@ const handle = async (m, post) => {
         // ---- Walk or Fly ----
         const tideBox = $("bsTownTide"), tideIn = $("bsTownTideIn"), tideOut = $("bsTownTideOut"), tidal = m.tide.max > m.tide.min, tideBtn = $("bsTideBtn");
         tideBtn.setAttribute("aria-expanded", "false"); tideBtn.onclick = () => { tideBox.hidden = !tideBox.hidden; tideBtn.setAttribute("aria-expanded", String(!tideBox.hidden)); };  // Moorooka has no tide to move
-        const setMode = (walk, to) => { T.walk = walk; T.car?.walkKeys?.(walk); document.body.classList.toggle("bswalk", walk); F.walk = walk ? () => ground() + F.eye : null; tideBtn.hidden = walk || !tidal; tideBox.hidden = tideBtn.hidden || tideBtn.getAttribute("aria-expanded") !== "true"; F.lim = walk ? inner : outer;
+        const setMode = (walk, to) => { if (walk && F.home) { if (F.home.veh && T.car?.held?.()) T.car.drop?.(); F.home = null; }  // (Jump to from Explore mode, while in a car: it was left held, and you stuck half in it)
+          T.walk = walk; T.car?.walkKeys?.(walk); document.body.classList.toggle("bswalk", walk); F.walk = walk ? () => ground() + F.eye : null; tideBtn.hidden = walk || !tidal; tideBox.hidden = tideBtn.hidden || tideBtn.getAttribute("aria-expanded") !== "true"; F.lim = walk ? inner : outer;
           modeBox.querySelectorAll("button").forEach(bn => bn.setAttribute("aria-pressed", String(!walk)));
           if (F.on?.freeFor) F.on.freeFor(); else if (document.pointerLockElement) document.exitPointerLock?.();
           F.vert = 0; F.keys.clear();  // (the sticks are left alone: a thumb still on one carries on, and lifting it centres it)
@@ -14302,7 +14303,10 @@ const handle = async (m, post) => {
       if (on && car) M.compose(V.set(car.x, car.y, car.z), Q.setFromEuler(E.set(-car.p, car.h, car.r, "YXZ")), BEAT.set(beat * (car.bus ? 2.1 : 1), 1, beat * (car.bus ? 2.1 : 1)));
       for (let i = 0; i <= RING; i++) { const show = !!on && !!car && (i === 0 || i <= full); if (show || lit[i]) { ring.setMatrix(i, show ? M.elements.slice() : NONE); lit[i] = show; } }
       const pc = Math.round(charge * 100) + "%"; if (boostBtn.style.getPropertyValue("--charge") !== pc) boostBtn.style.setProperty("--charge", pc); };
-    const leave = step => { if (!veh) return; const was = veh; if (was === "possum" && pos?.cling) { try { T.peers?.ride?.(pos.cling.id, false); } catch {} pos.cling = null; }  // (it stayed stuck to the driver: Ash, 18 November 2026) if (held) { document.body.classList.remove("bsheld"); held = null; } rockets(false); if (sky) { skyEnd(); skyTried = false; } for (let i = 0; i < FXN; i++) if (sparks[i]) { sparks[i] = null; fx.setMatrix(i, NONE); } for (let i = 0; i < GFXN; i++) if (glit[i]) { glit[i] = null; gfx.setMatrix(i, NONE); } if (was !== "possum" && was !== "pigeon" && was !== "drone" && was !== "ride") snd.door(); snd.stop();
+    const leave = step => { if (!veh) return; const was = veh; if (was === "possum" && pos?.cling) { try { T.peers?.ride?.(pos.cling.id, false); } catch {} pos.cling = null; }  // (it stayed stuck to the driver: Ash, 18 November 2026)
+      // (the comment above once ran on over the rest of this line, so leaving never stopped the engine, the rockets or the sparks: Ash, 19 November
+      // 2026, "when i use jump to often the sound of the car or something is still playing")
+      if (held) { document.body.classList.remove("bsheld"); held = null; } rockets(false); if (sky) { skyEnd(); skyTried = false; } for (let i = 0; i < FXN; i++) if (sparks[i]) { sparks[i] = null; fx.setMatrix(i, NONE); } for (let i = 0; i < GFXN; i++) if (glit[i]) { glit[i] = null; gfx.setMatrix(i, NONE); } if (was !== "possum" && was !== "pigeon" && was !== "drone" && was !== "ride") snd.door(); snd.stop();
       if (was === "ride") { const q = ride.q; if (ride.local) { ride.local.rider = false; snd.door(); } else T.peers?.ride?.(ride.id, false);
         if (step && q && ride.local) { F.pos.x = q.x - Math.cos(q.h) * 2.6; F.pos.z = q.z + Math.sin(q.h) * 2.6; F.yaw = q.h - Math.PI / 2; F.pitch = -0.04; }  // off the bus's kerb-side door
         else if (step && q) { const back = RIDE_UP[q.k] > 1 ? 2.4 : 1.2; F.pos.x = q.x - Math.cos(q.h) * back; F.pos.z = q.z + Math.sin(q.h) * back; F.yaw = q.h + Math.PI; F.pitch = -0.04; }
@@ -14337,6 +14341,7 @@ const handle = async (m, post) => {
     C.unhold = () => { if (!held) return false; const H = held; held = null; F.pos.set(H.cam[0], H.cam[1], H.cam[2]); F.yaw = H.cam[3]; F.pitch = H.cam[4]; last = H.cam.slice();
       document.body.classList.remove("bsheld"); document.body.classList.add(...H.cls); F.keys.clear(); F.drive = tick; snd.start(veh === "plane" && plane?.heli ? "heli" : veh); return true; };
     C.held = () => !!held;
+    C.drop = () => { if (held) leave(false); };  // (a jump to a place from Explore mode: you get out of what you were in, where it stands)
     let camOff = null;  // where the view is from what you're in
     // (up in a plane, Moorooka's model stops fetching its sharpest ground and building backyards: window.anFast, moorooka-model.js patched)
     const tick = dt0 => { window.anFast = veh === "plane" && !!plane?.air; dt0Now = Math.min(dt0, 0.1); fxTick(dt0Now); if (veh !== "car") rockets(false); const dt = Math.min(dt0, 0.1), k = F.keys, has = (...c) => c.some(x => k.has(x));
