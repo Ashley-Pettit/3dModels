@@ -1676,6 +1676,24 @@ body.bsdrive .bs-fly-tip { display: none !important; }
 body.bstown.bsadmin-tool #bsTown { pointer-events: auto; touch-action: none; cursor: crosshair; }
 /* flying with a tool in hand, the sticks and Up and Down make way for the map: two fingers move, turn and zoom it */
 @media (pointer: coarse) { body.bstown.bsadmin-tool:not(.bswalk) .bs-joy, body.bstown.bsadmin-tool:not(.bswalk) .bs-ud { display: none; } }
+/* Google Maps style: map colours (soft, pale, low colour), and in the map view no sticks (it's drag, pinch and twist) */
+body.bstown.bsgmap #bsTown canvas { filter: saturate(0.42) brightness(1.1) contrast(0.88); }
+body.bstown.bsgmap:not(.bswalk):not(.bsheld) .bs-joy, body.bstown.bsgmap:not(.bswalk):not(.bsheld) .bs-ud { display: none; }
+body.bstown.bsgmap.bsheld .bs-joy, body.bstown.bsgmap.bsheld .bs-ud { display: none; }
+/* the welcome card: name, style, full screen and the controls, all at once */
+.bs-askwrap .bs-welcome { pointer-events: auto; position: absolute; z-index: 7; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(380px, calc(100% - 32px)); max-height: calc(100% - 40px); overflow-y: auto; box-sizing: border-box;
+  display: grid; gap: 10px; padding: 18px 18px 16px; border-radius: 18px; background: rgba(22, 24, 38, 0.95); color: #fff; font: 500 0.9rem/1.35 var(--ui); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45); }
+.bs-welcome h2 { margin: 0 0 2px; font: 800 1.2rem/1.2 var(--ui); }
+.bs-welcome .bs-wel-lbl { margin: 4px 0 -4px; font: 700 0.78rem var(--ui); color: #ffd166; }
+.bs-welcome input[type=text] { min-height: 42px; padding: 0 12px; border: 0; border-radius: 10px; background: #fff; color: #1b1830; font: 600 1rem var(--ui); }
+.bs-wel-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.bs-wel-seg button { display: grid; gap: 2px; text-align: left; padding: 10px 12px; border: 2px solid transparent; border-radius: 12px; background: rgba(255, 255, 255, 0.1); color: #fff; cursor: pointer; font: 500 0.76rem/1.25 var(--ui); }
+.bs-wel-seg button b { font: 800 0.92rem var(--ui); } .bs-wel-seg button span { opacity: 0.85; }
+.bs-wel-seg button[aria-checked=true] { border-color: #ffd166; background: rgba(255, 209, 102, 0.16); }
+.bs-wel-tick { display: flex; gap: 10px; align-items: center; cursor: pointer; } .bs-wel-tick[hidden] { display: none; }
+.bs-wel-tick input { width: 20px; height: 20px; accent-color: #ffd166; flex: none; }
+.bs-wel-go { min-height: 46px; margin-top: 4px; border: 0; border-radius: 12px; background: #ffd166; color: #1b1830; font: 800 1rem var(--ui); cursor: pointer; }
+.bs-welcome button:focus-visible, .bs-welcome input:focus-visible { outline: 3px solid #7ed0ff; outline-offset: 2px; }
 @media (min-width: 1000px) { .bs-admin { top: calc(60px + env(safe-area-inset-top)); left: auto; right: 16px; align-items: flex-end; } }
 /* street names in the town models: drawn by the app over the model, along each street, never upside down */
 .bs-streets { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
@@ -8332,37 +8350,48 @@ const handle = async (m, post) => {
       // (offered once, ever: Ash, 17 November 2026, "We don't need don't ask me again. Only ever show a person it once, add in settings
       // ability to play again")
       F.rod?.off(); F.rod = bsRodKeys(F, desk);  // (Rod's own keys: a layer in front of the game's)
-      if (F.rod?.offer && !BS.rodAsked) { BS.rodAsked = true; let onAt = 0; const t0 = performance.now(), wait = setInterval(() => { const T = BS.town, now = performance.now();
-          if (!F.on || now - t0 > 120000) { clearInterval(wait); return; } if (!T?.on) return; if (!onAt) onAt = now;
-          if (now - onAt < 3400 || document.querySelector(".bs-askwrap") || document.pointerLockElement) return; clearInterval(wait); F.rod.offer = false; F.rod.setup(); }, 400); BS.tutAsked = true; }
-      if (!BS.tutAsked && !(() => { try { return localStorage.getItem("an-tut"); } catch { return null; } })()) { BS.tutAsked = true;
+      // one welcome card at the start, in place of three questions one after another (the player name, full screen, and the controls
+      // tutorial or Rod's keys): Ash, 19 November 2026, "merge player name, full screen and the tutorial together so its not lots of constant
+      // prompts at the start", and "on the same screen allow the user to toggle settings of standard vs google maps style"
+      if (!BS.welcomed) { BS.welcomed = true;
+        const ls = k => { try { return localStorage.getItem(k); } catch { return null; } };
+        const needName = !(ls("an-player") || ls("an-player-asked")), needTut = !ls("an-tut") || !!F.rod?.offer, fsOk = desk && (document.fullscreenEnabled || document.webkitFullscreenEnabled);
         let onAt = 0; const t0 = performance.now(), wait = setInterval(() => { const T = BS.town, now = performance.now();
           if (!F.on || now - t0 > 120000) { clearInterval(wait); return; } if (!T?.on) return; if (!onAt) onAt = now;
-          if (now - onAt < 3400 || document.querySelector(".bs-askwrap") || document.pointerLockElement) return; clearInterval(wait);
-          const wrap = document.createElement("div"), box = document.createElement("div"), q = document.createElement("p"), yes = document.createElement("button"), no = document.createElement("button");
-          try { localStorage.setItem("an-tut", "offered"); } catch {}
-          wrap.className = "bs-askwrap"; box.className = "bs-chatbar bs-askname bs-askfull"; box.setAttribute("role", "dialog"); box.setAttribute("aria-label", "Tutorial");
-          q.textContent = "New here? Learn the controls in under a minute.";
-          yes.type = no.type = "button"; yes.textContent = "Show me"; no.className = "skip"; no.textContent = "No thanks";
-          const close = () => { wrap.remove(); removeEventListener("keydown", esc, true); }, esc = e => { if (e.code === "Escape") { e.stopPropagation(); close(); } };
-          yes.onclick = () => { close(); F.on.tutorial?.(); }; no.onclick = close;
-          q.textContent = "New here? Learn the controls in under a minute. (It's in Settings any time.)";
-          addEventListener("keydown", esc, true); box.append(q, yes, no); wrap.append(box); fb.closest(".bs-deskbtns").parentElement.appendChild(wrap); try { yes.focus({ preventScroll: true }); } catch {} }, 400); }
-      if (desk && !BS.fsAsked && (document.fullscreenEnabled || document.webkitFullscreenEnabled) && !fsEl()) { BS.fsAsked = true;  // (once a page load)
-        let onAt = 0; const t0 = performance.now(), wait = setInterval(() => { const T = BS.town, now = performance.now();
-          if (!F.on || fsEl() || now - t0 > 90000) { clearInterval(wait); return; }
-          if (!T?.on) return; if (!onAt) onAt = now;
-          if (now - onAt < 2600 || document.querySelector(".bs-askwrap") || document.pointerLockElement) return;
-          clearInterval(wait);
-          const wrap = document.createElement("div"), box = document.createElement("div"), q = document.createElement("p"), yes = document.createElement("button"), no = document.createElement("button");
-          wrap.className = "bs-askwrap"; box.className = "bs-chatbar bs-askname bs-askfull"; box.setAttribute("role", "dialog"); box.setAttribute("aria-label", "Full screen");
-          q.textContent = "Play full screen? It hides the browser and the taskbar. O switches it any time.";
-          yes.type = "button"; yes.textContent = "Full screen"; no.type = "button"; no.className = "skip"; no.textContent = "Not now";
-          const close = () => { wrap.remove(); removeEventListener("keydown", esc, true); }, esc = e => { if (e.code === "Escape") { e.stopPropagation(); close(); }
-            else if (/^(Key[WASD]|Arrow(Up|Down|Left|Right))$/.test(e.code)) close(); };  // (walking off answers it: not now, and the mouse looks around)
-          yes.onclick = () => { close(); fb.click(); }; no.onclick = close; addEventListener("keydown", esc, true);
-          box.append(q, yes, no); wrap.append(box); fb.closest(".bs-deskbtns").parentElement.appendChild(wrap); try { yes.focus({ preventScroll: true }); } catch {} }, 500); } document.addEventListener("fullscreenchange", F.on.fsChange); document.addEventListener("webkitfullscreenchange", F.on.fsChange); }
-    F.on.autoLock = () => { const T = BS.town; if (!desk || F.simple || !T?.on || T.admin?.tool || F.userLocked || document.pointerLockElement || $("bsMe")?.hidden === false || document.querySelector(".bs-askwrap")) return;
+          if (now - onAt < 1400 || document.querySelector(".bs-askwrap")) return; clearInterval(wait);
+          const needFs = fsOk && !fsEl();
+          if (!needName && !needTut && !needFs) { BS.mapStyle?.(ls("an3d-style") === "gmaps", true); return; }  // nothing to ask: straight in, in your style
+          const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+          const wrap = el("div", "bs-askwrap"), card = el("form", "bs-welcome"); card.setAttribute("role", "dialog"); card.setAttribute("aria-label", "Welcome");
+          const place = { moo: "Moorooka", logan: "Logan", inv: "Inverloch" }[T.cfg?.place] || "the town";
+          card.append(el("h2", "", `Welcome to ${place}`));
+          let inp = null; if (needName) { const lab = el("label", "bs-wel-lbl", "Your player name"); inp = el("input"); inp.type = "text"; inp.maxLength = 16; inp.autocomplete = "off"; inp.placeholder = "So other players know you"; inp.id = "bsWelName"; lab.htmlFor = "bsWelName";
+            inp.onkeydown = inp.onkeyup = e => e.stopPropagation(); inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); play(); } }); card.append(lab, inp); }
+          let gm = ls("an3d-style") === "gmaps"; const seg = el("div", "bs-wel-seg"); seg.setAttribute("role", "radiogroup"); seg.setAttribute("aria-label", "Style");
+          const opt = (v, t, s) => { const b = el("button"); b.type = "button"; b.setAttribute("role", "radio"); b.append(el("b", "", t), el("span", "", s)); b.onclick = () => { gm = v; draw(); }; return b; };
+          const std = opt(false, "Standard", touch ? "Walk the streets with the sticks" : "Walk the streets, game controls"), gmb = opt(true, "Google Maps", touch ? "Map from above: drag, pinch, twist" : "Map from above: drag, scroll, right-drag to turn");
+          seg.append(std, gmb); card.append(el("p", "bs-wel-lbl", "Style"), seg);
+          const tick = (t, on) => { const l = el("label", "bs-wel-tick"), c = el("input"); c.type = "checkbox"; c.checked = on; l.append(c, el("span", "", t)); return [l, c]; };
+          const [fsL, fsC] = needFs ? tick("Play full screen (O switches it any time)", true) : [null, null];
+          const [tutL, tutC] = needTut ? tick(F.rod?.offer ? "Set up my keys first" : "Show me the controls (under a minute)", true) : [null, null];
+          if (fsL) card.append(fsL); if (tutL) card.append(tutL);
+          const go = el("button", "bs-wel-go", "Play"); go.type = "submit"; card.append(go);
+          const draw = () => { std.setAttribute("aria-checked", String(!gm)); gmb.setAttribute("aria-checked", String(gm)); if (tutL) tutL.hidden = gm && !F.rod?.offer; };
+          draw();
+          const keys = e => { if (!card.contains(e.target)) { e.stopPropagation(); if (e.type === "keydown" && (e.code === "Escape" || e.code === "Enter")) { e.preventDefault(); play(); } } };
+          ["keydown", "keyup"].forEach(t => addEventListener(t, keys, true));
+          const play = () => { if (!wrap.isConnected) return; ["keydown", "keyup"].forEach(t => removeEventListener(t, keys, true)); wrap.remove();
+            if (needName) { const v = (inp.value || "").replace(/[<>]/g, "").trim().slice(0, 16); try { if (v) localStorage.setItem("an-player", v); localStorage.setItem("an-player-asked", "1"); } catch {} BS.town?.peers?.tellName?.(); }
+            if (needTut) try { if (!ls("an-tut")) localStorage.setItem("an-tut", "offered"); } catch {}
+            if (fsC?.checked && !fsEl()) fb.click();
+            BS.mapStyle?.(gm, true);
+            const tut = tutC?.checked && !tutL.hidden;
+            if (F.rod?.offer) { F.rod.offer = false; if (tut) setTimeout(() => F.rod?.setup?.(), 500); }
+            else if (tut) setTimeout(() => F.on?.tutorial?.(), 500);
+            if (needName) toast(`You're ${playerName()}. Change it any time in Settings.`, 2600); };
+          card.onsubmit = e => { e.preventDefault(); play(); };
+          wrap.append(card); fb.closest(".bs-deskbtns").parentElement.appendChild(wrap); try { (inp || go).focus({ preventScroll: true }); } catch {} }, 400); } document.addEventListener("fullscreenchange", F.on.fsChange); document.addEventListener("webkitfullscreenchange", F.on.fsChange); }
+    F.on.autoLock = () => { const T = BS.town; if (!desk || F.simple || !T?.on || T.admin?.tool || F.userLocked || (!T.walk && document.body.classList.contains("bsgmap")) || document.pointerLockElement || $("bsMe")?.hidden === false || document.querySelector(".bs-askwrap")) return;
       try { canvas.requestPointerLock?.()?.catch?.(() => {}); } catch {} };
     F.on.lockChange = () => { const on = document.pointerLockElement === canvas; document.body.classList.toggle("bslocked", on); $("bsLockTip").hidden = true;
       if (on) F.userLocked = false; else if (F.codeFree || !document.hasFocus()) F.codeFree = false; else F.userLocked = true;  // (Esc counts as locking it; leaving the window doesn't)
@@ -8904,6 +8933,11 @@ const handle = async (m, post) => {
           setMode(true, w || walkFromHere()); };
         T.firstWalk = () => { const fw = T.first?.walk; return fw ? { x: fw.x, y: ground(fw.x, fw.z) + F.eye, z: fw.z, yaw: fw.yaw, pitch: fw.pitch } : null; };
         modeBox.onclick = e => { const bn = e.target.closest("[data-town-mode]"); if (!bn) return; toMode(!T.walk); bn.blur(); };
+        // Google Maps style (Ash, 19 November 2026: Standard or Google Maps, "Both" the controls and the look): the map from above (Explore
+        // mode, with its drag, pinch and twist), in map colours; your player waits where you were, under the You are here pin
+        BS.mapStyle = (on, start) => { try { localStorage.setItem("an3d-style", on ? "gmaps" : "std"); } catch {} document.body.classList.toggle("bsgmap", on);
+          if (!T.on || BS.town !== T) return; if (on && T.walk && !T.car?.in) toMode(false); else if (!on && !T.walk && !start) toMode(true); };
+        try { document.body.classList.toggle("bsgmap", localStorage.getItem("an3d-style") === "gmaps"); } catch {}
 
         // ---- flying: drag the view to move, pinch (or scroll) to zoom, two fingers (or right-drag) to turn ----
         const look3 = () => { const cp = Math.cos(F.pitch); return [-Math.sin(F.yaw) * cp, Math.sin(F.pitch), -Math.cos(F.yaw) * cp]; };
@@ -12665,7 +12699,8 @@ const handle = async (m, post) => {
     let asked = true; try { asked = !!(localStorage.getItem("an-player") || localStorage.getItem("an-player-asked")); } catch {}
     let askBox = null, askWrap = null;
     const askKeys = e => { if (askBox && !askBox.contains(e.target)) e.stopPropagation(); };  // (the game's keys wait until it's answered)
-    if (!asked) setTimeout(() => { if (dead) return; askBox = document.createElement("form"); askBox.className = "bs-chatbar bs-askname";
+    if (!asked && false) setTimeout(() => { if (dead) return; askBox = document.createElement("form");  // (asked in the welcome card now: bsFlyOn)
+ askBox.className = "bs-chatbar bs-askname";
       askWrap = document.createElement("div"); askWrap.className = "bs-askwrap"; askWrap.append(askBox);
       ["keydown", "keyup"].forEach(t => window.addEventListener(t, askKeys, true));
       const q = document.createElement("p"), inp = document.createElement("input"), go = document.createElement("button"), skip = document.createElement("button");
@@ -12710,6 +12745,12 @@ const handle = async (m, post) => {
         bn.onclick = () => { try { localStorage.setItem("an-player-colour", String(i)); } catch {} tell(); meDraw(); meBox.querySelector(`.bs-me-tops button:nth-child(${i + 1})`)?.focus(); }; row.append(bn); });
       you.append(lab, inp, el("span", "bs-me-lbl", "Top colour"), row, el("p", "", "Your name shows over you. Pick one you are happy for anyone to see."));
       // play as an explorer or a construction worker (who sees themselves from behind and can suggest changes to the ground)
+      // Standard or Google Maps style, here too, for once the welcome card has gone (Ash, 19 November 2026)
+      const st = el("div", "bs-me-sec"); { const sr = el("div", "bs-me-role"); sr.setAttribute("role", "group"); sr.setAttribute("aria-label", "Style");
+        const gmNow = (() => { try { return localStorage.getItem("an3d-style") === "gmaps"; } catch { return false; } })();
+        for (const [v, label] of [[false, "Standard"], [true, "Google Maps"]]) { const bn = el("button", "", label); bn.type = "button"; bn.setAttribute("aria-pressed", String(gmNow === v));
+          bn.onclick = () => { if (gmNow === v) return; meClose(); BS.mapStyle?.(v); toast(v ? "Google Maps style: the map from above. Explore mode brings you back down to walk." : "Standard style: on foot, with the game controls.", 2800); }; sr.append(bn); }
+        st.append(el("span", "bs-me-lbl", "Style"), sr); }
       const as = el("div", "bs-me-sec"), rl = el("div", "bs-me-role"); rl.setAttribute("role", "group"); rl.setAttribute("aria-label", "Play as");
       for (const [v, label] of [["explorer", "Explorer"], ["builder", "Construction worker"]]) { const bn = el("button", "", label); bn.type = "button"; bn.setAttribute("aria-pressed", String(townRole() === v));
         bn.onclick = () => { if (townRole() === v) return; try { if (v === "builder") localStorage.setItem("an-player-role", "builder"); else localStorage.removeItem("an-player-role"); } catch {}
@@ -12800,7 +12841,7 @@ const handle = async (m, post) => {
       let sug = null; if (isAsh() && T.admin?.plans) { const n = T.admin.plans.count(); sug = el("div", "bs-me-sec"); sug.append(el("span", "bs-me-lbl", "Suggested map changes (just you)"));
         const b = el("button", "bs-me-go", n ? `Review ${n} suggestion${n === 1 ? "" : "s"}` : "Check for suggestions"); b.type = "button"; b.onclick = () => { meClose(); T.admin.plans.open(); };
         sug.append(b, el("p", "", n ? "Shows each one on the map where it is, then Approve puts it in everyone's app, or Deny drops it." : "None waiting from construction workers.")); }
-      meBox.append(head, you, as, sw, here, tm, app, ...(sug ? [sug] : []), ...(isAsh() ? exAshSecs(meDraw) : []), towns, ...(keysB ? [keysB] : []), tut, ...(wv ? [wv] : []), hi, priv, ver); };  // no Exit explore (Ash, 15 November 2026: "Remove exit explore"); Esc, or the browser's back, still leaves
+      meBox.append(head, you, st, as, sw, here, tm, app, ...(sug ? [sug] : []), ...(isAsh() ? exAshSecs(meDraw) : []), towns, ...(keysB ? [keysB] : []), tut, ...(wv ? [wv] : []), hi, priv, ver); };  // no Exit explore (Ash, 15 November 2026: "Remove exit explore"); Esc, or the browser's back, still leaves
     // closes with its \u00d7, the gear again, or a tap anywhere else
     const meOut = e => { if (!meBox.hidden && !meBox.contains(e.target) && !meBtn.contains(e.target)) meClose(); }; document.addEventListener("pointerdown", meOut, true);
     document.body.classList.add("bsme"); meBtn.hidden = false; meBtn.onclick = () => { meBox.hidden = !meBox.hidden; meBtn.setAttribute("aria-expanded", String(!meBox.hidden)); if (!meBox.hidden) meDraw(); meBtn.blur(); };
@@ -12928,6 +12969,7 @@ const handle = async (m, post) => {
             const ey = Math.round(bsClamp(depth < 1 ? h * 0.4 : sy, h * 0.22, h * 0.62));
             edge.style.transform = right ? `translate(${w - 8}px, ${ey}px) translate(-100%, -50%)` : `translate(8px, ${ey}px) translate(0, -50%)`; } } } };
     P.dispose = () => { try { askWrap?.remove(); } catch {} ["keydown", "keyup"].forEach(t => window.removeEventListener(t, askKeys, true)); document.removeEventListener("pointerdown", meOut, true); document.body.classList.remove("bsme"); meBtn.hidden = true; meBox.hidden = true; meBtn.onclick = null; clearTimeout(joining); emoteBtn.hidden = true; emoteBox.hidden = true; emoteBtn.onclick = null; chatBtn.hidden = true; chatBar.hidden = true; chatBtn.onclick = null; chatBar.onsubmit = null; meEl.remove(); askBox?.remove(); dead = true; for (const id of [...peers.keys()]) drop(id); try { room?.leave(); } catch {} room = null; sendPose = null; };
+    P.tellName = () => tell();
     return P;
   }
   // The numbers behind the cars and planes, which Ash can change in Settings > Admin (14 November 2026: "Allow me to edit all these
@@ -14973,7 +15015,7 @@ const handle = async (m, post) => {
     if (BS.fly) { const F = BS.fly; F.walk = F.speed = F.floor = F.hot = F.drive = null; F.ceil = 0; F.lim = null; }  // Explore, if it carries on, is its old self
     try { T.model?.dispose(); } catch {}
     const box = $("bsTown"); box.hidden = true; box.textContent = "";
-    document.body.classList.remove("bstown", "bswalk"); $("bsHeight").hidden = true; $("bsTownTide").hidden = true; $("bsTideBtn").hidden = true; $("bsTownMode").hidden = true; $("bsTownList").hidden = true;
+    document.body.classList.remove("bstown", "bswalk", "bsgmap"); $("bsHeight").hidden = true; $("bsTownTide").hidden = true; $("bsTideBtn").hidden = true; $("bsTownMode").hidden = true; $("bsTownList").hidden = true;
     $("bsTownFlood").hidden = true; $("bsTownFlood").textContent = "Flood"; $("bsTownFloods").hidden = true; $("bsTownRise").hidden = true; $("bsTownAsk").hidden = true; $("bsTownNote").hidden = true;
   }
   // "Virtually explore Inverloch": the whole-town model, on foot at the clock. "Virtually explore Moorooka": the suburb,
