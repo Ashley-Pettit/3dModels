@@ -1747,3 +1747,15 @@ drawn as a solid 7.5 m block with windows, carrying National Storage's sign, and
   where the block stood.
 - The 7-Eleven at 642 Toohey Road, Salisbury, the same way (Kebabland had been put on its canopy); Kebabland Express is on the
   building behind it, with the 7-Eleven's shop.
+
+## Moorooka: no kerbs down the middle of the divided roads (20 November 2026)
+
+Ash, 19 November 2026: "there are tonnes of roads and paths issues to fix". On Beaudesert Road and the other divided roads
+each one-way carriageway had kerbs on both sides, so its inner kerb stood in the middle of the road as a thin raised strip.
+Where the two carriageways were not parallel these strips zig-zagged across the lanes, and the generated footpath on the
+median side made white wedges on the road. The ground plan draws these roads as one surface, with no median.
+
+- `moorooka-model.js` (`?v=45`, patched in the bundle in the kerbs builder `x1`; rebuilding from source loses it, so put it
+  back): for a one-way carriageway (`flags & 4`) with a name, a kerb point, and the footpath beside it, are left out when
+  a carriageway of the same street is within about 8 m beyond the kerb (probes at 1.4, 3.2, 5.5 and 8 m past it, through
+  `RoadIndex.near`). Other streets and the outer kerbs are unchanged.
