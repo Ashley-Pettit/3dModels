@@ -9442,7 +9442,9 @@ const handle = async (m, post) => {
     { kind: "sign", addr: "34 Evesham Street", a: [-1089.2, -185.1], b: [-1094.9, -197.0], n: [0.902, -0.432], kerb: 16.1, across: 26.7, eave: 16.3, wall: "#8ab048", band: true,
       shops: [{ n: "WoodworkersXS", t: "woodworkers XS", w: 13.2, c: ["#7cb342", "#ffffff"], what: "Woodworking tools and timber, clearance", jump: true }] },
     // Friendly Autocare at 33 Baldock Street: a white cottage at the street, the workshop out of sight (Street View), so a sign on a post
-    { kind: "sign", addr: "33 Baldock Street", a: [-1055.1, -350.9], b: [-1049.3, -338.3], n: [-0.9084, 0.4181], kerb: 0.3, across: 8.22, eave: 12.6, wall: "#f2f2ee",
+    // (the cottage and its shed moved 2.8 m back: the survey had its front 1.5 m over the boundary, in the road. Ash, 19 November 2026:
+    // "Friendly auto car is on the road")
+    { kind: "sign", addr: "33 Baldock Street", a: [-1052.55, -352.06], b: [-1046.75, -339.46], n: [-0.9084, 0.4181], kerb: 3.1, across: 8.22, eave: 12.6, wall: "#f2f2ee",
       shops: [{ n: "Friendly Autocare", w: 13.9, c: ["#ffffff", "#1f6fb2"], what: "Mechanic" }] },
     // Shapland Swim Schools' pool down the long driveway at 31 Anson Street (Street View: out of sight from the street, so a sign at the
     // driveway), and K9Kids Doggy Day Care in the grey sheds at 769 Fairfield Road, Yeerongpilly, next to Kennards
@@ -9904,7 +9906,9 @@ const handle = async (m, post) => {
     { at: [-122.05, -162.03], kind: 2, flat: true, wall: [130, 118, 104] },  // 201 (Rannchhod Arcade): brown-grey brick, two storeys
     { at: [-115.58, -143.52], kind: 2, flat: true, wall: [232, 226, 210] },  // 205 (Dinder Giftware): cream
     { at: [-180.8, -489.8], wall: [236, 233, 224] },                         // 102 (Macro Tax): a white Queenslander
-    { at: [-235.32, -517.58], wall: [169, 177, 185], roof: [62, 68, 76], noShop: true, shift: [-4.43, 0.80] },  // Inline Physio (101): a pale grey weatherboard cottage, dark roof; moved 4.5 m back off the road (Ash, 17 November 2026: "Need to move physio back. It's on the road")
+    { at: [-235.32, -517.58], wall: [169, 177, 185], roof: [62, 68, 76], noShop: true, shift: [-4.43, 0.80] },
+    { at: [-1037.75, -351.55], shift: [2.55, -1.16] },                               // Friendly Autocare (33 Baldock Street): moved 2.8 m back off the road (Ash, 19 November 2026: "Friendly auto car is on the road")
+    { at: [-1015.38, -356.60], shift: [2.55, -1.16] },                               // its shed behind, moved with it  // Inline Physio (101): a pale grey weatherboard cottage, dark roof; moved 4.5 m back off the road (Ash, 17 November 2026: "Need to move physio back. It's on the road")
     { at: [-1043.28, 31.95], kind: 2, wall: [40, 96, 170] },                 // Waterski & Wake World (1106 Ipswich Road): blue
     { at: [-1027.55, 14.15], kind: 2, wall: [47, 50, 54] },
     { at: [-1132.84, -13.54], kind: 2, wall: [58, 62, 68] },
@@ -10432,7 +10436,7 @@ const handle = async (m, post) => {
     ["26 Beaudesert Road", "The light way: two storeys, its black tubular fence", -299.9, -888.2, -1.727, 0.12],
     ["Pandy's house (24 Beaudesert Rd)", "As it really is: fence, bamboo, drive, pool out the back", -296.7, -908.9, -1.727, 0.08],
     ["Brisbane Car Yard", "Its sign and bunting off Ipswich Road", -663.8, -557.9, -1.464, 0.05],
-    ["Friendly Autocare", "Its name on its wall, not in Baldock Street", -1059.5, -341.3, -1.139, 0.05],
+    ["Friendly Autocare", "Moved back off Baldock Street, its name on its wall", -1061.5, -340.4, -1.139, 0.05],
     ["Kustomize It", "New, in the olive green units on Chrome Street", 373.0, 971.7, 0.696, 0.06],
   ];
   // ---- houses drawn the light way (Ash, 19 November 2026: "Do an example how in lower res", "That level is good", "aim for .5kb max per
