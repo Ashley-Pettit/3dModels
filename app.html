@@ -12680,7 +12680,8 @@ const handle = async (m, post) => {
   function townCouncil(T, m, ground) {
     const P = { frame() {}, dispose() {} }; if (!m.addParts || !m.groundAt) return P;
     const THREE = BS.B.THREE, M = new THREE.Matrix4(); let dead = false, parts = null, D = null, open = 0, last = performance.now();
-    fetch(TOWN3D + "logan/map.json").then(r => r.json()).then(d => { if (dead || !d.precinct) return; const pc = d.precinct;
+    // the same address the model fetched map.json from (?v=), so it comes from the browser's cache, not a second 0.6 MB download
+    fetch(townAsset({ assets: TOWN3D + "logan/" }, "map.json")).then(r => r.json()).then(d => { if (dead || !d.precinct) return; const pc = d.precinct;
       const polys = pc.buildings.map(b => { const q = b.p.map(v => v / 10); if (q.length < 6) return null; let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9;
         for (let i = 0; i < q.length; i += 2) { x0 = Math.min(x0, q[i]); x1 = Math.max(x1, q[i]); z0 = Math.min(z0, q[i + 1]); z1 = Math.max(z1, q[i + 1]); }
         return { q, holes: (b.h || []).map(h => h.map(v => v / 10)), x0, x1, z0, z1, council: /Administration Centre/.test(b.n || "") }; }).filter(Boolean);
