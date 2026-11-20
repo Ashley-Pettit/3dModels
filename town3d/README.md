@@ -1856,3 +1856,18 @@ screenshot: a dark band along the foot of the wall, striped with the wall's own 
   house generator skips the six detailed lots from now on.
 - Checked at phone size (software renderer): Venky's wall from both ends, before and after, with the trim and foundation
   coloured to show where each starts and stops.
+
+### Unstick (20 November 2026)
+
+Ash: "If the player moved the control stick forward and back over 5 seconds they are likely stuck, show a above boost anti
+stuck which teleports to closest road".
+
+- **When:** driving (a car, the golden car or the bus), forward and back have both been pushed in the last 5 seconds while
+  the car has stayed within 6 m of where it was all that time. An orange **Unstick** button shows just above Boost (placed
+  from wherever Boost is, so it follows the phone and desktop layouts); U on a keyboard. It goes once the car is 12 m on, or
+  after 20 seconds.
+- **What it does:** puts the car on the nearest road (any street the model lights, not lanes or paths), in the left-hand
+  lane (the middle of a one-way carriageway), facing along the road the way it was pointing (a one-way street: its own way),
+  stopped. If something's in the way there it tries up to 20 m along the road either way.
+- **Cost:** a check of where the car is twice a second while driving; the roads are the traffic's own list (`T.roadsAll`,
+  already loaded), searched only when the button is tapped. The stick listeners are untouched.
