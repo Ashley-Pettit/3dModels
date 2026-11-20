@@ -1923,3 +1923,21 @@ the door.
   then `lamps_fix.py`. The physio's light is put back at the Helles Street corner after `lamps_fix.py` (its `lampFix` entry,
   `-2292,-5198`), as #123 placed it.
 
+
+## Moorooka's roads: kerbs round the corners, no lines in the junctions (21 November 2026)
+
+Ash: "Once you've finished the houses fix up all the roads". A survey of junctions across the suburb (from above and at a driver's
+eye height, after the sharper ground had loaded) found the road surface itself sound: every street's centre line lies on asphalt
+the whole way. What looked wrong at every junction:
+
+- **Kerbs stopped short of the corners.** Each street's kerb ended where it came near the cross street, so at every corner the
+  rounded asphalt had no kerb. The kerbs builder (`moorooka-model.js` `?v=49`, patched in the bundle in `x1`; rebuilding from
+  source loses it, so put it back) now notes where each run of kerb ends, pairs each end with the end round the corner from it
+  (the two kerb lines must meet ahead of both within 16 m, at 25 degrees or more, each kerb's verge facing the other street), and
+  joins them: straight on to a 5 m round corner (the corner the ground plan uses), then on to the other kerb. A join that would
+  cross any street is not drawn. 1,102 corners are joined. `window.anKerbCorners` gives the count.
+- **Centre dashes ran into the junctions**, and past the give-way lines. Dashes are now laid after every street is known, and a
+  dash is left out where either end or its middle is within half the width plus 2.5 m of a street with another name.
+
+Not changed: the ground plan (the asphalt, verges and footpaths), the give-way lines (already across the left half of the side
+street, just back from the main road), and the low-detail ground drawn before the sharper ground arrives.
