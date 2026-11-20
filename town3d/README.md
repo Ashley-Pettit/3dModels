@@ -1871,3 +1871,13 @@ stuck which teleports to closest road".
   stopped. If something's in the way there it tries up to 20 m along the road either way.
 - **Cost:** a check of where the car is twice a second while driving; the roads are the traffic's own list (`T.roadsAll`,
   already loaded), searched only when the button is tapped. The stick listeners are untouched.
+
+### Part 9 of the Street View houses (20 November 2026)
+
+- 246 more house fronts drawn from 298 more Street View records (Robinson, Anson, O'Neil, Beckford, Timothy, Abel, Davey,
+  Sharon and Abney Streets, Newman Road, Desanne and Kerrianne Places, and a few on Madang, Kibby and Kenway Streets, Evans
+  Road and Tennessee Avenue), 3,731 recorded so far. Same pipeline: `fronts_ground.py` (190 drives laid, 27 rule drives
+  moved, 10 crossovers, 71 paths linked to the footpath, 13 laid from a gate; about 5,800 m2 in 68 blocks; 42 trees moved off
+  paving, 80 drawn-over front fences dropped), `fronts_cuts.py`, then `lamps_fix.py` (780 poles moved in all).
+- The house generator skips the six lots the model draws in detail (6, 10, 12, 18 and 2 Beaudesert Road, 9 Bohain Street),
+  so their fences aren't drawn twice.
