@@ -38,6 +38,7 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15.5px;line-height:1.55;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;-webkit-tap-highlight-color:transparent;font-feature-settings:"ss01","cv11"}
 button,input,textarea,select{font:inherit;color:inherit;letter-spacing:inherit}
 button{cursor:pointer}
@@ -87,7 +88,6 @@ svg{flex:none}
 .icon-btn:hover{background:var(--surface)}
 .icon-btn svg{width:21px;height:21px}
 .top.scrolled{box-shadow:0 1px 0 var(--line)}
-.main.on-page .top:not(.scrolled) h1{opacity:0}
 
 /* ---------- home ---------- */
 .main{min-height:100vh;min-height:100dvh}
@@ -153,10 +153,10 @@ svg{flex:none}
 .hero-3d{position:absolute;right:14px;top:calc(var(--top-h) + env(safe-area-inset-top) + 8px);display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.22);color:#fff;font-size:12px;font-weight:550;text-decoration:none;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .hero-3d svg{width:14px;height:14px}
 .hero-3d:hover{background:rgba(0,0,0,.5)}
-.main.is-empty .top:not(.scrolled){background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;color:#fff}
-.main.is-empty .top:not(.scrolled) .icon-btn{color:#fff}
-.main.is-empty .top:not(.scrolled) .icon-btn:hover{background:rgba(255,255,255,.14)}
-.main.is-empty .top{position:fixed;left:0;right:0}
+.main.is-home .top{position:fixed;left:0;right:0;background:var(--bg);transition:background var(--t),color var(--t)}
+.main.is-home .top:not(.scrolled){background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;color:#fff}
+.main.is-home .top:not(.scrolled) .icon-btn{color:#fff}
+.main.is-home .top:not(.scrolled) .icon-btn:hover{background:rgba(255,255,255,.14)}
 
 /* ---------- colourful discover cards ---------- */
 .bento{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -176,7 +176,7 @@ svg{flex:none}
 .g-mark svg{width:110px;height:110px}
 
 /* ---------- composer ---------- */
-.composer{position:fixed;z-index:25;left:0;right:0;bottom:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(to top,var(--bg) 70%,color-mix(in srgb,var(--bg) 0%,transparent))}
+.composer{position:fixed;z-index:25;left:0;right:0;bottom:0;transform:translateY(calc(var(--kb,0px) * -1));padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(to top,var(--bg) 70%,color-mix(in srgb,var(--bg) 0%,transparent))}
 .cbox{max-width:740px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:flex-end;gap:4px;background:var(--card);border:1px solid var(--line-2);border-radius:24px;padding:6px 6px 6px 16px;box-shadow:var(--sh-lg);transition:border-color var(--t),box-shadow var(--t)}
 .cbox:focus-within{border-color:color-mix(in srgb,var(--accent) 55%,var(--line-2));box-shadow:var(--sh-lg),0 0 0 4px color-mix(in srgb,var(--accent) 12%,transparent)}
 .cbox textarea{flex:1 1 0;min-width:0;border:0;outline:0;resize:none;background:none;padding:10px 0;min-height:44px;max-height:180px;font-size:16px;line-height:1.45;color:var(--ink)}
@@ -296,6 +296,7 @@ svg{flex:none}
 .progress .ptxt{flex:1;min-width:0}
 .progress b{display:block;font-size:15px;font-weight:600}
 .progress span{display:block;font-size:13px;color:var(--ink-3)}
+@media (max-width:520px){.progress{flex-wrap:wrap}.progress .btn{flex:1 1 100%}}
 .check{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line-2);flex:none;display:grid;place-items:center;background:none;color:transparent;padding:0;transition:background var(--t),border-color var(--t)}
 .check svg{width:14px;height:14px}
 .check[aria-checked=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
@@ -334,8 +335,8 @@ svg{flex:none}
 .info .row + .row{border-top:1px solid var(--line)}
 .info .row svg{width:18px;height:18px;color:var(--accent-text);margin-top:1px}
 .info .row a{text-decoration:none;word-break:break-word}
-.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
-.actions .btn{width:100%}
+.actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}
+.actions .btn{width:100%;min-width:0;white-space:normal;line-height:1.2;text-align:center;padding:10px 12px}
 .actions .wide{grid-column:1/-1}
 .fine{font-size:12.5px;color:var(--ink-3);margin:14px 2px 0}
 .field{display:block;margin:12px 0}
@@ -386,6 +387,19 @@ svg{flex:none}
   .sheet.on{transform:translate(-50%,-50%);opacity:1}
   .grab{display:none}
 }
+@media (max-width:699px){
+  .side-item{min-height:44px;font-size:15px}
+  .chip{min-height:36px}
+  .chips{margin:0 -20px;padding:0 20px 14px}
+  .g-mark{right:-26px;bottom:-30px;color:rgba(255,255,255,.11)}
+  .g-mark svg{width:96px;height:96px}
+  .g-txt span{font-size:13px}
+  .main.is-home .page-chat{padding-bottom:calc(128px + env(safe-area-inset-bottom))}
+  .hero{min-height:min(470px,calc(100svh - 96px))}
+}
+@media (hover:none){
+  .g-card:hover,.b-feature:hover img,.cbtn.send:not(:disabled):hover{transform:none}
+}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -416,7 +430,7 @@ svg{flex:none}
 </aside>
 <div class="side-scrim" id="sideScrim"></div>
 
-<div class="main is-empty" id="main">
+<div class="main is-empty is-home" id="main">
   <header class="top" id="top">
     <div class="in">
       <button class="icon-btn menu" id="menuBtn" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h10M4 17h16"/></svg></button>
@@ -450,7 +464,7 @@ svg{flex:none}
             <button type="submit" class="cbtn send" id="send" aria-label="Send" disabled></button>
           </div>
         </form>
-        <p class="hint">AI can make mistakes, so check before you go. Emergency? Call 000.</p>
+        <p class="hint">AI can make mistakes. Emergency? Call 000.</p>
       </div>
       <div id="emptyMore">
         <section class="discover">
@@ -607,7 +621,7 @@ let page = "chat";
 function showPage(p){
   page = p;
   for(const k of Object.keys(PAGES)) $("#p-"+k).hidden = (k!==p);
-  $("#main").classList.toggle("on-page", p!=="chat");
+  $("#main").classList.toggle("on-page", p!=="chat"); syncHome();
   $("#title .brand").innerHTML = `${MARK}<span>Moorooka AI</span>`;
   document.querySelectorAll("[data-page]").forEach(b=>b.classList.toggle("on", b.dataset.page===p));
   document.querySelectorAll(".recent").forEach(b=>b.classList.toggle("on", p==="chat" && current && b.dataset.chat===current.id));
@@ -623,7 +637,18 @@ $("#menuBtn").onclick = () => setDrawer(true);
 $("#closeSide").onclick = () => setDrawer(false);
 $("#sideScrim").onclick = () => setDrawer(false);
 matchMedia("(min-width:900px)").addEventListener?.("change", ()=>setDrawer(false));
-window.addEventListener("scroll", ()=> $("#top").classList.toggle("scrolled", scrollY > (page==="chat" ? 4 : 60)), {passive:true});
+function syncHome(){ $("#main").classList.toggle("is-home", page==="chat" && !$("#empty").hidden); onScroll(); }
+function onScroll(){
+  const home = $("#main").classList.contains("is-home");
+  $("#top").classList.toggle("scrolled", scrollY > (home ? 8 : 4));
+}
+window.addEventListener("scroll", onScroll, {passive:true});
+/* Keep the composer above the on-screen keyboard (iOS keeps the layout viewport the same size, so bottom:0 sits under it). */
+if(window.visualViewport){
+  const vv = window.visualViewport;
+  const kb = () => { const h = Math.max(0, Math.round(innerHeight - vv.height - vv.offsetTop)); document.documentElement.style.setProperty("--kb", (h > 60 ? h : 0) + "px"); };
+  vv.addEventListener("resize", kb); vv.addEventListener("scroll", kb);
+}
 
 /* ================= empty state ================= */
 const SUGS = [
@@ -650,7 +675,7 @@ function renderBento(){
 }
 function setEmpty(on){
   $("#main").classList.toggle("is-empty", on);
-  $("#empty").hidden = !on; $("#emptyMore").hidden = !on;
+  $("#empty").hidden = !on; $("#emptyMore").hidden = !on; syncHome();
 }
 
 /* ================= markdown-lite ================= */
