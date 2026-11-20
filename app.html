@@ -1485,6 +1485,7 @@ body.bscam #bsTown .bs-review, body.bscam #bsTown .bs-ridecard { visibility: hid
 .bs-offer .bs-opts { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
 .bs-offer .bs-opts button { display: block; text-align: left; padding: 8px 12px; min-height: 48px; }
 .bs-offer .bs-opts button small { display: block; font-weight: 500; color: inherit; opacity: 0.85; }
+.bs-offer .bs-opts button small.bs-fx { font-weight: 700; opacity: 1; margin-top: 2px; }
 .bs-offer .bs-chips { display: flex; flex-wrap: wrap; gap: 6px; } .bs-offer .bs-chips button { min-height: 40px; padding: 0 12px; font-size: 0.8rem; }
 .bs-offer .bs-hairs > small { margin-top: 4px; }
 .bs-offer .bs-hairs select { width: 100%; min-height: 42px; padding: 0 10px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.25); background: #2a2d3a; color: #fff; font: 600 16px/1.2 var(--ui); }  /* (16px: iOS doesn't zoom in) */
@@ -13633,6 +13634,16 @@ const handle = async (m, post) => {
   const townEmoteList = () => { const P = townPerks(), k = !!P.kick; return TOWN_EMOTES.filter(e => e[0] !== (k ? "spin" : "kick") && (e[0] !== "yoga" || P.yoga) && (e[0] !== "disco" || BS.fly?.drunk)); };
   const CAR_UPS = [["turbo", "Turbo", "A quarter more top speed"], ["launch", "Launch control", "Gets up to speed nearly twice as fast"], ["nitro", "Bigger nitro tank", "Boost lasts twice as long"],
     ["refill", "Quick refill", "Boost fills back up three times faster"], ["grip", "Sports tyres", "Turns a third sharper, with a quicker handbrake spin"]];
+  // what each of the mechanic's upgrades does to your own car, worked out from its numbers in Settings, shown under the upgrade's name
+  // (Ash, 20 November 2026: "Under sports tires show the effect this has on my vehicle"). The turning circle is at walking pace, at
+  // full lock (0.55 rad), as the car turns: radius = 2.6 / (tan(lock) x turning%)
+  const carUpEffect = id => { const r = rideSettings(), n = v => String(+v.toFixed(v < 10 ? 1 : 0)), to = (a, b, u = "") => `${n(a)}${u} \u2192 ${n(b)}${u}`;
+    const zero = a => 100 / 3.6 / a, circle = k => 2 * 2.6 / (Math.tan(0.55) * k / 100);
+    return { turbo: `Your car: top speed ${to(r.carTop, r.carTop * 1.25, " km/h")}, on boost ${to(r.carBoostTop, r.carBoostTop * 1.25, " km/h")}`,
+      launch: `Your car: 0 to 100 km/h in about ${to(zero(r.carAccel), zero(r.carAccel * 1.9), " s")}`,
+      nitro: `Your car: boost lasts ${to(r.boostSecs, r.boostSecs * 2, " s")}`,
+      refill: `Your car: boost refills in ${to(r.boostBack, r.boostBack / 3, " s")}`,
+      grip: `Your car: turning ${to(r.carTurn, r.carTurn * 1.33, "%")}, turning circle ${to(circle(r.carTurn), circle(r.carTurn * 1.33), " m")}, handbrake spin ${to(r.slideTurn, r.slideTurn * 1.3, "\u00b0")} a second` }[id] || ""; };
   const POSSUM_UPS = [["speedy", "Speedy paws", "Runs 30% faster"], ["springy", "Spring legs", "Jumps half as high again"], ["climber", "Climbing claws", "Climbs twice as fast"],
     ["glider", "Glider", "You fall gently, floating from roof to roof"], ["zoomies", "Zoomies", "Boost twice as strong"]];
   // Flick's pigeon food: one of four for the pigeon, one at a time (Ash, 18 November 2026: "If you've already flown the pigeon before flick
@@ -14759,7 +14770,7 @@ const handle = async (m, post) => {
     addEventListener("keydown", cardKeys, true);
     const perks = () => townPerks(), reread = () => BS.town?.car?.reread?.();
     const pick = (q, list, key, what, said) => { const cur = perks()[key]; const opts = document.createElement("div"); opts.className = "bs-opts";
-      for (const [id, label, desc] of list) { const b = document.createElement("button"); b.type = "button"; b.className = id === cur ? "ok" : ""; b.innerHTML = `${id === cur ? "✓ " : ""}<b>${label}</b><small>${desc}</small>`;
+      for (const [id, label, desc] of list) { const b = document.createElement("button"); b.type = "button"; b.className = id === cur ? "ok" : ""; b.innerHTML = `${id === cur ? "✓ " : ""}<b>${label}</b><small>${desc}</small>${key === "car" && carUpEffect(id) ? `<small class="bs-fx">${carUpEffect(id)}</small>` : ""}`;
         b.onclick = () => { townPerkSet(key, id); reread(); toast(said ? said(label) : `${label} fitted to your ${what}. One at a time: come back any time to swap.`, 3200); q.done = true; shut(); }; opts.append(b); }
       return opts; };
     // ---- news from the locals (Ash, 16 November 2026: "Make the vendors at low random 1% per 5mins per vendor talk [about] helicopters or
@@ -15358,7 +15369,7 @@ const handle = async (m, post) => {
     // upgrade i have on")
     const upChip = Object.assign(document.createElement("div"), { className: "bs-upchip", hidden: true }); chip?.after(upChip); let upLook = 0;
     const upShow = kind => { const p = kind ? townPerks() : {}, L = kind === "car" ? CAR_UPS : kind === "possum" ? POSSUM_UPS : kind === "pigeon" ? PIGEON_UPS : null, u = L && L.find(x => x[0] === p[kind]);
-      const tx = u ? `${kind === "car" ? "\u2699\ufe0f" : kind === "possum" ? "\ud83d\udc3e" : "\ud83c\udf3e"} ${u[1]}` : ""; if (upChip.textContent !== tx) { upChip.textContent = tx; upChip.title = u ? u[2] : ""; } if (upChip.hidden === !!u) upChip.hidden = !u; };
+      const tx = u ? `${kind === "car" ? "\u2699\ufe0f" : kind === "possum" ? "\ud83d\udc3e" : "\ud83c\udf3e"} ${u[1]}` : ""; if (upChip.textContent !== tx) { upChip.textContent = tx; upChip.title = u ? u[2] + (kind === "car" && carUpEffect(u[0]) ? `. ${carUpEffect(u[0])}` : "") : ""; } if (upChip.hidden === !!u) upChip.hidden = !u; };
     const R = townPerkRide(rideSettings()), GOLD = 1 + R.gold / 100, VMAX = R.carTop / 3.6, VREV = 5.5, VBOOST = Math.max(R.carBoostTop, R.carTop) / 3.6, LIFT = R.planeLift / 3.6, CRUISE = Math.max(R.planeTop, R.planeLift * 1.4) / 3.6, JET = Math.max(R.planeBoostTop, R.planeTop) / 3.6, canBoost = P => !P.heli && (P.gold || !!R.planeBoost), touch = matchMedia("(pointer: coarse)").matches, snd = townSound(); T.snd = snd;
     snd.level(R.volume / 100);
     let veh = null, car = null, last = null, off = null, camYaw = 0, idle = 0, at = 0, charge = 1, spent = false;
