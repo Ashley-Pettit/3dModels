@@ -1,6 +1,6 @@
 // Moorooka AI service worker: lets the home-screen app open when the phone is offline.
 // Online, the page always comes fresh from the network (so a new version shows straight away); a copy is kept for offline.
-const CACHE = "moorooka-ai-v1";
+const CACHE = "moorooka-ai-v2";
 
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", e => e.waitUntil((async () => {
@@ -12,7 +12,7 @@ self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET" || new URL(req.url).origin !== self.location.origin) return;
   const isPage = req.mode === "navigate";
-  const isAsset = /\.(png|webmanifest)$/.test(new URL(req.url).pathname);
+  const isAsset = /\.(png|jpg|woff2|webmanifest)$/.test(new URL(req.url).pathname);
   if (!isPage && !isAsset) return;
   e.respondWith((async () => {
     try {
