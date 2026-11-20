@@ -9278,9 +9278,11 @@ const handle = async (m, post) => {
     { kind: "strip", addr: "173-175 Beaudesert Road", a: [-126.9, -210.1], b: [-136.3, -225.4], n: [0.852, -0.5235], kerb: 3.68, across: 14.28, eave: 49.6, wall: "#efede8", awning: "#5d6874", windows: [3.8, 4.9, 6, "#1f2a33"],
       shops: [{ n: "JB Stevenson & Co", sub: "SOLICITORS", w: 6, c: ["#c9ccd0", "#1d2c52"], what: "Lawyers (173)" }, { n: "TOBACCONIST", w: 5.5, c: ["#f2c230", "#1d1d1d"] }, { n: "Habos Kitchen", sub: "CAFE & RESTAURANT", w: 6.5, c: ["#2a2c30", "#f3e6c8"], what: "Cafe and restaurant", jump: true }] },
     // Inline Physio, again from Street View (Ash, 16 November 2026: "Use Google maps to fix the physio"): a pale grey weatherboard cottage
-    // with white trim, a verandah across the front on white posts, the big white "inline physio." board over it, teal posters in the windows
-    { kind: "sign", addr: "101 Beaudesert Road", a: [-232.0, -514.4], b: [-233.4, -522.2], n: [0.9843, -0.1767], kerb: 5.01, across: 11.01, eave: 38.3, wall: "#a9b1b9", noBoard: true,
-      veranda: { col: "#3e4650", posts: "#f2f4f5", deep: 2.1, sign: [1.3, 6.6, 1.15] },
+    // with white trim, the big white "inline physio." board on the verandah, teal posters in the windows. Fixed up again from Street View
+    // (Ash, 21 November 2026: "Fix up the inline physio"): 2.5 m further back behind a lawn, as it is; the dark verandah over the door
+    // half only, on dark posts, running on past the end towards Helles Street; the board over the door, not the middle
+    { kind: "sign", addr: "101 Beaudesert Road", a: [-234.46, -513.96], b: [-235.86, -521.76], n: [0.9843, -0.1767], kerb: 7.51, across: 13.51, eave: 38.3, wall: "#a9b1b9", noBoard: true,
+      veranda: { col: "#3e4650", posts: "#3e4650", deep: 2.1, x0: 3.4, out: 1.4, sign: [4.0, 7.5, 1.1] }, lawn: [-0.4, 3.3, 0.3, 3.3],
       posters: [[0.6, 1.9, 0.95, 2.0, "physio", "massage", "#3fb0b5", "#ffffff"], [6.0, 7.3, 0.95, 2.0, "pilates", "", "#3fb0b5", "#ffffff"]],
       shops: [{ n: "inline physio.", w: 7.9, c: ["#f4f6f6", "#1f3b57"], stripe: ["#3fb0b5"], what: "Physio", jump: true }] },
     { kind: "sign", addr: "1106 Ipswich Road", a: [-1049.7, 19.8], b: [-1060.3, 39.5], n: [-0.8806, -0.4738], kerb: 11.4, across: 21.0, eave: 19.4, wall: "#1f5fa8", band: true,
@@ -9974,7 +9976,7 @@ const handle = async (m, post) => {
     { at: [-122.05, -162.03], kind: 2, flat: true, wall: [130, 118, 104], eave: 52.6, ridge: 52.8 },  // 201 (Rannchhod Arcade): brown-grey brick, two storeys (eave raised to two storeys, as in Street View)
     { at: [-115.58, -143.52], kind: 2, flat: true, wall: [232, 226, 210] },  // 205 (Dinder Giftware): cream
     { at: [-180.8, -489.8], wall: [236, 233, 224] },                         // 102 (Macro Tax): a white Queenslander
-    { at: [-235.32, -517.58], wall: [169, 177, 185], roof: [62, 68, 76], noShop: true, shift: [-4.43, 0.80] },
+    { at: [-235.32, -517.58], wall: [169, 177, 185], roof: [62, 68, 76], noShop: true, shift: [-6.89, 1.24] },
     { at: [-1037.75, -351.55], shift: [2.55, -1.16] },                               // Friendly Autocare (33 Baldock Street): moved 2.8 m back off the road (Ash, 19 November 2026: "Friendly auto car is on the road")
     { at: [-1015.38, -356.60], shift: [2.55, -1.16] },                               // its shed behind, moved with it  // Inline Physio (101): a pale grey weatherboard cottage, dark roof; moved 4.5 m back off the road (Ash, 17 November 2026: "Need to move physio back. It's on the road")
     { at: [-1043.28, 31.95], kind: 2, wall: [40, 96, 170] },                 // Waterski & Wake World (1106 Ipswich Road): blue
@@ -10487,6 +10489,7 @@ const handle = async (m, post) => {
           for (let i = 0; i < nx; i++) for (let j = 0; j < no; j++) { const xa = x0 + (x1 - x0) * i / nx, xb = x0 + (x1 - x0) * (i + 1) / nx, oa = o0 + (o1 - o0) * j / no, ob = o0 + (o1 - o0) * (j + 1) / no;
             quad(Y(xa, ob), Y(xb, ob), Y(xb, oa), Y(xa, oa), c); } };
         if (f.pad) drape(f.pad[0], len + f.pad[1], 0.15, f.kerb - 0.3, "#b9b6ae");
+        if (f.lawn) drape(f.lawn[0], f.lawn[1], f.lawn[2], f.lawn[3], "#6f8a48");  // a front lawn where the photo's concrete is gone (the physio's)
         if (f.glass) { pic(0.35, len - 0.35, 0, 2.75, 0.06, fronts({ ...F, len: len - 0.7, wall: f.glass }, 2.75, [{ w: len - 0.7, what: s.what, n: s.n }])); plinth(0.35, len - 0.35); }
         if (f.fascia) {  // the ward office: a deep red fascia across the top, a raised piece in the middle, and the councillor's sign on it
           const r = f.fascia.raise || 0; box(0, len, 2.75, 3.55, 0, 0.3, f.fascia.col); if (r) box(len / 2 - r / 2, len / 2 + r / 2, 3.55, 4.35, 0, 0.3, f.fascia.col);
@@ -10515,8 +10518,10 @@ const handle = async (m, post) => {
         if (f.num) board(0.25, 1.15, 1.9, 2.75, 0.16, { n: f.num, c: ["#d71920", "#ffffff"] });  // the street number, on the wall by the corner
         if (f.posters) for (const [x0, x1, y0, y1, t, sub, bg, fg] of f.posters) board(x0, x1, y0, y1, 0.16, { n: t, sub, c: [bg, fg] });
         // a verandah across the front (the physio's cottage): its roof sloping out from the wall on posts at the corners and between
-        if (f.veranda) { const V = f.veranda, dp = V.deep || 2; box(-0.1, len + 0.1, 2.62, 2.76, 0, dp, V.col, 0.22);
-          for (let i = 0, n = Math.max(2, Math.round(len / 2.6)); i <= n; i++) { const px = 0.12 + (len - 0.24) * i / n; box(px - 0.06, px + 0.06, 0, 2.5, dp - 0.18, dp - 0.06, V.posts); }
+        // (`x0`: where along the front it starts; `out`: how far it runs on past the end, over the side: Ash, 21 November 2026, "Fix up the
+        // inline physio")
+        if (f.veranda) { const V = f.veranda, dp = V.deep || 2, v0 = V.x0 || 0, v1 = len + (V.out || 0); box(v0 - 0.1, v1 + 0.1, 2.62, 2.76, 0, dp, V.col, 0.22);
+          for (let i = 0, n = Math.max(2, Math.round((v1 - v0) / 2.6)); i <= n; i++) { const px = v0 + 0.12 + (v1 - v0 - 0.24) * i / n; box(px - 0.06, px + 0.06, 0, 2.5, dp - 0.18, dp - 0.06, V.posts); }
           if (V.sign) { const [x0, x1, hh] = V.sign; board(x0, x1, 2.6, 2.6 + hh, dp + 0.1, shops[0]); signY = 2.6; signH = hh; } }  // its sign stands on the verandah's edge
         if (f.tall) { const px = len + 0.9, o = bsClamp(f.kerb - 1.2, 1.5, 9); box(px - 0.07, px + 0.07, 0, 1.1, o - 0.07, o + 0.07, "#8a8d90");
           box(px - 0.5, px + 0.5, 1.1, 4.2, o - 0.1, o, f.tall.c[0]); pic(px - 0.47, px + 0.47, 1.13, 4.17, o + 0.012, tall(0.94, 3.04, f.tall.lines, f.tall.c, f.tall.foot)); }
@@ -10754,7 +10759,7 @@ const handle = async (m, post) => {
     { N: [-253.96, -637.55], S: [-260.76, -654.51], f: ["s", "#e8e8e4", 1.8] },  // 81 Beaudesert Road
     { N: [-245.68, -584.99], S: [-255.26, -637.0], f: ["s", "#cdbfa8", 1.1], to: 42.3, c: [[25.3, 26.5]] },  // 87-91 Beaudesert Road
     { N: [-239.55, -551.22], S: [-245.77, -584.98], p: [[0.0, 34.3, 0, 9, "#8a4d3c"]] },  // 93 Beaudesert Road
-    { N: [-229.88, -507.69], S: [-232.63, -524.08], f: ["s", "#7a5a3e", 1.8, "#9c4a35", 0.5], to: 9.1 },  // 101 Beaudesert Road
+    { N: [-229.88, -507.69], S: [-232.63, -524.08], f: ["s", "#6e5440", 1.7], to: 6.4 },  // 101 Beaudesert Road (plain timber, as in Street View, up to the physio's corner)
     { N: [-226.65, -491.91], S: [-229.32, -507.79], f: ["s", "#8a6a4a", 1.5], to: 11.3, c: [[7.1, 9.9]] },  // 105 Beaudesert Road
     { N: [-223.75, -476.89], S: [-226.28, -491.98], f: ["s", "#eeeeea", 1.5] },  // 107 Beaudesert Road
     { N: [-220.39, -458.25], S: [-223.53, -476.93], f: ["s", "#e6e6e2", 1.5], c: [[16.9, 18.9]] },  // 109 Beaudesert Road

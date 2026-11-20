@@ -1891,3 +1891,16 @@ the Actions permission set to read and write, pasted into Explore's Settings, "G
   paving, 80 drawn-over front fences dropped), `fronts_cuts.py`, then `lamps_fix.py` (780 poles moved in all).
 - The house generator skips the six lots the model draws in detail (6, 10, 12, 18 and 2 Beaudesert Road, 9 Bohain Street),
   so their fences aren't drawn twice.
+
+### Inline Physio fixed up (21 November 2026)
+
+Ash: "Fix up the inline physio". Checked against Street View (May 2024) from Beaudesert Road and Helles Street:
+
+- The cottage sits 2.5 m further back (MOO_STYLE `shift` [-6.89, 1.24], the sign's `a`, `b`, `kerb` and `across` with it), behind a lawn
+  (`lawn`: a green patch drawn on the ground, like the mechanic's concrete `pad`).
+- The verandah covers only the door half and runs 1.4 m past the end towards Helles Street, on dark posts (`veranda.x0` and `veranda.out`,
+  new), with the board on it over the door.
+- The neighbour's timber fence stops at the physio's corner and has no brick under it. The street light in front of the sign is moved to the
+  Helles Street corner (`lampFix` in `town.json`), where the real pole is.
+- The navy fence down the Helles Street side is real (65 Helles Street, the same corner lot): left as it is.
+
