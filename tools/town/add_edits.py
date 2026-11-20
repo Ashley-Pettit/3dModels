@@ -11,7 +11,7 @@ it opens. Edits already in the file are not added twice.
 The pasted text is a line of words and then one JSON object:
   {"town": "moorooka", "v": 1,
    "paint": [{"k": 1 lawn | 2 asphalt | 3 concrete, "w": width in metres, "p": [x, z, x, z, ...]}],
-   "gone": {"cars": [[x, z]], "trees": [[x, z]], "people": [[x, z, radius]]}}
+   "gone": {"cars": [[x, z]], "trees": [[x, z]], "people": [[x, z, radius]], "fronts": [[x, z]], "fences": [[x, z]], "lights": [[x, z]], ...}}
 x and z are model metres (x east, z south). To take a published edit back out, delete its line from edits.json.
 """
 import json, os, sys
@@ -30,7 +30,8 @@ cur = json.load(open(path, encoding="utf-8"))
 num = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool) and abs(v) < 1e6
 r2 = lambda v: round(float(v), 2)
 # what can be taken out, and (since 15 November 2026) put in: trees, parked cars and street lights, and published ones taken back out
-KINDS = (("cars", 2), ("trees", 2), ("people", 3), ("addTree", 2), ("addCar", 3), ("addLight", 3), ("noAdd", 2), ("addSmallTree", 2), ("addBush", 2), ("addFlower", 2))
+# and (since 20 November 2026) front fences, walls and hedges, the model's fences and its street lights taken out
+KINDS = (("cars", 2), ("trees", 2), ("people", 3), ("addTree", 2), ("addCar", 3), ("addLight", 3), ("noAdd", 2), ("addSmallTree", 2), ("addBush", 2), ("addFlower", 2), ("fronts", 2), ("fences", 2), ("lights", 2))
 for kind, _ in KINDS:
     cur["gone"].setdefault(kind, [])
 added = {"paint": 0, **{k: 0 for k, _ in KINDS}}
@@ -58,4 +59,4 @@ rows = lambda items: "[" + ",".join("\n    " + json.dumps(i, separators=(",", ":
 out = '{\n  "v": 1,\n  "paint": ' + rows(cur["paint"]) + ',\n  "gone": {' + ",".join(f'\n  "{k}": ' + rows(cur["gone"][k]) for k, _ in KINDS if k in ("cars", "trees", "people") or cur["gone"][k]) + "\n  }\n}\n"
 json.loads(out)
 open(path, "w", encoding="utf-8").write(out)
-print(f"{town}: added {added['paint']} strokes, {added['cars']} parked cars, {added['trees']} trees and {added['people']} no-walking circles taken out, {added['addTree']} trees, {added['addCar']} cars and {added['addLight']} street lights put in, {added['noAdd']} taken back out" + (f"; skipped {skipped} that were not well formed" if skipped else "") + f". Now {len(cur['paint'])} strokes and {sum(len(v) for v in cur['gone'].values())} things taken out in {os.path.normpath(path)}.")
+print(f"{town}: added {added['paint']} strokes, {added['cars']} parked cars, {added['trees']} trees and {added['people']} no-walking circles taken out, {added['addTree']} trees, {added['addCar']} cars and {added['addLight']} street lights put in, {added['noAdd']} taken back out, {added['fronts']} front fences, {added['fences']} fences and {added['lights']} street lights taken out" + (f"; skipped {skipped} that were not well formed" if skipped else "") + f". Now {len(cur['paint'])} strokes and {sum(len(v) for v in cur['gone'].values())} things taken out in {os.path.normpath(path)}.")
