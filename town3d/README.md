@@ -1761,3 +1761,27 @@ median side made white wedges on the road. The ground plan draws these roads as 
   back): for a one-way carriageway (`flags & 4`) with a name, a kerb point, and the footpath beside it, are left out when
   a carriageway of the same street is within about 8 m beyond the kerb (probes at 1.4, 3.2, 5.5 and 8 m past it, through
   `RoadIndex.near`). Other streets and the outer kerbs are unchanged.
+
+## Moorooka: drives, paths and fences joined up; trees and light poles off the paths (20 November 2026)
+
+Ash: "With the new houses ... you'll need to reconnect paths, fix driveways and fences", "now houses are good, just need to fix
+paths, then remove trees and move trees slightly off paths" and "Also light poles on paths". How it was done is in
+`tools/ground/README.md` (`fronts_ground.py`, `fronts_cuts.py`, `lamps_fix.py`).
+
+- The ground now agrees with the Street View house fronts outside the designed square: 459 drives laid where there were none,
+  195 rule drives moved to where Street View has the drive (611 were already within 3.5 m and left), 46 crossovers added, 482
+  front paths carried across the verge to the footpath and 68 laid from a gate. About 35,000 m2 of ground changed in 70 blocks.
+- Fences open where the paving crosses them (`c` on each front in `MOO_LITE`, 1,018 openings on 859 fronts), instead of at
+  Street View's gate and drive (`gap`, `d`), and the drive slabs are gone (the ground draws the drive). Inside the designed
+  square the ground (from the aerial) is trusted and the fence is cut to suit it. Businesses with a forecourt (`p`) are as they
+  were.
+- Trees: 2,875 moved off paths, drives and streets to the nearest clear spot within 4 m, 46 removed where there was none; trees
+  in car parks were left. Cars on a moved drive moved with it (15) or went (36), and 44 parked across a new crossover went;
+  696 front fences in `yards.bin` gave way to the house's own, and 100 yard things on new paving went.
+- Light poles (`moorooka-model.js` `?v=46`, patched in the bundle; rebuilding from source loses it, so put it back):
+  - `lampOff` stands each pole on the grass between the kerb and the footpath, or behind the footpath, from the footpath
+    sides in `town.json`, instead of 1.4 m from the kerb whatever is there.
+  - `town.lampFix` then moves the poles still on paving (read from the ground): 672 moved, median 0.5 m, at most 8.4 m along the
+    street; 96 on paved shopfront verges stand 0.6 m behind the kerb. Poles on concrete went from 253 to 37 (24 of those on
+    fully paved verges).
+  - `window.anLampSpots` (x, y, z, heading per pole) is what `lamps_fix.py` reads.

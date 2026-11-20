@@ -66,3 +66,31 @@ Two mistakes on the way, worth knowing before changing these rules:
   paved: that showed both.
 
 Totals are in the pull request that brought this in.
+
+## Moorooka: drives, paths, fences, trees and light poles to suit the Street View houses (20 November 2026)
+
+Ash: "With the new houses ... you'll need to reconnect paths, fix driveways and fences", then "now houses are good, just need
+to fix paths, then remove trees and move trees slightly off paths" and "Also light poles on paths".
+
+The houses' fronts (`MOO_LITE` in `app.html`: driveway `d`, gate `gap`) came from Street View, but the ground under them was
+designed by rule, so drives met the fence where there was no opening and gates opened onto grass. The ground is made to agree
+with the fronts outside the designed square; inside it (blocks 4 to 7, drawn from the aerial) the ground is trusted and the
+fence is cut to suit.
+
+1. `python3 fronts_ground.py app.html town.json surface/ yards.bin <work> --write` (about 8 minutes):
+   - per house front: a rule drive within 3.5 m of the Street View drive is left; otherwise it is taken out (lawn, the
+     footpath across the verge kept) and a drive 2.8 to 6 m wide is laid from the house (or 8 m in) to the kerb, with a
+     crossover over the verge;
+   - a path from each gate to the footpath where there is none;
+   - the blocks are re-encoded only within 10 pixels of a change, and slivers left by a taken-out drive are tidied;
+   - trees on concrete, within 0.6 m of it or on a street move to the nearest clear spot within 4 m (not under a roof),
+     else go; trees in car parks are left;
+   - cars move with their drive or go, and cars across a new crossover go; front fences in `yards.bin` (kind 13) on a
+     Street View front go (the house's own fence is drawn), and yard things on new paving go (not pools);
+   - writes `<work>/cuts.json`: where paving crosses each fenced front.
+2. `python3 fronts_cuts.py app.html <work>/cuts.json`: each house's `gap` and `d` become `c`, the openings in its fence
+   (the model draws no fence across them). Business fronts (`p`) are left alone.
+3. Light poles: rebuild, read where the model puts each pole (`window.anLampSpots`, x, y, z and heading per pole), then
+   `python3 lamps_fix.py town.json surface/ <spots.json> --write`: a pole on or within 0.35 m of paving, or on the street,
+   moves along the kerb (up to 8 m) and across the verge (0.5 to 4.5 m out) to the nearest clear spot, not in a building;
+   on a paved shopfront verge it stands 0.6 m behind the kerb. Written to `town.json` as `lampFix`.
