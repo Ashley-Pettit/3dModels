@@ -2411,6 +2411,9 @@ body.bsfly .toast.show { transform: translate(-50%, 0); }
   let vaultReady = Promise.resolve();
   let vaultKey = null;  // CryptoKey, once the passphrase checks out
   const GH_DISPATCH = "https://api.github.com/repos/ashley-pettit/awesome-news/actions/workflows/pages.yml/dispatches";
+  // Explore's own saves (map edits, kept views) go to this repo, the 3D models' home (Ash, 20 November 2026: "how do i get the github
+  // key you need for this"; the copy still sent them to Awesome News, so they never reached this site)
+  const GH_DISPATCH_3D = "https://api.github.com/repos/ashley-pettit/3dModels/actions/workflows/pages.yml/dispatches";
   const STALE_MS = 3 * 3600e3;
   let bgTried = false;
   // Opening the app with stories over 3 hours old starts an update in the background (at most every 30 minutes).
@@ -8141,7 +8144,7 @@ const handle = async (m, post) => {
       else { store.set("brief.wxCam." + key, v || null);
         // a public app: with the GitHub key saved in Admin, send it to everyone too (filed in the repo, then a quick publish)
         const tok = store.get("brief.ghToken", ""); if (tok && A.unlocked) try {
-          const r = await fetch(GH_DISPATCH.replace("pages.yml", "keep-view.yml"), { method: "POST", headers: { Authorization: `Bearer ${tok}`, Accept: "application/vnd.github+json" },
+          const r = await fetch(GH_DISPATCH_3D.replace("pages.yml", "keep-view.yml"), { method: "POST", headers: { Authorization: `Bearer ${tok}`, Accept: "application/vnd.github+json" },
             body: JSON.stringify({ ref: "main", inputs: { scene: key, b: v ? v.b.join(",") : "", l: v ? v.l.join(",") : "" } }) });
           sentAll = r.ok || r.status === 204; } catch {} }
       return true; };
@@ -14714,7 +14717,7 @@ const handle = async (m, post) => {
       saving = true; saveBtn.disabled = true; say("Saving\u2026");
       let did = 0, bad = 0;
       try { for (let i = 0; i < lots.length; i++) {
-          const r = await fetch(GH_DISPATCH.replace("pages.yml", "town-edits.yml"), { method: "POST", headers: { Authorization: `Bearer ${tok}`, Accept: "application/vnd.github+json" },
+          const r = await fetch(GH_DISPATCH_3D.replace("pages.yml", "town-edits.yml"), { method: "POST", headers: { Authorization: `Bearer ${tok}`, Accept: "application/vnd.github+json" },
             body: JSON.stringify({ ref: "main", inputs: { edits: JSON.stringify({ town, v: 1, paint: lots[i], gone: i ? blank().gone : gone }) } }) });
           if (!(r.ok || r.status === 204)) { bad = r.status || -1; break; }
           did++; } } catch { bad = -1; }
