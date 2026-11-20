@@ -1904,3 +1904,11 @@ Ash: "Fix up the inline physio". Checked against Street View (May 2024) from Bea
   Helles Street corner (`lampFix` in `town.json`), where the real pole is.
 - The navy fence down the Helles Street side is real (65 Helles Street, the same corner lot): left as it is.
 
+### The physio's signs (21 November 2026)
+
+Ash: "Main problem is the 3 signs, main one is in a roof. One on a window, 3rd one on a door". Found by casting rays at the front
+wall: the window is 1.0 to 3.0 m along it, the door 5.5 to 6.5 m, and the building's gable leans out over the verandah above about
+3.4 m (the board stood into it). The board is now 0.5 m tall, on the verandah's top over the door (`veranda.sign` takes a fourth
+number, the height it starts at, 2.6 m unless given), and the "physio" and "pilates" posters are on the bare wall either side of
+the door.
+
