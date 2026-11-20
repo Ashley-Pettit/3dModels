@@ -1912,3 +1912,14 @@ wall: the window is 1.0 to 3.0 m along it, the door 5.5 to 6.5 m, and the buildi
 number, the height it starts at, 2.6 m unless given), and the "physio" and "pilates" posters are on the bare wall either side of
 the door.
 
+### Part 10, the last of the Street View houses (21 November 2026)
+
+- Every house in the address register is now recorded from Street View: 3,982 records, 2,392 fronts drawn in the rest of
+  Moorooka (204 more in this part). The last streets: Muriel Avenue, Gladstone Street, Cobden Street, John Bright Street and Coin
+  Street, and the 76 that Street View first showed black. Those were the "seed" tab sitting behind another tab in the browser
+  pane, where Street View doesn't draw, not missing coverage.
+- Same pipeline: `fronts_ground.py` (173 drives laid, 12 rule drives moved, 5 crossovers, 34 paths linked to the footpath, 11
+  laid from a gate; about 2,900 m2 in 66 blocks; 17 trees moved off paving, 65 drawn-over front fences dropped), `fronts_cuts.py`,
+  then `lamps_fix.py`. The physio's light is put back at the Helles Street corner after `lamps_fix.py` (its `lampFix` entry,
+  `-2292,-5198`), as #123 placed it.
+
