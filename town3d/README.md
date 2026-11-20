@@ -1792,3 +1792,11 @@ paths, then remove trees and move trees slightly off paths" and "Also light pole
   Street), 2,742 recorded so far. Same pipeline as above: `fronts_ground.py` (175 drives laid, 40 rule drives moved, 5
   crossovers, 62 paths linked to the footpath, 11 laid from a gate; about 6,900 m2 in 63 blocks), then `fronts_cuts.py`, then
   `lamps_fix.py` (read again with `lampFix` taken out first, so its keys are where the model stands each pole).
+
+### Part 7 of the Street View houses (20 November 2026)
+
+- 233 more house fronts drawn from 296 more Street View records (Longueval Street, Hamilton Road, Holmes Street, Whittle,
+  Beulah, Gratwick, Fleurs and Unwin Streets, Northview Outlook, Glendale Grove, Cornford, Moresby and Heilly Streets and
+  Tarragindi Road), 3,038 recorded so far. Same pipeline: `fronts_ground.py` (158 drives laid, 30 rule drives moved, 21
+  crossovers, 68 paths linked to the footpath, 10 laid from a gate; about 5,800 m2 in 57 blocks), `fronts_cuts.py`, then
+  `lamps_fix.py` (7 more poles moved off new paving).
