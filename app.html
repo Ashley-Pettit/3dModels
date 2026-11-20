@@ -2520,7 +2520,7 @@ body.bsfly .toast.show { transform: translate(-50%, 0); }
     const d = exLoad = document.createElement("div"); d.className = "ex-load"; d.setAttribute("role", "status");
     d.innerHTML = `<i aria-hidden="true"></i><b>Loading ${where} 3D model</b><small>This takes a few seconds</small>`; document.body.appendChild(d);
     // still waiting after 5 seconds: say so kindly (Ash, 15 November 2026: "after the person has waited 5 secs, change this to show good things take time")
-    setTimeout(() => { if (exLoad === d) d.querySelector("small").textContent = "Good things take time"; }, 5000); };
+    setTimeout(() => { if (exLoad === d && !/^Nearly/.test(d.querySelector("small").textContent)) d.querySelector("small").textContent = "Good things take time"; }, 5000); };
   const exLoadDone = () => { const d = exLoad; if (!d) return; exLoad = null; d.classList.add("gone"); setTimeout(() => d.remove(), 600); };
   if (pendingExplore) exLoadShow(exploreName(pendingExplore));
   // A link straight into Explore: start fetching everything the model needs now, side by side, not one after another as each
@@ -8727,13 +8727,21 @@ const handle = async (m, post) => {
     exLoadShow(exploreName(cfg.place));
     // the loading screen goes once the town's up, the view has held still for a moment and (where the model can say so, as
     // Logan's does) everything around you is in, so nothing pops in as it lifts (or if it didn't start)
-    { let onAt = 0, last = "", still = 0;
+    // (and it stays up until the game runs smoothly: Ash, 20 November 2026, "initially when the game loads it's too laggy, perhaps more
+    // time on the spinner". While it's up, every frame's time is noted; it lifts once the last 60 frames (a second, at 60 a second) have no hitch in them, a frame
+    // no longer than twice the usual and at most 70 ms usual, or after 15 seconds whatever happens. Only frames are counted: nothing in
+    // the loading itself, or in what's fetched or when, is changed)
+    { let onAt = 0, last = "", still = 0, raf = 0, prev = 0; const ft = [];
+      const tick = t => { if (prev) { ft.push(t - prev); if (ft.length > 60) ft.shift(); } prev = t; raf = exLoad ? requestAnimationFrame(tick) : 0; };
+      const smooth = () => { if (ft.length < 60) return false; const s = [...ft].sort((a, b) => a - b), med = s[30]; return med < 70 && s[59] < Math.max(60, med * 2); };
+      const done = () => { cancelAnimationFrame(raf); exLoadDone(); };
       const watch = () => {
-        if (BS.town !== T || T.dead || Date.now() - t0 > (cfg.wait || 45000)) { exLoadDone(); return; }
-        if (T.on) { const F = BS.fly, at = performance.now(); onAt ||= at;
+        if (BS.town !== T || T.dead || Date.now() - t0 > (cfg.wait || 45000)) { done(); return; }
+        if (T.on) { const F = BS.fly, at = performance.now();
+          if (!onAt) { onAt = at; raf = requestAnimationFrame(tick); const sm = exLoad?.querySelector("small"); if (sm) sm.textContent = "Nearly there: getting the streets ready"; }
           const k = F ? [F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch].map(v => v.toFixed(2)).join() : "";
           if (k !== last) { last = k; still = at; }
-          if (at - onAt > 700 && at - still > 400 && (!T.model?.settled || T.model.settled() || at - onAt > 8000)) { exLoadDone(); return; } }
+          if (at - onAt > 1500 && at - still > 400 && (!T.model?.settled || T.model.settled() || at - onAt > 8000) && (smooth() || at - onAt > 15000)) { done(); return; } }
         setTimeout(watch, 120); };
       setTimeout(watch, 120); }
     const t0 = Date.now(), go = () => {
