@@ -1809,3 +1809,30 @@ paths, then remove trees and move trees slightly off paths" and "Also light pole
   `fronts_ground.py` (198 drives laid, 48 rule drives moved, 7 crossovers, 103 paths linked to the footpath, 17 laid from a
   gate; about 8,400 m2 in 61 blocks; 51 trees moved off paving, 77 drawn-over front fences dropped), `fronts_cuts.py`, then
   `lamps_fix.py` (778 poles moved in all, 3 more than before).
+
+### The construction worker takes out more (20 November 2026)
+
+Ash: "As the construction worker let me delete more things. Try to make the interface easier to use. No need for things the
+possum can create other than a trees", "Let's drop the business indicator with the yellow square, 8 Beaudesert rd has a
+duplicate fence".
+
+- **Delete takes out more:** a front fence, wall or hedge (the Street View fronts, `MOO_LITE`), one of the model's own
+  fences (side and back fences), and a street light, as well as parked cars, trees, people and what was drawn. Each is a
+  point in the map edits: `gone.fronts`, `gone.fences` and `gone.lights`, saved, sent and approved like the rest
+  (`tools/town/add_edits.py` knows them). A tap hits a fence when it lands on it on the screen or within 26 px of its middle,
+  and the nearest thing to the eye wins. Undo puts it back.
+- **How:** `townHousesLite` draws the fronts again without the ones taken out (about 2,200 fronts, once a tap).
+  `moorooka-model.js` (`?v=47`, patched onto the bundle): `h1` builds the fences in 560 m cells and can build one cell again
+  without the fences taken out; `R1` (the street life) can squash a street light to nothing in its instanced lights and
+  pools; the model's `setMore({ fences, lights })` does both, and `fenceSegs()` hands the app the fence lines to pick from.
+  `setMore` is replayed into the sharp model when it's swapped in, like `setRemoved`. On the light setting the model draws
+  no fences, so there are none to pick there.
+- **Easier to use:** the tools are Path, Grass, Road, Tree, Car, Light, Move and Delete (small trees, bushes and flowers
+  are the possum's, which still plants all four); on a touch screen the buttons are 40 px tall; Delete turns red while it's
+  on; the locate button hides while editing (the bar ran under it) and the line of help keeps clear of the pencil.
+- **The little business name tags with the yellow mark are gone** (`townLocals`).
+- **6 and 10 Beaudesert Road had their front fences drawn twice:** once in the street detail (`townNo6`) and again from the
+  Street View houses. The Street View copies are taken out. `fronts_cuts.py` used to add another `c` to a front each time it
+  ran, rather than replace it (325 fronts had two to four); it replaces it now, and the repeats are gone.
+- A search for any other front drawn twice found one: the corner hedge of 131 Goodwin Terrace, recorded again for 181 Vendale
+  Avenue. It's drawn once now.

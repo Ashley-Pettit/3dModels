@@ -18,6 +18,7 @@ for ln in src[i0:i1].split('\n'):
     body, name = m.group(2), m.group(4)
     new = re.sub(r',\s*gap:\s*\[[^\]]*\]', '', body)
     new = re.sub(r',\s*d:\s*\[[^\]]*\]', '', new).rstrip()
+    new = re.sub(r',\s*c:\s*\[\[[^\n]*?\]\](?=\s*$|,\s*[a-z]+:)', '', new).rstrip()  # (a run again replaces c, not adds another)
     c = cuts.get(name)
     if c:
         new += ', c: ' + json.dumps(c)
