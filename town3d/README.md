@@ -1800,3 +1800,12 @@ paths, then remove trees and move trees slightly off paths" and "Also light pole
   Tarragindi Road), 3,038 recorded so far. Same pipeline: `fronts_ground.py` (158 drives laid, 30 rule drives moved, 21
   crossovers, 68 paths linked to the footpath, 10 laid from a gate; about 5,800 m2 in 57 blocks), `fronts_cuts.py`, then
   `lamps_fix.py` (7 more poles moved off new paving).
+
+### Part 8 of the Street View houses (20 November 2026)
+
+- 318 more house fronts drawn from 395 more Street View records (the rest of Tarragindi Road and Timbury Street, Blackburn
+  Street and Lane, Barford, Clifton, Tonks, Rabaul, Belair, Rachael and Charmaine Streets, Nettleton Crescent, Cutler Avenue
+  and a few on Industries Road, Zonnebeke Street, Eric Crescent and Tennessee Avenue), 3,433 recorded so far. Same pipeline:
+  `fronts_ground.py` (198 drives laid, 48 rule drives moved, 7 crossovers, 103 paths linked to the footpath, 17 laid from a
+  gate; about 8,400 m2 in 61 blocks; 51 trees moved off paving, 77 drawn-over front fences dropped), `fronts_cuts.py`, then
+  `lamps_fix.py` (778 poles moved in all, 3 more than before).
