@@ -9282,8 +9282,11 @@ const handle = async (m, post) => {
     // (Ash, 21 November 2026: "Fix up the inline physio"): 2.5 m further back behind a lawn, as it is; the dark verandah over the door
     // half only, on dark posts, running on past the end towards Helles Street; the board over the door, not the middle
     { kind: "sign", addr: "101 Beaudesert Road", a: [-234.46, -513.96], b: [-235.86, -521.76], n: [0.9843, -0.1767], kerb: 7.51, across: 13.51, eave: 38.3, wall: "#a9b1b9", noBoard: true,
-      veranda: { col: "#3e4650", posts: "#3e4650", deep: 2.1, x0: 3.4, out: 1.4, sign: [4.0, 7.5, 1.1] }, lawn: [-0.4, 3.3, 0.3, 3.3],
-      posters: [[0.6, 1.9, 0.95, 2.0, "physio", "massage", "#3fb0b5", "#ffffff"], [6.0, 7.3, 0.95, 2.0, "pilates", "", "#3fb0b5", "#ffffff"]],
+      // (its signs clear of the roof, the window and the door: Ash, 21 November 2026, "Main problem is the 3 signs, main one is in a roof. One
+      // on a window, 3rd one on a door". Along this front the window is 1.0 to 3.0 m, the door 5.5 to 6.5 m, and the gable leans out over
+      // the verandah above about 3.4 m, so the board is lower and over the door, the posters on the bare wall either side of the door)
+      veranda: { col: "#3e4650", posts: "#3e4650", deep: 2.1, x0: 3.4, out: 1.4, sign: [3.2, 6.2, 0.5, 2.78] }, lawn: [-0.4, 3.3, 0.3, 3.3],
+      posters: [[3.75, 5.05, 0.95, 1.95, "physio", "massage", "#3fb0b5", "#ffffff"], [6.75, 7.65, 0.95, 1.85, "pilates", "", "#3fb0b5", "#ffffff"]],
       shops: [{ n: "inline physio.", w: 7.9, c: ["#f4f6f6", "#1f3b57"], stripe: ["#3fb0b5"], what: "Physio", jump: true }] },
     { kind: "sign", addr: "1106 Ipswich Road", a: [-1049.7, 19.8], b: [-1060.3, 39.5], n: [-0.8806, -0.4738], kerb: 11.4, across: 21.0, eave: 19.4, wall: "#1f5fa8", band: true,
       shops: [{ n: "WATERSKI & WAKE WORLD", w: 22.4, c: ["#ffffff", "#1f5fa8"], what: "Water ski and wakeboard shop", jump: true }] },
@@ -10522,7 +10525,7 @@ const handle = async (m, post) => {
         // inline physio")
         if (f.veranda) { const V = f.veranda, dp = V.deep || 2, v0 = V.x0 || 0, v1 = len + (V.out || 0); box(v0 - 0.1, v1 + 0.1, 2.62, 2.76, 0, dp, V.col, 0.22);
           for (let i = 0, n = Math.max(2, Math.round((v1 - v0) / 2.6)); i <= n; i++) { const px = v0 + 0.12 + (v1 - v0 - 0.24) * i / n; box(px - 0.06, px + 0.06, 0, 2.5, dp - 0.18, dp - 0.06, V.posts); }
-          if (V.sign) { const [x0, x1, hh] = V.sign; board(x0, x1, 2.6, 2.6 + hh, dp + 0.1, shops[0]); signY = 2.6; signH = hh; } }  // its sign stands on the verandah's edge
+          if (V.sign) { const [x0, x1, hh, y0 = 2.6] = V.sign; board(x0, x1, y0, y0 + hh, dp + 0.1, shops[0]); signY = y0; signH = hh; } }  // (y0: the physio's up on the verandah's top, under its gable)  // its sign stands on the verandah's edge
         if (f.tall) { const px = len + 0.9, o = bsClamp(f.kerb - 1.2, 1.5, 9); box(px - 0.07, px + 0.07, 0, 1.1, o - 0.07, o + 0.07, "#8a8d90");
           box(px - 0.5, px + 0.5, 1.1, 4.2, o - 0.1, o, f.tall.c[0]); pic(px - 0.47, px + 0.47, 1.13, 4.17, o + 0.012, tall(0.94, 3.04, f.tall.lines, f.tall.c, f.tall.foot)); }
         // the vet's pole sign on the corner, as in Ash's photo: the Vet board up top and its letter board under it, on the same two posts,
