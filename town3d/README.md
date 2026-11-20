@@ -1872,6 +1872,16 @@ stuck which teleports to closest road".
 - **Cost:** a check of where the car is twice a second while driving; the roads are the traffic's own list (`T.roadsAll`,
   already loaded), searched only when the button is tapped. The stick listeners are untouched.
 
+### Saving map edits and kept views to this site (20 November 2026)
+
+Ash: "how do i get the github key you need for htis". Explore's Save (map edits, with the GitHub key) and "Use this view for
+everyone" asked GitHub to run workflows in the Awesome News repo, as the copy was made: what was saved landed in Awesome News's
+`edits.json` and `wxcams.json`, never on this site. Now they run here: `.github/workflows/town-edits.yml` (adds the edits to
+`town3d/<town>/edits.json` with `tools/town/add_edits.py`) and `keep-view.yml` (files the view in `local/wxcams.json`),
+copied from Awesome News, each then starting Publish (a push made by a workflow doesn't start one by itself). The app sends
+them to `GH_DISPATCH_3D` (this repo). The key: a fine-grained personal access token with access to Ashley-Pettit/3dModels and
+the Actions permission set to read and write, pasted into Explore's Settings, "GitHub key (just you)".
+
 ### Part 9 of the Street View houses (20 November 2026)
 
 - 246 more house fronts drawn from 298 more Street View records (Robinson, Anson, O'Neil, Beckford, Timothy, Abel, Davey,
