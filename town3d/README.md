@@ -1836,3 +1836,23 @@ duplicate fence".
   ran, rather than replace it (325 fronts had two to four); it replaces it now, and the repeats are gone.
 - A search for any other front drawn twice found one: the corner hedge of 131 Goodwin Terrace, recorded again for 181 Vendale
   Avenue. It's drawn once now.
+
+### Walls that flickered (20 November 2026)
+
+Ash: "Look for this bug throughout the app, colours flashing strangely on Venky's house. Happens elsewhere too" (a phone
+screenshot: a dark band along the foot of the wall, striped with the wall's own colour).
+
+- **The cause:** two surfaces drawn in exactly the same place, so the phone can't tell which is in front and shows bits of
+  each, changing as you move. At Venky's (12 Beaudesert Road, one of the six lots by number 6 the model draws in detail,
+  `vu`) the foundation box stood as high as the ground on the uphill side (0.78 m), but the weatherboards start at 0.3 m:
+  the 0.5 m between was foundation and wall at once. The foundation now stops under the trim (`R` no higher than `p - 0.28`),
+  so nothing overlaps (`moorooka-model.js ?v=48`). Of the six detailed houses, Venky's was the one with this much slope.
+- **Also, everywhere:** every flat-roofed building (shops, units) had its parapet start 5 cm below the top of its walls, in
+  the same plane: a thin flickering line along the roof edge. The parapet now starts at the top of the wall, in Moorooka
+  (`$_`, `?v=48`) and Inverloch (`inverloch-model.js ?v=21`, a patch on the bundle: when Inverloch's model is rebuilt from
+  ai-forge `claude/inverloch-combined`, make the same change in its buildings source). Logan's buildings don't do this.
+- **And two more fronts drawn twice:** 9 Bohain Street and 18 Beaudesert Road are lots the model draws in detail, with
+  their own fences, and the Street View houses drew a front fence on each as well. The Street View copies are out, and the
+  house generator skips the six detailed lots from now on.
+- Checked at phone size (software renderer): Venky's wall from both ends, before and after, with the trim and foundation
+  coloured to show where each starts and stops.
