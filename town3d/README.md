@@ -1785,3 +1785,10 @@ paths, then remove trees and move trees slightly off paths" and "Also light pole
     street; 96 on paved shopfront verges stand 0.6 m behind the kerb. Poles on concrete went from 253 to 37 (24 of those on
     fully paved verges).
   - `window.anLampSpots` (x, y, z, heading per pole) is what `lamps_fix.py` reads.
+
+### Part 6 of the Street View houses (20 November 2026)
+
+- 215 more house fronts drawn from 274 more Street View records (Ipswich Road, Evesham Street, Fegen Drive, Mametz Street and the end of Beverley Hill
+  Street), 2,742 recorded so far. Same pipeline as above: `fronts_ground.py` (175 drives laid, 40 rule drives moved, 5
+  crossovers, 62 paths linked to the footpath, 11 laid from a gate; about 6,900 m2 in 63 blocks), then `fronts_cuts.py`, then
+  `lamps_fix.py` (read again with `lampFix` taken out first, so its keys are where the model stands each pole).
