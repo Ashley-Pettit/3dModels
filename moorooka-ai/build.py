@@ -252,17 +252,17 @@ def main():
     uri = lambda p, mime: f"data:{mime};base64," + base64.b64encode(open(os.path.join(HERE, p), "rb").read()).decode()
     if a.artifact:   # one self-contained page: fonts and pictures inline
         html = re.sub(r"<!--PWA-->.*?<!--/PWA-->", "", html, flags=re.S)
-        html = (html.replace("FONT_GEIST", uri("assets/geist.woff2", "font/woff2")).replace("IMG_3D", uri("assets/moorooka-3d.jpg", "image/jpeg"))
+        html = (html.replace("FONT_GEIST", uri("assets/geist.woff2", "font/woff2")).replace("IMG_3D", uri("assets/moorooka-3d.jpg", "image/jpeg")).replace("IMG_HERO", uri("assets/moorooka-hero.jpg", "image/jpeg"))
                     .replace("IMG_ICON", uri("icons/icon-180.png", "image/png")))
     else:            # the site: separate files the browser can cache
-        html = html.replace("FONT_GEIST", "geist.woff2").replace("IMG_3D", "moorooka-3d.jpg").replace("IMG_ICON", "icon-180.png")
+        html = html.replace("FONT_GEIST", "geist.woff2").replace("IMG_3D", "moorooka-3d.jpg").replace("IMG_HERO", "moorooka-hero.jpg").replace("IMG_ICON", "icon-180.png")
     worker = worker.replace("/*KNOWLEDGE*/", kjson).replace("BUILD_ID", build)
     os.makedirs(a.out, exist_ok=True)
     open(os.path.join(a.out, "index.html"), "w", encoding="utf-8").write(html)
     open(os.path.join(a.out, "worker.js"), "w", encoding="utf-8").write(worker)
     if not a.artifact:
         shutil.copy(os.path.join(HERE, "sw.js"), a.out)
-        for f in ("geist.woff2", "moorooka-3d.jpg"): shutil.copy(os.path.join(HERE, "assets", f), a.out)
+        for f in ("geist.woff2", "moorooka-3d.jpg", "moorooka-hero.jpg"): shutil.copy(os.path.join(HERE, "assets", f), a.out)
         png_icons(a.out)
         json.dump({"id": "./", "name": "Moorooka AI", "short_name": "Moorooka AI",
                    "description": "Ask anything about Moorooka: events, local businesses, your councillor and things to do.",
