@@ -8679,8 +8679,8 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=20", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=47", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=21", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=48", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -10639,7 +10639,6 @@ const handle = async (m, post) => {
   const MOO_LITE = [
     { N: [-289.62, -895.73], S: [-292.49, -877.53], f: ["t", "#1c1e21", 1.5], c: [[2.9, 6.2]] },  // 26 Beaudesert Road
     // Beaudesert Road (Street View, September 2026), north to south
-    { N: [-274.15, -953.43], S: [-279.44, -938.09], f: ["s",  "#5d7a5c",  1.8], from: 7.3 },
     { N: [-325.45, -852.58], S: [-320.49, -881.76], f: ["s",  "#9c968a",  1.8] },
     { N: [-292.49, -877.53], S: [-297.26, -847.33], f: ["s",  "#6f7b55",  1.25,  "#8c4a36",  0.35] },
     { N: [-296.96, -847.29], S: [-298.86, -835.28], f: ["s",  "#5b5e60",  1.8] },
@@ -12416,7 +12415,6 @@ const handle = async (m, post) => {
     { N: [-10.79, 478.85], S: [-9.13, 468.93], f: ["s", "#3a5a2c", 1.0], from: 2.5, to: 8.6, c: [[4.2, 7.1]] },  // 12 Hyslop Street
     { N: [0.29, 465.4], S: [15.58, 467.19], f: ["s", "#7a3a30", 0.5], from: 1.5, to: 9.2 },  // 16 Hyslop Street
     { N: [-216.73, -1014.75], S: [-256.82, -1003.76], f: ["t", "#8a8e8c", 1.0], c: [[1.7, 4.8]] },  // 1 Bohain Street
-    { N: [-178.82, -1008.44], S: [-216.73, -1014.75], f: ["t", "#8a8e8c", 1.0], from: 1.9, c: [[1.9, 3.9]] },  // 9 Bohain Street
     { N: [-169.27, -1026.61], S: [-128.71, -1019.83] },  // 14 Bohain Street
     { N: [134.7, 345.82], S: [164.41, 351.86], f: ["s", "#ecece8", 1.0], to: 13.6 },  // 2 Herring Street
     { N: [177.87, 376.43], S: [160.51, 372.85], f: ["s", "#8a7058", 1.8], to: 16.8, c: [[6.0, 9.7]] },  // 3 Herring Street
