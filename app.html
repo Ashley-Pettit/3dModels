@@ -9206,7 +9206,7 @@ const handle = async (m, post) => {
       tenants: { lines: ["Ethiopian Village", "Culture Cuts Barber", "Mitchells Solicitors", "Amal Express"], c: ["#f4f1ea", "#2a2a2a"], x: 16.95, o: 0.8, w: 1.5 } },
     { kind: "strip", addr: "201 Beaudesert Road", a: [-97.6, -165.7], b: [-108.0, -182.3], n: [0.8474, -0.5309], kerb: 2.21, across: 13.21, eave: 50.6, wall: "#8f8678", awning: "#3a3a3a", windows: [3.7, 4.7, 3, "#2a3640", 4, 15.6],
       shops: [{ n: "Afro Restaurant", w: 6, c: ["#ffffff", "#1a1a1a"], stripe: ["#1f8a3b", "#f2c230", "#d42a2a"], what: "African restaurant", jump: true },
-        { n: "Rannchhod Arcade", sub: "Made in Africa \u00b7 Arhibu \u00b7 Eliza", w: 7, c: ["#141414", "#ffffff"], arcade: true, what: "Arcade, with Arhibu (Ethiopian) and Eliza (Eritrean) restaurants", jump: true }, { n: "David Stephensen Optometrist", w: 6.6, c: ["#efe9d6", "#2e5d46"], what: "Optometrist", jump: true }],
+        { n: "Rannchhod Arcade", sub: "Made in Africa \u00b7 Arhibu \u00b7 Eliza", w: 7, c: ["#141414", "#ffffff"], arcade: true, checks: true, what: "Arcade, with Arhibu (Ethiopian) and Eliza (Eritrean) restaurants", jump: true }, { n: "David Stephensen Optometrist", w: 6.6, c: ["#efe9d6", "#2e5d46"], what: "Optometrist", jump: true }],
       tenants: { lines: ["Arhibu", "Eliza Eritrean", "Made in Africa", "Fathia Hair Studio", "Sulafa Beauty", "Seamstress & Tailor", "Juba Express", "Dahabshiil"], c: ["#141414", "#ffffff"], x: 7.4, o: 0.75, y: 0.3, lh: 0.245, w: 1.5 } },
     { kind: "strip", addr: "204 Beaudesert Road", a: [-73.8, -173.8], b: [-60.9, -151.3], n: [-0.8675, 0.4974], kerb: 1.22, across: 13.42, eave: 51.5, wall: "#e9e7e2", awning: "#2b2b2b",
       shops: [{ n: "Eddy's Barber Shop", w: 4, c: ["#ffffff", "#c22525"], what: "Barber", jump: true }, { n: "Baba Burger", w: 5, c: ["#1d1d1d", "#f2b632"], what: "Burgers", jump: true }, { n: "Zeitoon", w: 5, c: ["#2a2a2a", "#ffffff"], what: "Persian and Afghan restaurant", jump: true },
@@ -9246,11 +9246,11 @@ const handle = async (m, post) => {
     { kind: "sign", addr: "212 Beaudesert Road", a: [-55.5, -149.3], b: [-53.5, -129.4], n: [-0.995, 0.1], kerb: 5.77, across: 17.97, eave: 53.1, wall: "#8f8476", screen: "#ad6e3e", posts: "#d42a20",
       shops: [{ n: "Snap Fitness", parts: [["snap ", "#ff3b2f"], ["fitness", "#ffffff"], [" 24/7", "#ffffff"]], w: 20, c: ["#1b1b1d", "#ffffff"], what: "Gym: a workout makes you 10% quicker on foot", jump: true }] },
     { kind: "strip", addr: "180 Beaudesert Road", a: [-112.3, -238.5], b: [-103.3, -225.2], n: [-0.8282, 0.5604], kerb: 3.06, across: 13.36, eave: 52.0, wall: "#f2efe8", awning: "#c8202a",  // (and Kingz beside it: Street View, September 2024)
-      shops: [{ n: "Big Boss Pizzas", w: 8.6, c: ["#1d1d1d", "#f2b632"], what: "Pizza: order the best chips ever", jump: true }, { n: "KINGZ BARBERSHOP", w: 4.6, c: ["#111111", "#ffffff"], what: "Barber", jump: true }, { n: "BILTONG", sub: "& JERKY", w: 2.9, c: ["#5a2d0c", "#f2e3c6"], what: "Biltong and jerky" }] },
+      shops: [{ n: "Big Boss Pizzas", w: 8.6, c: ["#1d1d1d", "#f2b632"], canopy: "#c8202a", what: "Pizza: order the best chips ever", jump: true }, { n: "KINGZ BARBERSHOP", w: 4.6, c: ["#111111", "#ffffff"], what: "Barber", jump: true }, { n: "BILTONG", sub: "& JERKY", w: 2.9, c: ["#5a2d0c", "#f2e3c6"], what: "Biltong and jerky" }] },
     // the east side from 152 to 168 (Ash, 16 November 2026: "find all moorooka businesses, use google maps image as a reference ... try not
     // to make it load intensive"): laid out from Street View (September 2024), each an awning with the shop's name on its edge
     { kind: "strip", addr: "152 Beaudesert Road", a: [-136.9, -274.4], b: [-130.2, -263.4], n: [-0.854, 0.5202], kerb: 2.06, across: 12.36, eave: 48.6, wall: "#f3f1ec", awning: "#7e1b1b",
-      shops: [{ n: "Mim Halal Group", sub: "HALAL BUTCHER", w: 12.9, c: ["#ffffff", "#c8102e"], what: "Halal butcher (Google Maps, November 2026)", jump: true }] },
+      shops: [{ n: "Mim Halal Group", sub: "HALAL BUTCHER", w: 12.9, c: ["#ffffff", "#c8102e"], posters: true, what: "Halal butcher (Google Maps, November 2026)", jump: true }] },
     { kind: "strip", addr: "160 Beaudesert Road", a: [-124.9, -257.6], b: [-120.9, -251.3], n: [-0.8442, 0.536], kerb: 2.96, across: 13.26, eave: 50.1, wall: "#d6d6d2", awning: "#1f4f9a",
       shops: [{ n: "La Pupetta Store", w: 4.2, c: ["#1f4f9a", "#ffffff"], what: "Supermarket", jump: true },
         { n: "King of Hong Kong", sub: "DIM SIM & TAKEAWAY", w: 3.3, c: ["#c8102e", "#ffd54f"], posters: true, what: "Dim sims and Chinese takeaway (162)", jump: true }] },
@@ -10269,20 +10269,72 @@ const handle = async (m, post) => {
         g.beginPath(); if (rnd() < 0.35) g.ellipse(x, y, r * 1.9, r * 0.8, rnd() * Math.PI, 0, Math.PI * 2); else g.arc(x, y, r, 0, Math.PI * 2); g.fill(); }
       return cv; };
     // a row of shopfronts under the awning, 40 px a metre: piers, a tiled base, glass with a door, posters in some
+    // (more to them, as Street View shows Beaudesert Road's: Ash, 20 November 2026, "add a little more detail to the shops on beaudesert rd,
+    // they are okay but a little unpolished. Use google maps". Behind the glass a lit room that fits the business, from what it is: tables, a
+    // counter and menu boards in a restaurant or takeaway, mirrors and chairs at a barber's or salon, shelves of stock in a shop, machines in a
+    // laundromat, blinds and a front desk at an office. The glass in anodised frames with a transom; a glass door with its push bar and, at
+    // most, an OPEN sign; the tiles of the base; the sky's reflection across the glass. All on the same canvas, so no more memory than before)
+    const shopKind = s => { const t = `${s.what || ""} ${s.n || ""} ${s.sub || ""}`.toLowerCase();
+      return /laundromat/.test(t) ? "wash" : /barber|hair|beauty|salon|nail|cuts/.test(t) ? "hair"
+        : /grocer|supermarket|butcher|store|op shop|tobacco|gift|pharmacy|chemist|market|bottle|biltong/.test(t) || s.post ? "shop"
+        : /restaurant|cafe|café|pizza|burger|kebab|takeaway|dim sim|bakery|bakeries|sushi|fish|kitchen|coffee|acai|injera|cakes|food/.test(t) ? "food"
+        : /solicitor|lawyer|tax|accountant|bank|optometr|chiro|physio|dental|medical|doctor|office|real estate/.test(t) ? "office" : "plain"; };
     const fronts = (F, h, shops) => { const S = 40, c = document.createElement("canvas"); c.width = Math.round(F.len * S); c.height = Math.round(h * S);
       const g = c.getContext("2d"); g.fillStyle = F.wall; g.fillRect(0, 0, c.width, c.height);
       const Y = y => c.height - y * S; let x = 0, seed = 7;
       const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-      for (const s of shops) { const x0 = x + 0.18, x1 = x + s.w - 0.18;
-        g.fillStyle = shade(F.wall, 0.72); g.fillRect(x0 * S, Y(0.45), (x1 - x0) * S, 0.45 * S);  // the tiled base
-        if (s.arcade) { g.fillStyle = "#15171a"; g.fillRect((x0 + 0.3) * S, Y(2.5), (x1 - x0 - 0.6) * S, 2.5 * S);  // the way in: dark, with a chequered floor
-          for (let i = 0; i < 12; i++) { g.fillStyle = i % 2 ? "#e8e6e0" : "#1b1b1b"; g.fillRect((x0 + 0.3 + i * (x1 - x0 - 0.6) / 12) * S, Y(0.28), (x1 - x0 - 0.6) / 12 * S, 0.28 * S); } }
-        else { g.fillStyle = "#1f3340"; g.fillRect(x0 * S, Y(2.5), (x1 - x0) * S, 2.05 * S);  // glass
-          const grd = g.createLinearGradient(0, Y(2.5), 0, Y(0.45)); grd.addColorStop(0, "rgba(160,200,220,0.38)"); grd.addColorStop(0.6, "rgba(160,200,220,0.05)"); g.fillStyle = grd; g.fillRect(x0 * S, Y(2.5), (x1 - x0) * S, 2.05 * S);
+      const R = (a, b, y0, y1) => g.fillRect(a * S, Y(y1), (b - a) * S, (y1 - y0) * S);  // a rectangle, a..b along and y0..y1 up (m)
+      for (const s of shops) { const x0 = x + 0.18, x1 = x + s.w - 0.18, W = x1 - x0;
+        g.fillStyle = shade(F.wall, 0.72); R(x0, x1, 0, 0.45);  // the tiled base, and its joints
+        g.fillStyle = "rgba(0,0,0,0.16)"; for (let tx = x0 + 0.3; tx < x1; tx += 0.3) R(tx, tx + 0.02, 0, 0.45); R(x0, x1, 0.215, 0.235);
+        if (s.arcade) { g.fillStyle = "#15171a"; R(x0 + 0.3, x1 - 0.3, 0, 2.5);  // the way in: dark, with a chequered floor
+          for (let i = 0; i < 12; i++) { g.fillStyle = i % 2 ? "#e8e6e0" : "#1b1b1b"; g.fillRect((x0 + 0.3 + i * (x1 - x0 - 0.6) / 12) * S, Y(0.28), (x1 - x0 - 0.6) / 12 * S, 0.28 * S); }
+          g.fillStyle = "rgba(255,236,200,0.75)"; for (let lx = x0 + 0.8; lx < x1 - 0.5; lx += 1.1) R(lx - 0.15, lx + 0.15, 2.38, 2.44);  // lights down the arcade
+          if (s.checks) for (const px of [x0, x1 - 0.3]) for (let k = 0, yy = 0.3; yy < 2.5; yy += 0.15, k++) for (let j = 0; j < 2; j++) { g.fillStyle = (k + j) % 2 ? "#f2f0ea" : "#151515"; R(px + j * 0.15, px + (j + 1) * 0.15, yy, Math.min(2.5, yy + 0.15)); } }  // (Rannchhod Arcade's black and white pillars)
+        else { const kind = shopKind(s), dx = x0 + W * (s.post ? 0.5 : 0.62) - 0.5, free = (a, b) => b < dx - 0.08 || a > dx + 1.08;  // the door: 1 m wide
+          g.fillStyle = { food: "#3a2e24", hair: "#2c3034", shop: "#2b3034", office: "#2c343b", wash: "#2e3438", plain: "#1f3340" }[kind]; R(x0, x1, 0.45, 2.5); R(dx, dx + 1, 0, 0.45);
+          const lt = { food: "255,206,140", hair: "225,232,238", shop: "236,240,244", office: "205,215,225", wash: "220,232,240", plain: "160,200,220" }[kind];
+          const grd = g.createLinearGradient(0, Y(2.5), 0, Y(0.45)); grd.addColorStop(0, `rgba(${lt},${kind === "plain" ? 0.34 : 0.42})`); grd.addColorStop(0.7, `rgba(${lt},0.08)`); grd.addColorStop(1, "rgba(0,0,0,0)");
+          g.fillStyle = grd; R(x0, x1, 0.45, 2.5);  // the room's light, brightest up at the back
+          if (kind === "food") {
+            g.fillStyle = "#6e5236"; R(x0 + 0.1, x0 + W * 0.45, 0.45, 1.05); g.fillStyle = "#9a7a56"; R(x0 + 0.1, x0 + W * 0.45, 1.02, 1.09);  // the counter
+            for (let i = 0, n = Math.max(1, Math.round(W / 2.4)); i < n; i++) { const bx = x0 + 0.25 + i * (W - 0.5) / n, bw = Math.min(1.1, (W - 0.5) / n - 0.2);  // menu boards over it
+              g.fillStyle = "#1c1a18"; R(bx, bx + bw, 1.74, 2.2); g.fillStyle = ["#d8432e", "#e9b22a", "#3fa34d"][i % 3]; R(bx, bx + bw, 2.14, 2.2);
+              g.fillStyle = "rgba(245,235,215,0.8)"; for (let k = 0; k < 3; k++) R(bx + 0.08, bx + bw - 0.1 - rnd() * 0.3, 1.82 + k * 0.1, 1.85 + k * 0.1); }
+            g.fillStyle = "#1d160e"; for (let tx = x0 + 0.75; tx < x1 - 0.6; tx += 1.45) if (free(tx - 0.65, tx + 0.65)) {  // a table by the window and its two chairs
+              R(tx - 0.32, tx + 0.32, 0.74, 0.8); R(tx - 0.03, tx + 0.03, 0.45, 0.76); R(tx - 0.62, tx - 0.42, 0.45, 0.95); R(tx + 0.42, tx + 0.62, 0.45, 0.95); }
+            g.fillStyle = "rgba(255,214,150,0.95)"; for (let lx = x0 + 0.6; lx < x1 - 0.3; lx += 1.25) { R(lx - 0.01, lx + 0.01, 2.28, 2.5); g.beginPath(); g.arc(lx * S, Y(2.25), 0.07 * S, 0, 7); g.fill(); }  // pendant lights
+          } else if (kind === "hair") {
+            for (let mx = x0 + 0.3; mx < x1 - 0.7; mx += 1.25) if (free(mx, mx + 0.7)) {
+              g.fillStyle = "#9db2bd"; R(mx, mx + 0.7, 1.15, 2.05); g.fillStyle = "rgba(255,255,255,0.35)"; R(mx + 0.06, mx + 0.2, 1.2, 2.0);  // a mirror
+              g.fillStyle = "#15181b"; R(mx + 0.12, mx + 0.58, 0.85, 1.28); R(mx + 0.06, mx + 0.64, 0.64, 0.88); R(mx + 0.3, mx + 0.4, 0.45, 0.64); }  // its chair
+            g.fillStyle = "rgba(255,250,235,0.9)"; for (let lx = x0 + 0.5; lx < x1 - 0.2; lx += 1.0) R(lx - 0.15, lx + 0.15, 2.38, 2.43);
+          } else if (kind === "wash") {
+            for (let mx = x0 + 0.15; mx < x1 - 0.7; mx += 0.72) if (free(mx, mx + 0.66)) for (const yb of [0.47, 1.22]) {  // washers, and dryers on them
+              g.fillStyle = "#e9ecee"; R(mx, mx + 0.66, yb, yb + 0.7); g.fillStyle = "#3b4650"; g.beginPath(); g.arc((mx + 0.33) * S, Y(yb + 0.36), 0.22 * S, 0, 7); g.fill();
+              g.fillStyle = "rgba(170,205,225,0.7)"; g.beginPath(); g.arc((mx + 0.3) * S, Y(yb + 0.39), 0.12 * S, 0, 7); g.fill(); }
+            g.fillStyle = "rgba(255,255,255,0.9)"; for (let lx = x0 + 0.4; lx < x1 - 0.2; lx += 1.1) R(lx - 0.25, lx + 0.25, 2.4, 2.44);
+          } else if (kind === "shop") { const cols = ["#d8432e", "#e9b22a", "#3fa34d", "#2f6db5", "#f2f0e8", "#e87f1f", "#8e44ad", "#c2185b"];
+            for (let sx = x0 + 0.12; sx < x1 - 0.4; sx += 1.5) { const se = Math.min(x1 - 0.12, sx + 1.36); if (!free(sx, se)) continue;
+              g.fillStyle = "#4a4f55"; R(sx, se, 0.45, 2.2);  // a shelf unit, and what's on it
+              for (const sy of [0.62, 1.02, 1.42, 1.82]) { g.fillStyle = "#c9ccd0"; R(sx, se, sy, sy + 0.035); let px = sx + 0.03;
+                while (px < se - 0.08) { const pw = 0.08 + rnd() * 0.16; g.fillStyle = cols[Math.floor(rnd() * cols.length)]; R(px, Math.min(se - 0.02, px + pw), sy + 0.035, sy + 0.14 + rnd() * 0.2); px += pw + 0.025; } } }
+            g.fillStyle = "rgba(255,255,255,0.9)"; for (let lx = x0 + 0.4; lx < x1 - 0.2; lx += 1.1) R(lx - 0.25, lx + 0.25, 2.4, 2.44);  // fluoro tubes
+          } else if (kind === "office") {
+            g.fillStyle = "#cfc8bb"; R(x0 + W * 0.12, x0 + W * 0.45, 0.45, 1.1); g.fillStyle = "#ece7dd"; R(x0 + W * 0.12, x0 + W * 0.45, 1.06, 1.13);  // the front desk
+            g.fillStyle = "rgba(228,230,228,0.9)"; for (let bx = x0; bx < x1 - 0.05; bx += 0.1) if (free(bx, bx + 0.08)) R(bx, bx + 0.08, 1.3 + (Math.floor((bx - x0) / 1.6) % 2) * 0.4, 2.5);  // vertical blinds, some drawn up
+          } else if (!s.posters) { g.fillStyle = "rgba(210,214,216,0.6)"; for (let by = 2.45; by > 1.35; by -= 0.06) R(x0, x1, by - 0.035, by); }  // blinds half down
           if (s.posters) for (let i = 0; i < Math.round((x1 - x0) * 1.2); i++) { g.fillStyle = ["#e9b22a", "#d8432e", "#3fa34d", "#e87f1f", "#f2e04a"][Math.floor(rnd() * 5)]; g.fillRect((x0 + 0.2 + rnd() * (x1 - x0 - 1)) * S, Y(1.1 + rnd() * 1.1), (0.4 + rnd() * 0.5) * S, (0.5 + rnd() * 0.5) * S); }
-          const dx = x0 + (x1 - x0) * (s.post ? 0.5 : 0.62) - 0.5;  // the door
-          g.fillStyle = "#16242d"; g.fillRect(dx * S, Y(2.2), 1.0 * S, 2.2 * S); g.strokeStyle = s.post ? "#ffffff" : shade(F.wall, 1.05); g.lineWidth = 3; g.strokeRect(dx * S, Y(2.2), 1.0 * S, 2.2 * S);
-          g.lineWidth = 2; g.strokeStyle = "rgba(235,235,230,0.85)"; for (let mx = x0; mx <= x1 + 0.01; mx += (x1 - x0) / Math.max(1, Math.round((x1 - x0) / 1.6))) { g.beginPath(); g.moveTo(mx * S, Y(2.5)); g.lineTo(mx * S, Y(0.45)); g.stroke(); } }
+          // the sky across the glass
+          g.save(); g.beginPath(); g.rect(x0 * S, Y(2.5), W * S, 2.5 * S); g.clip(); g.fillStyle = "rgba(255,255,255,0.11)";
+          for (let k = 0; k < 2; k++) { const ra = x0 + rnd() * W, rw = 0.25 + rnd() * 0.45; g.beginPath(); g.moveTo(ra * S, Y(2.5)); g.lineTo((ra + rw) * S, Y(2.5)); g.lineTo((ra + rw - 1.2) * S, Y(0)); g.lineTo((ra - 1.2) * S, Y(0)); g.fill(); }
+          g.restore();
+          // the frames: anodised aluminium (white at the post office), a head and a transom, mullions, the door's frame, its push bar
+          const fc = s.post ? "#ffffff" : F.frame || "#aeb3b6"; g.fillStyle = fc;
+          R(x0, x1, 2.44, 2.52); R(x0, x1, 2.08, 2.13); R(x0, x1, 0.45, 0.53); R(x0, x0 + 0.06, 0.45, 2.52); R(x1 - 0.06, x1, 0.45, 2.52);
+          for (let i = 1, nm = Math.max(1, Math.round(W / 1.6)); i < nm; i++) { const mx = x0 + W * i / nm; if (free(mx - 0.03, mx + 0.03)) R(mx - 0.03, mx + 0.03, 0.45, 2.52); }
+          g.fillStyle = shade(fc, 0.85); R(dx - 0.07, dx, 0, 2.13); R(dx + 1, dx + 1.07, 0, 2.13); R(dx, dx + 1, 0, 0.14); g.fillStyle = "#dfe2e4"; R(dx + 0.12, dx + 0.88, 0.98, 1.03);
+          if (kind !== "office" && kind !== "plain" && !s.post && s.n) { g.fillStyle = "#d42a20"; R(dx + 0.3, dx + 0.7, 1.42, 1.58); g.fillStyle = "#ffffff"; g.font = `800 ${0.11 * S}px ${FONT}`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("OPEN", (dx + 0.5) * S, Y(1.5)); } }
         if (s.c && !s.arcade) { g.fillStyle = s.c[0]; g.fillRect(x0 * S, Y(2.95), (x1 - x0) * S, 0.4 * S); }  // a band of the shop's colour over its glass
         x += s.w; }
       return c; };
@@ -10321,11 +10373,35 @@ const handle = async (m, post) => {
       if (f.kind === "strip") {
         // shopfronts under an awning that reaches most of the way to the kerb; each shop's name on the awning's edge
         const depth = bsClamp(f.kerb - 0.6, 1.2, 2.6);
+        // (as Street View shows them: Ash, 20 November 2026, "a little unpolished. Use google maps") a lip of darker metal under each sign,
+        // downlights under the awning, its tie rods up to the wall where there's an upper floor, a canvas canopy over the glass where a shop
+        // has one (Big Boss's red), and on the footpath a table and chairs outside a place to eat and an A-frame board outside a barber's or a
+        // small takeaway. Plain coloured shapes in the one piece: no textures, no more draw calls
+        const fy = (x, o) => { const q = at(x, 0, o); return m.groundAt(q[0], q[2]) + 0.03 - q[1]; };
+        const tableSet = (tx, o) => { const y = fy(tx, o), mc = "#2f3134"; box(tx - 0.35, tx + 0.35, y + 0.72, y + 0.76, o - 0.35, o + 0.35, "#e3ddd0"); box(tx - 0.04, tx + 0.04, y, y + 0.72, o - 0.04, o + 0.04, mc);
+          for (const sx of [-0.66, 0.66]) { box(tx + sx - 0.2, tx + sx + 0.2, y + 0.43, y + 0.47, o - 0.2, o + 0.2, mc); box(tx + sx - 0.03, tx + sx + 0.03, y, y + 0.43, o - 0.03, o + 0.03, mc);
+            const bk = sx < 0 ? -0.2 : 0.17; box(tx + sx + bk, tx + sx + bk + 0.03, y + 0.47, y + 0.9, o - 0.2, o + 0.2, mc); } };
+        const aFrame = (ax, o, col) => { const y = fy(ax, o), h = 0.95, sp = 0.27, hc = rgb(col), lc = rgb("#ece8dc");
+          for (const sd of [1, -1]) { const Q = (xx, t, out = 0) => at(ax + xx, y + h * t, o + sd * (sp * (1 - t) + out));
+            quad(Q(-0.3, 0), Q(0.3, 0), Q(0.3, 1), Q(-0.3, 1), rgb("#262927"));
+            quad(Q(-0.27, 0.76, 0.012), Q(0.27, 0.76, 0.012), Q(0.27, 0.94, 0.012), Q(-0.27, 0.94, 0.012), hc);
+            for (const [tt, w] of [[0.58, 0.42], [0.44, 0.34], [0.3, 0.4]]) quad(Q(-w / 2, tt, 0.012), Q(w / 2, tt, 0.012), Q(w / 2, tt + 0.035, 0.012), Q(-w / 2, tt + 0.035, 0.012), lc); } };
+        const light = hex => [1, 3, 5].reduce((a, j) => a + parseInt(hex.slice(j, j + 2), 16), 0) > 600;
         shops.forEach((s, i) => { const [x0, x1] = where[i];
           lift = Math.max(gnd(x0 + 0.2), gnd((x0 + x1) / 2), gnd(x1 - 0.2)) - base;
           pic(x0, x1, 0, 3.0, 0.1, fronts({ ...F, len: x1 - x0 }, 3.0, [s])); plinth(x0, x1);
           box(x0 + (i ? 0 : 0.1), x1 - (i < shops.length - 1 ? 0 : 0.1), 2.97, 3.19, 0, depth + 0.04, f.awning);
-          if (s.n) board(x0 + 0.03, x1 - 0.03, 2.66, 3.36, depth + 0.1, s); else box(x0 + 0.03, x1 - 0.03, 2.66, 3.36, depth + 0.02, depth + 0.1, f.awning); });
+          if (s.n) board(x0 + 0.03, x1 - 0.03, 2.66, 3.36, depth + 0.1, s); else box(x0 + 0.03, x1 - 0.03, 2.66, 3.36, depth + 0.02, depth + 0.1, f.awning);
+          box(x0 + 0.03, x1 - 0.03, 2.6, 2.66, depth + 0.03, depth + 0.13, shade(f.awning, 0.55));
+          for (let lx = x0 + 1.0, o = depth * 0.55; lx < x1 - 0.5; lx += 2.2) quad(at(lx - 0.11, 2.96, o - 0.11), at(lx + 0.11, 2.96, o - 0.11), at(lx + 0.11, 2.96, o + 0.11), at(lx - 0.11, 2.96, o + 0.11), rgb("#fff3d2"));
+          if (wallH >= 4.4) for (const px of i ? [x1 - 0.35] : [x0 + 0.35, x1 - 0.35]) box(px - 0.025, px + 0.025, 4.06, 4.11, 0.08, depth - 0.12, "#5a5d61", 0.9);
+          if (s.canopy) { const c = rgb(s.canopy), d = rgb(shade(s.canopy, 0.75)), a0 = x0 + 0.15, a1 = x1 - 0.15;
+            quad(at(a0, 2.52, 0.12), at(a1, 2.52, 0.12), at(a1, 2.05, 0.95), at(a0, 2.05, 0.95), c); quad(at(a0, 2.05, 0.95), at(a1, 2.05, 0.95), at(a1, 1.85, 0.95), at(a0, 1.85, 0.95), d);
+            tri(at(a0, 2.52, 0.12), at(a0, 2.05, 0.95), at(a0, 2.05, 0.12), d); tri(at(a1, 2.52, 0.12), at(a1, 2.05, 0.12), at(a1, 2.05, 0.95), d); }
+          const kind = shopKind(s), W = x1 - x0;
+          if (f.kerb >= 2.6 && s.n && !s.arcade) {
+            if (kind === "food" && W >= 3.4) tableSet(x0 + Math.max(0.9, W * 0.24), bsClamp(depth - 0.55, 0.95, 1.9));
+            if (kind === "hair" || (kind === "food" && W < 3.4)) aFrame(x1 - 0.55, bsClamp(f.kerb - 0.75, 1.0, depth + 0.4), light(s.c[0]) ? s.c[1] : s.c[0]); } });
         lift = 0; signY = 2.66; signH = 0.7;
       } else if (f.kind === "verandah") {
         // the post office row: white wall and glass, a corrugated verandah on posts, a gable over the post office door, signs
@@ -10365,7 +10441,7 @@ const handle = async (m, post) => {
         // a row of businesses along one wall: each its own sign over its share of the front. With fascia (the pharmacy row, from Ash's
         // photo): glass shopfronts under a dark fascia the length of the row, each sign on the fascia, a shop's own colour on its share
         // of it (the Cheesecake Shop's mint), and the big window graphics where a shop has them (wrap)
-        if (f.fascia) { pic(0, len, 0, 2.62, 0.08, fronts({ ...F, wall: f.fascia }, 2.62, shops.map(s => ({ w: s.w, door: s.door })))); plinth(0, len);
+        if (f.fascia) { pic(0, len, 0, 2.62, 0.08, fronts({ ...F, wall: f.fascia }, 2.62, shops.map(s => ({ w: s.w, door: s.door, what: s.what, n: s.n })))); plinth(0, len);
           shops.forEach((s, i) => { const [x0, x1] = where[i]; box(x0 + (i ? 0 : 0.05), x1 - (i < shops.length - 1 ? 0 : 0.05), 2.62, 3.62, 0, 0.22, s.fascia || f.fascia);
             if (s.wrap) pic(x0 + 0.3, x1 - 0.3, 0.5, 2.45, 0.1, sign(x1 - x0 - 0.6, 1.95, { ...s.wrap, big: 1.25 })); }); }
         // (sw, sh: a shop's own sign width and height, for a big one: Woolworths, Ash, 16 November 2026, "Make the Woolworths sign bigger")
@@ -10392,7 +10468,7 @@ const handle = async (m, post) => {
           for (let i = 0; i < nx; i++) for (let j = 0; j < no; j++) { const xa = x0 + (x1 - x0) * i / nx, xb = x0 + (x1 - x0) * (i + 1) / nx, oa = o0 + (o1 - o0) * j / no, ob = o0 + (o1 - o0) * (j + 1) / no;
             quad(Y(xa, ob), Y(xb, ob), Y(xb, oa), Y(xa, oa), c); } };
         if (f.pad) drape(f.pad[0], len + f.pad[1], 0.15, f.kerb - 0.3, "#b9b6ae");
-        if (f.glass) { pic(0.35, len - 0.35, 0, 2.75, 0.06, fronts({ ...F, len: len - 0.7, wall: f.glass }, 2.75, [{ w: len - 0.7 }])); plinth(0.35, len - 0.35); }
+        if (f.glass) { pic(0.35, len - 0.35, 0, 2.75, 0.06, fronts({ ...F, len: len - 0.7, wall: f.glass }, 2.75, [{ w: len - 0.7, what: s.what, n: s.n }])); plinth(0.35, len - 0.35); }
         if (f.fascia) {  // the ward office: a deep red fascia across the top, a raised piece in the middle, and the councillor's sign on it
           const r = f.fascia.raise || 0; box(0, len, 2.75, 3.55, 0, 0.3, f.fascia.col); if (r) box(len / 2 - r / 2, len / 2 + r / 2, 3.55, 4.35, 0, 0.3, f.fascia.col);
           board(len / 2 - 2.0, len / 2 + 2.0, 2.95, 4.2, 0.42, s); signY = 2.95; signH = 1.25;
@@ -10473,7 +10549,11 @@ const handle = async (m, post) => {
           for (let x = x0, k = 0; x < x1 - 0.1; x += 0.22, k++) { const y0 = yg(x, o); quad(at(x, y0, o), at(x + 0.12, y0, o), at(x + 0.12, y0 + 1.1, o), at(x, y0 + 1.1, o), rgb(cols[k % cols.length])); } }
         // windows along an upper floor: [y0, y1, how many, colour, x0, x1]
         if (f.windows) for (const [y0, y1, n, col = "#26333d", x0 = 0.6, x1 = len - 0.6] of Array.isArray(f.windows[0]) ? f.windows : [f.windows]) { const step = (x1 - x0) / n;
-          for (let i = 0; i < n; i++) { const a0 = x0 + i * step + 0.25, a1 = x0 + (i + 1) * step - 0.25; quad(at(a0, y0, 0.05), at(a1, y0, 0.05), at(a1, y1, 0.05), at(a0, y1, 0.05), rgb(col)); box(a0 - 0.06, a1 + 0.06, y0 - 0.1, y0, 0.02, 0.12, "#e6e4de"); } }
+          for (let i = 0; i < n; i++) { const a0 = x0 + i * step + 0.25, a1 = x0 + (i + 1) * step - 0.25, ym = y0 + (y1 - y0) * 0.64, fr = "#e9e7e1";
+            box(a0 - 0.07, a1 + 0.07, y0 - 0.02, y1 + 0.07, 0.02, 0.07, fr); quad(at(a0, y0, 0.075), at(a1, y0, 0.075), at(a1, y1, 0.075), at(a0, y1, 0.075), rgb(col));
+            quad(at(a0, ym, 0.078), at(a1, ym, 0.078), at(a1, y1, 0.078), at(a0, y1, 0.078), rgb(shade(col, 1.45)));  // the sky in its top pane (Ash, 20 November 2026: "a little unpolished")
+            box(a0, a1, ym - 0.03, ym + 0.03, 0.07, 0.1, fr); if (a1 - a0 > 1.4) box((a0 + a1) / 2 - 0.03, (a0 + a1) / 2 + 0.03, y0, y1, 0.07, 0.1, fr);
+            box(a0 - 0.1, a1 + 0.1, y0 - 0.12, y0 - 0.02, 0.02, 0.16, "#e6e4de"); } }
         // who is inside: a board on two posts, a line each, facing the street: { lines, c, foot, x, back (from the kerb), o (from the wall), w }
         if (f.tenants) { const T2 = f.tenants, n = T2.lines.length, h = (T2.lh || 0.3) * n + 0.5 + (T2.foot ? 0.35 : 0), w = T2.w || 1.8, px = T2.x ?? -1.2, o = T2.o ?? bsClamp(f.kerb - (T2.back ?? 0.9), 0.8, 40), y0 = T2.y ?? 0.75;
           post(px - w / 2 + 0.1, o - 0.08, y0 + h, "#8a8d90"); post(px + w / 2 - 0.1, o - 0.08, y0 + h, "#8a8d90");
