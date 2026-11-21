@@ -1689,8 +1689,8 @@ body.bsadmin .bs-findme { display: none; }  /* (while editing: the bar runs unde
 body.bstown.bsadmin-tool #bsTown { pointer-events: auto; touch-action: none; cursor: crosshair; }
 /* flying with a tool in hand, the sticks and Up and Down make way for the map: two fingers move, turn and zoom it */
 @media (pointer: coarse) { body.bstown.bsadmin-tool:not(.bswalk) .bs-joy, body.bstown.bsadmin-tool:not(.bswalk) .bs-ud { display: none; } }
-/* Google Maps style: map colours (soft, pale, low colour), and in the map view no sticks (it's drag, pinch and twist) */
-body.bstown.bsgmap #bsTown canvas { filter: saturate(0.42) brightness(1.1) contrast(0.88); }
+/* Google Maps controls: in the map view no sticks (it's drag, pinch and twist). (No map colours any more: it was about the controls, not
+   the look. Ash, 21 November 2026, "this was more about controls rather than google maps, basically google maps like controls") */
 body.bstown.bsgmap:not(.bswalk):not(.bsheld) .bs-joy, body.bstown.bsgmap:not(.bswalk):not(.bsheld) .bs-ud { display: none; }
 body.bstown.bsgmap.bsheld .bs-joy, body.bstown.bsgmap.bsheld .bs-ud { display: none; }
 /* the welcome card: name, style, full screen and the controls, all at once */
@@ -8336,7 +8336,9 @@ const handle = async (m, post) => {
     // always bound to w s so that they work the same in cars and helicopters. At the start offer players a short tutorial")
     F.ctl = desk ? "mix" : "gamer"; F.simple = false; F.mix = desk; F.rmb = false;
     F.goTo = null;
-    F.on.lock = e => { const T = BS.town; if (!desk || F.simple || !T?.on || T.admin?.tool || F.userLocked || e.pointerType !== "mouse" || e.button !== 0 || document.pointerLockElement) return;
+    // (never with Google Maps controls: you drag to look, and the mouse stays free for the menus. Ash, 21 November 2026, "the mouse unlock
+    // kicks in so i cant use the menu easily")
+    F.on.lock = e => { const T = BS.town; if (!desk || F.simple || !T?.on || T.admin?.tool || F.userLocked || document.body.classList.contains("bsgmap") || e.pointerType !== "mouse" || e.button !== 0 || document.pointerLockElement) return;
       if (e.target.closest?.("button, a, input, select, textarea, label, [role=menu], [role=dialog], [role=toolbar], .bs-me, .bs-review, .bs-chatbar, .bs-keys, #bsTownList, #bsShareBox")) return;
       try { const r = canvas.requestPointerLock?.({ unadjustedMovement: true }); r?.catch?.(() => { try { canvas.requestPointerLock(); } catch {} }); } catch {} };
     // Lock and unlock, Ash's way round (16 November 2026: "Where the person can look around I consider that unlocked. They lock it to use
@@ -8380,7 +8382,7 @@ const handle = async (m, post) => {
             inp.onkeydown = inp.onkeyup = e => e.stopPropagation(); inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); play(); } }); card.append(lab, inp); }
           let gm = ls("an3d-style") === "gmaps"; const seg = el("div", "bs-wel-seg"); seg.setAttribute("role", "radiogroup"); seg.setAttribute("aria-label", "Style");
           const opt = (v, t, s) => { const b = el("button"); b.type = "button"; b.setAttribute("role", "radio"); b.append(el("b", "", t), el("span", "", s)); b.onclick = () => { gm = v; draw(); }; return b; };
-          const std = opt(false, "Standard", touch ? "Walk the streets with the sticks" : "Walk the streets, game controls"), gmb = opt(true, "Google Maps", touch ? "Map from above: drag, pinch, twist" : "Map from above: drag, scroll, right-drag to turn");
+          const std = opt(false, "Standard", touch ? "Walk the streets with the sticks" : "Walk the streets, game controls"), gmb = opt(true, "Google Maps controls", touch ? "Map from above: drag, pinch, twist" : "Drag to look, scroll to zoom, right-drag to turn. Mouse stays free");
           seg.append(std, gmb); card.append(el("p", "bs-wel-lbl", "Style"), seg);
           const tick = (t, on) => { const l = el("label", "bs-wel-tick"), c = el("input"); c.type = "checkbox"; c.checked = on; l.append(c, el("span", "", t)); return [l, c]; };
           const [fsL, fsC] = needFs ? tick("Play full screen (O switches it any time)", true) : [null, null];
@@ -8402,7 +8404,7 @@ const handle = async (m, post) => {
             if (needName) toast(`You're ${playerName()}. Change it any time in Settings.`, 2600); };
           card.onsubmit = e => { e.preventDefault(); play(); };
           wrap.append(card); fb.closest(".bs-deskbtns").parentElement.appendChild(wrap); try { (inp || go).focus({ preventScroll: true }); } catch {} }, 400); } document.addEventListener("fullscreenchange", F.on.fsChange); document.addEventListener("webkitfullscreenchange", F.on.fsChange); }
-    F.on.autoLock = () => { const T = BS.town; if (!desk || F.simple || !T?.on || T.admin?.tool || F.userLocked || (!T.walk && document.body.classList.contains("bsgmap")) || document.pointerLockElement || $("bsMe")?.hidden === false || document.querySelector(".bs-askwrap")) return;
+    F.on.autoLock = () => { const T = BS.town; if (!desk || F.simple || !T?.on || T.admin?.tool || F.userLocked || document.body.classList.contains("bsgmap") || document.pointerLockElement || $("bsMe")?.hidden === false || document.querySelector(".bs-askwrap")) return;
       try { canvas.requestPointerLock?.()?.catch?.(() => {}); } catch {} };
     F.on.lockChange = () => { const on = document.pointerLockElement === canvas; document.body.classList.toggle("bslocked", on); $("bsLockTip").hidden = true;
       if (on) F.userLocked = false; else if (F.codeFree || !document.hasFocus()) F.codeFree = false; else F.userLocked = true;  // (Esc counts as locking it; leaving the window doesn't)
@@ -8692,7 +8694,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=21", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=52", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=54", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -10243,6 +10245,9 @@ const handle = async (m, post) => {
     { at: [273.34, -1414.62], shift: [-0.83, -0.63] },  // moved 1.0 m back off Horatio Street
     { at: [-366.38, -328.52], shift: [-0.88, -0.49] },  // moved 1.0 m back off Vale Street
     { at: [-543.84, 1471.70], shift: [0.00, 0.98] },  // moved 1.0 m back off Central Drive
+    // Yeerongpilly Station's two platform outlines, mapped as buildings 25 m wide: solid boxes across the tracks (Ash, 21 November 2026,
+    // "this very strange and broken"). The model's own platform runs beside the line instead
+    { at: [-1146.98, -1061.06], gone: true }, { at: [-1159.70, -1083.05], gone: true },
   ];
   window.anStyle = (x, z) => { for (const q of MOO_STYLE) if (Math.abs(q.at[0] - x) < 0.6 && Math.abs(q.at[1] - z) < 0.6) return q; return null; };
   // No window hoods on a wall that carries a business's sign: they stuck out through the board and flickered across it (Ash, 21 November
@@ -16713,9 +16718,11 @@ const handle = async (m, post) => {
     const NEWS_SPOTS = [...MOO_OVALS.map(o => [o[0], o[1]]), ...MOO_PLANES.map(q => [q.x, q.z]), [-464, -1533], [-253.9, 462.3], [-157.7, -373.6], [-90.6, -126.5]];
     const compass = (dx, dz) => ["east", "south-east", "south", "south-west", "west", "north-west", "north", "north-east"][((Math.round(Math.atan2(dz, dx) / (Math.PI / 4)) % 8) + 8) % 8];
     const howFar = (q, x, z) => { const dx = x - q.x, dz = z - q.z, d = Math.hypot(dx, dz); return d < 150 ? "just around the corner" : `about ${d < 1000 ? Math.round(d / 50) * 50 + " m" : (d / 1000).toFixed(1) + " km"} ${compass(dx, dz)} of here`; };
-    const newsRoll = () => { for (const q of folk) if (!q.news && Math.random() < 0.01) q.news = Math.random() < 0.02 ? { gold: ["heli", "plane", "car"][Math.floor(Math.random() * 3)] } : { ride: ["heli", "plane", "possum"][Math.floor(Math.random() * 3)] }; };
+    // (half as likely again: 1.5 in 100. Ash, 21 November 2026, "Make the vendors about 50% more likely to offer their quests and such")
+    const newsRoll = () => { for (const q of folk) if (!q.news && Math.random() < 0.015) q.news = Math.random() < 0.02 ? { gold: ["heli", "plane", "car"][Math.floor(Math.random() * 3)] } : { ride: ["heli", "plane", "possum"][Math.floor(Math.random() * 3)] }; };
     T.guideTo = (x, z, label, found) => { guide = { x, z, label, found }; };  // (the sky rings' prize uses it)
     let aimPt = null; T.aimAt = a => { aimPt = a; };  // (and the next sky ring)
+    let flickYes = false, flickAt = 0; const flickOffers = () => { const t = performance.now(); if (t - flickAt > 1000) { flickAt = t; flickYes = !!perks().wasPigeon; } return flickYes; };
     T.gossip = (id, kind, gold) => { const q = folk.find(f => f.id === id); if (q) q.news = gold ? { gold: kind } : { ride: kind || "heli" }; return !!q; };  // (for checking it)
     const gossip = q => { const N = q.news; q.news = null;
       if (N.ride === "possum") { const S = TOWN_RIDES.moo.possum; if (!S) return false;
@@ -16907,7 +16914,9 @@ const handle = async (m, post) => {
         // their name over their head while you're near enough to read it (Pandy's is townHome6's)
         if (q.id !== "pandy") { const s = d < 60 && up < 120 ? onScreen(q.x, g(q.x, q.z) + 2.15, q.z) : null; q.tag.hidden = !s; if (s) q.tag.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; }
         // the green mark: they've news for you
-        { const s = q.news && d < 220 && up < 150 ? onScreen(q.x, g(q.x, q.z) + (d < 60 && q.id !== "pandy" ? 3.1 : 2.4), q.z) : null; if (q.dot.hidden === !!s) q.dot.hidden = !s; if (s) q.dot.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; }
+        // (and Flick, near her, when she's pigeon food for you: Ash, 21 November 2026, "make flick have a little green icon if near her and
+        // she's offering a pigeon upgrade")
+        { const s = (q.news || (q.id === "flick" && d < 60 && flickOffers())) && d < 220 && up < 150 ? onScreen(q.x, g(q.x, q.z) + (d < 60 && q.id !== "pandy" ? 3.1 : 2.4), q.z) : null; if (q.dot.hidden === !!s) q.dot.hidden = !s; if (s) q.dot.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; }
         // walk up (or drive up to the mechanic, or run up as the possum to the vet) and they talk to you, once a visit
         const r = me.k === "walk" ? (q.r || 3.4) : me.k === "possum" ? q.possum : /pigeon$/.test(me.k) ? q.pigeon : /^(car|gold|bus)$/.test(me.k) ? q.car : 0;
         if (r && d < r) { if (!q.near && !q.done && !open) { q.near = true; talk(q); } }
@@ -17972,7 +17981,7 @@ const handle = async (m, post) => {
         if ((gripLook -= dt) <= 0) { gripLook = 0.25; if (gripBtn.hidden) gripBtn.hidden = false; if (gripBtn.textContent !== "360") gripBtn.textContent = "360"; gripBtn.classList.remove("on"); }
         hint(""); const up = Dr.y - ground(Dr.x, Dr.z); Dr.air = up > 0.3;
         o = Dr; D = 3.6 + Math.min(4, Dr.v / 5); text = Math.round(Dr.v * 3.6) + " km/h" + (up > 1.5 ? " \u00b7 " + Math.round(up) + " m up" : "");
-      } else if (veh === "pigeon") { const P = pg, U = P.up, G = P.gold ? 1.35 : 1, VPG = 40 / 3.6, flapK = has("Space") || !!F.boost, dive = has("KeyC") || !!F.hand, fast = has("ShiftLeft", "ShiftRight");  // (Dive: C, or the Dive button. Ash, 18 November 2026: "Pigeon needs a dive button that speeds him towards the ground. Not too fast")
+      } else if (veh === "pigeon") { const P = pg, U = P.up, G = P.gold ? 1.35 : 1, VPG = 52 / 3.6, flapK = has("Space") || !!F.boost, dive = has("KeyC") || !!F.hand, fast = has("ShiftLeft", "ShiftRight");  // (Dive: C, or the Dive button. Ash, 18 November 2026: "Pigeon needs a dive button that speeds him towards the ground. Not too fast")
         P.t += dt; const mag = Math.min(1, Math.hypot(str, thr)), goH = mag > 0.15 ? F.yaw + Math.PI + Math.atan2(-str, thr) : P.h, turn = wrap(goH - P.h);
         if (P.mode === "ground") {  // walking: it turns quick to the way the stick points and potters off; Jump (Flap) takes off
           if (mag > 0.15) P.h += Math.sign(turn) * Math.min(Math.abs(turn), 5 * dt);
@@ -17981,9 +17990,11 @@ const handle = async (m, post) => {
         else {  // flying: it heads the way you point it (from where you're looking) and swings round to it; hold Flap to climb, let go to glide down, C to dive
           if (mag > 0.15) P.h += Math.sign(turn) * Math.min(Math.abs(turn), 1.9 * dt);
           // (Flick's pigeon food: Strong wings, Big flaps, Long glide or Dive bomber)
-          // (40 km/h tops, the golden pigeon a third more: Ash, 18 November 2026, "Max speed 40 on the pigeon")
-          const want = Math.min(VPG * G, (dive ? 12 * (U === "dive" ? 1.33 : 1) : (fast ? 10.5 : 8.5) * (mag > 0.15 ? 1 : 0.7)) * (U === "wings" ? 1.25 : 1) * G); P.v += (want - P.v) * Math.min(1, dt * 1.6);
-          const fu = (U === "flap" ? 1.5 : 1) * (P.gold ? 1.3 : 1); if (flapK) P.vy = Math.min(6 * fu, P.vy + 16 * fu * dt); else if (dive) P.vy = Math.max(-9.6 * (U === "dive" ? 1.33 : 1), P.vy - 14.4 * dt); else P.vy += ((U === "glide" ? -1.1 : -2.2) - P.vy) * Math.min(1, dt * 2);
+          // (40 km/h tops, the golden pigeon a third more: Ash, 18 November 2026, "Max speed 40 on the pigeon". Now 40 km/h is how he flies,
+          // a little more with Shift or a dive, and he sinks and dives a little faster: Ash, 21 November 2026, "speed up the pigeon to 40kmph,
+          // make it drop naturally a little faster. in additon make dive a little faster")
+          const want = Math.min(VPG * G, (dive ? 14 * (U === "dive" ? 1.33 : 1) : (fast ? 12.5 : 40 / 3.6) * (mag > 0.15 ? 1 : 0.7)) * (U === "wings" ? 1.25 : 1) * G); P.v += (want - P.v) * Math.min(1, dt * 1.6);
+          const fu = (U === "flap" ? 1.5 : 1) * (P.gold ? 1.3 : 1); if (flapK) P.vy = Math.min(6 * fu, P.vy + 16 * fu * dt); else if (dive) P.vy = Math.max(-11.5 * (U === "dive" ? 1.33 : 1), P.vy - 17 * dt); else P.vy += ((U === "glide" ? -1.5 : -3) - P.vy) * Math.min(1, dt * 2);
           if (P.y - ground(P.x, P.z) > 150 && P.vy > 0) P.vy = 0;  // (no higher than 150 m)
           P.y += P.vy * dt; }
         for (let n = Math.max(1, Math.ceil(Math.abs(P.v) * dt / 0.4)), i = 0, st = dt / n; i < n; i++) {  // in steps of 40 cm, so it cannot fly through a wall
