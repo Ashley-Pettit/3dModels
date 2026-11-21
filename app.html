@@ -8691,7 +8691,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=21", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=49", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=50", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -9308,21 +9308,21 @@ const handle = async (m, post) => {
       rollers: [[11.2, 14.2, 2.75, "#2b2d30", true], [14.5, 17.3, 2.75, "#2b2d30", true]],
       shops: [{ n: "JAX TYRES & AUTO", w: 17.8, c: ["#f2c200", "#1d1d1d"], what: "Tyres and car servicing", jump: true }] },
     { kind: "sign", addr: "994 Ipswich Road", a: [-685.1, -492.3], b: [-686.9, -481.6], n: [-0.9861, -0.1659], kerb: 25.86, across: 36.46, eave: 29.7, wall: "#e9e9e6",
-      flags: [-8, 18, ["#c8102e", "#ffffff"], 20.5],
+      yardFront: [17.7, 18.7, 19.7, 20.7, 21.4, 21.4, 21.4, 21.4, 21.4, 21.4, 21.4, 21.4, 21.4, 21.4], flags: [-8, 18, ["#c8102e", "#ffffff"], 20.5],
       shops: [{ n: "Moorooka Wholesale Vehicles", w: 10.9, c: ["#c8102e", "#ffffff"], what: "Used cars", jump: true }] },
     { kind: "sign", addr: "1071 Ipswich Road", a: [-998.6, -142.7], b: [-990.6, -158.1], n: [0.8874, 0.461], kerb: 10.85, across: 20.45, eave: 15.4, wall: "#2b2d30", glass: "#1f2a33",
-      flags: [-4, 21, ["#c8102e", "#ffffff"]],
+      yardFront: [2.9, 3.2, 3.2, 3.4, 5.7, 6.4, 6.5, 6.8, 6.9, 7.1, 7.3, 7.4, 7.7], flags: [-4, 21, ["#c8102e", "#ffffff"]],
       shops: [{ n: "MOOROOKA MOTOR GROUP", w: 17.4, c: ["#ffffff", "#c8102e"], what: "Used cars", jump: true }] },
     { kind: "sign", addr: "975 Ipswich Road", a: [-696.5, -575.3], b: [-693.4, -579.9], n: [0.8293, 0.5589], kerb: 10.63, across: 20.33, eave: 27.7, wall: "#1f2a44", band: true,
       shops: [{ n: "FOURBY'S", sub: "4WD SUPERSTORE", w: 5.5, c: ["#1f2a44", "#ffffff"], what: "4WD parts and gear", jump: true }] },
     { kind: "sign", addr: "1020 Ipswich Road", a: [-837.4, -306.1], b: [-842.5, -280.2], n: [-0.9812, -0.1932], kerb: 14.33, across: 23.93, eave: 24.6, wall: "#3a3d42", glass: "#1f2a33",
-      flags: [0, 26, ["#ffffff", "#c8102e"], 8.5],
+      yardFront: [5.6, 6.4, 7.3, 8.1, 8.9, 9.8, 10.6, 11.5, 12.1, 12.1, 12.1, 11.9, 11.9, 11.9], flags: [0, 26, ["#ffffff", "#c8102e"], 8.5],
       shops: [{ n: "SALTERS CARS", w: 26.4, c: ["#2b2d30", "#ffffff"], what: "Used cars", jump: true }] },
     { kind: "sign", addr: "1006 Ipswich Road", a: [-736.6, -413.5], b: [-750.3, -396.2], n: [-0.784, -0.6208], kerb: 28.02, across: 38.02, eave: 29.6, wall: "#e6e7e9",
-      flags: [-2, 24, ["#c8102e", "#1f3f8a"]],
+      yardFront: [23.5, 23.5, 23.5, 23.5, 23.5, 23.5, 23.5, 23.5, 23.5, 23.5, 23.5, 23.5, 23.5, 23.5], flags: [-2, 24, ["#c8102e", "#1f3f8a"]],
       shops: [{ n: "WESTPOINT", sub: "MOOROOKA", w: 22.1, c: ["#1f3f8a", "#ffffff"], what: "Car dealer", jump: true }] },
     { kind: "sign", addr: "934 Ipswich Road", a: [-477.0, -755.5], b: [-493.7, -734.1], n: [-0.7884, -0.6152], kerb: 32.24, across: 42.34, eave: 26.3, wall: "#f4c400", band: true,
-      flags: [-4, 30, ["#f4c400", "#c8102e"]],
+      yardFront: [28.7, 28.6, 28.6, 28.5, 28.4, 28.4, 28.3, 28.3, 28.2, 28.1, 28.1, 28.0, 28.0, 27.9, 27.8, 27.8, 27.7, 27.7], flags: [-4, 30, ["#f4c400", "#c8102e"]],
       shops: [{ n: "MOTORWORLD", sub: "QUEENSLAND", w: 27.1, c: ["#f4c400", "#c8102e"], what: "Car dealer", jump: true }] },
     { kind: "sign", addr: "1110 Ipswich Road (corner of Chaucer Street)", a: [-1076.9, 48.3], b: [-1079.0, 51.5], n: [-0.836, -0.5487], kerb: 2.01, across: 11.61, eave: 16.5, wall: "#ece6d6",
       shops: [{ n: "Dom's", sub: "COFFEE & TAKEAWAY", w: 3.8, c: ["#cfe3f2", "#1b2f6b"], what: "Coffee and the 'best' burgers", jump: true }] },
@@ -9430,7 +9430,7 @@ const handle = async (m, post) => {
     { kind: "sign", addr: "976 Ipswich Road", a: [-639.7, -567.6], b: [-638.2, -553.7], n: [-0.9942, 0.1073], kerb: 21.09, across: 30.99, eave: 28.2, wall: "#26282c", band: true, sy: [2.8, 4.3],
       windows: [0.4, 2.6, 13, "#5d6f7c"],
       pole: { n: "BRISBANE CAR YARD", sub: "QUALITY USED CARS", c: ["#c62828", "#ffffff"], x: -12, o: 9.5, big: 1.4 },
-      flags: [-12, 4, ["#d71920", "#1f3f8f"], 9],
+      yardFront: [5.8, 7.6, 9.4, 11.3, 13.1, 14.9, 16.7, 16.6, 16.6], flags: [-12, 4, ["#d71920", "#1f3f8f"], 9],
       shops: [{ n: "Brisbane Car Yard", t: "BCY", w: 13.9, c: ["#26282c", "#e53935"], what: "Used car dealer", jump: true }] },
     // South East Smash in the aqua and white shed at 22 Railway Terrace, Rocklea (Street View, June 2022, when Auto Masters had it; Google
     // Maps has the smash repairer there now), Brisbane Collision Centre's red band on Sherwood Road (September 2026), National Storage's new
@@ -9570,7 +9570,7 @@ const handle = async (m, post) => {
     { kind: "sign", addr: "1049 Ipswich Road", a: [-922.6, -258.0], b: [-912.0, -274.8], n: [0.8457, 0.5336], kerb: 10.17, across: 19.77, eave: 17.7, wall: "#d9dbde",
       shops: [{ n: "City Hire", sub: "EQUIPMENT HIRE", w: 10, c: ["#ffffff", "#e07b00"], what: "Equipment hire" }] },
     { kind: "sign", addr: "1089 Ipswich Road", a: [-1046.2, -83.8], b: [-1041.9, -89.8], n: [0.8128, 0.5825], kerb: 20.42, across: 30.02, eave: 15.2, wall: "#ecebe6", noBoard: true, pole: { n: "Selected Quality Cars", c: ["#0b2f5b", "#ffffff"], x: 3.7, back: 1.5 },
-      flags: [-6, 12, ["#0b2f5b", "#f2c200"]],
+      yardFront: [14.2, 14.0, 14.0, 13.7, 13.6, 13.4, 13.2, 13.0, 12.9, 12.8], flags: [-6, 12, ["#0b2f5b", "#f2c200"]],
       shops: [{ n: "Selected Quality Cars", w: 6.6, c: ["#0b2f5b", "#ffffff"], what: "Used cars" }] },
     { kind: "sign", addr: "1095 Ipswich Road", a: [-1047.6, -52.2], b: [-1041.7, -62.4], n: [0.8656, 0.5007], kerb: 5.73, across: 15.33, eave: 18.6, wall: "#5f6e68", high: true,  // (eave raised to two storeys: its upstairs windows stood over the roof)
       windows: [[0.8, 2.3, 4, "#24303a"], [4.6, 5.9, 4, "#24303a"]],
@@ -9581,7 +9581,7 @@ const handle = async (m, post) => {
       windows: [[1.2, 8.4, 1, "#20262d", 2.4, 4.4], [1.2, 8.4, 1, "#20262d", 7.0, 9.0], [1.2, 8.4, 1, "#20262d", 13.0, 15.0], [1.2, 8.4, 1, "#20262d", 17.6, 19.6]],
       shops: [{ n: "NATIONAL STORAGE", w: 19, c: ["#f2c300", "#23262b"], what: "Storage units" }] },
     { kind: "sign", addr: "1160 Ipswich Road", a: [-1135.8, 280.6], b: [-1139.9, 298.7], n: [-0.9753, -0.2209], kerb: 17.69, across: 27.29, eave: 19.1, wall: "#e7e7e4",
-      flags: [-6, 20, ["#e8337a", "#e8337a", "#c8102e"]], band: true,
+      yardFront: [11.2, 11.5, 11.9, 12.1, 12.5, 12.8, 13.2, 13.5, 13.6, 13.6, 13.5, 13.4, 13.3, 13.2], flags: [-6, 20, ["#e8337a", "#e8337a", "#c8102e"]], band: true,
       shops: [{ n: "MOTORAMA", sub: "PRE-OWNED", w: 10, c: ["#e8337a", "#ffffff"], what: "Used cars", jump: true }] },
     { kind: "sign", addr: "5 Hamilton Road", a: [-1130.9, 386.5], b: [-1152.8, 383.3], n: [0.1446, -0.9895], kerb: 8.61, across: 19.21, eave: 22.6, wall: "#585c62",
       shops: [{ n: "Connections", sub: "EARLY LEARNING", w: 8, c: ["#e5501f", "#ffffff"], what: "Childcare" }] },
@@ -9912,7 +9912,7 @@ const handle = async (m, post) => {
       shops: [{ n: "FUTURE AUTO", sub: "TYRES & MECHANICAL", w: 9, c: ["#ffffff", "#c8102e"], what: "Tyres and mechanic" }] },
     // PSBROS Auto Care in the grey iron shed at 23 Sherwood Road, Rocklea: a workshop door open, yellow and white flags out the front
     { kind: "sign", addr: "U2/23 Sherwood Road, Rocklea", a: [-1551.1, 670.2], b: [-1524.0, 680.1], n: [-0.3431, 0.9393], kerb: 19.08, across: 25.08, eave: 13.2, wall: "#c4c8cc", high: true, bx: 14, bw: 8,
-      rollers: [[10.0, 14.5, 3.4, "#d2d4d6", true]], windows: [0.0, 2.4, 1, "#2a3640", 17.5, 21.0], flags: [-2, 9, ["#f2c200", "#ffffff"]],
+      rollers: [[10.0, 14.5, 3.4, "#d2d4d6", true]], windows: [0.0, 2.4, 1, "#2a3640", 17.5, 21.0], yardFront: [13.5, 13.4, 13.3, 13.0, 12.9, 12.8], flags: [-2, 9, ["#f2c200", "#ffffff"]],
       shops: [{ n: "PSBROS AUTO CARE", w: 8, c: ["#ffffff", "#1d1d1d"], what: "Mechanic" }] },
     // Dragonfly's depot at 35 Evans Road, Salisbury: a white warehouse behind a brick fence, its big charcoal sign up high (Street View,
     // August 2024; four thousand reviews on Google Maps)
@@ -15595,7 +15595,9 @@ const handle = async (m, post) => {
     // (a light amount again, seven: Ash, 15 November 2026: "Add back some of the traffic so there is a light amount of cars around.
     // Careful not to cause lag". Each is a few draw calls, and one more than 450 m away is not drawn)
     // (Moorooka a few more again, lighter on a phone: Ash, 19 November 2026, "mooroka needs a few more moving cars and people but consider lag impacts")
-    let home = T.spawn || [F.pos.x, F.pos.z]; const N = T.cfg?.place === "moo" ? (matchMedia("(pointer: coarse)").matches ? 7 : 9) : 7, NEAR = 300, FAR = 800, NONE = new THREE.Matrix4().makeScale(0, 0, 0).elements;
+    // (and a couple more again: Ash, 21 November 2026, "Add a little bit more traffic as long as not too memory intensive". Each car is a
+    // few draw calls and nothing to download, and one more than 450 m away is still not drawn)
+    let home = T.spawn || [F.pos.x, F.pos.z]; const N = T.cfg?.place === "moo" ? (matchMedia("(pointer: coarse)").matches ? 9 : 12) : 7, NEAR = 300, FAR = 800, NONE = new THREE.Matrix4().makeScale(0, 0, 0).elements;
     if (!N) return P;  // nothing to load or draw
     let roads = null, nodes = null, dead = false, last = 0, reroad = null, moveAt = 0;
     const key = (x, z) => Math.round(x / 2) + "," + Math.round(z / 2);
@@ -16484,7 +16486,11 @@ const handle = async (m, post) => {
     for (const f of yards) { const X = [f.n[1], -f.n[0]], left = (f.b[0] - f.a[0]) * X[0] + (f.b[1] - f.a[1]) * X[1] >= 0 ? f.a : f.b;
       const at = (x, o) => [left[0] + X[0] * x + f.n[0] * o, left[1] + X[1] * x + f.n[1] * o];
       const [x0, x1] = f.flags, h = Math.atan2(f.n[0], f.n[1]);  // nose to the street
-      for (let o = f.kerb - 3.4, row = 0; o > 3.5 && row < 3; o -= 6.2, row++) for (let x = x0 + 1.6; x <= x1 - 1.4; x += 2.75) { if (ran() < 0.12) continue;  // a gap or two (three rows at most)
+      // where the yard's own paving begins behind the verge and the footpath (yardFront: every 2 m from x0, from the ground plan), so no car
+      // stands on the footpath or the grass beside it (Ash, 21 November 2026, a photo of Brisbane Car Yard's front row on the footpath)
+      const FR = f.yardFront, oF = x => { if (!FR) return f.kerb - 4.5; const t = (x - x0) / 2, i = bsClamp(Math.floor(t), 0, FR.length - 1), j = Math.min(FR.length - 1, i + 1), w = bsClamp(t - i, 0, 1); return Math.min(f.kerb - 4, FR[i] + (FR[j] - FR[i]) * w); };
+      const o0 = Math.min(f.kerb - 4, FR ? [...FR].sort((p, q) => p - q)[FR.length >> 1] : f.kerb - 4.5);
+      for (let o = o0 - 2.4, row = 0; o > 3.5 && row < 3; o -= 6.2, row++) for (let x = x0 + 1.6; x <= x1 - 1.4; x += 2.75) { if (ran() < 0.12 || o + 2.3 > oF(x)) continue;  // a gap or two (three rows at most)
         const [px, pz] = at(x, o); if (m.solidAt?.(px, pz) || m.nearestCar?.(px, pz, 2.6)) continue;
         const s = shapes[Math.floor(ran() * shapes.length)], y = m.groundAt(px, pz) + 0.02, hh = h + (ran() - 0.5) * 0.06;
         M.compose(V.set(px, y, pz), Q.setFromEuler(E.set(0, hh, 0)), ONE); R.extractRotation(M);
@@ -16494,7 +16500,7 @@ const handle = async (m, post) => {
           nor.push(r[0] * n0 + r[4] * n1 + r[8] * n2, r[1] * n0 + r[5] * n1 + r[9] * n2, r[2] * n0 + r[6] * n1 + r[10] * n2); }
         for (const c of s.colors) col.push(c); }
       // the tube man: on the yard's front, a third of the way along
-      const [tx, tz] = at(x0 + (x1 - x0) * 0.33, Math.max(1.2, f.kerb - 1.6)); if (!m.solidAt?.(tx, tz)) dancers.push({ x: tx, z: tz, h, y: m.groundAt(tx, tz), ph: ran() * 9, col: ["#e8231d", "#ffd000", "#1e88e5", "#2bb34a", "#ff6f00"][dancers.length % 5] }); }
+      const [tx, tz] = at(x0 + (x1 - x0) * 0.33, Math.max(1.2, oF(x0 + (x1 - x0) * 0.33) - 0.8)); if (!m.solidAt?.(tx, tz)) dancers.push({ x: tx, z: tz, h, y: m.groundAt(tx, tz), ph: ran() * 9, col: ["#e8231d", "#ffd000", "#1e88e5", "#2bb34a", "#ff6f00"][dancers.length % 5] }); }
     let cars = null; if (pos.length) cars = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.35, doubleSide: true, matrix: new THREE.Matrix4().elements }]);
     T.yardCars = pos.length / 3 / (shapes[0].positions.length / 3);
     for (const d of dancers) { const parts = townPlaneParts(d.col, "tubeman"); d.parts = m.addParts(parts.map(p => ({ ...p, matrix: FAR.slice() }))); d.on = false; }

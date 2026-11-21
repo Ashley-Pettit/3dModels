@@ -1941,3 +1941,27 @@ the whole way. What looked wrong at every junction:
 
 Not changed: the ground plan (the asphalt, verges and footpaths), the give-way lines (already across the left half of the side
 street, just back from the main road), and the low-detail ground drawn before the sharper ground arrives.
+
+## Fences off the paving, kerbs out of the road, cars off the footpath (21 November 2026)
+
+Ash sent three photos from his iPhone: a white picket fence standing across a paved front, kerbs in the asphalt at the Bohain
+Street junction, and Brisbane Car Yard's front row of cars on the footpath. Each was fixed everywhere it happens.
+
+- **Low front fences** (`yards.bin`, kind 13, from `suburb_yards.py`): each was checked against the ground plan. 37 that run onto a
+  street's carriageway and 145 that run square to every street within 25 m (diagonally across a lot) were misplaced and are gone;
+  50 standing mostly on paving went too; 167 that cross a drive or path (paving under the fence and on both sides) are cut there
+  (242 pieces left, about 520 m opened). 1,943 are unchanged.
+- **The model's boundary fences** (`town.json` `fences`): 492 ran through a drive (paving under them and both sides): they are cut
+  there, for runs up to 7 m, or longer where the paving is concrete (a residential drive); long runs on asphalt, between paved
+  industrial yards, stay. 131 lay wholly on paving and are now zero length (the model skips them), and 184 pieces were added at the
+  end, so every other fence keeps its index and colour. About 2.7 km opened.
+- **Kerbs in the road:** where a street's asphalt in the ground plan is wider than its width in the street data (junction flares,
+  service lanes), its kerb stood in the road, and some of the new corner kerbs did too. Every kerb point the model draws was dumped
+  (`window.anKerbDump`, set before load) and tested: asphalt 0.85 and 1.45 m behind it is a kerb in the road. Those 1 m cells
+  (3,660) are `kerbOff` in `town.json` (Int16 x, z pairs, base64); the kerbs builder (`?v=50`) leaves out a kerb point in one, and
+  a corner join with any of its points in one. Run three times until no new cells came: 864 corners now, none in the road.
+- **Car yards:** the rows of cars for sale started 3.4 m from the kerb, on the verge on most yards. Each yard (`flags` in
+  `MOO_FRONTS`) now has `yardFront`, where its own paving starts every 2 m along its front: behind the street's footpath (from
+  `footpaths` in `town.json`, or 4 m of verge where it has none) and behind any grass the ground plan shows. A car whose street end
+  would be past it isn't placed, and the tube man stands just inside it.
+- **Traffic:** Moorooka's moving cars up from 7 to 9 on a phone and 9 to 12 on a computer.
