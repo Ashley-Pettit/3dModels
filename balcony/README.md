@@ -44,4 +44,20 @@ about 0.65 m clear of the fence; Ash: "a tiny bit shorter, little bit back from 
 it leads to the stairs. It holds a round table for six with room to walk around it. It is inside the usual 1.5 to 2 m side boundary
 clearance, which the brief flags.
 
+## Two ways up (21 November 2026)
+
+Ash: "now one more without those new stairs. Review the moorooka model to view the front of house stairs. Up those stairs is an
+entrance way that should connect to this balcony. Make this a diff version so I can switch". The **Stairs** button on the page
+switches between them, and `?access=front` opens the second one (the page keeps the choice in its address).
+
+- **Stairs: side** (`accA` in `src/main.js`): the new stairs down the side, off a short landing behind the hexagon.
+- **Stairs: front** (`accB`): no new stairs. You go up the house's own front stairs to the entrance landing, which is carried
+  round the north-front corner into a 1.2 m walkway along the side wall to the hexagon, with the same glass balustrade.
+- **The front of the house** (both versions) follows the Moorooka model's detailed builder for number 6 (`vu` in
+  `town3d/moorooka/moorooka-model.js`): with the house facing Beaudesert Road, the entrance landing is at the north end of the
+  front wall (0.15 to 1.85 m in from the north corner, 1.25 m deep) under a small porch roof on two posts, the front door is
+  1 m in from the corner, and the stairs (1 m wide, 0.27 m goings) run down from the landing along the front wall towards the
+  south. Two front windows with hoods at 48% and 80% of the way along, as the model has them. This is the model's standard
+  layout for a high-set house, so it is worth checking against the real front.
+
 Sizes are approximate (a concept, not drawings).

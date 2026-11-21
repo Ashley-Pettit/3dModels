@@ -4,6 +4,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 const q = new URLSearchParams(location.search);
 const SHOT = q.get('shot') || '';
+let ACCESS = q.get('access') === 'front' ? 'front' : 'side'; // which way up: new side stairs, or the front stairs and a side walkway
 const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: !!SHOT });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -413,7 +414,93 @@ glassBal(SD.out - SD.ch - 0.02, 1.46, SD.out - 0.05, HEX.c1);
 glassBal(SD.out - 0.05, HEX.c1, SD.out - 0.05, HEX.c2);
 glassBal(SD.out - 0.05, HEX.c2, SD.out - SD.ch - 0.02, SD.back + 0.05);
 glassBal(SD.out - SD.ch - 0.02, SD.back + 0.05, 13.2, SD.back + 0.05);
+
+// ---------- two ways up ----------
+// Ash, 21 November 2026: "now one more without those new stairs. Review the moorooka model to view the front of house stairs.
+// Up those stairs is an entrance way that should connect to this balcony. Make this a diff version so I can switch".
+// 'side':  new stairs down the side, off a short landing behind the hexagon (the version Ash called good).
+// 'front': no new stairs. The house's own front stairs, placed as the Moorooka model has them (a landing at the north end of the
+//          front wall with the front door 1 m in from the corner, a porch roof on two posts, and the stairs running down along the
+//          front wall towards the south), with the landing carried round the corner into a 1.2 m walkway along the side to the hexagon.
+const accA = new THREE.Group(), accB = new THREE.Group(); scene.add(accA, accB);
+const FRONT_Z = HOUSE.z0;                                                                  // the front wall
+const FS = { top: 10.15, z0: FRONT_Z - 0.12, z1: FRONT_Z - 1.12, risers: 14, going: 0.27 }; // front stairs: top edge (x) and sides (z)
+FS.rise = FL / FS.risers; FS.run = (FS.risers - 1) * FS.going; FS.bot = FS.top - FS.run;
+const FLAND = { x0: FS.top, x1: 11.85, z0: FRONT_Z - 1.25 };                               // the entrance landing as it is
+const oldDeck = new THREE.MeshStandardMaterial({ color: 0x8f8a84, roughness: 0.85 });
+
+// the front of the house: weatherboards, the front door, two windows with hoods (shared by both versions)
+{
+  const skin = new THREE.Mesh(new THREE.PlaneGeometry(12, WALL_TOP - 2.3), wb(12, WALL_TOP - 2.3));
+  skin.rotation.y = Math.PI; skin.position.set(6, (WALL_TOP + 2.3) / 2, FRONT_Z - 0.006); add(skin, false, true);
+  boxMM(-0.04, 2.25, FRONT_Z - 0.06, 12.06, 2.4, FRONT_Z + 0.04, M.white);
+  boxMM(11.9, 2.3, FRONT_Z - 0.08, 12.06, WALL_TOP, FRONT_Z + 0.06, M.white);
+  boxMM(-0.06, 2.3, FRONT_Z - 0.08, 0.1, WALL_TOP, FRONT_Z + 0.06, M.white);
+  const z = FRONT_Z - 0.02, t = 0.07;
+  boxMM(10.55, FL, z - 0.03, 11.45, FL + 2.05, z, blueTrim);                              // front door, 1 m in from the north corner
+  boxMM(10.48, FL + 2.05, z - 0.07, 11.52, FL + 2.12, z, M.white);
+  for (const x of [10.48, 11.45]) boxMM(x, FL, z - 0.07, x + 0.07, FL + 2.05, z, M.white);
+  boxMM(10.62, FL + 0.98, z - 0.08, 10.67, FL + 1.1, z - 0.03, M.black);
+  const win = (xc, w) => {
+    const x0 = xc - w / 2, x1 = xc + w / 2, y0 = FL + 0.95, y1 = FL + 2.15;
+    const g = new THREE.Mesh(new THREE.PlaneGeometry(w, y1 - y0), M.obscure); g.rotation.y = Math.PI; g.position.set(xc, (y0 + y1) / 2, z - 0.01); add(g, false, true);
+    boxMM(x0 - t, y0 - t, z - 0.09, x1 + t, y0, z, M.white); boxMM(x0 - t, y1, z - 0.09, x1 + t, y1 + t, z, M.white);
+    boxMM(x0 - t, y0, z - 0.09, x0, y1, z, M.white); boxMM(x1, y0, z - 0.09, x1 + t, y1, z, M.white);
+    boxMM(xc - 0.025, y0, z - 0.06, xc + 0.025, y1, z, M.white);
+    for (let j = 1; j < 3; j++) { const y = y0 + (y1 - y0) * j / 3; boxMM(x0, y - 0.02, z - 0.06, x1, y + 0.02, z, M.white); }
+    poly([[x1 + 0.15, y1 + 0.42, z], [x0 - 0.15, y1 + 0.42, z], [x0 - 0.15, y1 + 0.12, z - 0.55], [x1 + 0.15, y1 + 0.12, z - 0.55]], M.roof, [-1, 0, 0]);
+  };
+  win(12 - 12 * 0.48, 1.7); win(12 - 12 * 0.8, 1.7);
+}
+// the front stairs (existing, kept in both versions): white timber, rails both sides, a pad at the foot
+{
+  for (let i = 1; i < FS.risers; i++) {
+    const y = FL - i * FS.rise, xa = FS.top - (i - 1) * FS.going, xb = FS.top - i * FS.going;
+    boxMM(xb - 0.02, y - 0.04, FS.z1 + 0.06, xa + 0.01, y, FS.z0 - 0.06, M.tread);
+  }
+  const bm = [];
+  for (const zz of [FS.z0 - 0.03, FS.z1 + 0.03]) {
+    beam([FS.top + 0.05, FL - 0.12, zz], [FS.bot - 0.2, -0.05, zz], 0.05, 0.26, M.white);
+    beam([FS.top, FL + 0.95, zz], [FS.bot + 0.1, FS.rise + 0.9, zz], 0.06, 0.05, M.white);
+    beam([FS.top, FL + 0.1, zz], [FS.bot + 0.1, FS.rise + 0.05, zz], 0.04, 0.04, M.white);
+    boxMM(FS.bot + 0.07, FS.rise, zz - 0.04, FS.bot + 0.15, FS.rise + 0.95, zz + 0.04, M.white);
+    for (let i = 1; i < 32; i++) {
+      const k = i / 32, x = FS.top + (-FS.run + 0.1) * k;
+      const yb = FL + 0.1 + (FS.rise + 0.05 - FL - 0.1) * k, yt = FL + 0.95 + (FS.rise + 0.9 - FL - 0.95) * k;
+      bm.push(new THREE.Matrix4().compose(new THREE.Vector3(x, (yb + yt) / 2, zz), new THREE.Quaternion(), new THREE.Vector3(1, yt - yb, 1)));
+    }
+  }
+  instanced(new THREE.BoxGeometry(0.03, 1, 0.03), M.white, bm);
+  boxMM(FS.bot - 1.1, -0.01, FS.z0 + 0.05, FS.bot + 0.05, 0.08, FS.z1 - 0.15, M.concrete);
+  // the porch roof over the landing, on two posts (as the Moorooka model has it)
+  const px0 = FLAND.x0 - 0.15, px1 = FLAND.x1 + 0.15, pz = FLAND.z0 - 0.2;
+  poly([[px0, FL + 2.6, FRONT_Z], [px1, FL + 2.6, FRONT_Z], [px1, FL + 2.3, pz], [px0, FL + 2.3, pz]], M.roof, [1, 0, 0]);
+  poly([[px0, FL + 2.55, FRONT_Z], [px1, FL + 2.55, FRONT_Z], [px1, FL + 2.25, pz + 0.05], [px0, FL + 2.25, pz + 0.05]], M.ceiling);
+  boxMM(px0, FL + 2.16, pz - 0.1, px1, FL + 2.3, pz, M.gutter);
+  for (const x of [FLAND.x0 + 0.05, FLAND.x1 - 0.05]) {
+    boxMM(x - 0.05, 0, FLAND.z0, x + 0.05, FL + 2.3, FLAND.z0 + 0.1, M.white);
+    boxMM(x - 0.18, -0.01, FLAND.z0 - 0.13, x + 0.18, 0.05, FLAND.z0 + 0.23, M.concrete);
+  }
+  beam([px0 + 0.05, FL + 2.22, FLAND.z0 + 0.05], [px1 - 0.05, FL + 2.22, FLAND.z0 + 0.05], 0.1, 0.14, M.white);
+}
+// white timber balustrade, like the house's own
+function timberBal(x0, z0, x1, z1) {
+  const A = new THREE.Vector3(x0, 0, z0), B = new THREE.Vector3(x1, 0, z1), len = A.distanceTo(B), bm = [];
+  beam([x0, FL + 0.98, z0], [x1, FL + 0.98, z1], 0.07, 0.05, M.white);
+  beam([x0, FL + 0.1, z0], [x1, FL + 0.1, z1], 0.05, 0.05, M.white);
+  for (const p of [A, B]) boxMM(p.x - 0.05, FL, p.z - 0.05, p.x + 0.05, FL + 1.02, p.z + 0.05, M.white);
+  const n = Math.floor(len / 0.11);
+  for (let i = 1; i < n; i++) { const p = A.clone().lerp(B, i / n); bm.push(new THREE.Matrix4().compose(new THREE.Vector3(p.x, FL + 0.54, p.z), new THREE.Quaternion(), new THREE.Vector3(1, 0.86, 1))); }
+  instanced(new THREE.BoxGeometry(0.035, 1, 0.035), M.white, bm);
+}
+
+// 'side' only: the new stairs, and the rail along the short landing to them
+G = accA;
 glassBal(13.16, SD.back + 0.01, 13.16, WK.z0 + 0.04);
+// the entrance landing as it is, with its own rails
+boxMM(FLAND.x0, FL - 0.16, FLAND.z0, FLAND.x1, FL, FRONT_Z, oldDeck);
+timberBal(FLAND.x0 + 0.05, FLAND.z0 + 0.04, FLAND.x1 - 0.04, FLAND.z0 + 0.04);
+timberBal(FLAND.x1 - 0.04, FLAND.z0 + 0.04, FLAND.x1 - 0.04, FRONT_Z);
 
 // ---------- stairs: further forward, at the end of the side walkway, heading towards the street ----------
 const S = { x0: 12.12, x1: 13.22, risers: 14, going: 0.25, z: WK.z0 };
@@ -437,6 +524,19 @@ const stairRail = (x) => {
 stairRail(S.x0 + 0.03); stairRail(S.x1 - 0.03);
 instanced(new THREE.BoxGeometry(0.02, 1, 0.02), M.black, railM);
 boxMM(S.x0 - 0.15, -0.01, S.z - run - 0.05, S.x1 + 0.15, 0.08, S.z - run - 1.15, M.concrete);
+
+// 'front' only: the entrance landing carried round the corner, and a 1.2 m walkway along the side to the hexagon
+G = accB;
+deckBox(FLAND.x0, 13.2, FLAND.z0, FRONT_Z);
+deckBox(12.0, 13.2, FRONT_Z, WK.z0);
+for (const z of [-9.6, FLAND.z0 + 0.1]) {
+  boxMM(13.06, 0, z - 0.06, 13.18, FL - 0.32, z + 0.06, M.white);
+  boxMM(12.92, -0.01, z - 0.2, 13.32, 0.05, z + 0.2, M.concrete);
+}
+glassBal(FLAND.x0 + 0.02, FLAND.z0 + 0.04, 13.16, FLAND.z0 + 0.04);
+glassBal(13.16, FLAND.z0 + 0.04, 13.16, SD.back + 0.01);
+G = scene;
+accA.visible = ACCESS === 'side'; accB.visible = ACCESS === 'front';
 
 // ---------- pool fencing ----------
 for (let x = -0.4; x <= 11.4; x += 1.25) {
@@ -645,13 +745,23 @@ function onDeck(x, z) {
   if (Math.hypot(x - TABLE.x, z - TABLE.z) < TABLE.r) return false;          // table and chairs
   if (x >= 2.3 && x <= 12.3 && z >= 0.25 && z <= 1.25) return true;          // rear balcony
   if (x >= 2.3 && x <= 3.15 && z >= -0.95 && z <= 0.3) return true;          // back door porch
-  if (x >= 12.3 && x <= 12.95 && z >= WK.z0 - 0.05 && z <= SD.back + 0.5) return true; // landing to the top of the stairs
+  if (ACCESS === 'side') {
+    if (x >= 12.3 && x <= 12.95 && z >= WK.z0 - 0.05 && z <= SD.back + 0.5) return true; // landing to the top of the new stairs
+    if (x >= FLAND.x0 - 0.05 && x <= FLAND.x1 - 0.3 && z >= FLAND.z0 + 0.25 && z <= FRONT_Z - 0.25) return true; // front landing as it is
+  } else {
+    if (x >= 12.3 && x <= 12.88 && z >= FLAND.z0 + 0.25 && z <= SD.back + 0.5) return true;  // walkway along the side
+    if (x >= FLAND.x0 - 0.05 && x <= 12.88 && z >= FLAND.z0 + 0.25 && z <= FRONT_Z - 0.25) return true; // front landing, round the corner
+  }
   if (x < 12.25) return false;                                               // the house (and nothing past the rear balcony's end)
   for (let i = 0; i < 5; i++) if (DC[i] - (DN[i][0] * x + DN[i][1] * z) < 0.28) return false; // clear of the balustrade
   return true;                                                               // side deck
 }
 const ST = { x0: 12.32, x1: 13.02, zTop: WK.z0, zBot: WK.z0 - run };     // between the stair rails
-const onStairs = (x, z) => x >= ST.x0 && x <= ST.x1 && z <= ST.zTop + 0.02 && z >= ST.zBot - 0.1;
+const onSideStairs = (x, z) => ACCESS === 'side' && x >= ST.x0 && x <= ST.x1 && z <= ST.zTop + 0.02 && z >= ST.zBot - 0.1;
+// the front stairs run along x, down from the landing towards the south
+const FST = { z0: FS.z0 - 0.15, z1: FS.z1 + 0.15, xTop: FS.top, xBot: FS.bot };
+const onFrontStairs = (x, z) => z <= FST.z0 && z >= FST.z1 && x <= FST.xTop + 0.02 && x >= FST.xBot - 0.1;
+const frontH = (x) => Math.max(0, Math.min(FL, FL * (x - FST.xBot) / (FST.xTop - FST.xBot)));
 const stairH = (z) => Math.max(0, Math.min(FL, FL * (z - ST.zBot) / (ST.zTop - ST.zBot)));
 
 // things on the ground you can't walk through
@@ -665,6 +775,8 @@ const circles = [];
 for (const x of [0.25, 3.2, 6.1, 9.0, 11.75]) for (const z of [-0.25, -3.6, -7.0, -10.75]) circles.push([x, z, 0.2]);
 for (const [x, z] of [[2.05, 1.45], [5.0, 1.45], [8.0, 1.45], [13.12, WK.z0 + 0.08]]) circles.push([x, z, 0.12]);
 for (const [x, z] of hexPosts) circles.push([x, z, 0.12]);
+for (const x of [FLAND.x0 + 0.05, FLAND.x1 - 0.05]) circles.push([x, FLAND.z0 + 0.05, 0.08]); // the porch posts
+const circlesA = [], circlesB = [[13.12, -9.6, 0.1], [13.12, FLAND.z0 + 0.1, 0.1]];      // posts under the walkway
 segs.push(...NB_SEGS); // the lots' fences
 function segDist(px, pz, [ax, az, bx, bz]) {
   const vx = bx - ax, vz = bz - az, t = Math.max(0, Math.min(1, ((px - ax) * vx + (pz - az) * vz) / (vx * vx + vz * vz)));
@@ -674,9 +786,13 @@ function inPolyW(x, z, P) { let o = false; for (let i = 0, j = P.length - 1; i <
 function groundOK(x, z) {
   if (x > 0.6 - R && x < 8.6 + R && z > 6.0 - R && z < 10.4 + R) return false;   // the pool
   if (x > SHED.x0 - R && x < SHED.x1 + R && z > SHED.z0 - R && z < SHED.z1 + R) return false; // the shed
-  if (x >= S.x0 - R && x <= S.x1 + R && z <= ST.zTop && z >= ST.zBot) {           // under the stairs: only where there's headroom
+  if (ACCESS === 'side' && x >= S.x0 - R && x <= S.x1 + R && z <= ST.zTop && z >= ST.zBot) { // under the stairs: only where there's headroom
     const h = stairH(z); if (h > 0.15 && h < 1.95) return false;
   }
+  if (z <= FS.z0 + R && z >= FS.z1 - R && x <= FS.top && x >= FS.bot) {          // the same under the front stairs
+    const h = frontH(x); if (h > 0.15 && h < 1.95) return false;
+  }
+  for (const [cx, cz, r] of (ACCESS === 'side' ? circlesA : circlesB)) if (Math.hypot(x - cx, z - cz) < r + R) return false;
   for (const s of segs) if (segDist(x, z, s) < R) return false;
   for (const [cx, cz, r] of circles) if (Math.hypot(x - cx, z - cz) < r + R) return false;
   for (const P of NB_SOLID) if (inPolyW(x, z, P)) return false; // the neighbours' houses and pool
@@ -687,7 +803,8 @@ function standAt(x, z, y) {
   let best = null;
   const offer = (h) => { if (Math.abs(h - y) <= STEP && (best === null || Math.abs(h - y) < Math.abs(best - y))) best = h; };
   if (onDeck(x, z)) offer(FL);
-  if (onStairs(x, z)) offer(stairH(z));
+  if (onSideStairs(x, z)) offer(stairH(z));
+  if (onFrontStairs(x, z)) offer(frontH(x));
   if (groundOK(x, z)) offer(0);
   return best;
 }
@@ -697,7 +814,8 @@ function face(dx, dz) { P.yaw = Math.atan2(-dx, -dz); }
 const PLACES = {
   yard:   { label: 'Side yard',          x: 14.5, z: -15.5, y: 0,  look: [12.7, -7.5],  pitch: 0.14 },
   street: { label: 'Out the front',      x: 6.0,  z: -36.5, y: 0,  look: [6, -10],      pitch: 0.08 },
-  stairs: { label: 'Bottom of the stairs', x: 12.67, z: WK.z0 - run - 1.0, y: 0, look: [12.67, -5], pitch: 0.28 },
+  stairs: { label: 'Bottom of the side stairs', x: 12.67, z: WK.z0 - run - 1.0, y: 0, look: [12.67, -5], pitch: 0.28 },
+  front:  { label: 'Front stairs',       x: FS.bot - 1.2, z: (FS.z0 + FS.z1) / 2, y: 0, look: [FS.top + 2, (FS.z0 + FS.z1) / 2], pitch: 0.28 },
   hex:    { label: 'Hexagon deck',       x: 13.0, z: 0.6,   y: FL, look: [13.5, -5.5], pitch: -0.08 },
   rear:   { label: 'Rear balcony',       x: 3.0,  z: 0.75,  y: FL, look: [14, 0.75],   pitch: -0.02 },
   pool:   { label: 'By the pool',        x: 9.0,  z: 12.5,  y: 0,  look: [10, 0],      pitch: 0.12 },
@@ -776,7 +894,27 @@ doorBtn.addEventListener('click', () => {
   document.getElementById('doorsState').textContent = on ? 'on' : 'off';
 });
 const menu = document.getElementById('places'), jumpBtn = document.getElementById('jump');
-menu.innerHTML = Object.entries(PLACES).map(([k, p]) => `<button type="button" data-k="${k}">${p.label}</button>`).join('');
+function fillMenu() {
+  menu.innerHTML = Object.entries(PLACES).filter(([k]) => !(k === 'stairs' && ACCESS === 'front'))
+    .map(([k, p]) => `<button type="button" data-k="${k}">${p.label}</button>`).join('');
+}
+fillMenu();
+// which way up: the new side stairs, or the front stairs and the side walkway (?access=front)
+const accBtn = document.getElementById('access');
+function setAccess(v) {
+  ACCESS = v === 'front' ? 'front' : 'side';
+  accA.visible = ACCESS === 'side'; accB.visible = ACCESS === 'front';
+  document.getElementById('accessState').textContent = ACCESS === 'front' ? 'front' : 'side';
+  accBtn.setAttribute('aria-label', 'Stairs: ' + (ACCESS === 'front' ? 'front stairs and side walkway' : 'new side stairs') + '. Tap to switch.');
+  document.getElementById('hintWay').textContent = ACCESS === 'front'
+    ? 'No new stairs here: up the front stairs, then along the side.'
+    : 'The new stairs are down the side, past the hexagon.';
+  fillMenu();
+  try { const u = new URL(location.href); if (ACCESS === 'front') u.searchParams.set('access', 'front'); else u.searchParams.delete('access'); history.replaceState(null, '', u); } catch (e) { /* not allowed here */ }
+  if (standAt(P.x, P.z, P.y) === null) goTo(P.y > 0.1 ? 'hex' : 'yard');   // the spot you were on is gone in this version
+}
+accBtn.addEventListener('click', () => setAccess(ACCESS === 'front' ? 'side' : 'front'));
+setAccess(ACCESS);
 jumpBtn.addEventListener('click', () => { const open = menu.hidden; menu.hidden = !open; jumpBtn.setAttribute('aria-expanded', String(open)); });
 menu.addEventListener('click', (e) => {
   const b = e.target.closest('button[data-k]'); if (!b) return;
@@ -840,4 +978,4 @@ if (SHOT) {
   requestAnimationFrame(frame);
   window.__ready = true;
 }
-window.__balcony = { P, goTo, standAt, moveBy, stick, face };
+window.__balcony = { P, goTo, standAt, moveBy, stick, face, setAccess };
