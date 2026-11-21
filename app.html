@@ -8691,7 +8691,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=21", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=50", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=51", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -9148,6 +9148,7 @@ const handle = async (m, post) => {
         if (cfg.place === "moo" && !OFF.has("home6")) try { T.home6 = townHome6(T, m); } catch (e) { console.warn("Town model: Ash and Arlo couldn't start", e); }
         if (cfg.place === "moo" && !OFF.has("locals")) try { T.locals = townLocals(T, m); } catch (e) { console.warn("Town model: the locals couldn't start", e); }
         if (cfg.place === "moo" && !OFF.has("yards")) try { T.yards = townMagicMile(T, m); } catch (e) { console.warn("Town model: the Magic Mile couldn't start", e); }
+        if (cfg.place === "moo" && !OFF.has("yards")) try { T.bowls = townBowls(T, m); } catch (e) { console.warn("Town model: the bowls club couldn't start", e); }
         if (cfg.place === "moo" && !OFF.has("walkers")) try { T.walkers = townWalkers(T, m, cfg); } catch (e) { console.warn("Town model: the walkers couldn't start", e); }
         if (!OFF.has("mail")) try { T.mail = townMail(T); } catch (e) { console.warn("Town model: the post couldn't start", e); }
         if (!OFF.has("animal")) try { T.critter = townCritter(T, m, ground, cfg.place); } catch (e) { console.warn("Town model: the animal couldn't start", e); }
@@ -9212,13 +9213,13 @@ const handle = async (m, post) => {
   // Names are plain lettering in the business's colours: no logos.
   const MOO_FRONTS = [
     { kind: "verandah", addr: "131 Beaudesert Road", a: [-207.1, -310.4], b: [-210.5, -335.6], n: [0.991, -0.1337], kerb: 20.29, across: 30.29, eave: 45.9, wall: "#eceae4",
-      shops: [{ n: "Yeshi Buna", sub: "ETHIO AFRICAN CAFE", w: 8, c: ["#f4ead8", "#6b2a1a"], what: "Ethiopian cafe and restaurant", jump: true }, { n: "POST OFFICE", w: 9.4, c: ["#d71920", "#ffffff"], post: true }, { n: "Domino's", w: 8, c: ["#0b3a5e", "#ffffff"], what: "Pizza", jump: true }] },
+      shops: [{ w: 8 }, { n: "POST OFFICE", w: 9.4, c: ["#d71920", "#ffffff"], post: true, what: "Australia Post, Moorooka Post Office", jump: true }, { n: "Domino's", w: 8, c: ["#0b3a5e", "#ffffff"], what: "Pizza", jump: true }] },
     { kind: "centre", addr: "138-146 Beaudesert Road", a: [-153.9, -300.9], b: [-141.9, -281.8], n: [-0.8467, 0.5319], kerb: 2.4, across: 20, eave: 48.3, band: "#26282d", wall: "#dcd9d2",  // (Moorooka Central: on the footpath under its charcoal roof, Street View September 2026; it stood on the white building behind the car park to the north)
       shops: [{ n: "H&R Block", w: 5, c: ["#3a9b35", "#ffffff"], what: "Tax accountants, in Moorooka Central", jump: true }, { n: "Jao Jorm Thai", w: 4.9, c: ["#26282d", "#f3e6c8"], what: "Thai restaurant, in Moorooka Central", jump: true },
         { w: 5 }, { n: "Commonwealth Bank", w: 9, c: ["#26282d", "#ffcc00"], what: "Bank, in Moorooka Central", jump: true }],  // (north to south, as in Street View)
       tenants: { n: "Moorooka Central", lines: ["Commonwealth Bank", "H&R Block", "Jao Jorm Thai", "Harry's Optometrist", "Moorooka Dental Care"], c: ["#26282d", "#ffffff"], foot: { n: "MOOROOKA CENTRAL", c: ["#ffcc00", "#26282d"] }, x: -1.6, back: 1.0, y: 0.6, w: 1.9 } },
     { kind: "strip", addr: "143 Beaudesert Road", a: [-157.7, -258.7], b: [-164.2, -269.0], n: [0.8457, -0.5337], kerb: 3.98, across: 14.58, eave: 49.5, wall: "#d9cdb8", awning: "#c9c2b4",
-      shops: [{ n: "RSPCA Op Shop", w: 12.2, c: ["#1d6fb8", "#ffffff"], what: "Op shop", jump: true }] },
+      shops: [{ n: "Clear Radiology", w: 12.2, c: ["#ffffff", "#0b6f86"], what: "X-rays and scans", jump: true }] },  // (the RSPCA Op Shop closed for good; Clear Radiology Moorooka is here now: Google Maps, 21 November 2026)
     { kind: "strip", addr: "145-147 Beaudesert Road", a: [-141.4, -235.2], b: [-156.2, -258.7], n: [0.8462, -0.5329], kerb: 2.69, across: 13.29, eave: 50.0, wall: "#e6dfd0", awning: "#d8d4ca", windows: [3.7, 4.7, 6, "#2a3640"],
       shops: [{ plain: true, w: 5.4 }, { plain: true, w: 5.3 }, { n: "Cutting Master Barbershop", w: 4.5, c: ["#141414", "#ffffff"], what: "Barber", jump: true }, { n: "Moorooka Mall", sub: "Ethiopian Village", w: 3.5, c: ["#f4f1ea", "#2a2a2a"], arcade: true, what: "Arcade, with the Ethiopian Village restaurant at the back", jump: true },
         { plain: true, w: 3.6, posters: true }, { n: "A La Mode Hair & Beauty", w: 5.5, c: ["#f1e2d6", "#8a2332"] }],
@@ -9959,7 +9960,7 @@ const handle = async (m, post) => {
     { at: [-147.55, -372.28], kind: 2, flat: true, wall: [243, 241, 235] },  // the ward office (122): white render, a flat roof behind the fascia
     { at: [-262.56, -568.09], kind: 2, wall: [40, 48, 60] },                 // Advance Mechanical Centre (93): dark navy cladding
     { at: [-153.7, -414.8], roof: [172, 166, 158] },                         // the pharmacy row (114-120): a weathered grey iron roof
-    { at: [-99.76, -124.24], wall: [92, 74, 60], noShop: true },             // the Willow (215): dark timber
+    { at: [-99.76, -124.24], wall: [214, 213, 206], noShop: true },          // the Willow (215): white render and grey cladding (Street View, October 2024; it was dark timber)
     { at: [-36.53, -129.14], wall: [214, 202, 182], noShop: true },          // Snap Fitness (212): a pale render behind its screen
     { at: [-121.75, -277.68], kind: 2, flat: true, wall: [244, 242, 236] },  // the halal butcher (152): white
     { at: [-117.95, -266.95], kind: 2, flat: true, wall: [196, 84, 52] },    // 156: red-orange, a white parapet
@@ -9967,11 +9968,11 @@ const handle = async (m, post) => {
     { at: [-100.4, -257.5], kind: 2, flat: true, wall: [236, 230, 212] },    // the chiropractor (166-168): cream, two storeys
     { at: [-150.6, -206.27], kind: 2, flat: true, wall: [239, 237, 232], eave: 52.4, ridge: 52.6 },   // 173-175: white, two storeys (eave raised: the survey had it one storey, so its upstairs windows floated over the roof)
     // the rest of the shopping strip from Street View (19 November 2026): flat roofs behind parapets, not gable ends on the street
-    { at: [-216.3, -319.11], kind: 2, flat: true, wall: [236, 235, 230] },   // 131 (the post office, Domino's, Yeshi Buna): white
+    { at: [-216.3, -319.11], kind: 2, flat: true, wall: [236, 235, 230] },   // 131 (the post office and Domino's): white
     { at: [-140.38, -331.53], kind: 2, flat: true, wall: [230, 230, 226] },  // 132-136: white, a band of high windows, behind its car park
     { at: [-133.8, -300.95], kind: 2, flat: true, noShop: true, wall: [72, 74, 78] },      // Moorooka Central (138-146: Commonwealth Bank, H&R Block, Jao Jorm Thai): new, under a wide charcoal roof
     { at: [-181.97, -274.88], hip: true, roof: [170, 76, 56] },              // 139 (AMehdi, Elsa Injera): red tiles, hipped, a verandah
-    { at: [-175.23, -254.98], kind: 2, hip: true, roof: [196, 132, 106], wall: [232, 224, 204] },  // 143 (the RSPCA op shop): cream under salmon tiles, hipped
+    { at: [-175.23, -254.98], kind: 2, hip: true, roof: [196, 132, 106], wall: [232, 224, 204] },  // 143 (Clear Radiology): cream under salmon tiles, hipped
     { at: [-166.05, -236.45], kind: 2, flat: true, wall: [212, 212, 206] },  // 145-147 (Moorooka Mall): pale grey concrete, two storeys
     { at: [-92.6, -243.68], kind: 2, flat: true, wall: [228, 216, 192] },    // 180 (Big Boss Pizzas, Kingz): cream render, two storeys
     { at: [-75.41, -218.78], kind: 2, hip: true, wall: [226, 214, 188] },    // Rooka Acai's corner (Mayfield Road): cream under a low hipped roof
@@ -10454,13 +10455,36 @@ const handle = async (m, post) => {
         shops.forEach((s, i) => s.c && pic(where[i][0] + 0.25, where[i][1] - 0.25, 3.18, 4.02, 0.155, sign(where[i][1] - where[i][0] - 0.5, 0.84, s)));  // an empty unit has no sign
         signY = 3.1; signH = 1.0;
       } else if (f.kind === "pub") {
-        // the name under a red slatted pergola over the steps up to the door, and by the footpath a low white wall carrying its green banners
-        const s = shops[0], o = Math.max(2, f.kerb - 2.6);
-        board(len / 2 - 3.2, len / 2 + 3.2, 2.7, 3.6, 0.14, s);
-        for (let i = 0; i < 9; i++) box(len / 2 - 3.6 + i * 0.9, len / 2 - 3.6 + i * 0.9 + 0.5, 4.2, 4.32, -0.3, 2.6, "#d2321f", 0.5);  // the pergola's red slats
-        for (const px of [len / 2 - 3.4, len / 2 + 3.4]) box(px - 0.12, px + 0.12, 0, 4.2, 2.3, 2.54, "#f2f0ea");
-        box(-2, len + 2, 0, 1.15, o, o + 0.2, f.wall);
-        [["$20 MAIN MEALS", "#1f7a3d", "#ffffff"], ["OPEN TIL 4AM", "#1f7a3d", "#ffffff"], ["KARAOKE", "#1f7a3d", "#ffffff"]].forEach(([t, bg, fg], i) => { const bx = 1.5 + i * (len - 3) / 3; pic(bx, bx + (len - 3) / 3 - 1, 0.25, 0.95, o + 0.215, sign((len - 3) / 3 - 1, 0.7, { n: t, c: [bg, fg] })); });
+        // The Willow (Street View, October 2024; Ash, 21 November 2026: "The entrance to the willow hotel is not quite correct. Needs
+        // redesign of that building"): the way in is at the south corner, a flight of steps up between two white rendered piers under a
+        // red slatted canopy, the maroon WILLOW HOTEL sign over the steps and black slatted gates either side. Left of it, at the
+        // corner, a timber-clad upper floor with dark glass over a white rendered base. Along the rest of the front, the beer garden
+        // behind a low white wall carrying the green banners, and the round orange logo on a pole by the steps.
+        const s = shops[0], o = Math.max(2, f.kerb - 2.6), e0 = 2.2, e1 = 7.0;
+        const gAt = (x, oo) => m.groundAt(left[0] + X[0] * x + f.n[0] * oo, left[1] + X[1] * x + f.n[1] * oo) - base;
+        const drop = Math.max(0, -gAt((e0 + e1) / 2, o + 0.6)), lo = -Math.max(2, drop + 0.6);
+        // the steps: up from the footpath between the piers, back towards the bar
+        const nS = Math.round(drop / 0.18); for (let i = 0; i < nS; i++) box(e0 + 0.45, e1 - 0.45, lo, -drop + (i + 1) * (drop / nS), o + 0.2 - (i + 1) * 0.3, o + 0.2 - i * 0.3, i % 2 ? "#c9c4ba" : "#d4cfc4");
+        // the piers, the canopy's red beam and its slats, and the sign
+        for (const px of [e0, e1]) box(px - 0.3, px + 0.3, lo, 4.5, o - 0.35, o + 0.25, "#f2f0ea");
+        box(e0 - 1.6, e1 + 1.2, 4.42, 4.66, o - 0.4, o + 0.45, "#b8321f");
+        for (let x = e0 - 1.4; x <= e1 + 1.0; x += 0.42) box(x, x + 0.16, 4.5, 4.62, -0.2, o + 0.45, "#c8401f");
+        board(e0 + 0.45, e1 - 0.45, 3.3, 4.15, o + 0.3, s);
+        // black slatted gates beside the steps on the low walls
+        for (const [g0, g1] of [[e0 - 1.5, e0 - 0.35], [e1 + 0.35, e1 + 1.4]]) { box(g0, g1, lo, 0.9, o - 0.05, o + 0.18, "#f2f0ea"); for (let x = g0 + 0.08; x < g1 - 0.05; x += 0.16) box(x, x + 0.08, 0.9, 1.9, o + 0.02, o + 0.12, "#26272a"); }
+        // the corner: a white rendered base, then the timber-clad upper floor with its dark glass
+        box(-1.2, e0 - 1.5, lo, 1.3, 0, o + 0.2, "#f2f0ea");
+        box(-1.2, e0 - 1.5, 1.3, 4.4, 0.4, o - 0.2, "#8a4a32");
+        box(-1.0, e0 - 1.7, 1.7, 3.9, o - 0.19, o - 0.14, "#1f262c");
+        // the bar's glass front along the beer garden, under a pale awning, with the green panel at its middle door
+        box(e1 + 0.6, len - 0.4, 0.25, 2.6, 0.02, 0.1, "#24303a"); box(e1 + 0.4, len - 0.2, 2.62, 2.78, 0, 1.8, "#e2e0da");
+        box(len * 0.55 - 0.9, len * 0.55 + 0.9, 0, 3.4, 0.02, 0.16, "#1f8a7a");
+        // the beer garden's low wall and banners, from the steps to the north end
+        const w0 = e1 + 1.4, w1 = len + 2; box(w0, w1, lo, 1.15, o, o + 0.2, f.wall);
+        [["$20 MAIN MEALS", "#1f7a3d", "#ffffff"], ["KARAOKE", "#1f7a3d", "#ffffff"], ["$1 KIDS MEALS", "#f2c200", "#1a1a1a"]].forEach(([t, bg, fg], i) => { const bw = (w1 - w0 - 2) / 3, bx = w0 + 0.6 + i * bw; pic(bx, bx + bw - 0.8, 0.25, 0.95, o + 0.215, sign(bw - 0.8, 0.7, { n: t, c: [bg, fg] })); });
+        // the round orange logo on its pole, by the steps
+        box(e1 + 2.3, e1 + 2.4, -drop, 3.0, o + 0.5, o + 0.6, "#3a3a3a"); board(e1 + 1.95, e1 + 2.75, 2.9, 3.7, o + 0.66, { n: "W", c: ["#f07a1a", "#ffffff"] });
+        signY = 3.3; signH = 0.85;
       } else if (f.kind === "row") {
         // a row of businesses along one wall: each its own sign over its share of the front. With fascia (the pharmacy row, from Ash's
         // photo): glass shopfronts under a dark fascia the length of the row, each sign on the fascia, a shop's own colour on its share
@@ -16473,6 +16497,36 @@ const handle = async (m, post) => {
     P.dispose = () => { dead = true; for (const w of walkers) try { w.h.remove(); } catch {} };
     return P;
   }
+  // Moorooka Sports & Community Club, the bowls club at 76 Koala Road (Ash, 21 November 2026: "Add the bowls club in low ish res"):
+  // its three greens (about 39 m square each, laid out from the aerial photograph), each a level mown square in two shades of
+  // stripes with a pale ditch round it and a bank down to the ground, and a shade shelter with a bench on the clubhouse side of
+  // each. One shape, about 700 triangles, nothing to download; the clubhouse is the model's own building.
+  const MOO_BOWLS = { greens: [[175.0, -452.0], [205.6, -425.8], [241.5, -396.3]], u: [0.798, 0.602], half: 19.4 };
+  function townBowls(T, m) {
+    const P = { dispose() {} }; if (!m.addParts || !m.groundAt) return P;
+    const pos = [], nor = [], col = [], lin = hex => { const v = parseInt(hex.slice(1), 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255].map(c => Math.pow(c / 255, 2.2)); };
+    const quad = (A, B, C, D, hex) => { const c = lin(hex), ux = B[0] - A[0], uy = B[1] - A[1], uz = B[2] - A[2], vx = C[0] - A[0], vy = C[1] - A[1], vz = C[2] - A[2];
+      let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; const l = Math.hypot(nx, ny, nz) || 1; if (ny < 0 && Math.abs(ny) > 0.5) { nx = -nx; ny = -ny; nz = -nz; }
+      for (const q of [A, B, C, A, C, D]) { pos.push(q[0], q[1], q[2]); nor.push(nx / l, ny / l, nz / l); col.push(c[0], c[1], c[2]); } };
+    const { u, half } = MOO_BOWLS, v = [-u[1], u[0]];
+    const box = (cx, cz, a0, a1, b0, b1, y0, y1, hex) => { const p = (a, b, y) => [cx + u[0] * a + v[0] * b, y, cz + u[1] * a + v[1] * b];
+      quad(p(a0, b0, y1), p(a0, b1, y1), p(a1, b1, y1), p(a1, b0, y1), hex); quad(p(a0, b0, y0), p(a1, b0, y0), p(a1, b0, y1), p(a0, b0, y1), hex); quad(p(a1, b1, y0), p(a0, b1, y0), p(a0, b1, y1), p(a1, b1, y1), hex);
+      quad(p(a0, b1, y0), p(a0, b0, y0), p(a0, b0, y1), p(a0, b1, y1), hex); quad(p(a1, b0, y0), p(a1, b1, y0), p(a1, b1, y1), p(a1, b0, y1), hex); };
+    for (const [cx, cz] of MOO_BOWLS.greens) {
+      let lo = Infinity, hi = -Infinity; for (const a of [-1, 0, 1]) for (const b of [-1, 0, 1]) { const g = m.groundAt(cx + (u[0] * a + v[0] * b) * (half + 1.2), cz + (u[1] * a + v[1] * b) * (half + 1.2)); lo = Math.min(lo, g); hi = Math.max(hi, g); }
+      const top = hi + 0.12, R = half + 1.2;
+      box(cx, cz, -R, R, -R, R, lo - 0.4, top - 0.02, "#6f8f45");  // the bank and the surround, level
+      box(cx, cz, -half - 0.35, half + 0.35, -half - 0.35, half + 0.35, top - 0.02, top, "#d9d4c4");  // the ditch's pale edge
+      const n = 8; for (let i = 0; i < n; i++) box(cx, cz, -half + 2 * half * i / n, -half + 2 * half * (i + 1) / n, -half, half, top, top + 0.02, i % 2 ? "#5f9e3c" : "#6fb048");  // mown stripes
+      // a shade shelter with a bench, on the side towards the clubhouse (west)
+      const sa = -R + 0.3, sb0 = -3, sb1 = 3;
+      for (const b of [sb0, sb1]) for (const a of [sa - 2.2, sa]) box(cx, cz, a - 0.06, a + 0.06, b - 0.06, b + 0.06, top - 0.02, top + 2.3, "#e8e6e0");
+      box(cx, cz, sa - 2.5, sa + 0.3, sb0 - 0.4, sb1 + 0.4, top + 2.3, top + 2.4, "#2f5d8a");
+      box(cx, cz, sa - 1.6, sa - 1.2, sb0 + 0.3, sb1 - 0.3, top - 0.02, top + 0.45, "#8a5a3a"); }
+    const h = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.9, doubleSide: true, matrix: new BS.B.THREE.Matrix4().elements }]);
+    P.dispose = () => { try { h?.remove(); } catch {} };
+    return P;
+  }
   function townMagicMile(T, m) {
     const P = { frame() {}, dispose() {} }; if (!m.addParts || !m.groundAt) return P;
     const THREE = BS.B.THREE, M = new THREE.Matrix4(), R = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), ONE = new THREE.Vector3(1, 1, 1);
@@ -17228,8 +17282,10 @@ const handle = async (m, post) => {
           if ((bz > z) !== (az > z) && x < (ax - bx) * (z - bz) / (az - bz) + bx) inn = !inn;
           const ex = ax - bx, ez = az - bz, t = bsClamp(((x - bx) * ex + (z - bz) * ez) / (ex * ex + ez * ez || 1), 0, 1); edge = Math.min(edge, Math.hypot(x - bx - ex * t, z - bz - ez * t)); }
         if (!inn) continue;
-        if (R.top == null) { let lo = Infinity, hi = -Infinity, cx = 0, cz = 0; for (let i = 0; i < n; i++) { const g = m.groundAt(p[i * 2], p[i * 2 + 1]); lo = Math.min(lo, g); hi = Math.max(hi, g); cx += p[i * 2] / n; cz += p[i * 2 + 1] / n; }
-          const g = Math.min(hi, Math.max(lo, m.groundAt(cx, cz))) + 0.1; R.top = Math.max(R.eave, g + 2.4, hi + 1.5);  // the walls' height, as the model raises them
+        if (R.top == null) { let lo = Infinity, hi = -Infinity, top = -Infinity, cx = 0, cz = 0; for (let i = 0; i < n; i++) { const j = (i + 1) % n, g = m.groundAt(p[i * 2], p[i * 2 + 1]); lo = Math.min(lo, g); hi = Math.max(hi, g); top = Math.max(top, g, m.groundAt((p[i * 2] + p[j * 2]) / 2, (p[i * 2 + 1] + p[j * 2 + 1]) / 2)); cx += p[i * 2] / n; cz += p[i * 2 + 1] / n; }
+          // the floor on the highest ground under the building (its corners and the middles of its walls), as the model now stands it
+          // (Ash, 21 November 2026: "Some houses are still inside the dirt")
+          const g = top + 0.1; R.top = Math.max(R.eave, g + 2.4, hi + 1.5);  // the walls' height, as the model raises them
           // and the roof's pitch as the model draws it: its rise over half its width (the middle's distance to the nearest wall), so the
           // possum stands on the roof and not inside it (Ash, 15 November 2026: "The possum falls through lots of roofs")
           let ec = Infinity; for (let i = 0, j = n - 1; i < n; j = i++) { const ax = p[j * 2], az = p[j * 2 + 1], bx = p[i * 2], bz = p[i * 2 + 1], ex = ax - bx, ez = az - bz, t = bsClamp(((cx - bx) * ex + (cz - bz) * ez) / (ex * ex + ez * ez || 1), 0, 1); ec = Math.min(ec, Math.hypot(cx - bx - ex * t, cz - bz - ez * t)); }
@@ -18248,7 +18304,7 @@ const handle = async (m, post) => {
     BS.town = null; T.dead = true; T.on = false; T.ungest?.(); T.unlay?.(); T.unflood?.();
     T.streets?.dispose(); T.streets = null; $("bsNamesBtn").hidden = true;
     T.admin?.dispose(); T.admin = null;
-    T.car?.dispose(); T.car = null; T.peers?.dispose(); T.peers = null; T.me?.dispose(); T.me = null; T.here?.dispose(); T.here = null; T.yards?.dispose(); T.yards = null; T.walkers?.dispose(); T.walkers = null; T.traffic?.dispose(); T.traffic = null; T.mayor?.dispose(); T.mayor = null; T.council?.dispose(); T.council = null; T.critter?.dispose(); T.critter = null; T.home6?.dispose(); T.home6 = null; T.locals?.dispose(); T.locals = null; T.mail?.dispose(); T.mail = null;
+    T.car?.dispose(); T.car = null; T.peers?.dispose(); T.peers = null; T.me?.dispose(); T.me = null; T.here?.dispose(); T.here = null; T.yards?.dispose(); T.yards = null; T.bowls?.dispose(); T.bowls = null; T.walkers?.dispose(); T.walkers = null; T.traffic?.dispose(); T.traffic = null; T.mayor?.dispose(); T.mayor = null; T.council?.dispose(); T.council = null; T.critter?.dispose(); T.critter = null; T.home6?.dispose(); T.home6 = null; T.locals?.dispose(); T.locals = null; T.mail?.dispose(); T.mail = null;
     T.unbar?.();
     if (BS.fly) { const F = BS.fly; F.walk = F.speed = F.floor = F.hot = F.drive = null; F.ceil = 0; F.lim = null; }  // Explore, if it carries on, is its old self
     try { T.model?.dispose(); } catch {}
