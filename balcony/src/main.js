@@ -415,7 +415,7 @@ instanced(new THREE.BoxGeometry(0.02, 1, 0.02), M.black, railM);
 boxMM(S.x0 - 0.15, -0.01, S.z - run - 0.05, S.x1 + 0.15, 0.08, S.z - run - 1.15, M.concrete);
 
 // ---------- pool fencing ----------
-for (let x = -0.4; x < 13.4; x += 1.25) {
+for (let x = -0.4; x <= 11.4; x += 1.25) {
   const g = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 0.012), M.fenceGlass);
   g.position.set(x + 0.6, 0.65, 2.0); scene.add(g);
   boxMM(x + 0.15, 0, 1.97, x + 0.2, 0.15, 2.03, M.black);
@@ -423,10 +423,11 @@ for (let x = -0.4; x < 13.4; x += 1.25) {
 }
 {
   const fm = [];
-  beam([13.6, 1.15, 2.0], [13.6, 1.15, 11], 0.04, 0.04, M.black);
-  beam([13.6, 0.12, 2.0], [13.6, 0.12, 11], 0.04, 0.04, M.black);
-  for (let z = 2.0; z <= 11; z += 2.4) boxMM(13.57, 0, z - 0.03, 13.63, 1.2, z + 0.03, M.black);
-  for (let z = 2.1; z < 11; z += 0.11) fm.push(new THREE.Matrix4().compose(new THREE.Vector3(13.6, 0.64, z), new THREE.Quaternion(), new THREE.Vector3(1, 1.04, 1)));
+  beam([12.6, 1.15, 2.0], [12.6, 1.15, 11], 0.04, 0.04, M.black);
+  beam([12.6, 0.12, 2.0], [12.6, 0.12, 11], 0.04, 0.04, M.black);
+  for (let z = 2.0; z <= 11; z += 2.4) boxMM(12.57, 0, z - 0.03, 12.63, 1.2, z + 0.03, M.black);
+  for (let z = 2.1; z < 11; z += 0.11) fm.push(new THREE.Matrix4().compose(new THREE.Vector3(12.6, 0.64, z), new THREE.Quaternion(), new THREE.Vector3(1, 1.04, 1)));
+  boxMM(12.05, 0.05, 1.97, 12.6, 1.2, 2.03, M.black); // pool gate
   instanced(new THREE.BoxGeometry(0.018, 1, 0.018), M.black, fm);
 }
 
@@ -463,10 +464,105 @@ function palm(x, z, h) {
     beam([x + 0.3, h, z + 0.2], [x + 0.3 + Math.cos(a) * 2.0, h - 0.9, z + 0.2 + Math.sin(a) * 2.0], 0.5, 0.04, M.leaf);
   }
 }
-tree(-4, -14, 7, 3.2, M.leaf2); tree(4, -17, 8, 3.8); tree(16, -22, 7.5, 3.5, M.leaf2); tree(24, -6, 6, 3);
-tree(-3.4, 1.0, 3.2, 1.9); tree(-2.6, -3.5, 4.5, 2.3, M.leaf2); tree(-6, 5, 3.5, 2.0);
+// ---------- the neighbours, from the Moorooka model ----------
+// Ash, 21 November 2026: "Using the moorooka model at 6 Beaudesert add the neighbours". Houses (survey outlines, eave and ridge
+// heights, roof colours), the lots' fences (from the cadastre), the next-door pool and tank, trees and the streets, in this
+// model's metres: the real north wall lined up with x = 12 and the back wall with z = 0 (town3d/moorooka, see balcony/README.md).
+// No stairs on the neighbours' houses: Ash says the Moorooka model's stairs on the house next to the balcony aren't right.
+const NB = {"houses":[{"id":"near-6-1rp130916","pts":[[-15.6,-5.74],[-11.0,-5.5],[-11.02,-3.77],[-4.28,-3.48],[-3.45,-18.53],[-14.91,-19.14]],"eave":5.56,"ridge":7.86,"roof":"#af7f75","walls":"#efeee8","trim":"#f6f4ee"},{"id":"near-6-1rp65197","pts":[[28.21,-3.84],[29.02,-17.16],[18.67,-17.86],[17.75,-4.53]],"eave":4.96,"ridge":6.46,"roof":"#cdcfd0","walls":"#e6dbbf","trim":"#7a2c27"},{"id":"near-6-2rp130916","pts":[[-16.11,25.77],[-16.07,39.96],[-6.05,39.9],[-6.21,14.69],[-19.57,14.79],[-19.57,25.74]],"eave":3.08,"ridge":4.58,"roof":"#7a6b5e","walls":"#d9dfe6","trim":"#f7f7f3"},{"id":"near-6-2rp65197","pts":[[15.82,17.9],[18.41,34.6],[28.69,32.98],[26.1,16.28]],"eave":3.21,"ridge":6.71,"roof":"#8e7a71","walls":"#e9d9c4","trim":"#f6f1e6"},{"id":"near-6-1rp57597","pts":[[-50.83,-31.49],[-50.33,-13.93],[-45.38,-14.05],[-45.47,-16.37],[-38.1,-16.58],[-38.44,-28.29],[-43.98,-28.07],[-44.08,-31.7]],"eave":3.54,"ridge":5.84,"roof":"#c9cbcb","walls":"#cfd8cf","trim":"#f4f2ea"}],"fences":[{"kind":"paling","h":1.0,"pts":[[15.17,-27.69],[15.14,-13.54]]},{"kind":"paling","h":1.6,"pts":[[15.14,-13.54],[15.04,46.78]]},{"kind":"paling","h":1.6,"pts":[[-2.25,-9.04],[-1.73,47.15]]},{"kind":"paling","h":1.7,"pts":[[15.04,46.78],[-1.73,47.15]]},{"kind":"paling","h":1.0,"pts":[[-20.11,-34.29],[-20.12,-18.01]]},{"kind":"paling","h":1.6,"pts":[[-20.12,-18.01],[-20.14,1.89]]},{"kind":"paling","h":1.7,"pts":[[-2.64,1.9],[-20.14,1.89]]},{"kind":"picket","h":1.05,"pts":[[32.76,9.41],[32.74,-25.39]]},{"kind":"paling","h":1.0,"pts":[[33.01,9.41],[25.03,9.35]]},{"kind":"paling","h":1.6,"pts":[[25.03,9.35],[15.29,9.27]]},{"kind":"paling","h":1.6,"pts":[[-2.06,47.55],[-20.18,47.4]]},{"kind":"paling","h":1.7,"pts":[[-20.18,47.4],[-20.14,1.89]]},{"kind":"picket","h":1.05,"pts":[[32.79,47.85],[32.76,9.41]]},{"kind":"paling","h":1.0,"pts":[[33.05,47.85],[24.92,47.78]]},{"kind":"paling","h":1.6,"pts":[[24.92,47.78],[15.01,47.69]]},{"kind":"picket","h":1.05,"pts":[[-36.95,-36.86],[-52.95,-39.54]]},{"kind":"paling","h":1.0,"pts":[[-36.94,-37.11],[-36.97,-27.16]]},{"kind":"paling","h":1.6,"pts":[[-36.97,-27.16],[-37.04,2.06]]},{"kind":"paling","h":1.0,"pts":[[-52.94,-39.8],[-52.9,-30.23]]},{"kind":"paling","h":1.6,"pts":[[-52.9,-30.23],[-52.76,2.01]]},{"kind":"paling","h":1.7,"pts":[[-37.04,2.06],[-52.76,2.01]]}],"pools":[{"x":-11.09,"z":43.69,"a":-3.117,"p1":828,"p2":393,"round":false}],"sheds":[],"tanks":[{"x":22.12,"z":-19.05,"a":1.405,"p1":90,"p2":160}],"lines":[],"trees":[[63.4,-37.8,344],[23.2,-29.3,337],[16.1,-19.2,303],[62.5,-14.5,92],[32.1,-5.4,80],[50.5,-7.0,1586],[31.2,-1.2,1565],[51.1,1.0,1407],[20.3,6.2,1103],[31.9,13.4,335],[50.1,14.4,1569],[65.8,14.3,81],[32.4,25.5,1564],[49.7,25.9,345],[30.8,35.6,1155],[54.8,45.6,352],[51.8,47.3,353],[31.0,51.8,339],[54.0,51.3,188],[26.5,58.4,124],[65.4,55.9,1164],[-45.6,-38.0,144],[-8.2,-37.2,589],[-39.2,-31.3,329],[7.1,-38.0,369],[-20.7,-28.5,319],[-35.8,-26.0,572],[-8.6,-29.0,329],[-40.6,-0.6,117],[-2.6,1.2,1141],[-22.8,11.9,313],[-2.9,10.1,80],[-26.5,29.7,1095],[-33.5,31.7,80],[-3.1,28.1,1118],[-21.1,37.7,308],[-31.0,46.7,356],[-43.3,54.9,368],[-43.9,57.0,365],[-15.8,52.8,356],[6.5,51.1,380],[-3.9,56.9,345],[-12.7,59.1,118],[17.0,57.4,169]],"roads":[{"name":"Beaudesert Road","w":9.6,"pts":[[139.69,-23.5],[126.36,-26.24],[95.0,-44.01],[82.76,-48.66],[62.89,-50.5]]},{"name":"Bohain Street","w":4.6,"pts":[[62.89,-50.5],[53.23,-42.2],[46.59,-30.95],[44.79,-16.86]]},{"name":"Beaudesert Road","w":9.6,"pts":[[62.89,-50.5],[2.47,-51.05]]},{"name":"Bohain Street","w":4.6,"pts":[[44.79,-16.86],[36.03,-32.83],[25.28,-39.55],[2.47,-51.05]]},{"name":"Bohain Street","w":10.4,"pts":[[44.79,-16.86],[41.9,56.83]]},{"name":"Beaudesert Road","w":9.6,"pts":[[-161.37,-59.54],[-137.9,-61.64],[24.74,-59.13],[35.59,-60.94],[44.78,-64.2],[57.9,-70.05]]},{"name":"Beaudesert Road","w":9.6,"pts":[[2.47,-51.05],[-141.82,-52.97],[-161.17,-51.67]]},{"name":"Bohain Street","w":10.1,"pts":[[41.9,56.83],[40.02,106.21]]}],"lot6":[[15.56,-28.31],[15.01,47.69],[-2.06,47.55],[-2.61,-31.31]]};
+const NB_SEGS = [], NB_SOLID = [];
+{
+  const tint = (hex, base) => { const m = base.clone(); m.color = new THREE.Color(hex); return m; };
+  const wallBase = new THREE.MeshStandardMaterial({ color: 0xffffff, map: rep(weatherTex, 1, 1), roughness: 0.85 });
+  const roofBase = new THREE.MeshStandardMaterial({ color: 0xffffff, map: roofTex, roughness: 0.5, metalness: 0.3, side: THREE.DoubleSide });
+  const brick = new THREE.MeshStandardMaterial({ color: 0x9a5c47, roughness: 0.95 });
+  const extrudeUp = (pts, y0, y1, mats) => {
+    const shape = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(x, -z)));
+    const m = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: y1 - y0, bevelEnabled: false }), mats);
+    m.rotation.x = -Math.PI / 2; m.position.y = y0; return add(m);
+  };
+  const inPoly = (x, z, P) => { let o = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const [xi, zi] = P[i], [xj, zj] = P[j]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) o = !o; } return o; };
+  for (const h of NB.houses) {
+    const P = h.pts, walls = tint(h.walls, wallBase), trim = new THREE.MeshStandardMaterial({ color: new THREE.Color(h.trim), roughness: 0.8 });
+    const high = h.eave > 4.2, base = high ? 2.3 : 0.35, eave = Math.max(base + 2.5, Math.min(h.eave, base + 3.2));
+    extrudeUp(P, base, eave, [walls, walls]);
+    NB_SOLID.push(P);
+    // under the house: stumps, or number 10's brick ground floor
+    if (high) {
+      if (h.id === 'near-6-1rp130916') extrudeUp(P, 0, base, [brick, brick]);
+      else {
+        const xs = P.map((p) => p[0]), zs = P.map((p) => p[1]);
+        for (let x = Math.min(...xs) + 0.4; x < Math.max(...xs); x += 2.8) for (let z = Math.min(...zs) + 0.4; z < Math.max(...zs); z += 2.8)
+          if (inPoly(x, z, P)) boxMM(x - 0.13, 0, z - 0.13, x + 0.13, base, z + 0.13, M.stump);
+        extrudeUp(P, base - 0.15, base, [M.under, M.under]);
+      }
+    }
+    // oriented box from the longest edge, for the roof
+    let best = 0, ax = [1, 0];
+    for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length], l = Math.hypot(b[0] - a[0], b[1] - a[1]); if (l > best) { best = l; ax = [(b[0] - a[0]) / l, (b[1] - a[1]) / l]; } }
+    const nv = [-ax[1], ax[0]];
+    const us = P.map((p) => p[0] * ax[0] + p[1] * ax[1]), vs = P.map((p) => p[0] * nv[0] + p[1] * nv[1]);
+    const o = 0.45, u0 = Math.min(...us) - o, u1 = Math.max(...us) + o, v0 = Math.min(...vs) - o, v1 = Math.max(...vs) + o;
+    const L = u1 - u0, W = v1 - v0, along = L >= W;
+    const rise = Math.max(1.3, Math.min(2.6, h.ridge - h.eave + 0.6));
+    const pt = (u, v, y) => [ax[0] * u + nv[0] * v, y, ax[1] * u + nv[1] * v];
+    const roofM = tint(h.roof, roofBase);
+    if (along) {
+      const hw = W / 2, vm = (v0 + v1) / 2, ra = u0 + Math.min(hw, L / 2), rb = u1 - Math.min(hw, L / 2), R = eave + rise;
+      poly([pt(u0, v0, eave), pt(u1, v0, eave), pt(rb, vm, R), pt(ra, vm, R)], roofM, [ax[0], 0, ax[1]]);
+      poly([pt(u1, v1, eave), pt(u0, v1, eave), pt(ra, vm, R), pt(rb, vm, R)], roofM, [-ax[0], 0, -ax[1]]);
+      poly([pt(u0, v1, eave), pt(u0, v0, eave), pt(ra, vm, R)], roofM, [nv[0], 0, nv[1]]);
+      poly([pt(u1, v0, eave), pt(u1, v1, eave), pt(rb, vm, R)], roofM, [-nv[0], 0, -nv[1]]);
+    } else {
+      const hl = L / 2, um = (u0 + u1) / 2, va = v0 + Math.min(hl, W / 2), vb = v1 - Math.min(hl, W / 2), R = eave + rise;
+      poly([pt(u0, v1, eave), pt(u0, v0, eave), pt(um, va, R), pt(um, vb, R)], roofM, [nv[0], 0, nv[1]]);
+      poly([pt(u1, v0, eave), pt(u1, v1, eave), pt(um, vb, R), pt(um, va, R)], roofM, [-nv[0], 0, -nv[1]]);
+      poly([pt(u0, v0, eave), pt(u1, v0, eave), pt(um, va, R)], roofM, [ax[0], 0, ax[1]]);
+      poly([pt(u1, v1, eave), pt(u0, v1, eave), pt(um, vb, R)], roofM, [-ax[0], 0, -ax[1]]);
+    }
+    poly([pt(u0, v0, eave - 0.02), pt(u1, v0, eave - 0.02), pt(u1, v1, eave - 0.02), pt(u0, v1, eave - 0.02)], M.ceiling);
+    // windows along each wall longer than 3 m (trim-coloured frames)
+    let area = 0; for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length]; area += a[0] * b[1] - b[0] * a[1]; }
+    const sgn = area > 0 ? 1 : -1;
+    for (let i = 0; i < P.length; i++) {
+      const a = P[i], b = P[(i + 1) % P.length], l = Math.hypot(b[0] - a[0], b[1] - a[1]); if (l < 3) continue;
+      const dx = (b[0] - a[0]) / l, dz = (b[1] - a[1]) / l, nx = dz * sgn, nz = -dx * sgn, n = Math.floor((l - 0.6) / 3.2);
+      for (let k = 0; k < n; k++) {
+        const s = (l - (n - 1) * 3.2) / 2 + k * 3.2, cx = a[0] + dx * s + nx * 0.04, cz = a[1] + dz * s + nz * 0.04, cy = base + (eave - base) * 0.52;
+        const fr = new THREE.Mesh(new THREE.BoxGeometry(1.25, 1.35, 0.05), trim); fr.position.set(cx, cy, cz); fr.rotation.y = Math.atan2(dx, dz) + Math.PI / 2; add(fr, false, true);
+        const gl = new THREE.Mesh(new THREE.BoxGeometry(1.05, 1.15, 0.05), M.glass); gl.position.set(cx + nx * 0.02, cy, cz + nz * 0.02); gl.rotation.y = fr.rotation.y; add(gl, false, true);
+      }
+    }
+  }
+  // fences on the lot lines
+  const paling = new THREE.MeshStandardMaterial({ color: 0x8c7d69, roughness: 0.95 }), picket = new THREE.MeshStandardMaterial({ color: 0xf1f0ea, roughness: 0.85 });
+  for (const f of NB.fences) for (let i = 0; i + 1 < f.pts.length; i++) {
+    const [x0, z0] = f.pts[i], [x1, z1] = f.pts[i + 1];
+    beam([x0, f.h / 2, z0], [x1, f.h / 2, z1], 0.05, f.h, f.kind === 'picket' ? picket : paling);
+    NB_SEGS.push([x0, z0, x1, z1]);
+  }
+  // the next-door pool and tank
+  for (const p of NB.pools) {
+    const g = new THREE.Group(); g.position.set(p.x, 0, p.z); g.rotation.y = -p.a;
+    const c = new THREE.Mesh(new THREE.BoxGeometry(p.p1 / 100 + 0.8, 0.06, p.p2 / 100 + 0.8), M.coping); c.position.y = 0.03; c.receiveShadow = true; g.add(c);
+    const w = new THREE.Mesh(new THREE.BoxGeometry(p.p1 / 100, 0.07, p.p2 / 100), M.water); w.position.y = 0.04; g.add(w); G.add(g);
+    NB_SOLID.push([[p.x - 2, p.z - 2], [p.x + 2, p.z - 2], [p.x + 2, p.z + 2], [p.x - 2, p.z + 2]]);
+  }
+  const tankM = new THREE.MeshStandardMaterial({ color: 0x55704a, roughness: 0.7 });
+  for (const tk of NB.tanks) { const m = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.75, 1.9, 24), tankM); m.position.set(tk.x, 0.95, tk.z); add(m); }
+  // trees, sized from the model's numbers
+  for (const [x, z, s] of NB.trees) { const ht = Math.max(3.5, Math.min(11, s / 32)); tree(x, z, ht, ht * 0.33, s % 2 ? M.leaf : M.leaf2); }
+  // the streets: Beaudesert Road out the front and Bohain Street on the corner
+  const asphalt = new THREE.MeshStandardMaterial({ color: 0x4b4d51, roughness: 0.95 });
+  for (const r of NB.roads) for (let i = 0; i + 1 < r.pts.length; i++) {
+    const [x0, z0] = r.pts[i], [x1, z1] = r.pts[i + 1], l = Math.hypot(x1 - x0, z1 - z0); if (l < 0.05) continue;
+    const m = new THREE.Mesh(new THREE.BoxGeometry(r.w, 0.02, l + r.w * 0.5), asphalt);
+    m.position.set((x0 + x1) / 2, 0.01, (z0 + z1) / 2); m.rotation.y = Math.atan2(x1 - x0, z1 - z0); m.receiveShadow = true; G.add(m);
+  }
+}
+
 // the blue shed: in the yard next to the pool, just outside the black pool fence, doors facing the house
-const SHED = { x0: 15.4, x1: 17.9, z0: 8.0, z1: 10.2 };
+const SHED = { x0: 12.85, x1: 15.0, z0: 7.6, z1: 9.8 }; // inside the north fence
 {
   const navy = new THREE.MeshStandardMaterial({ color: 0x2f3e78, roughness: 0.8 });
   const { x0, x1, z0, z1 } = SHED, zm = (z0 + z1) / 2;
@@ -524,8 +620,8 @@ const stairH = (z) => Math.max(0, Math.min(FL, FL * (z - ST.zBot) / (ST.zTop - S
 
 // things on the ground you can't walk through
 const segs = [
-  [-0.4, 2.0, 13.4, 2.0],      // glass pool fence
-  [13.6, 2.0, 13.6, 11.0],     // black pool fence
+  [-0.4, 2.0, 12.6, 2.0],      // glass pool fence and gate
+  [12.6, 2.0, 12.6, 11.0],     // black pool fence
   [0.0, -6.0, 0.0, -0.3],      // under-house wall
   [0.0, -10.85, 12.0, -10.85], // back of the undercroft
 ];
@@ -533,10 +629,12 @@ const circles = [];
 for (const x of [0.25, 3.2, 6.1, 9.0, 11.75]) for (const z of [-0.25, -3.6, -7.0, -10.75]) circles.push([x, z, 0.2]);
 for (const [x, z] of [[2.05, 1.45], [5.0, 1.45], [8.0, 1.45], [13.12, (WK.z0 + WK.z1) / 2], [13.12, WK.z0 + 0.08]]) circles.push([x, z, 0.12]);
 for (const [x, z] of hexPosts) circles.push([x, z, 0.12]);
+segs.push(...NB_SEGS); // the lots' fences
 function segDist(px, pz, [ax, az, bx, bz]) {
   const vx = bx - ax, vz = bz - az, t = Math.max(0, Math.min(1, ((px - ax) * vx + (pz - az) * vz) / (vx * vx + vz * vz)));
   return Math.hypot(px - (ax + vx * t), pz - (az + vz * t));
 }
+function inPolyW(x, z, P) { let o = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const [xi, zi] = P[i], [xj, zj] = P[j]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) o = !o; } return o; }
 function groundOK(x, z) {
   if (x > 0.6 - R && x < 8.6 + R && z > 6.0 - R && z < 10.4 + R) return false;   // the pool
   if (x > SHED.x0 - R && x < SHED.x1 + R && z > SHED.z0 - R && z < SHED.z1 + R) return false; // the shed
@@ -545,6 +643,7 @@ function groundOK(x, z) {
   }
   for (const s of segs) if (segDist(x, z, s) < R) return false;
   for (const [cx, cz, r] of circles) if (Math.hypot(x - cx, z - cz) < r + R) return false;
+  for (const P of NB_SOLID) if (inPolyW(x, z, P)) return false; // the neighbours' houses and pool
   return Math.abs(x) < 60 && Math.abs(z) < 60;
 }
 // the height you'd stand at in (x, z), coming from height y, or null if you can't go there
@@ -557,10 +656,11 @@ function standAt(x, z, y) {
   return best;
 }
 
-const P = { x: 15.6, z: -13.2, y: 0, ys: 0, yaw: 0, pitch: 0.12 };
+const P = { x: 14.5, z: -15.5, y: 0, ys: 0, yaw: 0, pitch: 0.12 };
 function face(dx, dz) { P.yaw = Math.atan2(-dx, -dz); }
 const PLACES = {
-  yard:   { label: 'Side yard',          x: 15.6, z: -13.2, y: 0,  look: [12.7, -7.5],  pitch: 0.14 },
+  yard:   { label: 'Side yard',          x: 14.5, z: -15.5, y: 0,  look: [12.7, -7.5],  pitch: 0.14 },
+  street: { label: 'Out the front',      x: 6.0,  z: -36.5, y: 0,  look: [6, -10],      pitch: 0.08 },
   stairs: { label: 'Bottom of the stairs', x: 12.67, z: WK.z0 - run - 1.0, y: 0, look: [12.67, -5], pitch: 0.28 },
   hex:    { label: 'Hexagon deck',       x: 14.3, z: 0.7,   y: FL, look: [12.0, -3.0], pitch: -0.05 },
   rear:   { label: 'Rear balcony',       x: 3.0,  z: 0.75,  y: FL, look: [14, 0.75],   pitch: -0.02 },

@@ -22,4 +22,18 @@ up) and the stairs (a ramp between them). Each step you take goes only to a surf
 off a deck except by the stairs, and you can walk under the decks but not into the low end of the stairs. Fences, the pool, posts
 and stumps block you on the ground. The touch stick follows the towns' rules: passive listeners, each finger tracked by its own id.
 
+## The neighbours (21 November 2026)
+
+Ash: "Using the moorooka model at 6 Beaudesert add the neighbours". The five houses next to and behind number 6, the lots' fences, the
+rear neighbour's pool and tank, the trees within 60 m and Beaudesert Road and Bohain Street come from `town3d/moorooka`: house outlines,
+eave and ridge heights and roof colours from `town.json` (buildings), wall and trim colours and the lot fences from the number 6
+properties in `moorooka-model.js` (the cadastre's lots), the pool and tank from `yards.bin`, heights above ground from `height.png`.
+They are turned into this model's metres with number 6's lot as the frame: the real north wall lines up with x = 12 and the back
+wall with z = 0 (the walk-through's house is 12 m wide; the survey's is 10.6 m, so its south side is about 1.4 m out). The numbers
+sit in `NB` in `src/main.js`. The neighbours have no stairs (Ash: the Moorooka model's stairs on the house next to the balcony
+aren't right) and their walls are a fixed height band, not modelled in detail. Fences and the houses stop you walking.
+
+What the survey shows: the north fence is only about 3.1 to 3.4 m from the house's north wall, so the hexagon as drawn (4.6 m out)
+reaches past it. That is left visible on purpose so Ash can decide how to reshape it.
+
 Sizes are approximate (a concept, not drawings).
