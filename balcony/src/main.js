@@ -298,12 +298,12 @@ for (const z of [(SDZ1 - 1.35) / 2, SDZ0 - 0.22]) boxMM(12.02, 4.2, z - 0.07, 12
 }
 
 // ---------- new balcony (owner's design: narrow rear balcony + hexagon covered deck) ----------
-// Ash, 21 November 2026: back to the hexagon, kept inside the north fence (4.5 m from the side wall), and stretched along the side
+// Ash, 21 November 2026: back to the hexagon (then "a tiny bit shorter, little bit back from neighbour": 3.5 m out), kept inside the north fence (4.5 m from the side wall), and stretched along the side
 // so the French doors open straight onto it. It is a hexagon with its point outwards: 60 degree faces from the front and back
 // edges to a short straight side, a hip roof rising to a ridge from two apexes, and rafters radiating from them.
 const FRONT = 1.51;
 const VE = 5.1, VW = 5.35;                           // eave height, and where the back roof meets the wall
-const HEX = { cx: 12.6, r: 3.4, back: -6.7 };        // centre line (0.6 m out from the wall), radius, back edge z
+const HEX = { cx: 12.6, r: 2.9, back: -6.7 };        // centre line (0.6 m out from the wall), radius (3.5 m out in all), back edge z
 HEX.h = HEX.r * Math.sqrt(3) / 2;                    // half the hexagon's depth along the wall
 HEX.c1 = FRONT - HEX.h;                              // front apex (front edge in line with the rear balcony)
 HEX.c2 = HEX.back + HEX.h;                           // back apex (the straight side runs between them)
@@ -458,7 +458,7 @@ for (let x = -0.4; x <= 11.4; x += 1.25) {
 // ---------- round outdoor setting for six in the hexagon, a fan over it, a mat at the doors ----------
 const wickerDark = new THREE.MeshStandardMaterial({ color: 0x34302c, roughness: 0.9 });
 {
-  const T = [14.5, (HEX.c1 + HEX.c2) / 2 + 0.55];
+  const T = [14.05, (HEX.c1 + HEX.c2) / 2 + 0.55];
   const top = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.04, 32), M.tabletop); top.position.set(T[0], FL + 0.74, T[1]); add(top);
   boxMM(T[0] - 0.04, FL, T[1] - 0.04, T[0] + 0.04, FL + 0.72, T[1] + 0.04, M.black);
   for (let k = 0; k < 6; k++) {
@@ -468,7 +468,7 @@ const wickerDark = new THREE.MeshStandardMaterial({ color: 0x34302c, roughness: 
     part(0.48, 0.05, 0.48, 0, 0.45, 0, wickerDark);
     part(0.48, 0.52, 0.06, 0, 0.73, 0.23, wickerDark);
     for (const [dx, dz] of [[-0.21, -0.21], [0.21, -0.21], [-0.21, 0.21], [0.21, 0.21]]) part(0.03, 0.43, 0.03, dx, 0.215, dz, M.black);
-    g.position.set(T[0] + Math.cos(th) * 0.92, FL, T[1] + Math.sin(th) * 0.92);
+    g.position.set(T[0] + Math.cos(th) * 0.88, FL, T[1] + Math.sin(th) * 0.88);
     g.rotation.y = Math.PI / 2 - th; G.add(g);
   }
   const fx = T[0], fz = T[1];
@@ -638,7 +638,7 @@ const EYE = 1.65, STEP = 0.5, R = 0.25;
 const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.05, 300);
 camera.rotation.order = 'YXZ';
 
-const TABLE = { x: 14.5, z: (HEX.c1 + HEX.c2) / 2 + 0.55, r: 1.2 };
+const TABLE = { x: 14.05, z: (HEX.c1 + HEX.c2) / 2 + 0.55, r: 1.15 };
 const DN = [[0, 1], [0.8660, 0.5], [1, 0], [0.8660, -0.5], [0, -1]];
 const DC = DN.map((n, i) => n[0] * DECK[i + 1][0] + n[1] * DECK[i + 1][1]);
 function onDeck(x, z) {
