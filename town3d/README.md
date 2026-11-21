@@ -2115,7 +2115,8 @@ with it, and all three are fixed.
   where the cars run (2.58 m in from each carriageway's line, and 0.3 m more): where the real island is wider it is cut back, and
   where a turn pocket has pushed it right over to one side a strip of it is kept against that side. Most of it is drawn as it is.
 
-`MOO_BEAU` in `app.html` is each island as points of `[east edge x, z, west edge x, z, kind]` (0 concrete, 1 garden bed, 2 lawn),
+`MOO_BEAU` in `app.html` is each island as points of `[east edge x, z, west edge x, z, kind]` (0 concrete, 1 garden bed, 2 lawn;
+3 striped concrete came later, below),
 at most 5 m apart and closer where an edge bends; `MOO_BEAU_TREES` is `[x, z, size]`. `emit.py` writes both from `design.py`'s
 output. Drawn: a kerb 0.15 m high with a concrete top, or a concrete kerb strip round a bed of shrubs (a clump to every 2.5 m, of
 differing height and green) or lawn; a rounded nose painted white at each end; a white edge line on the road along each side; a trunk
@@ -2126,7 +2127,8 @@ To change it: `python3 mid.py`, `python3 strip.py` (fetches the photograph), `py
 `python3 design.py design.json`, `python3 overlay.py ov.json design.json` and `python3 sheets.py check ov.json` to look, then
 `python3 emit.py design.json ../../../app.html`.
 
-Not done: the painted stripes on the concrete islands, the turn pocket lanes and arrows, and the stretch south of the overpass.
+Not done: the stretch south of the overpass. (The painted stripes, the turn lanes and their arrows came on 22 November: see "Beaudesert
+Road's median: the striped islands and the turn lanes" below.)
 
 ## The Bohain Street corner, the median's planted north end, a footpath in pieces (22 November 2026)
 
@@ -2170,8 +2172,7 @@ To change the corner: edit `shapes.py`, `python3 zoom.py` to look, then `python3
 (KERBS.json: `window.anKerbDump = []` set before the model loads, saved after; without it no kerbs are left out).
 
 Not done: the far-off ground picture (`ground.webp` and the 16 detail tiles) still has the old corner under the new island, which
-covers it; the island's painted chevrons; the stripes, turn lanes and arrows along the median (started on branch
-`claude/beau-markings`).
+covers it; the island's painted chevrons.
 
 ## People on the footpaths, round the corners, never onto roads (22 November 2026)
 
@@ -2196,3 +2197,39 @@ Now (`moorooka-model.js` `?v=59`, patched by `tools/walkers/footpath_net_patch.p
 
 Measured (`t/walk.js` in a local build, six places, 90 s): people drawn went from about 21 of 30 to about 28 of 30 (the rest are being
 put back near you), and none of the 4,000 places they were drawn at was on a road, nor any of the busy-street walkers'.
+
+## Beaudesert Road's median: the striped islands and the turn lanes (22 November 2026)
+
+The two things left over from the median above ("Not done"). Ash: "Continue".
+
+- **Striped islands.** Four stretches of the median are not planted and not plain concrete in the photograph: they are painted with
+  bars (from south of Colebrook Avenue past Wharton Street, from Helles Street to Durack Street, from Pampas Street past Wall Street,
+  and south of Evans Road). `real.py` now has a fourth kind for them (`'s'`, written to `MOO_BEAU` as kind 3), and the app draws their tops as concrete
+  with dark bars 1.3 m wide and 1.3 m apart, slanted across the island, running on unbroken from one stretch of it to the next. They
+  are drawn on the same 0.15 m island as the rest: from above the photograph does not say whether the real ones are raised.
+- **Turn lanes.** The right-turn lanes beside the median had no paint. `real.py` now lists what is in the photograph: 29 turn arrows
+  (`ARROWS`, as station, offset, which way it travels and which side it turns to) and 24 lines between a turn lane and the through
+  lane (`LINES`, dashed or solid). `design.py` keeps an arrow only where the model's traffic leaves room for it (all 29 are kept) and
+  holds a line to the edge of that room, then `emit.py` writes them as `MOO_BEAU_MARKS`: `arrows` as `[x, z, the way it travels (x, z),
+  the side it turns to (x, z)]`, `lines` as `[dashed, [x, z, ...]]`. The app paints them on the road 0.05 m up, like the median's edge
+  lines: an arrow is a 4 m shaft, a turn and a head; a dashed line is the first metre from each point (the points are 3 m apart).
+  `overlay.py` draws them over the photograph with the rest (`sheets.py check`).
+
+Cost: `MOO_BEAU_MARKS` is 5 KB in `app.html`. The medians, the corner and the paint are one part of about 15,100 triangles on a phone
+(13,600 before) and take about 40 ms to make on a slow test machine; nothing is made mid-game.
+
+Checked on a local build at desktop size, and three of the views at phone size: the four striped stretches, and the turn lanes at
+Vendale Avenue, Durack and Pampas Streets, Mayfield Road, Dora and Bracken Streets, Gainsborough Street, Keats Street, Hamilton Road,
+Fegen Drive and Evans Road, each looked at the way its traffic comes.
+
+Found while testing, not fixed here (it is on `main` already and no part of this change): **in Moorooka the sharp model shows before
+the swap.** `townModelPair` builds the sharp model "out of sight" by tagging `box.lastElementChild` after `lib.create` and setting
+`visibility: hidden` on that. Moorooka's model appends two elements, its root (`div.inv-embed`, with the canvas) and then a
+`p.inv-sharpening`, so the tag and the hiding land on the `p`, and the sharp model's canvas sits in view over the light one from its
+first frame. So where the sharp model is swapped in, there is a stretch with none of what the page adds with `addParts` (the medians,
+the corner, the bowls club and the rest), then the medians ragged (the copy shaped to the light model's ground, on the sharp ground),
+then, once the swap ends and `swapped()` runs, right. Seen in headless Chrome with the swap held open for 45 s in a test copy of the
+page, on this build and on `ffda7a8`; how long it lasts on a real computer was not measured. Logan's and Inverloch's models add no
+second element. The swap is Explore's loading, so it is left for its own pull request and its own stick test.
+
+Not done: the Bohain Street island's painted chevrons; the stretch south of the overpass; the far-off ground picture under the corner.

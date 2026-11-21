@@ -13,4 +13,7 @@ if len(sys.argv) > 2:
     for isl in D['islands']: ov['dE']['lines'].append([[p[0], p[1]] for p in isl['pts']]); ov['dW']['lines'].append([[p[0], p[2]] for p in isl['pts']])
     if 'env' in D:
         ov['env'] = {'col': [255, 160, 0], 'w': 1, 'lines': [[[s, -a] for s, a, b in D['env']], [[s, b] for s, a, b in D['env']]]}
+    ov['paint'] = {'col': [255, 0, 255], 'w': 2, 'lines': [ln['pts'] for ln in D.get('marks', {}).get('lines', [])]}
+    for s, o, hd, bend in D.get('marks', {}).get('arrows', []):
+        ov['paint']['lines'] += [[[s - hd * 1.6, o - bend * 0.7], [s + hd * 0.6, o - bend * 0.7]], [[s + hd * 0.6, o - bend * 0.7], [s + hd * 0.6, o + bend * 0.9]]]
 json.dump(ov, open(sys.argv[1], 'w'))
