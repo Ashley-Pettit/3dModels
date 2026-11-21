@@ -9600,6 +9600,20 @@ const handle = async (m, post) => {
       shops: [{ n: "B C M BODY REPAIRS", w: 11, c: ["#1f3c88", "#ffffff"], what: "Smash repairs" }] },
     { kind: "sign", addr: "969 Ipswich Road", a: [-686.5, -596.3], b: [-677.3, -611.9], n: [0.8614, 0.508], kerb: 16.27, across: 25.97, eave: 23.6, wall: "#e9e9e6",
       shops: [{ n: "TeamMoto", parts: [["TEAMMOTO ", "#16181b"], ["YAMAHA", "#d71920"]], w: 11, c: ["#ffffff", "#16181b"], what: "Motorbikes", jump: true }] },
+    // MMG Auto's dealerships on the north-west side, from Gow Street down (Street View and the aerial, Ash, 21 November 2026: "The magic mile
+    // I also mean the business and the road. They don't look like the real thing"): one long flat-roofed showroom strip set back behind a
+    // yard full of cars and a hedge; Moorooka Nissan with its tall red pylon by the road, then Hyundai on the part that steps forward,
+    // then Suzuki and MMG's service department
+    { kind: "sign", addr: "Moorooka Nissan, Ipswich Road", a: [-526.8, -831.9], b: [-510.2, -853.5], n: [0.7929, 0.6094], kerb: 31.0, across: 45, eave: 25.3, wall: "#e4e6e8", glass: "#25313b",
+      pole: { n: "NISSAN", sub: "MOOROOKA", c: ["#c3002f", "#ffffff"], x: 24, o: 27.6, big: 1.8 }, hedge: true,
+      yardFront: [26.4, 26.4, 26.4, 26.4, 26.4, 26.4, 26.4, 26.4, 26.4, 26.4, 26.4, 26.4, 26.4, 26.4, 26.4], flags: [0, 27.2, ["#c3002f", "#ffffff"], 9],
+      shops: [{ n: "NISSAN", w: 27.2, c: ["#ffffff", "#c3002f"], what: "Moorooka Nissan: new and used cars", jump: true }] },
+    { kind: "sign", addr: "Moorooka Hyundai, Ipswich Road", a: [-533.6, -810.7], b: [-521.0, -827.5], n: [0.8, 0.6], kerb: 24.0, across: 38, eave: 25.3, wall: "#e4e6e8", glass: "#25313b", hedge: true,
+      yardFront: [19.4, 19.4, 19.4, 19.4, 19.4, 19.4, 19.4, 19.4, 19.4, 19.4, 19.4, 19.4], flags: [0, 21.0, ["#002c5f", "#ffffff"], 9],
+      shops: [{ n: "HYUNDAI", w: 21.0, c: ["#ffffff", "#002c5f"], what: "Moorooka Hyundai: new and used cars", jump: true }] },
+    { kind: "sign", addr: "Moorooka Suzuki, 937 Ipswich Road", a: [-568.9, -775.7], b: [-539.4, -815.1], n: [0.8005, 0.5993], kerb: 31.5, across: 45, eave: 25.3, wall: "#e4e6e8", glass: "#25313b", hedge: true,
+      yardFront: [27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0], flags: [0, 49.2, ["#e30613", "#ffffff"], 9],
+      shops: [{ n: "SUZUKI", w: 49.2, c: ["#ffffff", "#e30613"], what: "Moorooka Suzuki: new and used cars, and MMG Auto's service department", jump: true }] },
     { kind: "sign", addr: "922 Ipswich Road", a: [-448.1, -829.4], b: [-451.0, -825.5], n: [-0.8025, -0.5967], kerb: 12.25, across: 22.35, eave: 26.7, wall: "#3e4248", glass: "#22303a",
       pole: { n: "washed", sub: "CAR WASH", c: ["#ffffff", "#0077c8"], x: -6, back: 1.4, big: 1.2 },
       shops: [{ n: "Washed For Cars", w: 4.4, c: ["#0077c8", "#ffffff"], what: "Car wash" }] },
@@ -10248,6 +10262,8 @@ const handle = async (m, post) => {
     // Yeerongpilly Station's two platform outlines, mapped as buildings 25 m wide: solid boxes across the tracks (Ash, 21 November 2026,
     // "this very strange and broken"). The model's own platform runs beside the line instead
     { at: [-1146.98, -1061.06], gone: true }, { at: [-1159.70, -1083.05], gone: true },
+    // MMG Auto's showroom strip and the white office on the Gow Street corner: flat roofs, pale walls (Street View)
+    { at: [-539.89, -809.36], flat: true, wall: [228, 230, 232] }, { at: [-489.46, -866.18], flat: true, wall: [242, 242, 240] },
   ];
   window.anStyle = (x, z) => { for (const q of MOO_STYLE) if (Math.abs(q.at[0] - x) < 0.6 && Math.abs(q.at[1] - z) < 0.6) return q; return null; };
   // No window hoods on a wall that carries a business's sign: they stuck out through the board and flickered across it (Ash, 21 November
@@ -16621,7 +16637,9 @@ const handle = async (m, post) => {
       const X = [f.n[1], -f.n[0]], left = (f.b[0] - f.a[0]) * X[0] + (f.b[1] - f.a[1]) * X[1] >= 0 ? f.a : f.b, [x0, x1] = f.flags, FR = f.yardFront;
       const oF = x => { const t2 = (x - x0) / 2, i = bsClamp(Math.floor(t2), 0, FR.length - 1), j = Math.min(FR.length - 1, i + 1), w = bsClamp(t2 - i, 0, 1); return Math.min(f.kerb - 4, FR[i] + (FR[j] - FR[i]) * w) - 0.3; };
       const at2 = (x, o) => [left[0] + X[0] * x + f.n[0] * o, left[1] + X[1] * x + f.n[1] * o];
-      for (let x = x0 + 0.5; x <= x1 - 0.3; x += 2) { const [px, pz] = at2(x, oF(x)), g = m.groundAt(px, pz); box2(px, pz, X, -0.09, 0.09, -0.09, 0.09, g - 0.1, g + 0.85, "#f2c200"); box2(px, pz, X, -0.1, 0.1, -0.1, 0.1, g + 0.85, g + 0.92, "#1d1f22"); }
+      // (a clipped hedge along the front where the yard has one, as at MMG Auto; yellow bollards elsewhere)
+      if (f.hedge) for (let x = x0; x < x1; x += 2) { const [px, pz] = at2(x + 1, oF(x + 1) + 0.6), g = m.groundAt(px, pz); box2(px, pz, X, -1.02, 1.02, -0.4, 0.4, g - 0.1, g + 0.95, "#3d6a2c"); }
+      else for (let x = x0 + 0.5; x <= x1 - 0.3; x += 2) { const [px, pz] = at2(x, oF(x)), g = m.groundAt(px, pz); box2(px, pz, X, -0.09, 0.09, -0.09, 0.09, g - 0.1, g + 0.85, "#f2c200"); box2(px, pz, X, -0.1, 0.1, -0.1, 0.1, g + 0.85, g + 0.92, "#1d1f22"); }
       const xm = (x0 + x1) / 2, [bxm, bzm] = at2(xm, oF(xm) - 1.2), g = m.groundAt(bxm, bzm);
       for (const d of [-2.6, 2.6]) box2(bxm + X[0] * d, bzm + X[1] * d, X, -0.05, 0.05, -0.05, 0.05, g - 0.1, g + 3.4, "#d9d9d4");
       for (let i = 0; i < 4; i++) box2(bxm, bzm, X, -2.6 + i * 1.3, -1.3 + i * 1.3, -0.02, 0.02, g + 2.5, g + 3.3, i % 2 ? "#ffffff" : "#d71920"); }

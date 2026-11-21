@@ -2052,3 +2052,8 @@ Street junction, and Brisbane Car Yard's front row of cars on the footpath. Each
   holds runs of the line midway between the two carriageways and their spacing (worked out from `town.json`'s roads, opening at each side
   street); `townBowls` draws a raised median 1.2 to 6 m wide (spacing less 7.4 m), concrete when narrow and grassed with concrete kerbs when
   wider, rounded at the ends, with a white edge line on the road each side. About 1 km of it.
+- **MMG Auto's dealerships** (Moorooka Nissan, Hyundai, Suzuki and the service department) on the north-west side of Ipswich Road
+  from Gow Street, from Street View and the aerial: the long showroom strip has a flat roof and pale walls (`MOO_STYLE`), and three
+  `MOO_FRONTS` entries give each part its glass front, sign, flags and a yard full of cars behind a clipped hedge (`hedge: true` in
+  `townBowls`, in place of the yellow bollards), with Nissan's red pylon by the road. Nissan's yard was lawn in the ground plan and is
+  paved now (`tools/ground/yard_pave.py`). A yard only fills with cars when its `what` says car or dealer.
