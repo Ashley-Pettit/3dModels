@@ -16011,14 +16011,16 @@ const handle = async (m, post) => {
       const tut = el("button", "bs-me-go", "Play the controls tutorial"); tut.type = "button"; tut.onclick = () => { meClose(); if (!T.walk) T.toMode?.(true); setTimeout(() => F.on?.tutorial?.(), 150); };
       // the other towns, plain links (Ash, 15 November 2026: "In settings I want to be able to change from Logan to Inverloch and
       // moorooka. Nothing fancy. Just a hyperlink"): each opens that town's Explore page
-      const towns = el("div", "bs-me-sec bs-me-towns"); towns.append(el("span", "bs-me-lbl", "Other towns"));
+      const towns = el("div", "bs-me-sec bs-me-towns"); towns.append(el("span", "bs-me-lbl", "Other 3D models"));
       { const root = EXPLORE_HOME, row = el("p", "");
         [["moo", "moorooka", "Moorooka"], ["inv", "inverloch", "Inverloch"], ["logan", "logan", "Logan"]].filter(([k]) => k !== T.cfg?.place).forEach(([k, dir, name], i) => {
           if (i) row.append(" \u00b7 "); const a = el("a", "", name); a.href = `${root}${dir}/explore/`;
           // swapped in place, not a new page (Ash, 15 November 2026: "When I click to another town I get the url at the top. I don't
           // want this. I want it to feel like an app": from the home screen app, another town's page opened in a browser view)
           a.onclick = e => { if (!TOWNS[k]) return; e.preventDefault(); meClose(); townModelOff(); setTimeout(() => townModelOpen(true, k), 60); };
-          row.append(a); }); towns.append(row); }
+          row.append(a); });
+        // and the balcony concept, its own page (Ash, 22 November 2026: "Add a link in the settings to the balcony model")
+        const bal = el("a", "", "Balcony model"); bal.href = `${root}balcony/explore/`; row.append(" \u00b7 ", bal); towns.append(row); }
       // admins: fly around the weather's own scene, to keep a view for the weather there ("Use this view for the weather")
       let wv = null; if (isAdmin()) { wv = el("button", "bs-me-exit", "Set the weather's view"); wv.type = "button";
         wv.onclick = () => { meClose(); bsFlyOff(); setTimeout(() => { try { bsFlyOn(); } catch {} }, 400); }; }
