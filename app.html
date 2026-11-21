@@ -8694,7 +8694,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=21", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=59", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=61", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -15503,28 +15503,33 @@ const handle = async (m, post) => {
   const townPerks = () => { try { return JSON.parse(localStorage.getItem("an3d-perks") || "{}") || {}; } catch { return {}; } };
   const townPerkSet = (k, v) => { const o = townPerks(); if (v == null || v === false) delete o[k]; else o[k] = v; try { localStorage.setItem("an3d-perks", JSON.stringify(o)); } catch {} return o; };
   const townEmoteList = () => { const P = townPerks(), k = !!P.kick; return TOWN_EMOTES.filter(e => e[0] !== (k ? "spin" : "kick") && (e[0] !== "yoga" || P.yoga) && (e[0] !== "disco" || BS.fly?.drunk)); };
-  const CAR_UPS = [["turbo", "Turbo", "A quarter more top speed"], ["launch", "Launch control", "Gets up to speed nearly twice as fast"], ["nitro", "Bigger nitro tank", "Boost lasts twice as long"],
-    ["refill", "Quick refill", "Boost fills back up three times faster"], ["grip", "Sports tyres", "Turns a third sharper, with a quicker handbrake spin"]];
+  // how much each upgrade does. The speed ones (Turbo, Speedy paws, Strong wings) as they were; the rest made much stronger (Ash, 22
+  // November 2026: "Increase the effect of non meta perks for vehicles and the animals. Like turning should make turning way better"):
+  // Sports tyres turn 60% sharper, keep twice the lock at speed (the lock fades 0.7 not 1.2 as you go faster) and steer quicker
+  const PERK_X = { turbo: 1.25, launch: 2.6, nitro: 3, refill: 5, grip: 1.6, gripSlide: 1.6, gripFade: 0.7, gripSnap: 11,
+    speedy: 1.3, springy: 2.2, climber: 3, zoomies: 3, wings: 1.25, flap: 2.2, glide: 1, dive: 1.8 };
+  const CAR_UPS = [["turbo", "Turbo", "A quarter more top speed"], ["launch", "Launch control", "Gets up to speed more than two and a half times as fast"], ["nitro", "Bigger nitro tank", "Boost lasts three times as long"],
+    ["refill", "Quick refill", "Boost fills back up five times faster"], ["grip", "Sports tyres", "Turns much sharper, holds its grip at speed, and spins quicker on the handbrake"]];
   // what each of the mechanic's upgrades does to your own car, worked out from its numbers in Settings, shown under the upgrade's name
   // (Ash, 20 November 2026: "Under sports tires show the effect this has on my vehicle"). The turning circle is at walking pace, at
   // full lock (0.55 rad), as the car turns: radius = 2.6 / (tan(lock) x turning%)
   const carUpEffect = id => { const r = rideSettings(), n = v => String(+v.toFixed(v < 10 ? 1 : 0)), to = (a, b, u = "") => `${n(a)}${u} \u2192 ${n(b)}${u}`;
-    const zero = a => 100 / 3.6 / a, circle = k => 2 * 2.6 / (Math.tan(0.55) * k / 100);
-    return { turbo: `Your car: top speed ${to(r.carTop, r.carTop * 1.25, " km/h")}, on boost ${to(r.carBoostTop, r.carBoostTop * 1.25, " km/h")}`,
-      launch: `Your car: 0 to 100 km/h in about ${to(zero(r.carAccel), zero(r.carAccel * 1.9), " s")}`,
-      nitro: `Your car: boost lasts ${to(r.boostSecs, r.boostSecs * 2, " s")}`,
-      refill: `Your car: boost refills in ${to(r.boostBack, r.boostBack / 3, " s")}`,
-      grip: `Your car: turning ${to(r.carTurn, r.carTurn * 1.33, "%")}, turning circle ${to(circle(r.carTurn), circle(r.carTurn * 1.33), " m")}, handbrake spin ${to(r.slideTurn, r.slideTurn * 1.3, "\u00b0")} a second` }[id] || ""; };
+    const zero = a => 100 / 3.6 / a, circle = k => 2 * 2.6 / (Math.tan(0.55) * k / 100), atSpeed = (k, fade) => { const v = 60 / 3.6; return v / 2.6 * Math.tan(0.55 / (1 + (v / 8) ** 2 * fade)) * k / 100 * 180 / Math.PI; };
+    return { turbo: `Your car: top speed ${to(r.carTop, r.carTop * PERK_X.turbo, " km/h")}, on boost ${to(r.carBoostTop, r.carBoostTop * PERK_X.turbo, " km/h")}`,
+      launch: `Your car: 0 to 100 km/h in about ${to(zero(r.carAccel), zero(r.carAccel * PERK_X.launch), " s")}`,
+      nitro: `Your car: boost lasts ${to(r.boostSecs, r.boostSecs * PERK_X.nitro, " s")}`,
+      refill: `Your car: boost refills in ${to(r.boostBack, r.boostBack / PERK_X.refill, " s")}`,
+      grip: `Your car: turning ${to(r.carTurn, r.carTurn * PERK_X.grip, "%")}, turning circle ${to(circle(r.carTurn), circle(r.carTurn * PERK_X.grip), " m")}, at 60 km/h ${to(atSpeed(r.carTurn, 1.2), atSpeed(r.carTurn * PERK_X.grip, PERK_X.gripFade), "\u00b0")} a second, handbrake spin ${to(r.slideTurn, r.slideTurn * PERK_X.gripSlide, "\u00b0")} a second` }[id] || ""; };
   // each upgrade in a few words, shown beside its name on the chip while you drive, run or fly (Ash, 21 November 2026)
-  const UP_SHORT = { turbo: "faster top speed", launch: "quicker off the mark", nitro: "boost lasts twice as long", refill: "boost refills faster", grip: "sharper turns",
-    speedy: "runs faster", springy: "jumps higher", climber: "climbs faster", glider: "floats down", zoomies: "stronger boost",
-    wings: "flies faster", flap: "climbs faster", glide: "glides further", dive: "dives faster" };
-  const POSSUM_UPS = [["speedy", "Speedy paws", "Runs 30% faster"], ["springy", "Spring legs", "Jumps half as high again"], ["climber", "Climbing claws", "Climbs twice as fast"],
-    ["glider", "Glider", "You fall gently, floating from roof to roof"], ["zoomies", "Zoomies", "Boost twice as strong"]];
+  const UP_SHORT = { turbo: "faster top speed", launch: "quicker off the mark", nitro: "boost lasts 3x as long", refill: "boost refills 5x faster", grip: "much sharper turns",
+    speedy: "runs faster", springy: "jumps twice as high", climber: "climbs 3x as fast", glider: "floats down slowly", zoomies: "3x the boost",
+    wings: "flies faster", flap: "climbs twice as fast", glide: "glides much further", dive: "dives much faster" };
+  const POSSUM_UPS = [["speedy", "Speedy paws", "Runs 30% faster"], ["springy", "Spring legs", "Jumps more than twice as high"], ["climber", "Climbing claws", "Climbs three times as fast"],
+    ["glider", "Glider", "You float down slowly, gliding a long way from roof to roof"], ["zoomies", "Zoomies", "Boost three times as strong"]];
   // Flick's pigeon food: one of four for the pigeon, one at a time (Ash, 18 November 2026: "If you've already flown the pigeon before flick
   // offers you tips and allows you to pick a pigeon upgrade. She gives you pigeon food which enables this")
-  const PIGEON_UPS = [["wings", "Strong wings", "Flies a quarter faster"], ["flap", "Big flaps", "Climbs half as fast again"], ["glide", "Long glide", "Sinks half as fast when you let go of Flap"],
-    ["dive", "Dive bomber", "Dives a third faster"]];
+  const PIGEON_UPS = [["wings", "Strong wings", "Flies a quarter faster"], ["flap", "Big flaps", "Climbs more than twice as fast"], ["glide", "Long glide", "Sinks only a third as fast when you let go of Flap"],
+    ["dive", "Dive bomber", "Dives 80% faster"]];
   const PIGEON_TIPS = ["Hold Flap to climb, then let go and he glides a long way.", "Dive to drop fast, then Flap to pull out of it.", "Glide down on to a roof and he'll land on it. Great for a rest.",
     "Shift flies faster. Hold it with W for a real burst.", "Land somewhere quiet and make a nest. Ten minutes later there's a little one!"];
   // the golden pigeon's game (Ash, 18 November 2026: "For the pigeon quest I want it instead to be a mini game that lasts around 2 mins
@@ -15549,9 +15554,11 @@ const handle = async (m, post) => {
   const townLookCode = () => { const k = townPerks(), L = k.look || {}, g = BS.fly?.giant && performance.now() < BS.fly.giant.until; if (!L.top && !L.hair && !L.hc && !g) return ""; return [L.top || "-", L.hair || "-", L.hc || "-"].join(".") + (g ? ".g" : ""); };
   // the mechanic's and the vet's upgrades, on top of the numbers in Settings (one of each at a time)
   function townPerkRide(r) { const p = townPerks(), c = p.car, q = p.possum;
-    if (c === "turbo") { r.carTop *= 1.25; r.carBoostTop *= 1.25; } else if (c === "launch") r.carAccel *= 1.9; else if (c === "nitro") { r.boostSecs *= 2; r.goldBoostSecs *= 2; }
-    else if (c === "refill") { r.boostBack /= 3; r.goldBoostBack /= 3; } else if (c === "grip") { r.carTurn *= 1.33; r.goldTurn *= 1.33; r.slideTurn *= 1.3; r.goldSlideTurn *= 1.3; }
-    if (q === "speedy") r.possumTop *= 1.3; else if (q === "springy") r.possumJump *= 1.5; else if (q === "climber") r.possumClimb *= 2; else if (q === "zoomies") r.possumBoost *= 2;
+    const X = PERK_X; r.lockFade = 1.2; r.steerSnap = 7;
+    if (c === "turbo") { r.carTop *= X.turbo; r.carBoostTop *= X.turbo; } else if (c === "launch") r.carAccel *= X.launch; else if (c === "nitro") { r.boostSecs *= X.nitro; r.goldBoostSecs *= X.nitro; }
+    else if (c === "refill") { r.boostBack /= X.refill; r.goldBoostBack /= X.refill; }
+    else if (c === "grip") { r.carTurn *= X.grip; r.goldTurn *= X.grip; r.slideTurn *= X.gripSlide; r.goldSlideTurn *= X.gripSlide; r.lockFade = X.gripFade; r.steerSnap = X.gripSnap; }
+    if (q === "speedy") r.possumTop *= X.speedy; else if (q === "springy") r.possumJump *= X.springy; else if (q === "climber") r.possumClimb *= X.climber; else if (q === "zoomies") r.possumBoost *= X.zoomies;
     r.glider = q === "glider"; return r; }
   const TOWN_TOGETHER = ["logan", "moo", "inv"];  // every town (Ash, 15 November 2026: "Copy the multiplayer to moorooka and Inverloch")
   // What you play as (Ash, 15 November 2026: "I want other player to be able to select construction worker in settings, if
@@ -16014,14 +16021,16 @@ const handle = async (m, post) => {
       const tut = el("button", "bs-me-go", "Play the controls tutorial"); tut.type = "button"; tut.onclick = () => { meClose(); if (!T.walk) T.toMode?.(true); setTimeout(() => F.on?.tutorial?.(), 150); };
       // the other towns, plain links (Ash, 15 November 2026: "In settings I want to be able to change from Logan to Inverloch and
       // moorooka. Nothing fancy. Just a hyperlink"): each opens that town's Explore page
-      const towns = el("div", "bs-me-sec bs-me-towns"); towns.append(el("span", "bs-me-lbl", "Other towns"));
+      const towns = el("div", "bs-me-sec bs-me-towns"); towns.append(el("span", "bs-me-lbl", "Other 3D models"));
       { const root = EXPLORE_HOME, row = el("p", "");
         [["moo", "moorooka", "Moorooka"], ["inv", "inverloch", "Inverloch"], ["logan", "logan", "Logan"]].filter(([k]) => k !== T.cfg?.place).forEach(([k, dir, name], i) => {
           if (i) row.append(" \u00b7 "); const a = el("a", "", name); a.href = `${root}${dir}/explore/`;
           // swapped in place, not a new page (Ash, 15 November 2026: "When I click to another town I get the url at the top. I don't
           // want this. I want it to feel like an app": from the home screen app, another town's page opened in a browser view)
           a.onclick = e => { if (!TOWNS[k]) return; e.preventDefault(); meClose(); townModelOff(); setTimeout(() => townModelOpen(true, k), 60); };
-          row.append(a); }); towns.append(row); }
+          row.append(a); });
+        // and the balcony concept, its own page (Ash, 22 November 2026: "Add a link in the settings to the balcony model")
+        const bal = el("a", "", "Balcony model"); bal.href = `${root}balcony/explore/`; row.append(" \u00b7 ", bal); towns.append(row); }
       // admins: fly around the weather's own scene, to keep a view for the weather there ("Use this view for the weather")
       let wv = null; if (isAdmin()) { wv = el("button", "bs-me-exit", "Set the weather's view"); wv.type = "button";
         wv.onclick = () => { meClose(); bsFlyOff(); setTimeout(() => { try { bsFlyOn(); } catch {} }, 400); }; }
@@ -18064,7 +18073,7 @@ const handle = async (m, post) => {
         if (v > vmax && !boosting && !teamOn) v = Math.max(vmax, v - 9 * K * dt);  // off the boost, it eases back to its own top speed
         if (v < -VREV && !back) v = Math.min(-VREV, v + 9 * K * dt);  // and from boosting backwards, back to its own reversing speed
         v = bsClamp(v, -vboost, vboost);
-        car.steer += (str * 0.55 / (1 + (Math.abs(v) / (8 * K)) ** 2 * 1.2) - car.steer) * Math.min(1, dt * 7);  // less lock the faster it goes
+        car.steer += (str * 0.55 / (1 + (Math.abs(v) / (8 * K)) ** 2 * (R.lockFade ?? 1.2)) - car.steer) * Math.min(1, dt * (R.steerSnap ?? 7));  // less lock the faster it goes
         car.v = v; let bump = 0;
         for (let n = Math.max(1, Math.ceil(Math.abs(v) * dt / 1.2)), i = 0, st = dt / n; i < n; i++) {  // in steps of a metre or so, so it cannot skip through a wall
           // (how fast it turns: Settings > Cars and planes > Car turning, and Golden car turning: Ash, 15 November 2026)
@@ -18165,7 +18174,7 @@ const handle = async (m, post) => {
               P.v = 0; break; }
             P.x = x; P.z = z;
             if (P.mode === "ground" && s < P.y - 0.6) { P.mode = "air"; P.vy = 0; } }  // off the edge of a roof or the top of a light: it drops
-          if (P.mode === "air") { P.vy -= (R.glider && P.vy < 0 ? 8 : 22) * dt; if (R.glider && P.vy < -4.5) P.vy = -4.5; P.y += P.vy * dt; const s = surf(P.x, P.z);  /* (the vet's Glider: it floats down) */
+          if (P.mode === "air") { P.vy -= (R.glider && P.vy < 0 ? 5 : 22) * dt; if (R.glider && P.vy < -2.8) P.vy = -2.8; P.y += P.vy * dt; const s = surf(P.x, P.z);  /* (the vet's Glider: it floats down) */
             if (P.y <= s) { if (P.vy < -9) snd.thud(Math.min(1.2, -P.vy / 18)); P.y = s; P.vy = 0; P.mode = "ground"; } }
           else if (P.mode === "ground") { P.y += (surf(P.x, P.z) - P.y) * Math.min(1, dt * 20); P.spun = false; if (jump && !P.jumped) { P.mode = "air"; P.vy = R.possumJump * (P.gold ? 1.5 : 1); } }
           // the golden possum: Jump again in the air for a 360, a somersault with a little more lift
@@ -18239,8 +18248,8 @@ const handle = async (m, post) => {
           // (40 km/h tops, the golden pigeon a third more: Ash, 18 November 2026, "Max speed 40 on the pigeon". Now 40 km/h is how he flies,
           // a little more with Shift or a dive, and he sinks and dives a little faster: Ash, 21 November 2026, "speed up the pigeon to 40kmph,
           // make it drop naturally a little faster. in additon make dive a little faster")
-          const want = Math.min(VPG * G, (dive ? 14 * (U === "dive" ? 1.33 : 1) : (fast ? 12.5 : 40 / 3.6) * (mag > 0.15 ? 1 : 0.7)) * (U === "wings" ? 1.25 : 1) * G); P.v += (want - P.v) * Math.min(1, dt * 1.6);
-          const fu = (U === "flap" ? 1.5 : 1) * (P.gold ? 1.3 : 1); if (flapK) P.vy = Math.min(6 * fu, P.vy + 16 * fu * dt); else if (dive) P.vy = Math.max(-11.5 * (U === "dive" ? 1.33 : 1), P.vy - 17 * dt); else P.vy += ((U === "glide" ? -1.5 : -3) - P.vy) * Math.min(1, dt * 2);
+          const want = Math.min(VPG * G, (dive ? 14 * (U === "dive" ? PERK_X.dive : 1) : (fast ? 12.5 : 40 / 3.6) * (mag > 0.15 ? 1 : 0.7)) * (U === "wings" ? PERK_X.wings : 1) * G); P.v += (want - P.v) * Math.min(1, dt * 1.6);
+          const fu = (U === "flap" ? PERK_X.flap : 1) * (P.gold ? 1.3 : 1); if (flapK) P.vy = Math.min(6 * fu, P.vy + 16 * fu * dt); else if (dive) P.vy = Math.max(-11.5 * (U === "dive" ? PERK_X.dive : 1), P.vy - 17 * dt * (U === "dive" ? PERK_X.dive : 1)); else P.vy += ((U === "glide" ? -PERK_X.glide : -3) - P.vy) * Math.min(1, dt * 2);
           if (P.y - ground(P.x, P.z) > 150 && P.vy > 0) P.vy = 0;  // (no higher than 150 m)
           P.y += P.vy * dt; }
         for (let n = Math.max(1, Math.ceil(Math.abs(P.v) * dt / 0.4)), i = 0, st = dt / n; i < n; i++) {  // in steps of 40 cm, so it cannot fly through a wall
