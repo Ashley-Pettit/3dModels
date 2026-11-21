@@ -15625,9 +15625,9 @@ const handle = async (m, post) => {
     // (a light amount again, seven: Ash, 15 November 2026: "Add back some of the traffic so there is a light amount of cars around.
     // Careful not to cause lag". Each is a few draw calls, and one more than 450 m away is not drawn)
     // (Moorooka a few more again, lighter on a phone: Ash, 19 November 2026, "mooroka needs a few more moving cars and people but consider lag impacts")
-    // (and a couple more again: Ash, 21 November 2026, "Add a little bit more traffic as long as not too memory intensive". Each car is a
-    // few draw calls and nothing to download, and one more than 450 m away is still not drawn)
-    let home = T.spawn || [F.pos.x, F.pos.z]; const N = T.cfg?.place === "moo" ? (matchMedia("(pointer: coarse)").matches ? 9 : 12) : 7, NEAR = 300, FAR = 800, NONE = new THREE.Matrix4().makeScale(0, 0, 0).elements;
+    // (two or three more were added on 21 November 2026 and taken off again the same day: Ash's left stick dropped on his iPhone
+    // after it went live, "Joystick bug is back", and CLAUDE.md says to revert the latest main-thread change first)
+    let home = T.spawn || [F.pos.x, F.pos.z]; const N = T.cfg?.place === "moo" ? (matchMedia("(pointer: coarse)").matches ? 7 : 9) : 7, NEAR = 300, FAR = 800, NONE = new THREE.Matrix4().makeScale(0, 0, 0).elements;
     if (!N) return P;  // nothing to load or draw
     let roads = null, nodes = null, dead = false, last = 0, reroad = null, moveAt = 0;
     const key = (x, z) => Math.round(x / 2) + "," + Math.round(z / 2);
