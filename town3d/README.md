@@ -2233,3 +2233,20 @@ page, on this build and on `ffda7a8`; how long it lasts on a real computer was n
 second element. The swap is Explore's loading, so it is left for its own pull request and its own stick test.
 
 Not done: the Bohain Street island's painted chevrons; the stretch south of the overpass; the far-off ground picture under the corner.
+
+## People off the traffic islands, spread out (22 November 2026)
+
+Ash: "The people need new logic, the they are stuck on traffic islands all together near 6 Beaudesert". The shops' walk (a main road's
+side with no footpath band) also put a walk on a divided road's inner side; where the median is wide (the planted island at the
+Ipswich Road end) a piece of it survived, it was the first piece built at the start, and all 30 people were put on it at once.
+
+`moorooka-model.js` `?v=60`, by `tools/walkers/footpath_net_patch2.py` (after `footpath_net_patch.py`):
+
+- a piece with a road on its far side as well (looked for 2 to 10 m out, every 6 m along) is an island or median and is dropped, and
+  so is any piece under about 10 m;
+- people are only put on a piece that joins another footpath (or a dead-end street's, 40 m or more), at most one for each 25 m of it,
+  so they appear round you over the first seconds and spread out; anyone left on a short piece joined to nothing is moved;
+- a join round a wide corner can be up to 20 m across.
+
+Measured (`t/walk.js`, six places, the network filling at a phone's speed): people with someone else within 3 m went from 67% to 10%,
+and the median distance to the nearest other person from 1.7 m to 15.7 m; none on a road.
