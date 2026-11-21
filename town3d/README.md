@@ -2060,6 +2060,8 @@ Street junction, and Brisbane Car Yard's front row of cars on the footpath. Each
 
 ## Beaudesert Road's divider (21 November 2026)
 
+(The first try. It was replaced the same day: see the next section. Its scripts are gone from `tools/ground/beau_median/`.)
+
 Ash: "Can you fix Beaudesert rd. It's 4 lanes of traffic with a divider in the middle". Street View (26, 109 and 131 Beaudesert Rd) and
 the 2022 aerial photograph agree: two lanes each way and a raised divider, narrow concrete for most of the way and a planted strip with
 trees through the shops and south of them. The model had the lanes but no divider.
@@ -2075,3 +2077,42 @@ trees through the shops and south of them. The model had the lanes but no divide
 - From Ipswich Road to about Evans Road only. Further south (Rocklea) the layout changes (wide grassed reserves between the two
   halves, an overpass) and the photograph doesn't give a clear line, so nothing is drawn there. Where the two halves run more than 16 m
   apart the ground between them is already the divider.
+
+## Beaudesert Road's median, drawn from the real one (21 November 2026)
+
+Ash, of the divider above: "I want you to fix Beaudesert rd, there is a divider in the middle, looks terrible". Three things were wrong
+with it, and all three are fixed.
+
+- **It wandered and changed width every few metres.** It was found by sorting the photograph's pixels into road and not road, which
+  tree shadows, cars and painted lines throw off. It is now read off the photograph by eye. `tools/ground/beau_median/` straightens the
+  2022 aerial photograph along the road's centre line (`mid.py`, `strip.py`), so the median is a band running across a sheet with the
+  station along the top and the offset down the side (`sheets.py`); each island's two edges, what it is made of and the trees on it are
+  written down in `real.py`; `overlay.py` draws that back over the photograph to check it. Twelve islands, 2.2 km, from Ipswich Road to
+  the overpass south of Evans Road (the first try stopped at Evans Road): concrete in the north, garden beds of clipped shrubs through
+  the shops, lawn with street trees and the big trees further south, and the real gaps at the side streets that have one.
+- **The road covered parts of it, on a computer.** Explore opens on a light model and swaps in the sharp one (`townModelPair`). The two
+  have ground that differs by up to 0.3 m between its points (the sharp one has a height every 5 m, the light one every 10 m), and a
+  part made on the first is handed to the second as it is. So a median 0.15 m high was under the road for stretches and stood clear of
+  it for others, with jagged ends. The two medians (this one and Ipswich Road's) are now a part of their own inside `townBowls`
+  (`medians()`), made again on the new ground when the models swap (`T.bowls.swapped()`, called at the end of `swapTo`), and only if the
+  ground did change: on a phone both models have the same ground, so nothing is made twice there (checked at phone size: no second
+  make). The ground is also read every 2.5 m along both edges and down the middle, not every 3 m down the centre line.
+- **The model's own traffic ran too close to it.** On a one-way carriageway the cars' two lanes were counted out from the carriageway's
+  median edge, which put the inner lane 0.6 m from the middle of the road where the two halves are close, and the kerb lane's cars
+  along the dashed line. `moorooka-model.js` (`?v=56`, `addTraffic`) now puts the lanes 1.7 m either side of the carriageway's dashed
+  centre line (the bus 1.35 m, clear of parked cars, which stand at least 2.9 m out). `design.py` then keeps each island clear of
+  where the cars run (2.58 m in from each carriageway's line, and 0.3 m more): where the real island is wider it is cut back, and
+  where a turn pocket has pushed it right over to one side a strip of it is kept against that side. Most of it is drawn as it is.
+
+`MOO_BEAU` in `app.html` is each island as points of `[east edge x, z, west edge x, z, kind]` (0 concrete, 1 garden bed, 2 lawn),
+at most 5 m apart and closer where an edge bends; `MOO_BEAU_TREES` is `[x, z, size]`. `emit.py` writes both from `design.py`'s
+output. Drawn: a kerb 0.15 m high with a concrete top, or a concrete kerb strip round a bed of shrubs (a clump to every 2.5 m, of
+differing height and green) or lawn; a rounded nose painted white at each end; a white edge line on the road along each side; a trunk
+and a faceted crown for each of the 32 trees. Points the ground runs straight through are dropped, so the two medians together are
+about 11,700 triangles in one part on a phone; 18 KB in `app.html`; about 30 ms to make on a slow test machine at phone size.
+
+To change it: `python3 mid.py`, `python3 strip.py` (fetches the photograph), `python3 sheets.py sheet`, edit `real.py`,
+`python3 design.py design.json`, `python3 overlay.py ov.json design.json` and `python3 sheets.py check ov.json` to look, then
+`python3 emit.py design.json ../../../app.html`.
+
+Not done: the painted stripes on the concrete islands, the turn pocket lanes and arrows, and the stretch south of the overpass.
