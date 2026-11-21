@@ -6116,6 +6116,12 @@ const handle = async (m, post) => {
   // time shown, and clouds, rain and storms from the hour-by-hour forecast. The time bar plays forward at
   // 30 minutes a second from now, rolling through the week, and the readout follows it.
   // ======================================================================
+  // On a phone every pointer listener under the touch sticks is passive (the view, the map, the sticks themselves, the page-wide ones),
+  // not just the sticks' touch listeners. An iPhone treats a pointer listener that could cancel like a touch one: it waits for the page
+  // before it moves the finger, and when the page is busy (loading the sharper ground, a bigger town) it cancels the finger and the
+  // stick springs back to the middle. touch-action: none does the job preventDefault did (Ash, 21 November 2026: "Joystick broken.
+  // You've done this before", when walking with both sticks)
+  const BS_PASSIVE = matchMedia("(pointer: coarse)").matches;
   const BS = { B: null, W: {}, raf: 0, three: null, state: { cover: .3, rain: 0, storm: 0, wind: 15 }, target: { cover: .3, rain: 0, storm: 0, wind: 15 },
     ptr: { tx: 0, ty: 0, x: 0, y: 0 }, view: { mode: "live", ms: Date.now(), play: true }, D: null, lastT: 0, shown: "" };
   const BS_KIND = { sun: "Sunny", partly: "Partly cloudy", cloud: "Cloudy", rain: "Showers", storm: "Thunderstorms" };
@@ -8086,8 +8092,8 @@ const handle = async (m, post) => {
       if ((e.buttons & 3) === 3) { if (!O.on) { O.on = true; try { canvas.setPointerCapture(e.pointerId); } catch {} canvas.style.cursor = "grabbing"; }
         O.ty -= e.movementX * 0.006; O.tp = bsClamp(O.tp + e.movementY * 0.004, -0.5, 0.9); e.preventDefault(); return; }
       if (O.on) { O.on = false; canvas.style.cursor = ""; }
-      BS.ptr.tx = (e.clientX / innerWidth - 0.5) * 2; BS.ptr.ty = (e.clientY / innerHeight - 0.5) * 2; });
-    canvas.addEventListener("pointerup", e => { if (O.on && (e.buttons & 3) !== 3) { O.on = false; canvas.style.cursor = ""; } });
+      BS.ptr.tx = (e.clientX / innerWidth - 0.5) * 2; BS.ptr.ty = (e.clientY / innerHeight - 0.5) * 2; }, { passive: BS_PASSIVE });
+    canvas.addEventListener("pointerup", e => { if (O.on && (e.buttons & 3) !== 3) { O.on = false; canvas.style.cursor = ""; } }, { passive: BS_PASSIVE });
     canvas.addEventListener("contextmenu", e => e.preventDefault());  // the right button is half of the orbit
     canvas.addEventListener("dblclick", () => { O.ty = 0; O.tp = 0; });
     canvas.addEventListener("touchstart", e => { last = e.touches[0]; }, { passive: true });
@@ -8180,7 +8186,7 @@ const handle = async (m, post) => {
       // listener that could cancel makes an iPhone wait for the page before it moves each finger, and when the page was busy
       // for a moment (loading tiles, the traffic) it gave up and cancelled the finger: the stick went back to the middle
       // (Ash, 15 November 2026, in all three towns)
-      Object.entries(h).forEach(([k, f]) => el.addEventListener(k, f, { passive: /^touch/.test(k) }));
+      Object.entries(h).forEach(([k, f]) => el.addEventListener(k, f, { passive: /^touch/.test(k) || BS_PASSIVE }));  // (and its mouse ones too, on a phone)
       return { el, h, end, held: () => id !== null, move: v === F.stick };
     });
     F.uds = [...document.querySelectorAll("#bsFly .bs-udb")].map(el => {
@@ -8194,7 +8200,7 @@ const handle = async (m, post) => {
         pointerup: e => { if (on === "m") stop(); }, lostpointercapture: () => { if (on === "m") stop(); },
         contextmenu: e => e.preventDefault(),
       };
-      Object.entries(h).forEach(([k, f]) => el.addEventListener(k, f, { passive: /^touch/.test(k) }));  // passive, as the sticks
+      Object.entries(h).forEach(([k, f]) => el.addEventListener(k, f, { passive: /^touch/.test(k) || (BS_PASSIVE && k !== "contextmenu") }));  // passive, as the sticks
       return { el, h, end: stop };
     });
     // No pinch-zoom or page scroll while flying (iPhone Safari)
@@ -8406,10 +8412,10 @@ const handle = async (m, post) => {
     F.on.lockChange = () => { const on = document.pointerLockElement === canvas; document.body.classList.toggle("bslocked", on); $("bsLockTip").hidden = true;
       if (on) F.userLocked = false; else if (F.codeFree || !document.hasFocus()) F.codeFree = false; else F.userLocked = true;  // (Esc counts as locking it; leaving the window doesn't)
       lockLabel(); };  // (no strip of keys along the bottom: the buttons have their keys on them. Ash, 16 November 2026: "there is no need for the keys at the bottom as they are already on screen")
-    document.addEventListener("pointerdown", F.on.lock, true); document.addEventListener("pointerlockchange", F.on.lockChange);
+    document.addEventListener("pointerdown", F.on.lock, { capture: true, passive: true }); document.addEventListener("pointerlockchange", F.on.lockChange);
     addEventListener("keydown", F.on.keydown); addEventListener("keyup", F.on.keyup); addEventListener("blur", F.on.blur); addEventListener("keydown", F.on.heldDown, true); addEventListener("keyup", F.on.heldUp, true);
     document.addEventListener("mousemove", F.on.mousemove);
-    ["pointerdown", "pointermove", "pointerup", "pointercancel"].forEach(k => canvas.addEventListener(k, F.on[k])); canvas.addEventListener("wheel", F.on.wheel, { passive: false }); F.on.ctxmenu = e => { if (F.mix || F.simple) e.preventDefault(); }; canvas.addEventListener("contextmenu", F.on.ctxmenu);
+    ["pointerdown", "pointermove", "pointerup", "pointercancel"].forEach(k => canvas.addEventListener(k, F.on[k], { passive: BS_PASSIVE })); canvas.addEventListener("wheel", F.on.wheel, { passive: false }); F.on.ctxmenu = e => { if (F.mix || F.simple) e.preventDefault(); }; canvas.addEventListener("contextmenu", F.on.ctxmenu);
     if (F.simple) canvas.style.cursor = "pointer";
     $("bsFlyX").onclick = () => { if (document.body.classList.contains("wxlisten")) backToNews(); else bsExitAsk(); };
     $("bsFly").focus({ preventScroll: true });
@@ -8988,7 +8994,7 @@ const handle = async (m, post) => {
           contextmenu: e => e.preventDefault(),
         };
         gest.pointercancel = gest.pointerup;
-        Object.entries(gest).forEach(([k, f]) => box.addEventListener(k, f, { passive: false }));
+        Object.entries(gest).forEach(([k, f]) => box.addEventListener(k, f, { passive: BS_PASSIVE && /^pointer/.test(k) }));
         T.ungest = () => Object.entries(gest).forEach(([k, f]) => box.removeEventListener(k, f));
 
         // ---- the tide (flying) ----
@@ -15967,7 +15973,7 @@ const handle = async (m, post) => {
         sug.append(b, el("p", "", n ? "Shows each one on the map where it is, then Approve puts it in everyone's app, or Deny drops it." : "None waiting from construction workers.")); }
       meBox.append(head, you, st, as, sw, here, tm, app, ...(sug ? [sug] : []), ...(isAsh() ? exAshSecs(meDraw) : []), towns, ...(keysB ? [keysB] : []), tut, ...(wv ? [wv] : []), hi, priv, ver); };  // no Exit explore (Ash, 15 November 2026: "Remove exit explore"); Esc, or the browser's back, still leaves
     // closes with its \u00d7, the gear again, or a tap anywhere else
-    const meOut = e => { if (!meBox.hidden && !meBox.contains(e.target) && !meBtn.contains(e.target)) meClose(); }; document.addEventListener("pointerdown", meOut, true);
+    const meOut = e => { if (!meBox.hidden && !meBox.contains(e.target) && !meBtn.contains(e.target)) meClose(); }; document.addEventListener("pointerdown", meOut, { capture: true, passive: true });
     document.body.classList.add("bsme"); meBtn.hidden = false; meBtn.onclick = () => { meBox.hidden = !meBox.hidden; meBtn.setAttribute("aria-expanded", String(!meBox.hidden)); if (!meBox.hidden) meDraw(); meBtn.blur(); };
     // nothing is fetched or connected until the model has had a moment to itself
     let joining = null;
@@ -18392,7 +18398,7 @@ const handle = async (m, post) => {
     box.style.top = (r.bottom - o.top + 8) + "px"; box.style.left = Math.max(16, Math.min(r.left - o.left, o.width - 256)) + "px";
     box.hidden = false; btn.setAttribute("aria-expanded", "true");
     const close = ev => { if (box.contains(ev.target) || btn.contains(ev.target)) return; box.hidden = true; btn.setAttribute("aria-expanded", "false"); document.removeEventListener("pointerdown", close, true); };
-    setTimeout(() => document.addEventListener("pointerdown", close, true), 0); }
+    setTimeout(() => document.addEventListener("pointerdown", close, { capture: true, passive: true }), 0); }
   function exploreWhich() { const rod = /^rod(ney)?$/i.test((S.name || "").trim()); return S.region === "moo" && !rod ? "moo" : S.region === "logan" && !rod ? "logan" : "inv"; }
   function exploreTown() { townModelOpen(true, exploreWhich()); }
   function exploreInverloch() { townModelOpen(true, "inv"); }
