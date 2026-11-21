@@ -1998,3 +1998,19 @@ Street junction, and Brisbane Car Yard's front row of cars on the footpath. Each
   moved the last 45. Street lights on asphalt: 73 before, 22 after (beside the road on paved ground, none in a carriageway). 103
   trees stood on a street's surface: 27 moved to open ground within 6 m, 76 gone. 27 parked cars went: in a building, across a
   crossover or footpath at the kerb, across or in the middle of the street, or on the grass.
+
+## Signs clear of window hoods, the Willow's steps on its corner, the vet's sign (21 November 2026)
+
+- **Window hoods off shop walls.** Ash: "Quite a lot of the signs are hidden by these things", and the dashes flickering along the
+  Guardian's awning ("an example of the flashing"). The house builder (`$_` in `moorooka-model.js`, now `?v=52`) asks
+  `window.anNoHood(x0, z0, x1, z1)` for each wall; `app.html` answers true for any wall within 2.5 m of, and lined up with, a front
+  in `MOO_FRONTS`. Those walls get no window hoods, and no hood over the front door (`anFront(..., NH)`).
+- **The Willow.** Ash: "The stairs are actually on the corner piece", with Street View. The steps, piers, red slatted canopy, sign and
+  black slatted gates are now on the short wall facing the Beaudesert Road and Hansen Street corner (`door` in its `MOO_FRONTS` entry),
+  and the steps rise to the bar's floor (worked out from the building outline in `poly`, the way the model stands it on its highest
+  ground). The timber-clad upper floor with green banners is on the Hansen Street wall (`side`), and the beer garden's wall, with a
+  black rail and its banners, runs from the right-hand gate along Beaudesert Road. The fronts' `at()` draws in `FR`, a frame a front can
+  switch to another wall of its building for a moment.
+- **The vet.** The two trees beside its pole sign are gone, and the sign is 15% bigger (`big: 2.3`).
+- **Upgrade chip.** Each upgrade's few words (`UP_SHORT`) show beside its name all the time; a tap still opens the whole story.
+- One parked car that stood inside a house is gone.

@@ -1277,6 +1277,7 @@ body.bstown .bs-ud { top: auto; right: auto; left: 50%; bottom: calc(22px + env(
 .bs-height[hidden] { display: none; }
 .bs-upchip { position: absolute; top: calc(98px + env(safe-area-inset-top)); left: 16px; z-index: 2; padding: 4px 10px; border-radius: 999px; pointer-events: auto; cursor: pointer; background: rgba(20, 22, 34, 0.72); color: #fff; font: 600 0.74rem/1.3 var(--ui); white-space: nowrap; }
 .bs-upchip b { font-weight: 600; }
+.bs-upchip .bs-upshort { font-weight: 500; opacity: 0.86; }
 .bs-upchip small { display: none; max-width: min(260px, calc(100vw - 64px)); margin-top: 3px; font: 500 0.72rem/1.35 var(--ui); white-space: normal; }
 .bs-upchip.open { border-radius: 12px; padding: 6px 10px; }
 .bs-upchip.open small { display: block; }
@@ -8691,7 +8692,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=21", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=51", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=52", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -9232,6 +9233,9 @@ const handle = async (m, post) => {
       shops: [{ n: "Eddy's Barber Shop", w: 4, c: ["#ffffff", "#c22525"], what: "Barber", jump: true }, { n: "Baba Burger", w: 5, c: ["#1d1d1d", "#f2b632"], what: "Burgers", jump: true }, { n: "Zeitoon", w: 5, c: ["#2a2a2a", "#ffffff"], what: "Persian and Afghan restaurant", jump: true },
         { n: "Ho Choi", w: 5.9, c: ["#b71c1c", "#ffd54f"], what: "Chinese restaurant", jump: true }, { n: "Maywand", sub: "GROCERY", w: 5.5, c: ["#0d6b3a", "#ffffff"], what: "Afghan grocery" }, { n: "Snap Laundromat", w: 6, c: ["#0f8a7a", "#ffffff"], posters: true, what: "Laundromat (Shop 8/206)" }] },
     { kind: "pub", addr: "215 Beaudesert Road", a: [-94.9, -116.9], b: [-92.7, -136.9], n: [0.994, 0.1093], kerb: 11.08, across: 22.08, eave: 0, wall: "#f2f0ea",
+      door: { a: [-96.8, -107.9], b: [-91.5, -112.6], n: [0.6635, 0.7482], kerb: 6.0 },  // the corner piece, facing the corner, with the steps up it
+      side: { a: [-118.7, -110.7], b: [-96.8, -107.9], n: [-0.1268, 0.9918] },  // the Hansen Street wall
+      poly: [[-89.0, -136.1], [-87.6, -149.0], [-126.9, -123.8], [-118.7, -110.7], [-96.8, -107.9], [-91.5, -112.6], [-94.9, -116.9], [-92.7, -136.9]],  // the building, as in the survey
       shops: [{ n: "The Willow Hotel", sub: "BAR \u00b7 BISTRO", w: 20.1, c: ["#7a1616", "#ffffff"], what: "Pub: have a few at the bar", jump: true }] },  // (it was the Red Lion: Ash, 16 November 2026, "Update this to be the willow hotel")
     { kind: "sign", addr: "108 Beaudesert Road", a: [-180.7, -464.8], b: [-180.0, -457.0], n: [-0.996, 0.0894], kerb: 15.13, across: 25.93, shops: [{ n: "Little Village", sub: "YOGA \u00b7 COMMUNITY", w: 7.8, c: ["#f4efe4", "#3d6b4f"], what: "Community space: do a yoga class and learn the yoga emote", jump: true }] },  // (it was the Rising Sun church: Ash, 16 November 2026, "The rising sun is now little village. You can do yoga there and learn the yoga emote")
     { kind: "sign", addr: "1115 Ipswich Road", a: [-1068.9, -40.9], b: [-1057.6, -46.7], n: [0.4566, 0.8897], kerb: 14.7, across: 24.3, wall: "#3e4044", glass: "#1f2a33", high: true,
@@ -9248,7 +9252,7 @@ const handle = async (m, post) => {
       posters: [[1.4, 2.7, 1.0, 2.3, "Yes!", "NEW CAR WARRANTY", "#f6d21a", "#c8102e"], [2.9, 4.6, 1.2, 2.2, "SAFETY", "CERTIFICATES", "#ffffff", "#1b3a6b"], [4.8, 8.0, 1.35, 2.05, "TYRES", "", "#1b3a6b", "#ffffff"]],
       tall: { lines: ["ADVANCE", "MECHANICAL", "CENTRE"], c: ["#d71920", "#ffffff"], foot: { n: "RACQ APPROVED", c: ["#ffffff", "#1b3a6b"] } },
       shops: [{ n: "ADVANCE MECHANICAL CENTRE", w: 8.4, c: ["#d71920", "#ffffff"], what: "Mechanic: one upgrade for your car", jump: true }] },  // (placed by the Queensland address register: north of Helles Street)
-    { kind: "sign", addr: "111 Beaudesert Road", a: [-230.4, -460.5], b: [-228.0, -474.5], n: [0.9856, 0.169], kerb: 9.95, across: 20.35, eave: 39.3, wall: "#f4f1ea", joke: ["WHAT DO YOU CALL", "A SLEEPING BULL?", "A BULLDOZER"], pole: { n: "Vet", cross: "#1b8a3c", c: ["#ffffff", "#1b8a3c"], x: 2.4, back: 3.3, big: 2 }, noBoard: true, shops: [{ n: "Greencross Vets", w: 14.2, c: ["#ffffff", "#1b8a3c"], what: "Vet: one upgrade for your possum", jump: true }] },
+    { kind: "sign", addr: "111 Beaudesert Road", a: [-230.4, -460.5], b: [-228.0, -474.5], n: [0.9856, 0.169], kerb: 9.95, across: 20.35, eave: 39.3, wall: "#f4f1ea", joke: ["WHAT DO YOU CALL", "A SLEEPING BULL?", "A BULLDOZER"], pole: { n: "Vet", cross: "#1b8a3c", c: ["#ffffff", "#1b8a3c"], x: 2.4, back: 3.3, big: 2.3 }, noBoard: true, shops: [{ n: "Greencross Vets", w: 14.2, c: ["#ffffff", "#1b8a3c"], what: "Vet: one upgrade for your possum", jump: true }] },
     { kind: "row", addr: "114-120 Beaudesert Road", a: [-165.8, -429.1], b: [-159.5, -397.0], n: [-0.9813, 0.1926], kerb: 23.91, across: 35.11, eave: 42.9, wall: "#5e6063", fascia: "#46484c",
       shops: [{ n: "TerryWhite Chemmart", w: 7, c: ["#3dae49", "#ffffff"], wrap: { n: "MOOROOKA", cross: "#ffffff", c: ["#3dae49", "#ffffff"] }, what: "Pharmacy: ask the pharmacist about a love potion", jump: true },
         { n: "PHARMACY", w: 6, c: ["#3dae49", "#ffffff"], wrap: { n: "CareClinic", cross: "#ffffff", c: ["#3dae49", "#ffffff"] } }, { n: "TerryWhite Chemmart", w: 6, c: ["#3dae49", "#ffffff"], door: true },
@@ -10241,6 +10245,17 @@ const handle = async (m, post) => {
     { at: [-543.84, 1471.70], shift: [0.00, 0.98] },  // moved 1.0 m back off Central Drive
   ];
   window.anStyle = (x, z) => { for (const q of MOO_STYLE) if (Math.abs(q.at[0] - x) < 0.6 && Math.abs(q.at[1] - z) < 0.6) return q; return null; };
+  // No window hoods on a wall that carries a business's sign: they stuck out through the board and flickered across it (Ash, 21 November
+  // 2026, "Quite a lot of the signs are hidden by these things", and the dashes along the Guardian's awning: "an example of the flashing").
+  // The model asks for each wall (x0, z0)-(x1, z1); the shop walls are looked up in 32 m squares
+  { const G = new Map(), cell = (i, j) => i * 4096 + j;
+    for (const f of MOO_FRONTS) { if (!f.a || !f.b) continue; const w = [f.a[0], f.a[1], f.b[0], f.b[1]];
+      for (let i = Math.floor((Math.min(w[0], w[2]) - 3) / 32); i <= Math.floor((Math.max(w[0], w[2]) + 3) / 32); i++)
+        for (let j = Math.floor((Math.min(w[1], w[3]) - 3) / 32); j <= Math.floor((Math.max(w[1], w[3]) + 3) / 32); j++) { const k = cell(i, j); if (!G.has(k)) G.set(k, []); G.get(k).push(w); } }
+    window.anNoHood = (x0, z0, x1, z1) => { const mx = (x0 + x1) / 2, mz = (z0 + z1) / 2, L = Math.hypot(x1 - x0, z1 - z0) || 1, ws = G.get(cell(Math.floor(mx / 32), Math.floor(mz / 32)));
+      if (ws) for (const [ax, az, bx, bz] of ws) { const dx = bx - ax, dz = bz - az, l = Math.hypot(dx, dz) || 1, t = bsClamp(((mx - ax) * dx + (mz - az) * dz) / (l * l), 0, 1);
+        if (Math.hypot(ax + dx * t - mx, az + dz * t - mz) < 2.5 && Math.abs((x1 - x0) * dx + (z1 - z0) * dz) / (L * l) > 0.85) return true; }
+      return false; }; }
   function townShops(T, m) {
     const THREE = BS.B.THREE, out = [], parts = [], I = new THREE.Matrix4().elements; T.shopTags = [];  // (each shop's name and where its sign is, for the little name tags)
     const P = [], Nn = [], Cc = [];  // everything plain, in one piece: positions, normals, colours
@@ -10372,7 +10387,8 @@ const handle = async (m, post) => {
       const len = Math.hypot(f.b[0] - f.a[0], f.b[1] - f.a[1]), X = [f.n[1], -f.n[0]], left = (f.b[0] - f.a[0]) * X[0] + (f.b[1] - f.a[1]) * X[1] >= 0 ? f.a : f.b;
       const base = Math.max(m.groundAt(f.a[0], f.a[1]), m.groundAt(f.b[0], f.b[1]), m.groundAt((f.a[0] + f.b[0]) / 2, (f.a[1] + f.b[1]) / 2)) + 0.06;
       let lift = 0;  // each shop in a row steps down with the footpath: how far this one sits below the row's highest point
-      const F = { ...f, len }, at = (x, y, o) => [left[0] + X[0] * x + f.n[0] * o, base + lift + y, left[1] + X[1] * x + f.n[1] * o];
+      // (FR: the frame `at` draws in, the front's own unless a front draws on another wall of its building for a moment: the Willow's corner)
+      const F = { ...f, len }, FR = { l: left, X, n: f.n, y: base }, at = (x, y, o) => [FR.l[0] + FR.X[0] * x + FR.n[0] * o, FR.y + lift + y, FR.l[1] + FR.X[1] * x + FR.n[1] * o];
       const gnd = x => m.groundAt(left[0] + X[0] * x + f.n[0] * 0.6, left[1] + X[1] * x + f.n[1] * 0.6) + 0.06;
       const tri = (A, B, C, col) => { const ux = B[0] - A[0], uy = B[1] - A[1], uz = B[2] - A[2], vx = C[0] - A[0], vy = C[1] - A[1], vz = C[2] - A[2];
         let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; const l = Math.hypot(nx, ny, nz) || 1; nx /= l; ny /= l; nz /= l;
@@ -10461,30 +10477,52 @@ const handle = async (m, post) => {
         // red slatted canopy, the maroon WILLOW HOTEL sign over the steps and black slatted gates either side. Left of it, at the
         // corner, a timber-clad upper floor with dark glass over a white rendered base. Along the rest of the front, the beer garden
         // behind a low white wall carrying the green banners, and the round orange logo on a pole by the steps.
-        const s = shops[0], o = Math.max(2, f.kerb - 2.6), e0 = 2.2, e1 = 7.0;
+        // (The steps are on the corner piece, the short wall facing the corner, not along the front: Ash, 21 November 2026, "This isn't quite
+        // right. The stairs are actually on the corner piece". They go up to the bar's floor, which the model stands on the highest ground
+        // under the building: 10 cm over the highest of its corners and the middles of its walls)
+        const s = shops[0], o = Math.max(2, f.kerb - 2.6);
         const gAt = (x, oo) => m.groundAt(left[0] + X[0] * x + f.n[0] * oo, left[1] + X[1] * x + f.n[1] * oo) - base;
-        const drop = Math.max(0, -gAt((e0 + e1) / 2, o + 0.6)), lo = -Math.max(2, drop + 0.6);
-        // the steps: up from the footpath between the piers, back towards the bar
-        const nS = Math.round(drop / 0.18); for (let i = 0; i < nS; i++) box(e0 + 0.45, e1 - 0.45, lo, -drop + (i + 1) * (drop / nS), o + 0.2 - (i + 1) * 0.3, o + 0.2 - i * 0.3, i % 2 ? "#c9c4ba" : "#d4cfc4");
-        // the piers, the canopy's red beam and its slats, and the sign
-        for (const px of [e0, e1]) box(px - 0.3, px + 0.3, lo, 4.5, o - 0.35, o + 0.25, "#f2f0ea");
-        box(e0 - 1.6, e1 + 1.2, 4.42, 4.66, o - 0.4, o + 0.45, "#b8321f");
-        for (let x = e0 - 1.4; x <= e1 + 1.0; x += 0.42) box(x, x + 0.16, 4.5, 4.62, -0.2, o + 0.45, "#c8401f");
-        board(e0 + 0.45, e1 - 0.45, 3.3, 4.15, o + 0.3, s);
-        // black slatted gates beside the steps on the low walls
-        for (const [g0, g1] of [[e0 - 1.5, e0 - 0.35], [e1 + 0.35, e1 + 1.4]]) { box(g0, g1, lo, 0.9, o - 0.05, o + 0.18, "#f2f0ea"); for (let x = g0 + 0.08; x < g1 - 0.05; x += 0.16) box(x, x + 0.08, 0.9, 1.9, o + 0.02, o + 0.12, "#26272a"); }
-        // the corner: a white rendered base, then the timber-clad upper floor with its dark glass
-        box(-1.2, e0 - 1.5, lo, 1.3, 0, o + 0.2, "#f2f0ea");
-        box(-1.2, e0 - 1.5, 1.3, 4.4, 0.4, o - 0.2, "#8a4a32");
-        box(-1.0, e0 - 1.7, 1.7, 3.9, o - 0.19, o - 0.14, "#1f262c");
+        const drop = Math.max(0, -gAt(3, o + 0.6)), lo = -Math.max(2, drop + 0.6); let wx = 0.7, wo = o;
+        { const D = f.door, dl = Math.hypot(D.b[0] - D.a[0], D.b[1] - D.a[1]), DX = [D.n[1], -D.n[0]], dL = (D.b[0] - D.a[0]) * DX[0] + (D.b[1] - D.a[1]) * DX[1] >= 0 ? D.a : D.b;
+          const dB = Math.max(m.groundAt(D.a[0], D.a[1]), m.groundAt(D.b[0], D.b[1]), m.groundAt((D.a[0] + D.b[0]) / 2, (D.a[1] + D.b[1]) / 2)) + 0.06;
+          let fl = -1e9; f.poly.forEach((p, i) => { const q = f.poly[(i + 1) % f.poly.length]; fl = Math.max(fl, m.groundAt(p[0], p[1]), m.groundAt((p[0] + q[0]) / 2, (p[1] + q[1]) / 2)); });
+          FR.l = dL; FR.X = DX; FR.n = D.n; FR.y = dB;  // (drawn square to the corner piece)
+          const e0 = 0.7, e1 = dl - 0.7, od = Math.max(1.6, D.kerb - 3.2), mid = (e0 + e1) / 2;
+          const g0 = m.groundAt(dL[0] + DX[0] * mid + D.n[0] * (od + 0.6), dL[1] + DX[1] * mid + D.n[1] * (od + 0.6)) - dB, top = Math.max(g0 + 0.18, fl + 0.1 - dB), low = Math.min(g0, 0) - 0.6;
+          // the steps: up from the footpath between the piers to a landing at the door
+          const nS = Math.max(1, Math.round((top - g0) / 0.17)), run = Math.min(0.3, (od + 0.2) / (nS + 1));
+          for (let i = 0; i < nS; i++) box(e0 + 0.45, e1 - 0.45, low, g0 + (i + 1) * (top - g0) / nS, od + 0.2 - (i + 1) * run, od + 0.2 - i * run, i % 2 ? "#c9c4ba" : "#d4cfc4");
+          box(e0 + 0.45, e1 - 0.45, low, top, 0, od + 0.2 - nS * run, "#d4cfc4");
+          box(e0 + 0.6, e1 - 0.6, top, top + 2.5, -0.02, 0.03, "#1d2329");  // the doorway
+          // the piers, the canopy's red beam and its slats, and the sign
+          for (const px of [e0, e1]) box(px - 0.3, px + 0.3, low, top + 4.4, od - 0.35, od + 0.25, "#f2f0ea");
+          box(e0 - 0.6, e1 + 0.6, top + 4.32, top + 4.56, od - 0.4, od + 0.45, "#b8321f");
+          for (let x = e0 - 0.4; x <= e1 + 0.4; x += 0.42) box(x, x + 0.16, top + 4.4, top + 4.52, -0.2, od + 0.45, "#c8401f");
+          board(e0 + 0.45, e1 - 0.45, top + 3.2, top + 4.05, od + 0.3, s);
+          // black slatted gates either side of the bottom step, each on its own low white wall (Ash's Street View, 21 November 2026)
+          for (const [x0, x1] of [[e0 - 1.4, e0 - 0.3], [e1 + 0.3, e1 + 1.4]]) { box(x0, x1, low, g0 + 0.25, od - 0.4, od + 0.2, "#f2f0ea");
+            box(x0 + 0.05, x1 - 0.05, g0 + 0.25, g0 + 1.75, od + 0.12, od + 0.2, "#1e1f22"); for (let y = g0 + 0.4; y < g0 + 1.65; y += 0.16) box(x0 + 0.12, x1 - 0.12, y, y + 0.07, od + 0.2, od + 0.23, "#d9d9d6"); }
+          // the round orange logo on its pole, beside the steps
+          box(e1 + 1.75, e1 + 1.85, g0, g0 + 3.0, od + 0.2, od + 0.3, "#3a3a3a"); board(e1 + 1.4, e1 + 2.2, g0 + 2.9, g0 + 3.7, od + 0.36, { n: "W", c: ["#f07a1a", "#ffffff"] });
+          // where the beer garden's wall starts, at the right-hand gate, in the front's own frame
+          const P = at(e1 + 1.4, 0, od - 0.1); FR.l = left; FR.X = X; FR.n = f.n; FR.y = base;
+          wx = (P[0] - left[0]) * X[0] + (P[2] - left[1]) * X[1]; wo = (P[0] - left[0]) * f.n[0] + (P[2] - left[1]) * f.n[1]; }
+        // left of the steps, on the Hansen Street side: the timber-clad upper floor with its dark glass and green banners over a white
+        // rendered base with a vent (it was out on the Beaudesert Road front, right of the steps: Ash's Street View, 21 November 2026)
+        if (f.side) { const S2 = f.side, sl = Math.hypot(S2.b[0] - S2.a[0], S2.b[1] - S2.a[1]), SX = [S2.n[1], -S2.n[0]], sL = (S2.b[0] - S2.a[0]) * SX[0] + (S2.b[1] - S2.a[1]) * SX[1] >= 0 ? S2.a : S2.b;
+          FR.l = sL; FR.X = SX; FR.n = S2.n; FR.y = Math.max(m.groundAt(S2.a[0], S2.a[1]), m.groundAt(S2.b[0], S2.b[1])) + 0.06;
+          const near = sL === S2.a ? [sl - 7.5, sl - 0.2] : [0.2, 7.5], [x0, x1] = near;
+          box(x0, x1, lo, 1.9, 0, 0.35, "#f2f0ea"); for (let y = 0.5; y < 1.3; y += 0.12) box(x0 + 1.0, x0 + 1.6, y, y + 0.05, 0.35, 0.38, "#9a9c9e");
+          box(x0, x1, 1.9, 5.0, 0, 0.5, "#8a4a32"); box(x0 + 0.3, x1 - 0.3, 2.2, 4.6, 0.5, 0.53, "#1f262c");
+          [["$20 MAIN MEALS", "#1f7a3d", "#ffffff"], ["OPEN 7 DAYS", "#1f7a3d", "#ffffff"]].forEach(([t, bg, fg], i) => { const bx = x0 + 0.8 + i * 3.4; board(bx, bx + 2.6, 2.4, 3.9, 0.56, { n: t, c: [bg, fg] }); });
+          FR.l = left; FR.X = X; FR.n = f.n; FR.y = base; }
         // the bar's glass front along the beer garden, under a pale awning, with the green panel at its middle door
-        box(e1 + 0.6, len - 0.4, 0.25, 2.6, 0.02, 0.1, "#24303a"); box(e1 + 0.4, len - 0.2, 2.62, 2.78, 0, 1.8, "#e2e0da");
+        box(1.4, len - 0.4, 0.25, 2.6, 0.02, 0.1, "#24303a"); box(1.2, len - 0.2, 2.62, 2.78, 0, 1.8, "#e2e0da");
         box(len * 0.55 - 0.9, len * 0.55 + 0.9, 0, 3.4, 0.02, 0.16, "#1f8a7a");
-        // the beer garden's low wall and banners, from the steps to the north end
-        const w0 = e1 + 1.4, w1 = len + 2; box(w0, w1, lo, 1.15, o, o + 0.2, f.wall);
-        [["$20 MAIN MEALS", "#1f7a3d", "#ffffff"], ["KARAOKE", "#1f7a3d", "#ffffff"], ["$1 KIDS MEALS", "#f2c200", "#1a1a1a"]].forEach(([t, bg, fg], i) => { const bw = (w1 - w0 - 2) / 3, bx = w0 + 0.6 + i * bw; pic(bx, bx + bw - 0.8, 0.25, 0.95, o + 0.215, sign(bw - 0.8, 0.7, { n: t, c: [bg, fg] })); });
-        // the round orange logo on its pole, by the steps
-        box(e1 + 2.3, e1 + 2.4, -drop, 3.0, o + 0.5, o + 0.6, "#3a3a3a"); board(e1 + 1.95, e1 + 2.75, 2.9, 3.7, o + 0.66, { n: "W", c: ["#f07a1a", "#ffffff"] });
+        // the beer garden's low wall from the gate by the steps to the north end, a black rail along its top, and the banners on it
+        const w0 = wx, w1 = len + 2; box(w0, w1, lo, 1.15, wo, wo + 0.2, f.wall);
+        box(w0, w1, 1.95, 2.0, wo + 0.05, wo + 0.12, "#1e1f22"); for (let x = w0 + 0.1; x < w1; x += 2.2) box(x, x + 0.05, 1.15, 1.95, wo + 0.06, wo + 0.11, "#1e1f22");
+        [["$20 MAIN MEALS", "#1f7a3d", "#ffffff"], ["KARAOKE", "#1f7a3d", "#ffffff"], ["$1 KIDS MEALS", "#f2c200", "#1a1a1a"]].forEach(([t, bg, fg], i) => { const bw = (w1 - w0 - 4) / 3, bx = w0 + 2.6 + i * bw; pic(bx, bx + bw - 0.8, 0.25, 0.95, wo + 0.215, sign(bw - 0.8, 0.7, { n: t, c: [bg, fg] })); });
         signY = 3.3; signH = 0.85;
       } else if (f.kind === "row") {
         // a row of businesses along one wall: each its own sign over its share of the front. With fascia (the pharmacy row, from Ash's
@@ -15452,6 +15490,10 @@ const handle = async (m, post) => {
       nitro: `Your car: boost lasts ${to(r.boostSecs, r.boostSecs * 2, " s")}`,
       refill: `Your car: boost refills in ${to(r.boostBack, r.boostBack / 3, " s")}`,
       grip: `Your car: turning ${to(r.carTurn, r.carTurn * 1.33, "%")}, turning circle ${to(circle(r.carTurn), circle(r.carTurn * 1.33), " m")}, handbrake spin ${to(r.slideTurn, r.slideTurn * 1.3, "\u00b0")} a second` }[id] || ""; };
+  // each upgrade in a few words, shown beside its name on the chip while you drive, run or fly (Ash, 21 November 2026)
+  const UP_SHORT = { turbo: "faster top speed", launch: "quicker off the mark", nitro: "boost lasts twice as long", refill: "boost refills faster", grip: "sharper turns",
+    speedy: "runs faster", springy: "jumps higher", climber: "climbs faster", glider: "floats down", zoomies: "stronger boost",
+    wings: "flies faster", flap: "climbs faster", glide: "glides further", dive: "dives faster" };
   const POSSUM_UPS = [["speedy", "Speedy paws", "Runs 30% faster"], ["springy", "Spring legs", "Jumps half as high again"], ["climber", "Climbing claws", "Climbs twice as fast"],
     ["glider", "Glider", "You fall gently, floating from roof to roof"], ["zoomies", "Zoomies", "Boost twice as strong"]];
   // Flick's pigeon food: one of four for the pigeon, one at a time (Ash, 18 November 2026: "If you've already flown the pigeon before flick
@@ -17248,7 +17290,10 @@ const handle = async (m, post) => {
       const k = u ? `${kind}:${u[0]}` : ""; if (upChip.dataset.k !== k) { upChip.dataset.k = k; upChip.replaceChildren(); clearTimeout(upT); upChip.classList.remove("open"); upChip.title = "";
         if (u) { const b = document.createElement("b"), s = document.createElement("small"), fx = kind === "car" ? carUpEffect(u[0]).replace(/^Your car: /, "") : "";
           b.textContent = `${kind === "car" ? "\u2699\ufe0f" : kind === "possum" ? "\ud83d\udc3e" : "\ud83c\udf3e"} ${u[1]}`; s.textContent = fx ? `${u[2]}. ${fx[0].toUpperCase()}${fx.slice(1)}` : u[2];
-          upChip.append(b, s); upChip.title = s.textContent; upChip.classList.add("open"); upT = setTimeout(() => upChip.classList.remove("open"), 6000); } }
+          // a few words of what it does, always on beside its name (Ash, 21 November 2026: "With sports tyres put an always showing very
+          // short desc of what it does. Same for other upgrades"); the whole story still opens on a tap
+          const sh = document.createElement("span"); sh.className = "bs-upshort"; sh.textContent = UP_SHORT[u[0]] ? `: ${UP_SHORT[u[0]]}` : "";
+          upChip.append(b, sh, s); upChip.title = s.textContent; upChip.classList.add("open"); upT = setTimeout(() => upChip.classList.remove("open"), 6000); } }
       if (upChip.hidden === !!u) upChip.hidden = !u; };
     const R = townPerkRide(rideSettings()), GOLD = 1 + R.gold / 100, VMAX = R.carTop / 3.6, VREV = 5.5, VBOOST = Math.max(R.carBoostTop, R.carTop) / 3.6, LIFT = R.planeLift / 3.6, CRUISE = Math.max(R.planeTop, R.planeLift * 1.4) / 3.6, JET = Math.max(R.planeBoostTop, R.planeTop) / 3.6, canBoost = P => !P.heli && (P.gold || !!R.planeBoost), touch = matchMedia("(pointer: coarse)").matches, snd = townSound(); T.snd = snd;
     snd.level(R.volume / 100);
