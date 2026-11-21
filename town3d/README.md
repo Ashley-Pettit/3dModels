@@ -2127,3 +2127,48 @@ To change it: `python3 mid.py`, `python3 strip.py` (fetches the photograph), `py
 `python3 emit.py design.json ../../../app.html`.
 
 Not done: the painted stripes on the concrete islands, the turn pocket lanes and arrows, and the stretch south of the overpass.
+
+## The Bohain Street corner, the median's planted north end, a footpath in pieces (22 November 2026)
+
+Ash, 21 November 2026, with two pictures from his iPhone: of where Bohain Street meets Beaudesert Road, "Fix this up" (the island
+between Bohain Street's two arms a ragged patch of lawn, kerbs standing in the asphalt), and of the east side of Beaudesert Road north
+of Wharton Street, "Also this on Beaudesert rd" (the footpath as three blobs with lawn between them).
+
+- **The island** is drawn from the real one, like the median: `tools/ground/beau_corner/shapes.py` is its kerb line, the footpath
+  across it, the landing where the crossing from Beaudesert Road comes in and its concrete nose, read off the 2022 aerial photograph
+  enlarged to 2.5 cm a pixel (`zoom.py`) and checked by drawing them back over it. `corner.py` makes a mesh of it for `app.html`
+  (`MOO_CORNER`): a kerb edge 0.22 m wide, concrete and garden bed as triangles on shared points no more than 2 m apart, the walls round
+  it, 46 shrubs in the beds, the white lines painted round it out to its painted noses, and the give way line across the south arm.
+  `townBowls` (`medians()`) lifts every point onto the ground of the model that is showing, so it is made again with the medians when
+  the light and sharp models swap. The 15 November island (16 strokes of lawn and concrete in `edits.json`, which only showed close up)
+  is gone.
+- **The ground plan round it** (`surface/2_6` and `3_6`): asphalt up to the island's kerb for 3 m round it, bed and concrete inside
+  (the plan had the island's north part only, and too small).
+- **The model's kerbs on the island's sides** followed the mapped arms, 4.6 m wide where the real ones are about 6 m, so they stood up
+  to 2 m out in the road. The 15 kerb points on or within 2.6 m of the island are left out (14 more cells in `kerbOff`); the island's
+  own kerb takes their place. Checked by dumping the model's kerbs again: nothing else changed and no new corner was made. The kerbs
+  on the park side and the south side follow the plan's asphalt edge and are left as they were.
+- **The planted island at the north end of the median** (at the Ipswich Road lights, 30 m long, a garden bed with a paved strip
+  down its west side) was missing: the median began at its south tip with a painted nose. It is in `MOO_CORNER` too (42 shrubs), and
+  runs on into the concrete median: `MOO_CORNER.j` is where, and the median's first island has no nose there. If the median is made
+  again (`beau_median/emit.py`) and its first point moves, run `corner.py` again: it reads that point from `app.html`.
+- **The footpath** (`tools/ground/beau_corner/footpath.py`, `surface/3_6` and `4_6`): the photograph has that stretch under trees, so
+  the plan had the path in pieces. From 50 m north of the gap to where the path meets the kerb near Wharton Street it is one even
+  strip 1.4 m wide, 10.45 m from the road's centre line, which is where the pieces either side already lay; 24 m2 changed. The road's
+  own edge there is about 2 m short of the real kerb, as the street data has it, and was left.
+- **A second gap of the same kind**, found by measuring both footpaths every metre for stretches with no concrete: the west side for
+  6 m north of Durack Street (also under a tree in the photograph), now one strip from the driveway north of it to the corner
+  (`surface/5_6`, 16 m2). That check only finds a path that stops altogether for 3 m or more, away from a side street or a driveway:
+  a path in pieces with smaller breaks would not show in it, so there may be others.
+- Three triangles had been drawn with no normal (a point repeated in a four-sided face): the median's painted noses, its trees' crowns
+  and now the shrubs use a triangle of their own (`tri`), lit the way they face.
+
+Cost: `MOO_CORNER` is 26 KB in `app.html` (545 points, 891 triangles, 88 shrubs); the medians and the corner together are about
+13,600 triangles in one part on a phone and take about 50 ms to make on a slow test machine.
+
+To change the corner: edit `shapes.py`, `python3 zoom.py` to look, then `python3 corner.py ../../../app.html --kerbs KERBS.json --write`
+(KERBS.json: `window.anKerbDump = []` set before the model loads, saved after; without it no kerbs are left out).
+
+Not done: the far-off ground picture (`ground.webp` and the 16 detail tiles) still has the old corner under the new island, which
+covers it; the island's painted chevrons; the stripes, turn lanes and arrows along the median (started on branch
+`claude/beau-markings`).
