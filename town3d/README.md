@@ -2174,6 +2174,30 @@ To change the corner: edit `shapes.py`, `python3 zoom.py` to look, then `python3
 Not done: the far-off ground picture (`ground.webp` and the 16 detail tiles) still has the old corner under the new island, which
 covers it; the island's painted chevrons.
 
+## People on the footpaths, round the corners, never onto roads (22 November 2026)
+
+Ash: "Fix up footpaths throughout moorooka. They make sure people walk around them properly. Right now they walk onto roads and
+disappear". Each of the model's walkers (the strollers, 30 on a computer and 14 on a phone) walked one side of one road end to end
+and back, along a line set out from the road's centre. At the road's ends that line ran across the street it met, and every frame
+anyone within 1.7 m of a road's edge, or inside a building, simply wasn't drawn: so people stepped off the footpath at each corner and
+vanished, and about one in three was hidden at any moment. The shops' sides of Beaudesert Road had no walk at all (the ground plan has
+no footpath band there, the shops being paved to the wall).
+
+Now (`moorooka-model.js` `?v=59`, patched by `tools/walkers/footpath_net_patch.py`, which says how) the footpaths are a network:
+
+- Each footpath line is cut where it meets a road, a building or water, leaving pieces of real footpath; where it runs into a shop it
+  is drawn in towards the kerb instead. A main road's side with no footpath band (the shops) gets a line 1.6 m from the kerb.
+- Each piece's end is joined round the corner to the next footpath when the join stays clear of every road and building, so people
+  walk round the block. Nobody crosses a road; at a dead end they turn back.
+- It is built a little at a time near the view, about 40 checks of the ground a frame, nearest first (a few seconds to fill in round
+  you); nobody is hidden for being near a road any more, so that check each frame is gone. Measured the same way, the walkers' work
+  a frame is a little lower than before on average.
+- `walkNet()` gives the network to the page, and the walkers on the busy streets (`townWalkers`, the shops and the Magic Mile) use it
+  too, so they stop at the kerb instead of walking out into the junction.
+
+Measured (`t/walk.js` in a local build, six places, 90 s): people drawn went from about 21 of 30 to about 28 of 30 (the rest are being
+put back near you), and none of the 4,000 places they were drawn at was on a road, nor any of the busy-street walkers'.
+
 ## Beaudesert Road's median: the striped islands and the turn lanes (22 November 2026)
 
 The two things left over from the median above ("Not done"). Ash: "Continue".

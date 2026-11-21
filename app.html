@@ -8694,7 +8694,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=21", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=58", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=59", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -16548,22 +16548,32 @@ const handle = async (m, post) => {
           if (n && bad / n < 0.25) ways.push({ p, off, side }); } });
       if (!ways.length) return;
       for (let i = 0; i < K; i++) { const wy = ways[Math.floor(Math.random() * ways.length)], n = wy.p.length / 2, seg = Math.floor(Math.random() * (n - 1));
-        const parts = townPlaneParts(TOPS[i % TOPS.length], "person"); walkers.push({ wy, seg, t: Math.random(), dir: Math.random() < 0.5 ? 1 : -1, side: wy.side, sp: 1.1 + Math.random() * 0.5, ph: Math.random() * 6,
+        const parts = townPlaneParts(TOPS[i % TOPS.length], "person"); walkers.push({ wy, seg, t: Math.random(), dir: Math.random() < 0.5 ? 1 : -1, side: wy.side, sp: 1.1 + Math.random() * 0.5, ph: Math.random() * 6, zone: i % ZONES.length,
           h: m.addParts(parts.map(q => ({ ...q, matrix: FAR.slice() }))), n: parts.length, on: false }); } }).catch(() => {});
     const place = w => { const p = w.wy.p, i = w.seg * 2, ax = p[i], az = p[i + 1], bx = p[i + 2], bz = p[i + 3], L = Math.hypot(bx - ax, bz - az) || 1, ux = (bx - ax) / L, uz = (bz - az) / L;
       return { x: ax + (bx - ax) * w.t + uz * w.off * w.side, z: az + (bz - az) * w.t - ux * w.off * w.side, L, h: Math.atan2(ux * w.dir, uz * w.dir) }; };
     P.frame = () => { const now = performance.now(), dt = Math.min(0.1, (now - last) / 1000); last = now; const cam = m.getCamera?.(); if (!cam || !walkers.length) return;
-      for (const w of walkers) { w.off = w.off ?? w.wy.off; let q = place(w);
+      // the model's footpath network when it has one (Ash, 21 November 2026: "Fix up footpaths throughout moorooka. They make sure people
+      // walk around them properly. Right now they walk onto roads and disappear"): along the footpath, round the corner onto the next,
+      // never across a road; back the way they came at a dead end or on leaving the shops. Without it (the light model on a slow phone),
+      // the street's own line as before
+      let N = m.walkNet?.() || null; if (N && typeof N.placeNear !== "function") N = null;
+      for (const w of walkers) { let q;
+        if (N) { if (w.net !== N) { w.net = N; w.c = { s: -1, dir: 1 }; }
+          if (w.c.s < 0) { const [zx, zz, R] = ZONES[w.zone]; if (!N.placeNear(w.c, zx, zz, R * 0.6)) { if (w.on) { for (let k = 0; k < w.n; k++) w.h.setMatrix(k, FAR.slice()); w.on = false; } continue; } }
+          N.anStep(w.c, w.sp * dt); const r = N.where(w.c.walk, w.c.s); q = { x: r[0], z: r[1], h: Math.atan2(r[2] * w.c.dir, r[3] * w.c.dir) };
+          if (!w.c.walk.conn && !ZONES.some(([x, z, R]) => Math.hypot(q.x - x, q.z - z) < R + 60)) w.c.dir = -w.c.dir;  // stays round the shops
+        } else { w.off = w.off ?? w.wy.off; q = place(w);
         w.t += w.dir * w.sp * dt / q.L;  // along the street, segment by segment; at its end, or at a wall in the way, turn back
         if (w.t > 1) { if (w.seg < w.wy.p.length / 2 - 2) { w.seg++; w.t = 0; } else { w.t = 1; w.dir = -1; } }
         if (w.t < 0) { if (w.seg > 0) { w.seg--; w.t = 1; } else { w.t = 0; w.dir = 1; } }
         q = place(w); if (m.solidAt?.(q.x, q.z)) { w.dir = -w.dir; w.t = bsClamp(w.t + w.dir * 0.02, 0, 1); }
-        if (!ZONES.some(([x, z, R]) => Math.hypot(q.x - x, q.z - z) < R + 60)) { w.dir = -w.dir; }  // stays round the shops
+        if (!ZONES.some(([x, z, R]) => Math.hypot(q.x - x, q.z - z) < R + 60)) { w.dir = -w.dir; } }  // stays round the shops
         const near = Math.hypot(q.x - cam.x, q.z - cam.z) < 300;
         if (!near) { if (w.on) { for (let k = 0; k < w.n; k++) w.h.setMatrix(k, FAR.slice()); w.on = false; } continue; }
         const st = now / 1000 * w.sp * 5.2 + w.ph, y = m.groundAt(q.x, q.z) + Math.abs(Math.sin(st)) * 0.04;
         M.compose(V.set(q.x, y, q.z), Q.setFromEuler(E.set(0, q.h, Math.sin(st) * 0.03)), ONE); for (let k = 0; k < w.n; k++) w.h.setMatrix(k, M.elements.slice()); w.on = true; } };
-    P.list = () => walkers.map(w => ({ ...place(w), on: w.on }));
+    P.list = () => walkers.map(w => { if (w.c && w.c.s >= 0 && w.net) { const r = w.net.where(w.c.walk, w.c.s); return { x: r[0], z: r[1], on: w.on }; } return { ...place(w), on: w.on }; });
     P.dispose = () => { dead = true; for (const w of walkers) try { w.h.remove(); } catch {} };
     return P;
   }
