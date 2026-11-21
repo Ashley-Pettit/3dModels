@@ -2057,3 +2057,21 @@ Street junction, and Brisbane Car Yard's front row of cars on the footpath. Each
   `MOO_FRONTS` entries give each part its glass front, sign, flags and a yard full of cars behind a clipped hedge (`hedge: true` in
   `townBowls`, in place of the yellow bollards), with Nissan's red pylon by the road. Nissan's yard was lawn in the ground plan and is
   paved now (`tools/ground/yard_pave.py`). A yard only fills with cars when its `what` says car or dealer.
+
+## Beaudesert Road's divider (21 November 2026)
+
+Ash: "Can you fix Beaudesert rd. It's 4 lanes of traffic with a divider in the middle". Street View (26, 109 and 131 Beaudesert Rd) and
+the 2022 aerial photograph agree: two lanes each way and a raised divider, narrow concrete for most of the way and a planted strip with
+trees through the shops and south of them. The model had the lanes but no divider.
+
+- `MOO_BEAU` in `app.html` holds the divider as runs of `[x, z, width, planted]` every 3 m; `townBowls` draws it as a kerb 0.16 m high,
+  concrete or planted on top, with a white edge line on the road each side and a rounded nose at each end. About 1.8 km, 650 m planted.
+- It was found by inference (`tools/ground/beau_median/`, see the infer-ground-plan skill): `find_median.py` reads a cross-section of the
+  photograph every metre along each mapped carriageway and keeps light or green strips with road on both sides, averaged 7 m along so
+  dashed lane lines drop out, tracked as one steady line per carriageway; `design2.py` places the divider midway between the two mapped
+  carriageways (the map has the road as two one-way halves for most of its length), moved onto what the photograph shows (at most 1.5 m),
+  open at side streets unless the photograph shows it carrying on; `refine.py` centres it on the strip and reads its width and planting;
+  `smooth.py` smooths each run (a jog goes, a bend stays). `aerial.py` fetches and caches the photograph blocks.
+- From Ipswich Road to about Evans Road only. Further south (Rocklea) the layout changes (wide grassed reserves between the two
+  halves, an overpass) and the photograph doesn't give a clear line, so nothing is drawn there. Where the two halves run more than 16 m
+  apart the ground between them is already the divider.
