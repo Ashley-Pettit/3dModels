@@ -9642,7 +9642,6 @@ const handle = async (m, post) => {
       shops: [{ n: "Moorooka", sub: "EARLY LEARNING CENTRE", w: 6.6, c: ["#ffffff", "#2c8fc9"], what: "Childcare" }] },
     { kind: "sign", addr: "135 Keats Street", a: [-390.5, 305.2], b: [-409.5, 302.8], n: [0.1253, -0.9921], kerb: 9.02, across: 19.62, eave: 38.9, wall: "#f3efe6",
       shops: [{ n: "Alma Kids", sub: "EARLY EDUCATION", w: 8, c: ["#ffffff", "#e0457b"], what: "Childcare" }] },
-    { kind: "sign", addr: "27 Hawtree Street", a: [-667.7, 388.2], b: [-666.1, 379.2], n: [0.9846, 0.175], kerb: 15.55, across: 26.15, eave: 41.1, wall: "#e8e1d3",
       shops: [{ n: "Moorooka Presbyterian", sub: "CHURCH", w: 8.4, c: ["#ffffff", "#1f3a68"], what: "Church" }] },
     { kind: "sign", addr: "22 Gladstone Street", a: [-663.3, 1149.8], b: [-667.9, 1162.8], n: [-0.9427, -0.3336], kerb: 9.07, across: 18.47, eave: 14.1, wall: "#eeede9", bx: 7.2, bw: 3.2,
       rollers: [[1.5, 4.9, 3.0, "#9aa0a6", true, "#7a5634"]],
@@ -10648,7 +10647,7 @@ const handle = async (m, post) => {
     ["The Willow's way in", "Redone from Street View: the steps up at the south corner between white piers, under the red slatted canopy, with the sign over them and the timber-clad corner beside", -74.0, -116.0, 1.27, 0.08],
     ["Houses on hills", "About 1,800 houses had their uphill side buried. Every building now stands on the highest ground under it, with a darker base down the slope", -968.2, -1083.4, 0.682, -0.05],
     ["Moorooka bowls club", "Moorooka Sports & Community Club on Koala Road: three bowling greens with their ditches and shade shelters", 160.0, -462.0, -2.24, -0.1],
-    ["School pool and courts", "Moorooka State School's 25 m pool and its two tennis courts. St Brendan's has a play frame and shade sail on its lawn, and its church a name and a cross", -226.0, 175.0, 1.571, -0.15],
+    ["School pool and courts", "Moorooka State School's 25 m pool and its two tennis courts. St Brendan's has a play frame and shade sail on its lawn", -226.0, 175.0, 1.571, -0.15],
     ["Off the roads", "Street lights, trees and badly parked cars are off the roads, kerbs are out of the asphalt (Bohain Street here), fences open at drives and car yard cars stay behind the footpath", -262.0, -1080.0, -0.35, -0.05],
     ["Houses further out, part 10", "The last of the houses: Muriel Avenue, Gladstone Street, Cobden Street, John Bright Street and Coin Street, and the ones Street View showed black the first time round: fences, walls, hedges and drives, with their paths and drives joined up", -772.4, 1050.9, -1.744, 0.05],
     ["Houses further out, part 9", "Robinson Street, Anson Street, Timothy Street, Abel Street, Beckford Street, O'Neil Street, Newman Road, Davey Street, Kerrianne Place, Desanne Place, Sharon Street and the streets between: fences, walls, hedges and drives, with their paths and drives joined up", -1030.0, 783.4, 1.390, 0.05],
@@ -16565,9 +16564,6 @@ const handle = async (m, post) => {
       for (const [a, b] of [[-4.5, -4], [4.5, -3.5], [0, 4.5]]) box2(cx, cz, BU, a - 0.06, a + 0.06, b - 0.06, b + 0.06, lo - 0.2, y + 3.4, "#9aa0a6");  // the shade sail's poles
       const bx = [-BU[1], BU[0]], q = (a, b) => [cx + BU[0] * a + bx[0] * b, y + 3.3, cz + BU[1] * a + bx[1] * b];
       quad(q(-4.5, -4), q(4.5, -3.5), q(0, 4.5), q(0, 4.5), "#f4f2ec"); }
-    // ---- St Brendan's Church: a white cross on its front gable, over Hawtree Street
-    { const n = [0.985, 0.175], cx = -666.9 + n[0] * 0.3, cz = 383.7 + n[1] * 0.3, y0 = Math.max(46.2, m.groundAt(cx, cz) + 6.5);
-      box2(cx, cz, [n[1], -n[0]], -0.1, 0.1, -0.1, 0.1, y0, y0 + 2.2, "#f4f4f0"); box2(cx, cz, [n[1], -n[0]], -0.55, 0.55, -0.1, 0.1, y0 + 1.4, y0 + 1.6, "#f4f4f0"); }
     // ---- the Magic Mile's car yards (Ash, 21 November 2026: "Same for magic mile"): a row of yellow bollards along each yard's front
     // (its yardFront, behind the footpath) and a red and white sale banner on two poles at its middle
     for (const f of MOO_FRONTS) { if (!f.yardFront || !f.flags) continue;

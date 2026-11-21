@@ -1989,7 +1989,8 @@ Street junction, and Brisbane Car Yard's front row of cars on the footpath. Each
   placed from the aerial against the courts' own positions in the town data; a play frame and slide under a shade sail on St
   Brendan's lawn.
 - **The Magic Mile:** yellow bollards along each car yard's front (behind the footpath) and a red and white sale banner.
-- **Missing key places:** St Brendan's Church (27 Hawtree Street) has its name and a white cross; the post office is in Jump to.
+- **Missing key places:** the post office is in Jump to. (27 Hawtree Street already carries the Moorooka Presbyterian Church sign
+  read off Street View; Google Maps also pins St Brendan's Church there, so it was left as it is.)
 - **Off the roads** (Ash: "There are some tress and light posts on roads and some inappropriately parked cars"):
   `tools/ground/lamps_fix.py` now measures the road's edge where the ground plan's asphalt ends (it used the street data's
   width, narrower on junction flares and service lanes) and moves a pole further across the verge if it has to; a second pass
