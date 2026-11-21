@@ -1965,3 +1965,34 @@ Street junction, and Brisbane Car Yard's front row of cars on the footpath. Each
   `footpaths` in `town.json`, or 4 m of verge where it has none) and behind any grass the ground plan shows. A car whose street end
   would be past it isn't placed, and the tube man stands just inside it.
 - **Traffic:** Moorooka's moving cars up from 7 to 9 on a phone and 9 to 12 on a computer.
+
+## Houses on hills, the Willow's way in, the bowls club, schools, the Magic Mile, things off the roads (21 November 2026)
+
+- **Houses out of the dirt** (Ash: "Some houses are still inside the dirt"): a building's floor stood at the ground under its
+  middle, so on a slope its uphill side was buried: 1,787 buildings by more than 1 m, 285 by more than 2 m. The floor now stands
+  on the highest ground under it (its corners and the middles of its walls, `moorooka-model.js ?v=51`, `$_`), and below the floor,
+  down the slope, the walls are a darker base. The possum's roofs (`roofAt` in `app.html`) use the same floor.
+- **The Willow Hotel** (Ash: "The entrance to the willow hotel is not quite correct. Needs redesign of that building"): redone
+  from Street View (October 2024). The way in is at the south corner: steps up from the footpath between two white rendered
+  piers, a red slatted canopy over them, the maroon sign, black slatted gates either side, and the timber-clad corner beside.
+  The beer garden's low wall and banners run from there to the north end, the bar's glass front behind under a pale awning, the
+  round orange logo on a pole by the steps. Its walls are white and grey now (they were dark timber).
+- **Beaudesert Road checked against Google Maps** (21 November 2026): the key businesses are still there, except Yeshi Buna at
+  131 (closed for good: an empty shop now, and the post office is in Jump to) and the RSPCA Op Shop at 143 (closed for good:
+  Clear Radiology now).
+- **The bowls club**, Moorooka Sports & Community Club, 76 Koala Road (Ash: "Add the bowls club in low ish res"): three greens
+  from the aerial photograph (they match the town data's three "Oval" pitches there), each level, striped, with a pale ditch and
+  a shade shelter; 19 lot fences and a tree that crossed them are gone. `townBowls` in `app.html` draws it, with the school and
+  Magic Mile pieces, as one shape.
+- **Schools** (Ash: "Add a little more detail onto the schools without using too much memory or size"): Moorooka State
+  School's 25 m pool (six lanes, concourse, pool fence) and its two tennis courts (green on red, white lines, a tall fence),
+  placed from the aerial against the courts' own positions in the town data; a play frame and slide under a shade sail on St
+  Brendan's lawn.
+- **The Magic Mile:** yellow bollards along each car yard's front (behind the footpath) and a red and white sale banner.
+- **Missing key places:** St Brendan's Church (27 Hawtree Street) has its name and a white cross; the post office is in Jump to.
+- **Off the roads** (Ash: "There are some tress and light posts on roads and some inappropriately parked cars"):
+  `tools/ground/lamps_fix.py` now measures the road's edge where the ground plan's asphalt ends (it used the street data's
+  width, narrower on junction flares and service lanes) and moves a pole further across the verge if it has to; a second pass
+  moved the last 45. Street lights on asphalt: 73 before, 22 after (beside the road on paved ground, none in a carriageway). 103
+  trees stood on a street's surface: 27 moved to open ground within 6 m, 76 gone. 27 parked cars went: in a building, across a
+  crossover or footpath at the kerb, across or in the middle of the street, or on the grass.

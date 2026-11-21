@@ -9948,6 +9948,7 @@ const handle = async (m, post) => {
     { kind: "sign", addr: "T9/26 Queens Way, Yeerongpilly", a: [-1277.1, -1164.4], b: [-1276.0, -1171.6], n: [0.9893, 0.146], kerb: 1.73, across: 8.93, eave: 17.5, wall: "#9a9da0", glass: "#22303a", sy: [3.3, 4.2],
       shops: [{ n: "YG Bakehouse", w: 7.3, c: ["#f3e6c8", "#5a3a1e"], what: "Bakery" }] },  // (next to Fresh N Local, where Google Maps has it)
     { kind: "sign", addr: "1 Sherley Street", a: [-189.6, 135.3], b: [-208.0, 132.2], n: [0.1661, -0.9861], kerb: 23.11, across: 33.71, eave: 40.5, wall: "#e9dcc4", shops: [{ n: "Moorooka State School", w: 18.7, c: ["#163e7a", "#ffffff"], what: "Primary school (heritage listed)", jump: true }] },
+    { kind: "sign", addr: "27 Hawtree Street", a: [-666.1, 379.2], b: [-667.7, 388.2], n: [0.985, 0.175], kerb: 15.55, across: 25.55, eave: 41.1, wall: "#c9b8a6", shops: [{ n: "St Brendan's Church", w: 9.1, c: ["#f4f1ea", "#5a2a1a"], what: "Catholic church", jump: true }] },  // (a key place that had no name: Ash, 21 November 2026, "look for other missing key moorooka things"; its front to Hawtree Street, Google Maps aerial)
     { kind: "sign", addr: "17 Hawtree Street", a: [-654.6, 331.9], b: [-647.5, 301.6], n: [0.9736, 0.2281], kerb: 10.82, across: 21.42, eave: 41.7, wall: "#e4d6c2", shops: [{ n: "St Brendan's School", w: 31.1, c: ["#7a1c2a", "#ffffff"], what: "Catholic primary school", jump: true }] },
   ];
   // A few of the model's own buildings in their real colours, from Ash's photos (16 November 2026: "Use the photos I gave you to make it
@@ -10644,6 +10645,11 @@ const handle = async (m, post) => {
   // top with each change worth a look, and take off what Ash has seen (Ash, 19 November 2026: "I want you to have a btn for the player with
   // name ash that jumps to new features so I can quickly review")
   const MOO_NEW = [
+    ["The Willow's way in", "Redone from Street View: the steps up at the south corner between white piers, under the red slatted canopy, with the sign over them and the timber-clad corner beside", -74.0, -116.0, 1.27, 0.08],
+    ["Houses on hills", "About 1,800 houses had their uphill side buried. Every building now stands on the highest ground under it, with a darker base down the slope", -968.2, -1083.4, 0.682, -0.05],
+    ["Moorooka bowls club", "Moorooka Sports & Community Club on Koala Road: three bowling greens with their ditches and shade shelters", 160.0, -462.0, -2.24, -0.1],
+    ["School pool and courts", "Moorooka State School's 25 m pool and its two tennis courts. St Brendan's has a play frame and shade sail on its lawn, and its church a name and a cross", -226.0, 175.0, 1.571, -0.15],
+    ["Off the roads", "Street lights, trees and badly parked cars are off the roads, kerbs are out of the asphalt (Bohain Street here), fences open at drives and car yard cars stay behind the footpath", -262.0, -1080.0, -0.35, -0.05],
     ["Houses further out, part 10", "The last of the houses: Muriel Avenue, Gladstone Street, Cobden Street, John Bright Street and Coin Street, and the ones Street View showed black the first time round: fences, walls, hedges and drives, with their paths and drives joined up", -772.4, 1050.9, -1.744, 0.05],
     ["Houses further out, part 9", "Robinson Street, Anson Street, Timothy Street, Abel Street, Beckford Street, O'Neil Street, Newman Road, Davey Street, Kerrianne Place, Desanne Place, Sharon Street and the streets between: fences, walls, hedges and drives, with their paths and drives joined up", -1030.0, 783.4, 1.390, 0.05],
     ["Unstick", "Stuck in a car, rocking forward and back? After 5 seconds an Unstick button shows above Boost: it puts you on the nearest road", -901.0, -1310.0, 0.0, -0.1],
@@ -16497,7 +16503,8 @@ const handle = async (m, post) => {
     P.dispose = () => { dead = true; for (const w of walkers) try { w.h.remove(); } catch {} };
     return P;
   }
-  // Moorooka Sports & Community Club, the bowls club at 76 Koala Road (Ash, 21 November 2026: "Add the bowls club in low ish res"):
+  // Low-detail additions, all in one shape (one draw call, nothing to download). First Moorooka Sports & Community Club, the bowls
+  // club at 76 Koala Road (Ash, 21 November 2026: "Add the bowls club in low ish res"):
   // its three greens (about 39 m square each, laid out from the aerial photograph), each a level mown square in two shades of
   // stripes with a pale ditch round it and a bank down to the ground, and a shade shelter with a bench on the clubhouse side of
   // each. One shape, about 700 triangles, nothing to download; the clubhouse is the model's own building.
@@ -16523,6 +16530,54 @@ const handle = async (m, post) => {
       for (const b of [sb0, sb1]) for (const a of [sa - 2.2, sa]) box(cx, cz, a - 0.06, a + 0.06, b - 0.06, b + 0.06, top - 0.02, top + 2.3, "#e8e6e0");
       box(cx, cz, sa - 2.5, sa + 0.3, sb0 - 0.4, sb1 + 0.4, top + 2.3, top + 2.4, "#2f5d8a");
       box(cx, cz, sa - 1.6, sa - 1.2, sb0 + 0.3, sb1 - 0.3, top - 0.02, top + 0.45, "#8a5a3a"); }
+    // ---- the schools (Ash, 21 November 2026: "Add a little more detail onto the schools without using too much memory or size"),
+    // laid out from the aerial photograph (Google Maps, November 2026) on the same axes as the buildings: Moorooka State School's
+    // pool (25 m, six lanes, a pale concourse and a black pool fence) and its two tennis courts (green on a red apron, white lines,
+    // a tall chainwire fence: posts and rails); St Brendan's play frame on its lawn, with a yellow slide under a white shade sail
+    const box2 = (cx, cz, ax, a0, a1, b0, b1, y0, y1, hex) => { const bx = [-ax[1], ax[0]], p = (a, b, y) => [cx + ax[0] * a + bx[0] * b, y, cz + ax[1] * a + bx[1] * b];
+      quad(p(a0, b0, y1), p(a0, b1, y1), p(a1, b1, y1), p(a1, b0, y1), hex); quad(p(a0, b0, y0), p(a1, b0, y0), p(a1, b0, y1), p(a0, b0, y1), hex); quad(p(a1, b1, y0), p(a0, b1, y0), p(a0, b1, y1), p(a1, b1, y1), hex);
+      quad(p(a0, b1, y0), p(a0, b0, y0), p(a0, b0, y1), p(a0, b1, y1), hex); quad(p(a1, b0, y0), p(a1, b1, y0), p(a1, b1, y1), p(a1, b0, y1), hex); };
+    const level = (cx, cz, ax, ha, hb) => { let lo = Infinity, hi = -Infinity; const bx = [-ax[1], ax[0]];
+      for (const a of [-1, 0, 1]) for (const b of [-1, 0, 1]) { const g = m.groundAt(cx + ax[0] * a * ha + bx[0] * b * hb, cz + ax[1] * a * ha + bx[1] * b * hb); lo = Math.min(lo, g); hi = Math.max(hi, g); } return [lo, hi]; };
+    const SU = [0.986, 0.166];  // Moorooka State School's buildings run along Sherley Street
+    { const [cx, cz] = [-248.2, 171.4], [lo, hi] = level(cx, cz, SU, 16, 10), y = hi + 0.1;
+      box2(cx, cz, SU, -16, 16, -10, 10, lo - 0.3, y, "#d8d5cc");  // the concourse
+      box2(cx, cz, SU, -12.5, 12.5, -6.3, 6.3, y, y + 0.015, "#2f9fd6");  // the water
+      for (let i = 1; i < 6; i++) box2(cx, cz, SU, -12.3, 12.3, -6.3 + i * 2.1 - 0.05, -6.3 + i * 2.1 + 0.05, y + 0.015, y + 0.03, i % 2 ? "#e9e9e6" : "#c8312c");  // the lane ropes
+      for (const [a0, a1, b0, b1] of [[-16, 16, -10, -9.95], [-16, 16, 9.95, 10], [-16, -15.95, -10, 10], [15.95, 16, -10, 10]]) {  // the pool fence: rails, and posts every 2.4 m
+        box2(cx, cz, SU, a0, a1, b0, b1, y + 0.08, y + 0.12, "#1d1f22"); box2(cx, cz, SU, a0, a1, b0, b1, y + 1.15, y + 1.2, "#1d1f22"); }
+      for (let a = -16; a <= 16; a += 2.4) for (const b of [-10, 10]) box2(cx, cz, SU, a - 0.03, a + 0.03, b - 0.03, b + 0.03, y, y + 1.2, "#1d1f22");
+      for (let b = -10; b <= 10; b += 2.5) for (const a of [-16, 16]) box2(cx, cz, SU, a - 0.03, a + 0.03, b - 0.03, b + 0.03, y, y + 1.2, "#1d1f22"); }
+    { const [cx, cz] = [-153.7, 268.9], [lo, hi] = level(cx, cz, SU, 17.5, 18), y = hi + 0.06;
+      box2(cx, cz, SU, -17.5, 17.5, -18, 18, lo - 0.3, y, "#a8452f");  // the red apron
+      for (const ca of [-7.6, 7.6]) { box2(cx, cz, SU, ca - 6.3, ca + 6.3, -14.5, 14.5, y, y + 0.01, "#3f7d4a");  // a court's green
+        const L = (a0, a1, b0, b1) => box2(cx, cz, SU, ca + a0, ca + a1, b0, b1, y + 0.01, y + 0.02, "#f2f2ee");
+        L(-5.49, -5.44, -11.9, 11.9); L(5.44, 5.49, -11.9, 11.9); L(-4.12, -4.07, -11.9, 11.9); L(4.07, 4.12, -11.9, 11.9);  // sidelines, doubles and singles
+        L(-5.49, 5.49, -11.9, -11.85); L(-5.49, 5.49, 11.85, 11.9); L(-4.12, 4.12, -6.43, -6.38); L(-4.12, 4.12, 6.38, 6.43); L(-0.025, 0.025, -6.4, 6.4); }  // baselines, service lines, centre line
+      for (let a = -17.5; a <= 17.5; a += 3.5) for (const b of [-18, 18]) box2(cx, cz, SU, a - 0.04, a + 0.04, b - 0.04, b + 0.04, y, y + 3.6, "#7c8288");  // the fence's posts and rails
+      for (let b = -18; b <= 18; b += 3.6) for (const a of [-17.5, 17.5]) box2(cx, cz, SU, a - 0.04, a + 0.04, b - 0.04, b + 0.04, y, y + 3.6, "#7c8288");
+      for (const yy of [1.2, 3.55]) for (const [a0, a1, b0, b1] of [[-17.5, 17.5, -18.03, -17.97], [-17.5, 17.5, 17.97, 18.03], [-17.53, -17.47, -18, 18], [17.47, 17.53, -18, 18]]) box2(cx, cz, SU, a0, a1, b0, b1, y + yy, y + yy + 0.05, "#7c8288"); }
+    { const BU = [0.973, -0.23], [cx, cz] = [-709.4, 304.1], [lo, hi] = level(cx, cz, BU, 4, 3), y = hi;  // St Brendan's
+      for (const [a, b] of [[-1.2, -1.2], [1.2, -1.2], [-1.2, 1.2], [1.2, 1.2]]) box2(cx, cz, BU, a - 0.07, a + 0.07, b - 0.07, b + 0.07, lo - 0.2, y + 2.6, "#2f6fb5");  // the frame's posts
+      box2(cx, cz, BU, -1.3, 1.3, -1.3, 1.3, y + 1.2, y + 1.32, "#c8a24a");  // the deck
+      box2(cx, cz, BU, -1.4, 1.4, -1.4, 1.4, y + 2.6, y + 2.75, "#d63a2f");  // its red roof
+      for (let i = 0; i < 6; i++) box2(cx, cz, BU, 1.3 + i * 0.4, 1.7 + i * 0.4, -0.45, 0.45, y + 1.2 - i * 0.2 - 0.06, y + 1.2 - i * 0.2, "#f2c200");  // the yellow slide
+      for (const [a, b] of [[-4.5, -4], [4.5, -3.5], [0, 4.5]]) box2(cx, cz, BU, a - 0.06, a + 0.06, b - 0.06, b + 0.06, lo - 0.2, y + 3.4, "#9aa0a6");  // the shade sail's poles
+      const bx = [-BU[1], BU[0]], q = (a, b) => [cx + BU[0] * a + bx[0] * b, y + 3.3, cz + BU[1] * a + bx[1] * b];
+      quad(q(-4.5, -4), q(4.5, -3.5), q(0, 4.5), q(0, 4.5), "#f4f2ec"); }
+    // ---- St Brendan's Church: a white cross on its front gable, over Hawtree Street
+    { const n = [0.985, 0.175], cx = -666.9 + n[0] * 0.3, cz = 383.7 + n[1] * 0.3, y0 = Math.max(46.2, m.groundAt(cx, cz) + 6.5);
+      box2(cx, cz, [n[1], -n[0]], -0.1, 0.1, -0.1, 0.1, y0, y0 + 2.2, "#f4f4f0"); box2(cx, cz, [n[1], -n[0]], -0.55, 0.55, -0.1, 0.1, y0 + 1.4, y0 + 1.6, "#f4f4f0"); }
+    // ---- the Magic Mile's car yards (Ash, 21 November 2026: "Same for magic mile"): a row of yellow bollards along each yard's front
+    // (its yardFront, behind the footpath) and a red and white sale banner on two poles at its middle
+    for (const f of MOO_FRONTS) { if (!f.yardFront || !f.flags) continue;
+      const X = [f.n[1], -f.n[0]], left = (f.b[0] - f.a[0]) * X[0] + (f.b[1] - f.a[1]) * X[1] >= 0 ? f.a : f.b, [x0, x1] = f.flags, FR = f.yardFront;
+      const oF = x => { const t2 = (x - x0) / 2, i = bsClamp(Math.floor(t2), 0, FR.length - 1), j = Math.min(FR.length - 1, i + 1), w = bsClamp(t2 - i, 0, 1); return Math.min(f.kerb - 4, FR[i] + (FR[j] - FR[i]) * w) - 0.3; };
+      const at2 = (x, o) => [left[0] + X[0] * x + f.n[0] * o, left[1] + X[1] * x + f.n[1] * o];
+      for (let x = x0 + 0.5; x <= x1 - 0.3; x += 2) { const [px, pz] = at2(x, oF(x)), g = m.groundAt(px, pz); box2(px, pz, X, -0.09, 0.09, -0.09, 0.09, g - 0.1, g + 0.85, "#f2c200"); box2(px, pz, X, -0.1, 0.1, -0.1, 0.1, g + 0.85, g + 0.92, "#1d1f22"); }
+      const xm = (x0 + x1) / 2, [bxm, bzm] = at2(xm, oF(xm) - 1.2), g = m.groundAt(bxm, bzm);
+      for (const d of [-2.6, 2.6]) box2(bxm + X[0] * d, bzm + X[1] * d, X, -0.05, 0.05, -0.05, 0.05, g - 0.1, g + 3.4, "#d9d9d4");
+      for (let i = 0; i < 4; i++) box2(bxm, bzm, X, -2.6 + i * 1.3, -1.3 + i * 1.3, -0.02, 0.02, g + 2.5, g + 3.3, i % 2 ? "#ffffff" : "#d71920"); }
     const h = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.9, doubleSide: true, matrix: new BS.B.THREE.Matrix4().elements }]);
     P.dispose = () => { try { h?.remove(); } catch {} };
     return P;
