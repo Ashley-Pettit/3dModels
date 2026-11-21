@@ -8694,7 +8694,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=21", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=56", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=57", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -10499,14 +10499,15 @@ const handle = async (m, post) => {
         // corner, a timber-clad upper floor with dark glass over a white rendered base. Along the rest of the front, the beer garden
         // behind a low white wall carrying the green banners, and the round orange logo on a pole by the steps.
         // (The steps are on the corner piece, the short wall facing the corner, not along the front: Ash, 21 November 2026, "This isn't quite
-        // right. The stairs are actually on the corner piece". They go up to the bar's floor, which the model stands on the highest ground
-        // under the building: 10 cm over the highest of its corners and the middles of its walls)
+        // right. The stairs are actually on the corner piece". They go up to the bar's floor, which the model puts 10 cm over the ground
+        // at the building's middle, kept between its lowest and highest corner)
         const s = shops[0], o = Math.max(2, f.kerb - 2.6);
         const gAt = (x, oo) => m.groundAt(left[0] + X[0] * x + f.n[0] * oo, left[1] + X[1] * x + f.n[1] * oo) - base;
         const drop = Math.max(0, -gAt(3, o + 0.6)), lo = -Math.max(2, drop + 0.6); let wx = 0.7, wo = o;
         { const D = f.door, dl = Math.hypot(D.b[0] - D.a[0], D.b[1] - D.a[1]), DX = [D.n[1], -D.n[0]], dL = (D.b[0] - D.a[0]) * DX[0] + (D.b[1] - D.a[1]) * DX[1] >= 0 ? D.a : D.b;
           const dB = Math.max(m.groundAt(D.a[0], D.a[1]), m.groundAt(D.b[0], D.b[1]), m.groundAt((D.a[0] + D.b[0]) / 2, (D.a[1] + D.b[1]) / 2)) + 0.06;
-          let fl = -1e9; f.poly.forEach((p, i) => { const q = f.poly[(i + 1) % f.poly.length]; fl = Math.max(fl, m.groundAt(p[0], p[1]), m.groundAt((p[0] + q[0]) / 2, (p[1] + q[1]) / 2)); });
+          let fLo = Infinity, fHi = -Infinity, fx = 0, fz = 0; f.poly.forEach(p => { const y = m.groundAt(p[0], p[1]); fLo = Math.min(fLo, y); fHi = Math.max(fHi, y); fx += p[0] / f.poly.length; fz += p[1] / f.poly.length; });
+          const fl = Math.min(fHi, Math.max(fLo, m.groundAt(fx, fz)));
           FR.l = dL; FR.X = DX; FR.n = D.n; FR.y = dB;  // (drawn square to the corner piece)
           const e0 = 0.7, e1 = dl - 0.7, od = Math.max(1.6, D.kerb - 3.2), mid = (e0 + e1) / 2;
           const g0 = m.groundAt(dL[0] + DX[0] * mid + D.n[0] * (od + 0.6), dL[1] + DX[1] * mid + D.n[1] * (od + 0.6)) - dB, top = Math.max(g0 + 0.18, fl + 0.1 - dB), low = Math.min(g0, 0) - 0.6;
@@ -10705,7 +10706,6 @@ const handle = async (m, post) => {
   // name ash that jumps to new features so I can quickly review")
   const MOO_NEW = [
     ["The Willow's way in", "Redone from Street View: the steps up at the south corner between white piers, under the red slatted canopy, with the sign over them and the timber-clad corner beside", -74.0, -116.0, 1.27, 0.08],
-    ["Houses on hills", "About 1,800 houses had their uphill side buried. Every building now stands on the highest ground under it, with a darker base down the slope", -968.2, -1083.4, 0.682, -0.05],
     ["Moorooka bowls club", "Moorooka Sports & Community Club on Koala Road: three bowling greens with their ditches and shade shelters", 160.0, -462.0, -2.24, -0.1],
     ["School pool and courts", "Moorooka State School's 25 m pool and its two tennis courts. St Brendan's has a play frame and shade sail on its lawn", -226.0, 175.0, 1.571, -0.15],
     ["Off the roads", "Street lights, trees and badly parked cars are off the roads, kerbs are out of the asphalt (Bohain Street here), fences open at drives and car yard cars stay behind the footpath", -262.0, -1080.0, -0.35, -0.05],

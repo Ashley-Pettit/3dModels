@@ -2080,5 +2080,9 @@ trees through the shops and south of them. The model had the lanes but no divide
 
 Ash: "Change of plans just revert the lifting of houses out of the ground, it stuffed too many houses up". In `moorooka-model.js`
 (`?v=56`) a building's floor is back where it was before "houses on their highest ground": the ground at its middle, kept between its
-lowest and highest corner, plus 0.1 m. The stairs, landing and closed-in lower level code is still there but only shows where a front door
-ends up well above the ground, as before the lift.
+lowest and highest corner, plus 0.1 m.
+
+Then (Ash: "I want to go back to like before the houses were moved up", `?v=57`) what came with the lift went too: the stairs,
+landing, rail and garage door at a raised front door, and the closed-in lower level and base band under a raised floor. A front door has
+its small step again, as before. Kept: window hoods left off beside shop signs, and `gone` in `MOO_STYLE`. The Willow's steps go up to
+the bar's floor worked out the same way, and the "Houses on hills" entry is out of the new-features list.
