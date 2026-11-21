@@ -9960,6 +9960,7 @@ const handle = async (m, post) => {
     { at: [-147.55, -372.28], kind: 2, flat: true, wall: [243, 241, 235] },  // the ward office (122): white render, a flat roof behind the fascia
     { at: [-262.56, -568.09], kind: 2, wall: [40, 48, 60] },                 // Advance Mechanical Centre (93): dark navy cladding
     { at: [-153.7, -414.8], roof: [172, 166, 158] },                         // the pharmacy row (114-120): a weathered grey iron roof
+    { at: [-243.35, 170.9], gone: true },  // Moorooka State School's pool, drawn as a box over it: the pool itself is drawn in townBowls (Ash, 21 November 2026)
     { at: [-99.76, -124.24], wall: [214, 213, 206], noShop: true },          // the Willow (215): white render and grey cladding (Street View, October 2024; it was dark timber)
     { at: [-36.53, -129.14], wall: [214, 202, 182], noShop: true },          // Snap Fitness (212): a pale render behind its screen
     { at: [-121.75, -277.68], kind: 2, flat: true, wall: [244, 242, 236] },  // the halal butcher (152): white
@@ -16540,7 +16541,8 @@ const handle = async (m, post) => {
       for (const a of [-1, 0, 1]) for (const b of [-1, 0, 1]) { const g = m.groundAt(cx + ax[0] * a * ha + bx[0] * b * hb, cz + ax[1] * a * ha + bx[1] * b * hb); lo = Math.min(lo, g); hi = Math.max(hi, g); } return [lo, hi]; };
     const SU = [0.986, 0.166];  // Moorooka State School's buildings run along Sherley Street
     { const [cx, cz] = [-248.2, 171.4], [lo, hi] = level(cx, cz, SU, 16, 10), y = hi + 0.1;
-      box2(cx, cz, SU, -16, 16, -10, 10, lo - 0.3, y, "#d8d5cc");  // the concourse
+      box2(cx, cz, SU, -22, 22, -15, 15, lo - 0.3, y, "#d8d5cc");  // the concourse
+      box2(cx, cz, SU, -22, -15.5, -10, 10, y, y + 3.0, "#e6e0d0"); box2(cx, cz, SU, -22.4, -15.1, -10.4, 10.4, y + 3.0, y + 3.25, "#9aa3ab");  // the change rooms, west
       box2(cx, cz, SU, -12.5, 12.5, -6.3, 6.3, y, y + 0.015, "#2f9fd6");  // the water
       for (let i = 1; i < 6; i++) box2(cx, cz, SU, -12.3, 12.3, -6.3 + i * 2.1 - 0.05, -6.3 + i * 2.1 + 0.05, y + 0.015, y + 0.03, i % 2 ? "#e9e9e6" : "#c8312c");  // the lane ropes
       for (const [a0, a1, b0, b1] of [[-16, 16, -10, -9.95], [-16, 16, 9.95, 10], [-16, -15.95, -10, 10], [15.95, 16, -10, 10]]) {  // the pool fence: rails, and posts every 2.4 m

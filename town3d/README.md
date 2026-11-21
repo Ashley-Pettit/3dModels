@@ -1987,7 +1987,8 @@ Street junction, and Brisbane Car Yard's front row of cars on the footpath. Each
 - **Schools** (Ash: "Add a little more detail onto the schools without using too much memory or size"): Moorooka State
   School's 25 m pool (six lanes, concourse, pool fence) and its two tennis courts (green on red, white lines, a tall fence),
   placed from the aerial against the courts' own positions in the town data; a play frame and slide under a shade sail on St
-  Brendan's lawn.
+  Brendan's lawn. The pool complex was a 46 by 34 m box in the building data that hid the pool: `MOO_STYLE` can now leave a
+  building out (`gone: true`; the bundle skips it and it isn't solid), and the pool, its concourse and change rooms are drawn instead.
 - **The Magic Mile:** yellow bollards along each car yard's front (behind the footpath) and a red and white sale banner.
 - **Missing key places:** the post office is in Jump to. (27 Hawtree Street already carries the Moorooka Presbyterian Church sign
   read off Street View; Google Maps also pins St Brendan's Church there, so it was left as it is.)
