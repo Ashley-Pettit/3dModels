@@ -2222,4 +2222,14 @@ Checked on a local build at desktop size, and three of the views at phone size: 
 Vendale Avenue, Durack and Pampas Streets, Mayfield Road, Dora and Bracken Streets, Gainsborough Street, Keats Street, Hamilton Road,
 Fegen Drive and Evans Road, each looked at the way its traffic comes.
 
+Found while testing, not fixed here (it is on `main` already and no part of this change): **in Moorooka the sharp model shows before
+the swap.** `townModelPair` builds the sharp model "out of sight" by tagging `box.lastElementChild` after `lib.create` and setting
+`visibility: hidden` on that. Moorooka's model appends two elements, its root (`div.inv-embed`, with the canvas) and then a
+`p.inv-sharpening`, so the tag and the hiding land on the `p`, and the sharp model's canvas sits in view over the light one from its
+first frame. So where the sharp model is swapped in, there is a stretch with none of what the page adds with `addParts` (the medians,
+the corner, the bowls club and the rest), then the medians ragged (the copy shaped to the light model's ground, on the sharp ground),
+then, once the swap ends and `swapped()` runs, right. Seen in headless Chrome with the swap held open for 45 s in a test copy of the
+page, on this build and on `ffda7a8`; how long it lasts on a real computer was not measured. Logan's and Inverloch's models add no
+second element. The swap is Explore's loading, so it is left for its own pull request and its own stick test.
+
 Not done: the Bohain Street island's painted chevrons; the stretch south of the overpass; the far-off ground picture under the corner.
