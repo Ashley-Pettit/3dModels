@@ -2075,3 +2075,10 @@ trees through the shops and south of them. The model had the lanes but no divide
 - From Ipswich Road to about Evans Road only. Further south (Rocklea) the layout changes (wide grassed reserves between the two
   halves, an overpass) and the photograph doesn't give a clear line, so nothing is drawn there. Where the two halves run more than 16 m
   apart the ground between them is already the divider.
+
+## Houses back on their own ground (21 November 2026)
+
+Ash: "Change of plans just revert the lifting of houses out of the ground, it stuffed too many houses up". In `moorooka-model.js`
+(`?v=56`) a building's floor is back where it was before "houses on their highest ground": the ground at its middle, kept between its
+lowest and highest corner, plus 0.1 m. The stairs, landing and closed-in lower level code is still there but only shows where a front door
+ends up well above the ground, as before the lift.
