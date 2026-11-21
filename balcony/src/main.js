@@ -354,6 +354,22 @@ for (let i = 0; i < hexPosts.length - 1; i++) {
   const dp = E(0); boxMM(dp[0] - 0.12, 0.05, dp[2] - 0.04, dp[0] - 0.04, VE - 0.1, dp[2] + 0.04, M.gutter);
 }
 
+// back roof extended over the rear balcony (Ash, 21 November 2026: "The back roof should cover the balcony"),
+// its front edge lining up with the hexagon's eaves
+{
+  const x0 = 1.85, x1 = 11.6, zW = 0, zE = 1.85, yW = 5.45, yE = VE;
+  poly([[x0, yW, zW], [x1, yW, zW], [x1, yE, zE], [x0, yE, zE]], M.roof, [1, 0, 0]);
+  poly([[x0, yW - 0.06, zW + 0.01], [x1, yW - 0.06, zW + 0.01], [x1, yE - 0.06, zE - 0.04], [x0, yE - 0.06, zE - 0.04]], M.ceiling);
+  boxMM(x0, yE - 0.15, zE - 0.02, x1, yE + 0.02, zE + 0.1, M.gutter);
+  boxMM(x0 - 0.06, yE - 0.12, zW, x0, yW, zE, M.white);
+  beam([2.05, VE - 0.16, 1.45], [V2[0] + 0.1, VE - 0.16, 1.45], 0.1, 0.22, M.white);
+  for (const x of [2.05, 5.0, 8.0]) {
+    const m = new THREE.Mesh(roundPost, M.white); m.scale.y = VE - 0.05 - FL; m.position.set(x, (FL + VE - 0.05) / 2, 1.45); add(m);
+    boxMM(x - 0.11, FL, 1.34, x + 0.11, FL + 0.12, 1.56, M.white);
+  }
+  boxMM(x0 - 0.05, 0.05, zE - 0.02, x0 + 0.04, yE - 0.1, zE + 0.07, M.gutter); // downpipe
+}
+
 // ---------- balustrade: black aluminium frame with glass infill ----------
 function glassBal(x0, z0, x1, z1) {
   const yB = FL, yT = FL + 1.05;
@@ -449,10 +465,24 @@ function palm(x, z, h) {
 }
 tree(-4, -14, 7, 3.2, M.leaf2); tree(4, -17, 8, 3.8); tree(16, -22, 7.5, 3.5, M.leaf2); tree(24, -6, 6, 3);
 tree(-3.4, 1.0, 3.2, 1.9); tree(-2.6, -3.5, 4.5, 2.3, M.leaf2); tree(-6, 5, 3.5, 2.0);
-// shed in the side yard
-boxMM(23.5, 0, -19, 26, 2.3, -16.8, new THREE.MeshStandardMaterial({ color: 0x2f3e78, roughness: 0.8 }));
-poly([[23.3, 2.3, -19.2], [26.2, 2.3, -19.2], [26.2, 2.9, -17.9], [23.3, 2.9, -17.9]], M.roofPlain, [1, 0, 0]);
-poly([[23.3, 2.3, -16.6], [26.2, 2.3, -16.6], [26.2, 2.9, -17.9], [23.3, 2.9, -17.9]], M.roofPlain, [1, 0, 0]);
+// the blue shed: in the yard next to the pool, just outside the black pool fence, doors facing the house
+const SHED = { x0: 15.4, x1: 17.9, z0: 8.0, z1: 10.2 };
+{
+  const navy = new THREE.MeshStandardMaterial({ color: 0x2f3e78, roughness: 0.8 });
+  const { x0, x1, z0, z1 } = SHED, zm = (z0 + z1) / 2;
+  boxMM(x0, 0, z0, x1, 2.2, z1, navy);
+  boxMM(x0 - 0.05, -0.01, z0 - 0.05, x1 + 0.05, 0.12, z1 + 0.05, M.dark);                  // base
+  poly([[x0 - 0.15, 2.2, z0 - 0.15], [x1 + 0.15, 2.2, z0 - 0.15], [x1 + 0.15, 2.85, zm], [x0 - 0.15, 2.85, zm]], M.roofPlain, [1, 0, 0]);
+  poly([[x0 - 0.15, 2.2, z1 + 0.15], [x1 + 0.15, 2.2, z1 + 0.15], [x1 + 0.15, 2.85, zm], [x0 - 0.15, 2.85, zm]], M.roofPlain, [1, 0, 0]);
+  for (const x of [x0, x1]) poly([[x, 2.2, z0], [x, 2.2, z1], [x, 2.8, zm]], navy);              // gable ends
+  poly([[x0 + 0.1, 2.2, z0 - 0.005], [x1 - 0.1, 2.2, z0 - 0.005], [(x0 + x1) / 2, 2.75, z0 - 0.005]], M.white); // white gable
+  // white double doors with small windows, facing the house
+  const dx0 = x0 + 0.45, dx1 = x1 - 0.45, dm = (dx0 + dx1) / 2;
+  boxMM(dx0, 0.12, z0 - 0.04, dx1, 1.95, z0, M.white);
+  boxMM(dm - 0.015, 0.12, z0 - 0.06, dm + 0.015, 1.95, z0 - 0.04, M.trunk);
+  for (const c of [(dx0 + dm) / 2, (dm + dx1) / 2]) boxMM(c - 0.22, 1.35, z0 - 0.06, c + 0.22, 1.75, z0 - 0.04, M.glass);
+  for (const x of [x0, x1]) boxMM(x - 0.04, 0, z0 - 0.04, x + 0.04, 2.2, z0 + 0.04, M.white); // corner trims
+}
 
 // ---------- lights ----------
 scene.add(new THREE.HemisphereLight(0xe6eef5, 0xb8b2a4, 0.8));
@@ -509,6 +539,7 @@ function segDist(px, pz, [ax, az, bx, bz]) {
 }
 function groundOK(x, z) {
   if (x > 0.6 - R && x < 8.6 + R && z > 6.0 - R && z < 10.4 + R) return false;   // the pool
+  if (x > SHED.x0 - R && x < SHED.x1 + R && z > SHED.z0 - R && z < SHED.z1 + R) return false; // the shed
   if (x >= S.x0 - R && x <= S.x1 + R && z <= ST.zTop && z >= ST.zBot) {           // under the stairs: only where there's headroom
     const h = stairH(z); if (h > 0.15 && h < 1.95) return false;
   }
