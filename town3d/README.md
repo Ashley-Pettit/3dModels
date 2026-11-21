@@ -2014,3 +2014,24 @@ Street junction, and Brisbane Car Yard's front row of cars on the footpath. Each
 - **The vet.** The two trees beside its pole sign are gone, and the sign is 15% bigger (`big: 2.3`).
 - **Upgrade chip.** Each upgrade's few words (`UP_SHORT`) show beside its name all the time; a tap still opens the whole story.
 - One parked car that stood inside a house is gone.
+
+## Steps down from raised front doors, Yeerongpilly's platform, number 6's path, the pigeon (21 November 2026)
+
+- **Front doors on raised houses.** Since houses stand on their highest ground, a front door on the low side was left in the air
+  ("the houses on the hills now often have their doors floating due to the raise"). The house builder now passes `anFront` the ground
+  1.4 m out from the door (`GY`, relative to the floor); more than 35 cm down, the door gets a landing, steps down to the ground (18 cm
+  risers, 28 cm treads) and two rail posts at top and bottom (`moorooka-model.js ?v=54`).
+- **Yeerongpilly Station.** Its station point lies on the track, so the platform builder (`b1`) picked a side afresh every 5 m and the
+  platform zig-zagged across the line. It now picks once per station: the side the station is on, or where that's unclear (under 3 m),
+  the side further from other rails. The other track is now found anywhere along it, not in a small window that couldn't keep up. The
+  two platform outlines mapped as 25 m wide buildings across the tracks are `gone` in `MOO_STYLE`.
+- **Number 6.** The lawn stroke over the path from the small white gate to the house (in `edits.json`) is a 1 m concrete path again,
+  and the tree by the front fence is smaller (kind 6, 1.8 rather than 3.0). Tree sizes in `town.json` are kind × 256 + height in tenths of
+  a metre: change only the low byte to resize one.
+- **The pigeon** flies at 40 km/h (12.5 with Shift), sinks at 3 m/s rather than 2.2, and dives faster (14 m/s forward, down to 11.5 m/s).
+  Flick shows the green mark when you're near and she has pigeon food for you; each local's chance of news every 5 minutes is 1.5 in 100.
+- **Google Maps controls.** The welcome card's second choice is now about the controls only: no map colours, and the mouse is never
+  locked with it (drag to look), so the menus can be clicked.
+- **The Magic Mile's footpath.** Where a car yard's or car park's asphalt ran straight into Ipswich Road ("the business still stretches
+  out onto the main road"), the first 2.4 m past the kerb on each carriageway's outer side is now a concrete footpath
+  (`tools/ground/mile_verge.py`, about 680 m2 in eight ground blocks); side streets and roofs are left alone.
