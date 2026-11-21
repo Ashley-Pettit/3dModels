@@ -243,7 +243,7 @@ function sideOpening(za, zb, y0, y1, cols, rows, glassMat) {
   for (let i = 1; i < cols; i++) { const z = za + (zb - za) * i / cols; boxMM(x, y0, z - bw, x + d * 0.7, y1, z + bw, M.white); }
   for (let j = 1; j < rows; j++) { const y = y0 + (y1 - y0) * j / rows; boxMM(x, y - bw, za, x + d * 0.7, y + bw, zb, M.white); }
 }
-const SDZ0 = -4.05, SDZ1 = -1.85;
+const SDZ0 = -4.6, SDZ1 = -2.4; // French doors, a bit further from the corner window
 const doorsG = new THREE.Group(), windowG = new THREE.Group(); scene.add(doorsG, windowG); windowG.visible = false;
 G = doorsG;
 {
@@ -261,12 +261,12 @@ G = doorsG;
   boxMM(12.12, 3.55, mid - 0.12, 12.15, 3.75, mid - 0.09, M.black);
   boxMM(12.12, 3.55, mid + 0.09, 12.15, 3.75, mid + 0.12, M.black);
 }
-G = windowG; sideWindow(-2.35, -3.55, 3.55, 4.8, false); G = scene;
+G = windowG; sideWindow(-2.9, -4.1, 3.55, 4.8, false); G = scene;
 sideWindow(-0.45, -1.35, 3.55, 4.8, false);   // window nearest the corner stays
-boxMM(12.02, 4.2, -1.67, 12.14, 4.45, -1.53, M.black);
+for (const z of [-1.875, SDZ0 - 0.22]) boxMM(12.02, 4.2, z - 0.07, 12.14, 4.45, z + 0.07, M.black); // wall lights either side of the doors
 // little window with the round pane, above the stairs
 {
-  const zc = -7.6, yc = 4.25, h = 0.31, x = 12.02;
+  const zc = -8.8, yc = 4.25, h = 0.31, x = 12.02;
   boxMM(x, yc - h - 0.06, zc - h - 0.06, x + 0.09, yc - h, zc + h + 0.06, M.white);
   boxMM(x, yc + h, zc - h - 0.06, x + 0.09, yc + h + 0.06, zc + h + 0.06, M.white);
   boxMM(x, yc - h, zc - h - 0.06, x + 0.09, yc + h, zc - h, M.white);
@@ -298,7 +298,7 @@ boxMM(12.02, 4.2, -1.67, 12.14, 4.45, -1.53, M.black);
 
 // ---------- new balcony (owner's design: narrow rear balcony + hexagon covered deck) ----------
 const FRONT = 1.51;
-const HX = { cx: 12.9, cz: 1.511 - 3.4 * Math.sin(Math.PI / 3), r: 3.4 };
+const HX = { cx: 12.9, cz: 1.511 - 3.7 * Math.sin(Math.PI / 3), r: 3.7 };
 const hexV = (r, i) => [HX.cx + r * Math.cos(i * Math.PI / 3), HX.cz + r * Math.sin(i * Math.PI / 3)];
 const VE = 5.1;
 function deckBox(x0, x1, z0, z1) {
@@ -314,8 +314,8 @@ function deckPoly(pts) {
   poly(pts.map(([x, z]) => [x, FL - 0.325, z]), M.under);
 }
 deckBox(2.0, 12.0, 0, FRONT);                                   // rear balcony
-deckPoly([[12.0, FRONT], hexV(3.4, 1), hexV(3.4, 0), hexV(3.4, 5), [12.0, hexV(3.4, 5)[1]]]); // hexagon deck
-const WK = { x0: 12.0, x1: 13.2, z0: -6.3, z1: hexV(3.4, 5)[1] };  // side walkway to the stairs
+deckPoly([[12.0, FRONT], hexV(HX.r, 1), hexV(HX.r, 0), hexV(HX.r, 5), [12.0, hexV(HX.r, 5)[1]]]); // hexagon deck
+const WK = { x0: 12.0, x1: 13.2, z0: -6.3, z1: hexV(HX.r, 5)[1] };  // side walkway to the stairs
 deckBox(WK.x0, WK.x1, WK.z0, WK.z1);
 
 // posts: square under the open decks, round Queenslander posts on the hexagon
@@ -325,7 +325,8 @@ for (const [x, z] of [[2.05, 1.45], [5.0, 1.45], [8.0, 1.45], [13.12, -5.3], [13
 }
 const roundPost = new THREE.CylinderGeometry(0.07, 0.07, 1, 20);
 const HZ = HX.cz, HB = hexV(3.4, 5)[1];
-const hexPosts = [[11.25, 1.45], [14.55, 1.45], [16.22, HZ], [14.55, HB + 0.06], [12.12, HB + 0.06]];
+const V0 = hexV(HX.r, 0), V1 = hexV(HX.r, 1), V2 = hexV(HX.r, 2);
+const hexPosts = [[V2[0] + 0.1, 1.45], [V1[0] - 0.05, 1.45], [V0[0] - 0.08, HZ], [V1[0] - 0.05, HB + 0.06], [12.12, HB + 0.06]];
 for (const [x, z] of hexPosts) {
   const top = VE - 0.05;
   const m = new THREE.Mesh(roundPost, M.white); m.scale.y = top; m.position.set(x, top / 2, z); add(m);
@@ -368,10 +369,10 @@ function glassBal(x0, z0, x1, z1) {
   }
 }
 glassBal(2.04, 0.03, 2.04, 1.46);
-glassBal(2.04, 1.46, 14.57, 1.46);
-glassBal(14.57, 1.46, 16.24, HZ);
-glassBal(16.24, HZ, 14.57, HB + 0.05);
-glassBal(14.57, HB + 0.05, 13.2, HB + 0.05);
+glassBal(2.04, 1.46, V1[0] - 0.03, 1.46);
+glassBal(V1[0] - 0.03, 1.46, V0[0] - 0.06, HZ);
+glassBal(V0[0] - 0.06, HZ, V1[0] - 0.03, HB + 0.05);
+glassBal(V1[0] - 0.03, HB + 0.05, 13.2, HB + 0.05);
 glassBal(13.16, HB + 0.01, 13.16, WK.z0 + 0.04);
 
 // ---------- stairs: further forward, at the end of the side walkway, heading towards the street ----------
@@ -416,7 +417,7 @@ for (let x = -0.4; x < 13.4; x += 1.25) {
 // ---------- round outdoor setting and fan in the hexagon ----------
 const wickerDark = new THREE.MeshStandardMaterial({ color: 0x34302c, roughness: 0.9 });
 {
-  const T = [14.45, HZ];
+  const T = [14.6, HZ];
   const top = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.04, 32), M.tabletop); top.position.set(T[0], FL + 0.74, T[1]); add(top);
   boxMM(T[0] - 0.04, FL, T[1] - 0.04, T[0] + 0.04, FL + 0.72, T[1] + 0.04, M.black);
   for (let k = 0; k < 6; k++) {
@@ -473,12 +474,12 @@ const EYE = 1.65, STEP = 0.5, R = 0.25;
 const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.05, 300);
 camera.rotation.order = 'YXZ';
 
-const HEXR = 3.4 - 0.35; // walkable hexagon, kept clear of the balustrade
+const HEXR = HX.r - 0.35; // walkable hexagon, kept clear of the balustrade
 function inHex(x, z) {
   const dx = Math.abs(x - HX.cx), dz = Math.abs(z - HX.cz);
   return dz <= HEXR * Math.sqrt(3) / 2 && Math.sqrt(3) * dx + dz <= Math.sqrt(3) * HEXR;
 }
-const TABLE = { x: 14.45, z: HZ, r: 1.25 };
+const TABLE = { x: 14.6, z: HZ, r: 1.25 };
 function onDeck(x, z) {
   if (Math.hypot(x - TABLE.x, z - TABLE.z) < TABLE.r) return false;          // table and chairs
   if (x >= 2.3 && x <= 12.3 && z >= 0.25 && z <= 1.25) return true;          // rear balcony
