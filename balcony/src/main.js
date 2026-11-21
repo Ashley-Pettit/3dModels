@@ -243,7 +243,7 @@ function sideOpening(za, zb, y0, y1, cols, rows, glassMat) {
   for (let i = 1; i < cols; i++) { const z = za + (zb - za) * i / cols; boxMM(x, y0, z - bw, x + d * 0.7, y1, z + bw, M.white); }
   for (let j = 1; j < rows; j++) { const y = y0 + (y1 - y0) * j / rows; boxMM(x, y - bw, za, x + d * 0.7, y + bw, zb, M.white); }
 }
-const SDZ0 = -4.6, SDZ1 = -2.4; // French doors, a bit further from the corner window
+const SDZ0 = -6.05, SDZ1 = -3.85; // French doors, 2.5 m along from the corner window (its edge is at -1.35)
 const doorsG = new THREE.Group(), windowG = new THREE.Group(); scene.add(doorsG, windowG); windowG.visible = false;
 G = doorsG;
 {
@@ -261,9 +261,9 @@ G = doorsG;
   boxMM(12.12, 3.55, mid - 0.12, 12.15, 3.75, mid - 0.09, M.black);
   boxMM(12.12, 3.55, mid + 0.09, 12.15, 3.75, mid + 0.12, M.black);
 }
-G = windowG; sideWindow(-2.9, -4.1, 3.55, 4.8, false); G = scene;
+G = windowG; sideWindow(-4.35, -5.55, 3.55, 4.8, false); G = scene;
 sideWindow(-0.45, -1.35, 3.55, 4.8, false);   // window nearest the corner stays
-for (const z of [-1.875, SDZ0 - 0.22]) boxMM(12.02, 4.2, z - 0.07, 12.14, 4.45, z + 0.07, M.black); // wall lights either side of the doors
+for (const z of [(SDZ1 - 1.35) / 2, SDZ0 - 0.22]) boxMM(12.02, 4.2, z - 0.07, 12.14, 4.45, z + 0.07, M.black); // wall lights either side of the doors
 // little window with the round pane, above the stairs
 {
   const zc = -8.8, yc = 4.25, h = 0.31, x = 12.02;
@@ -315,11 +315,11 @@ function deckPoly(pts) {
 }
 deckBox(2.0, 12.0, 0, FRONT);                                   // rear balcony
 deckPoly([[12.0, FRONT], hexV(HX.r, 1), hexV(HX.r, 0), hexV(HX.r, 5), [12.0, hexV(HX.r, 5)[1]]]); // hexagon deck
-const WK = { x0: 12.0, x1: 13.2, z0: -6.3, z1: hexV(HX.r, 5)[1] };  // side walkway to the stairs
+const WK = { x0: 12.0, x1: 13.2, z0: -7.6, z1: hexV(HX.r, 5)[1] }; // stairs start further towards the front  // side walkway to the stairs
 deckBox(WK.x0, WK.x1, WK.z0, WK.z1);
 
 // posts: square under the open decks, round Queenslander posts on the hexagon
-for (const [x, z] of [[2.05, 1.45], [5.0, 1.45], [8.0, 1.45], [13.12, -5.3], [13.12, -6.22]]) {
+for (const [x, z] of [[2.05, 1.45], [5.0, 1.45], [8.0, 1.45], [13.12, (WK.z0 + WK.z1) / 2], [13.12, WK.z0 + 0.08]]) {
   boxMM(x - 0.06, 0, z - 0.06, x + 0.06, FL - 0.32, z + 0.06, M.white);
   boxMM(x - 0.2, -0.01, z - 0.2, x + 0.2, 0.05, z + 0.2, M.concrete);
 }
@@ -501,7 +501,7 @@ const segs = [
 ];
 const circles = [];
 for (const x of [0.25, 3.2, 6.1, 9.0, 11.75]) for (const z of [-0.25, -3.6, -7.0, -10.75]) circles.push([x, z, 0.2]);
-for (const [x, z] of [[2.05, 1.45], [5.0, 1.45], [8.0, 1.45], [13.12, -5.3], [13.12, -6.22]]) circles.push([x, z, 0.12]);
+for (const [x, z] of [[2.05, 1.45], [5.0, 1.45], [8.0, 1.45], [13.12, (WK.z0 + WK.z1) / 2], [13.12, WK.z0 + 0.08]]) circles.push([x, z, 0.12]);
 for (const [x, z] of hexPosts) circles.push([x, z, 0.12]);
 function segDist(px, pz, [ax, az, bx, bz]) {
   const vx = bx - ax, vz = bz - az, t = Math.max(0, Math.min(1, ((px - ax) * vx + (pz - az) * vz) / (vx * vx + vz * vz)));
@@ -530,7 +530,7 @@ const P = { x: 15.6, z: -13.2, y: 0, ys: 0, yaw: 0, pitch: 0.12 };
 function face(dx, dz) { P.yaw = Math.atan2(-dx, -dz); }
 const PLACES = {
   yard:   { label: 'Side yard',          x: 15.6, z: -13.2, y: 0,  look: [12.7, -7.5],  pitch: 0.14 },
-  stairs: { label: 'Bottom of the stairs', x: 12.67, z: -10.6, y: 0, look: [12.67, -5], pitch: 0.28 },
+  stairs: { label: 'Bottom of the stairs', x: 12.67, z: WK.z0 - run - 1.0, y: 0, look: [12.67, -5], pitch: 0.28 },
   hex:    { label: 'Hexagon deck',       x: 14.3, z: 0.7,   y: FL, look: [12.0, -3.0], pitch: -0.05 },
   rear:   { label: 'Rear balcony',       x: 3.0,  z: 0.75,  y: FL, look: [14, 0.75],   pitch: -0.02 },
   pool:   { label: 'By the pool',        x: 9.0,  z: 12.5,  y: 0,  look: [10, 0],      pitch: 0.12 },
