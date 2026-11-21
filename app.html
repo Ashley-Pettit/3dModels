@@ -10437,7 +10437,7 @@ const handle = async (m, post) => {
         box(0, len, 3.2, 3.3, 0, D, "#aeb3b5", 0.5); pic(0, len, 3.33, 3.33, 0, corrug(len, D, "#b9bec0"), D, 0.5);
         box(0, len, 2.62, 2.8, D - 0.06, D, "#dfe1e0");
         for (let px = 0.3; px <= len - 0.2; px += (len - 0.6) / Math.round(len / 4)) box(px - 0.05, px + 0.05, 0, 2.7, D - 0.14, D - 0.04, "#e8e8e6");
-        shops.forEach((s, i) => { const c0 = (where[i][0] + where[i][1]) / 2, sw = Math.min(where[i][1] - where[i][0] - 1, 4.2); if (!s.post) board(c0 - sw / 2, c0 + sw / 2, 3.45, 4.2, 0.2, s);
+        shops.forEach((s, i) => { const c0 = (where[i][0] + where[i][1]) / 2, sw = Math.min(where[i][1] - where[i][0] - 1, 4.2); if (!s.post && s.n) board(c0 - sw / 2, c0 + sw / 2, 3.45, 4.2, 0.2, s);  // (a shop without a name: empty, no sign)
           if (s.post) {  // the gable over its door with the red sign across it (a sign on the wall would hide behind the gable), and the boxes right of the door
             const g0 = c0 - 1.7, g1 = c0 + 1.7, w = rgb("#e9e9e6"), r = rgb("#b9bec0");
             quad(at(g0, 3.0, 0.4), at(g0, 3.0, 3.1), at(c0, 4.05, 3.1), at(c0, 4.05, 0.4), r); quad(at(c0, 4.05, 0.4), at(c0, 4.05, 3.1), at(g1, 3.0, 3.1), at(g1, 3.0, 0.4), r);

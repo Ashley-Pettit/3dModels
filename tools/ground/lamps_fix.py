@@ -48,12 +48,39 @@ for r in t['roads']:
 SEG = np.array(SEG)
 
 
+_edge = {}
+
+
+def plan_edge(j, s, side, hw):
+    """Where the ground plan's asphalt ends, out from segment j's centre line at s on that side (the street data's half width
+    if the plan's carriageway is narrower). Streets whose asphalt in the plan is wider than their width in the data (junction
+    flares, a service lane alongside) had their poles placed in the road (Ash, 21 November 2026: "some ... light posts on roads")."""
+    key = (j, round(float(s), 1), side)
+    if key not in _edge:
+        ax, az, bx, bz = SEG[j, :4]; L = math.hypot(bx - ax, bz - az) or 1; ux, uz = (bx - ax) / L, (bz - az) / L
+        px, pz = ax + (bx - ax) * s, az + (bz - az) * s; nx, nz = -uz * side, ux * side
+        e = hw
+        for d in np.arange(0.2, hw + 8, 0.2):
+            if kind(px + nx * d, pz + nz * d) != ASPH and kind(px + nx * (d + 0.2), pz + nz * (d + 0.2)) != ASPH:
+                e = max(hw, d); break
+        else:
+            e = hw + 8
+        _edge[key] = e
+    return _edge[key]
+
+
 def kerb_dist(x, z):
-    """How far (x, z) is outside the nearest carriageway's edge (negative: on it)."""
+    """How far (x, z) is outside the nearest carriageway's edge (negative: on it), the edge being where the ground plan's
+    asphalt ends, if that is further out than the street data says."""
     ax, az, bx, bz, hw = SEG.T
     dx, dz = bx - ax, bz - az; l2 = np.maximum(dx * dx + dz * dz, 1e-9)
     s = np.clip(((x - ax) * dx + (z - az) * dz) / l2, 0, 1)
-    return float((np.hypot(x - ax - s * dx, z - az - s * dz) - hw).min())
+    d = np.hypot(x - ax - s * dx, z - az - s * dz)
+    best = float('inf')
+    for j in np.argsort(d - hw)[:3]:
+        side = 1 if (x - ax[j]) * -dz[j] + (z - az[j]) * dx[j] >= 0 else -1
+        best = min(best, float(d[j] - plan_edge(int(j), s[j], side, hw[j])))
+    return best
 
 
 bb = np.frombuffer(base64.b64decode(t['buildings']), np.int16).astype(np.int64)
@@ -82,7 +109,7 @@ def clear(x, z):
 
 spots = json.load(open(SPOTS))['s']
 fix, st = {}, defaultdict(int)
-cand = sorted([(s, q) for s in np.arange(-8, 8.01, 0.5) for q in np.arange(-1.5, 3.01, 0.25)], key=lambda c: abs(c[0]) + 2 * abs(c[1]))
+cand = sorted([(s, q) for s in np.arange(-8, 8.01, 0.5) for q in np.arange(-1.5, 9.01, 0.25)], key=lambda c: abs(c[0]) + 2 * abs(c[1]))
 for x, y, z, hd, key in spots:
     if clear(x, z) and kerb_dist(x, z) > 0.4:
         st['clear already'] += 1; continue
@@ -97,7 +124,7 @@ for x, y, z, hd, key in spots:
         best = (cx, cz); break
     if best is None:                               # a paved verge: 0.6 m behind the kerb, where it stands along the street
         kd = kerb_dist(x, z)
-        if abs(0.6 - kd) > 2.5:                    # not beside a kerb at all (a car park, under a bridge): left as it is
+        if kd > 3.1 or 0.6 - kd > 9:               # not beside a kerb at all (a car park, under a bridge): left as it is
             st['left, no kerb near'] += 1; continue
         best = (x - rx * (0.6 - kd), z - rz * (0.6 - kd))
         st['to the kerb on paving'] += 1
