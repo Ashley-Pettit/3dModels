@@ -16485,6 +16485,24 @@ const handle = async (m, post) => {
     { id: "tip2", name: "Mo", kind: "person", top: "#2e8b57", x: -104.3, z: -223.4, yaw: -0.976, tips: true },
     { id: "tip3", name: "Dave", kind: "person", top: "#c46a2f", x: -207.7, z: -398.6, yaw: 1.838, tips: true },
     { id: "tip4", name: "Amina", kind: "person", top: "#1f6f8b", look: "-.long.black", x: -158.3, z: -264.8, yaw: 2.133, tips: true },
+    // Moorooka's well-known locals, where they belong, telling you about themselves when you walk up ("Tell me more" for the next bit)
+    // (Ash, 22 November 2026: "Add 1 and 2 in places where they may belong. When I speak to them the tell me about themselves", "And 3"):
+    // Billy Thorpe at Victory Park, the corner of Beaudesert Road and Fegen Drive, where his marker is (his family's store was on Fegen
+    // Drive); Tom Price out the front of Moorooka State School, one of its first students; Chris Wallin at Victory Park too, by Billy.
+    // Only what's on the public record (Moorooka News, Wikipedia)
+    { id: "thorpe", name: "Billy Thorpe", kind: "person", top: "#1d1d1d", look: "-.long.black", x: -331.0, z: 556.0, yaw: -1.867, story: [
+      "G'day! I'm Billy Thorpe. I grew up right here in Moorooka and went to Moorooka State School.",
+      "My family ran a general store on Fegen Drive, just round this corner.",
+      "Later I made it big with my band, Billy Thorpe and the Aztecs. Ever heard <i>Poison Ivy</i>, or <i>Most People I Know</i>?",
+      "This corner of Victory Park is named for me now, alongside Tom Price. Not bad for a Moorooka kid!"] },
+    { id: "price", name: "Tom Price", kind: "person", top: "#6b7f5a", look: "-.short.grey", x: -260.0, z: 145.4, yaw: -2.18, story: [
+      "Hello there! I'm Tom Price. I lived in Moorooka my whole life.",
+      "I was one of the very first students at Moorooka State School, right here. It opened in January 1929 with 139 children and 6 teachers.",
+      "There's a spot named after me in Victory Park, down at Beaudesert Road and Fegen Drive, next to Billy Thorpe's."] },
+    { id: "wallin", name: "Chris Wallin", kind: "person", top: "#2b3442", look: "-.short.grey", x: -322.0, z: 548.0, yaw: -1.867, story: [
+      "G'day, I'm Chris Wallin. I grew up in Moorooka.",
+      "I loved rocks, minerals and soils as a kid. I went to Brisbane State High, then studied geology at the University of Queensland on a scholarship.",
+      "These days I'm the Managing Director of QCoal Group and Chairman of the QCoal Foundation. Billy Thorpe's just over there, by the way!"] },
   ];
   // what they've heard: the words, and who (or what) it's about, for the pointer; the helicopter one doesn't know where
   const MOO_TIPS = [["I heard the pharmacist sells love potions. Give one to someone and they can't help following you around!", "chem"],
@@ -16494,7 +16512,8 @@ const handle = async (m, post) => {
     ["That mechanic in town did some amazing things for my car. Go and see him.", "mech"],
     ["Sue bakes bread on Bohain Street that puts a real spring in your step.", "sue"],
     ["Pandy's lime cordial will have you sprinting, I swear.", "pandy"],
-    ["Councillor Steve does a 360 kick. Ask him nicely and he'll teach you.", "steve"]];
+    ["Councillor Steve does a 360 kick. Ask him nicely and he'll teach you.", "steve"],
+    ["Billy Thorpe's down at Victory Park telling stories. He grew up here, you know!", "thorpe"]];
   // You are here (Ash, 19 November 2026, "when in explore mode i want a you are here", then "I don't like how you are here displays, try a
   // diff route"): in Explore mode, a blue dot on the ground where your player stands, as on a map: a white rim, a soft pulsing halo and a
   // cone the way you face, kept the same size on the screen however high you are. A Find me button (the map's location button) glides the
@@ -16909,7 +16928,7 @@ const handle = async (m, post) => {
     const compass = (dx, dz) => ["east", "south-east", "south", "south-west", "west", "north-west", "north", "north-east"][((Math.round(Math.atan2(dz, dx) / (Math.PI / 4)) % 8) + 8) % 8];
     const howFar = (q, x, z) => { const dx = x - q.x, dz = z - q.z, d = Math.hypot(dx, dz); return d < 150 ? "just around the corner" : `about ${d < 1000 ? Math.round(d / 50) * 50 + " m" : (d / 1000).toFixed(1) + " km"} ${compass(dx, dz)} of here`; };
     // (half as likely again: 1.5 in 100. Ash, 21 November 2026, "Make the vendors about 50% more likely to offer their quests and such")
-    const newsRoll = () => { for (const q of folk) if (!q.news && Math.random() < 0.015) q.news = Math.random() < 0.02 ? { gold: ["heli", "plane", "car"][Math.floor(Math.random() * 3)] } : { ride: ["heli", "plane", "possum"][Math.floor(Math.random() * 3)] }; };
+    const newsRoll = () => { for (const q of folk) if (!q.news && !q.story && Math.random() < 0.015) q.news = Math.random() < 0.02 ? { gold: ["heli", "plane", "car"][Math.floor(Math.random() * 3)] } : { ride: ["heli", "plane", "possum"][Math.floor(Math.random() * 3)] }; };
     T.guideTo = (x, z, label, found) => { guide = { x, z, label, found }; };  // (the sky rings' prize uses it)
     let aimPt = null; T.aimAt = a => { aimPt = a; };  // (and the next sky ring)
     let flickYes = false, flickAt = 0; const flickOffers = () => { const t = performance.now(); if (t - flickAt > 1000) { flickAt = t; flickYes = !!perks().wasPigeon; } return flickYes; };
@@ -16927,7 +16946,9 @@ const handle = async (m, post) => {
     // Anna's tune on her violin: a few bars, bowed (a soft sawtooth that swells in), on the shared sounds
     const annaTune = () => { const N = { C: 523, D: 587, E: 659, F: 698, G: 784, A: 880 }, tune = "C C G G A A G - F F E E D D C".split(" "); let t = 0;
       for (const n of tune) { if (n !== "-") setTimeout(() => T.snd?.tone?.(N[n], N[n] * 1.006, 0.42, 0.05, "sawtooth"), t); t += 330; } };
-    const talk = q => { const k = perks(); if (q.news && gossip(q)) return;
+    // the well-known locals' stories, a bit at a time, from the start each visit
+    const tell = (q, i) => show(q, q.story[i], [[i < q.story.length - 1 ? "Tell me more" : "Start again", () => { tell(q, (i + 1) % q.story.length); return "keep"; }, "ok"], ["See you", () => {}]]);
+    const talk = q => { const k = perks(); if (q.story) return tell(q, 0); if (q.news && gossip(q)) return;
       // (the cordial lasts 10 minutes: Ash, 16 November 2026, "Make pandy's potion only last 10 mins")
       if (q.id === "pandy") { const left = cordialLeft(); return show(q, left ? `Back for another? You've ${Math.ceil(left / 60000)} minutes of sprint left. Top you up?` : "Hello love! Would you like a nice glass of lime cordial?",
         [["Yes please", () => { townPerkSet("cordial", Date.now() + 600000); BS.fly.cordial = true; cordialSaid = false; toast("Ahh, refreshing! Sprint for the next 10 minutes: hold Shift, or the Sprint button, for half as fast again.", 4500); }, "ok"], ["No thanks", () => {}]]); }
