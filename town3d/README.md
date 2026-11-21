@@ -2114,6 +2114,9 @@ with it, and all three are fixed.
   centre line (the bus 1.35 m, clear of parked cars, which stand at least 2.9 m out). `design.py` then keeps each island clear of
   where the cars run (2.58 m in from each carriageway's line, and 0.3 m more): where the real island is wider it is cut back, and
   where a turn pocket has pushed it right over to one side a strip of it is kept against that side. Most of it is drawn as it is.
+  (Correction, 22 November 2026: `addTraffic` is never called in `moorooka-model.js`, so the change to it does nothing you can see:
+  the model has no moving cars of its own. The cars that drive are the page's, `townTraffic` in `app.html`. See "Moorooka's traffic
+  in the middle of its lane" below. The islands are still kept clear of both lanes of each carriageway, which does no harm.)
 
 `MOO_BEAU` in `app.html` is each island as points of `[east edge x, z, west edge x, z, kind]` (0 concrete, 1 garden bed, 2 lawn;
 3 striped concrete came later, below),
@@ -2250,3 +2253,25 @@ Ipswich Road end) a piece of it survived, it was the first piece built at the st
 
 Measured (`t/walk.js`, six places, the network filling at a phone's speed): people with someone else within 3 m went from 67% to 10%,
 and the median distance to the nearest other person from 1.7 m to 15.7 m; none on a road.
+
+## Moorooka's traffic in the middle of its lane (22 November 2026)
+
+Ash: "Improve how cars drive (left)". The cars that drive themselves (and the bus) are the page's (`townTraffic`): they follow a
+street's line, set off to the left of it by `lane`. They were on the left, but too far over.
+
+- **What was wrong.** `lane` was a quarter of the street's width whatever the street. On Beaudesert Road's 9.6 m carriageways that is
+  2.4 m left of the dashed line, where the left lane's middle is 1.7 m: the cars ran with their left wheels in the parking lane, hard
+  against the kerb at the wide junctions. On a two-way street with parking it put them along the parked cars.
+- **Now** (`laneOf`): a car runs down the middle of its lane, where the model paints the lanes (3.4 m wide, counted the way the model
+  counts them). On a one-way carriageway that is the left lane of its two or three (1.7 or 3.4 m left of its line), or down the line
+  itself where there is one lane (the roundabouts and slip lanes). On a two-way street it is 1.75 m left of the centre line, or the
+  middle of its half on a narrow one. A town whose streets have no widths (Logan) keeps what it had.
+- **Corners.** A car's place across the road now moves over to the next street's lane at 1.5 m a second (`C.ln`); it used to jump
+  across at the corner where the two streets' lanes differed.
+- **Dead ends.** A car that reaches one with nobody within 150 m starts again somewhere else. Turning round there is a spin on the
+  spot onto the other side of the street; it still does that when you are near or riding in it, so a car never vanishes in front of you.
+
+Checked on a local build: each car photographed from behind on Beaudesert Road, round Mayfield Road and at two roundabouts; and 70
+seconds of every car's position recorded four times a second (`left of its line` 1.70 m on the two-lane carriageways, 1.75 m on
+two-way streets, 0 on single lanes; no jump from one sample to the next; none within 1.6 m of a parked car's middle, where one was
+before). Not done: cars still turn across a divided road wherever the map joins the streets, and they do not use the turn lanes.
