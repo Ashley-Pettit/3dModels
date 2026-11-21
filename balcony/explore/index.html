@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="an-commit" content="__COMMIT__">
+<title>Balcony concept 3D</title>
+<meta name="description" content="Walk through a concept design for a new elevated balcony and hexagon deck on a Queenslander, in your browser.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#13233a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Balcony 3D">
+<link rel="icon" type="image/png" href="explore-icon-192.png">
+<link rel="apple-touch-icon" href="explore-icon-192.png">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #13233a; color: #fff;
+               font: 15px/1.35 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-text-size-adjust: 100%; }
+  #c { display: block; position: fixed; inset: 0; width: 100vw; height: 100vh; touch-action: none; }
+  .bar { position: fixed; top: calc(10px + env(safe-area-inset-top)); left: 10px; right: 10px; display: flex; gap: 8px;
+         align-items: flex-start; pointer-events: none; }
+  .bar > * { pointer-events: auto; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 20px;
+          background: rgba(12, 22, 36, .72); color: #fff; border: 1px solid rgba(255, 255, 255, .18); font: inherit;
+          text-decoration: none; cursor: pointer; white-space: nowrap; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  .pill:focus-visible, #places button:focus-visible { outline: 3px solid #8fd3ff; outline-offset: 2px; }
+  .spacer { flex: 1; }
+  .title { padding: 6px 12px; border-radius: 14px; background: rgba(12, 22, 36, .55); line-height: 1.2; pointer-events: none; }
+  .title b { display: block; font-size: 16px; } .title small { color: #c3d3df; font-size: 12.5px; }
+  .wrap { position: relative; }
+  #places { position: absolute; right: 0; top: 46px; min-width: 210px; padding: 6px; border-radius: 16px;
+            background: rgba(12, 22, 36, .92); border: 1px solid rgba(255, 255, 255, .18); }
+  #places button { display: block; width: 100%; text-align: left; padding: 11px 12px; border: 0; border-radius: 10px;
+                   background: none; color: #fff; font: inherit; cursor: pointer; }
+  #places button:hover { background: rgba(255, 255, 255, .1); }
+  #joy { position: fixed; left: calc(22px + env(safe-area-inset-left)); bottom: calc(26px + env(safe-area-inset-bottom));
+         width: 124px; height: 124px; border-radius: 50%; background: rgba(12, 22, 36, .35); border: 2px solid rgba(255, 255, 255, .35);
+         touch-action: none; user-select: none; -webkit-user-select: none; display: none; }
+  #knob { position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; margin: -27px 0 0 -27px; border-radius: 50%;
+          background: rgba(255, 255, 255, .85); pointer-events: none; }
+  @media (pointer: coarse) { #joy { display: block; } .kb { display: none; } }
+  @media (pointer: fine) { .tc { display: none; } }
+  #hint { position: fixed; left: 50%; bottom: calc(30px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+          max-width: min(420px, calc(100vw - 190px)); padding: 10px 14px; border-radius: 14px; background: rgba(12, 22, 36, .8);
+          text-align: center; transition: opacity .6s; pointer-events: none; }
+  @media (pointer: coarse) { #hint { left: auto; right: 14px; transform: none; max-width: calc(100vw - 180px); } }
+  #hint.gone { opacity: 0; }
+  #ver { position: fixed; right: 8px; bottom: calc(4px + env(safe-area-inset-bottom)); font-size: 11px; color: rgba(255, 255, 255, .55);
+         pointer-events: none; }
+  .note { position: fixed; left: 12px; top: calc(60px + env(safe-area-inset-top)); font-size: 12px; padding: 2px 8px; border-radius: 8px;
+          background: rgba(12, 22, 36, .45); color: rgba(255, 255, 255, .8); pointer-events: none; white-space: nowrap; }
+  .short { display: none; }
+  body.shot .bar, body.shot #joy, body.shot #hint, body.shot #ver, body.shot .note { display: none !important; }
+  @media (max-width: 520px) { .title small { display: none; } .title b { font-size: 14px; } .pill { padding: 0 11px; } .long { display: none; } .short { display: inline; } }
+  @media (max-width: 360px) { .title { display: none; } }
+</style>
+</head>
+<body>
+<canvas id="c" aria-label="3D model of the balcony concept. Use the stick or W A S D keys to walk, drag to look around."></canvas>
+<div class="bar">
+  <a class="pill" href="../../" aria-label="Back to the 3D models">&#8592;<span class="kb"> 3D models</span></a>
+  <div class="title"><b>Balcony concept</b><small>Walk it, climb the stairs</small></div>
+  <div class="spacer"></div>
+  <button class="pill" id="doors" type="button" aria-pressed="true" aria-label="French doors: on"><span><span class="long">French doors</span><span class="short">Doors</span>: <b id="doorsState">on</b></span></button>
+  <div class="wrap">
+    <button class="pill" id="jump" type="button" aria-expanded="false" aria-controls="places">Jump to</button>
+    <div id="places" hidden></div>
+  </div>
+</div>
+<div class="note">Concept only. Sizes approximate.</div>
+<div id="joy" aria-hidden="true"><div id="knob"></div></div>
+<div id="hint">
+  <span class="tc">Left stick to walk. Drag anywhere else to look. Push the stick all the way to jog.</span>
+  <span class="kb">W A S D or arrow keys to walk, drag to look, Shift to jog.</span>
+  The stairs are at the end of the side walkway.
+</div>
+<div id="ver">__COMMIT__</div>
+<script src="balcony.js?v=__COMMIT__"></script>
+</body>
+</html>

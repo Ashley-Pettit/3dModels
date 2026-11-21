@@ -19092,7 +19092,7 @@ const handle = async (m, post) => {
   function townPicker() {
     if (BS.town || $("townPick")) return;
     const d = document.createElement("div"); d.id = "townPick";
-    d.innerHTML = `<div class="tp-in"><h1>3D towns</h1><p>Walk, drive and meet the locals. Pick a town.</p>${[["moorooka", "moo", "Moorooka", "Brisbane's south side"], ["logan", "logan", "Logan", "Logan Central and the council precinct"], ["inverloch", "inv", "Inverloch", "On the Bass Coast, Victoria"]]
+    d.innerHTML = `<div class="tp-in"><h1>3D models</h1><p>Walk, drive and meet the locals. Pick one.</p>${[["moorooka", "moo", "Moorooka", "Brisbane's south side"], ["logan", "logan", "Logan", "Logan Central and the council precinct"], ["inverloch", "inv", "Inverloch", "On the Bass Coast, Victoria"], ["balcony", "", "Balcony concept", "Walk a new deck design, up the stairs and all"]]
       .map(([path, , name, sub]) => `<a href="${new URL(path + "/explore/", document.baseURI).href}"><img src="${path}/explore/explore-icon-192.png" alt=""><span><b>${name}</b><small>${sub}</small></span></a>`).join("")}</div>`;
     document.body.append(d); }
   async function loadStatic(manual) {

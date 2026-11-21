@@ -1,0 +1,12 @@
+{
+  "name": "balcony-concept",
+  "private": true,
+  "description": "Walk-through 3D model of the balcony concept. Builds explore/balcony.js from src/main.js.",
+  "scripts": {
+    "build": "esbuild src/main.js --bundle --minify --format=iife --target=es2019,safari14 --outfile=explore/balcony.js"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.0",
+    "three": "0.170.0"
+  }
+}
