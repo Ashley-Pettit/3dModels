@@ -2078,6 +2078,17 @@ trees through the shops and south of them. The model had the lanes but no divide
   halves, an overpass) and the photograph doesn't give a clear line, so nothing is drawn there. Where the two halves run more than 16 m
   apart the ground between them is already the divider.
 
+## Houses back on their own ground (21 November 2026)
+
+Ash: "Change of plans just revert the lifting of houses out of the ground, it stuffed too many houses up". In `moorooka-model.js`
+(`?v=56`) a building's floor is back where it was before "houses on their highest ground": the ground at its middle, kept between its
+lowest and highest corner, plus 0.1 m.
+
+Then (Ash: "I want to go back to like before the houses were moved up", `?v=57`) what came with the lift went too: the stairs,
+landing, rail and garage door at a raised front door, and the closed-in lower level and base band under a raised floor. A front door has
+its small step again, as before. Kept: window hoods left off beside shop signs, and `gone` in `MOO_STYLE`. The Willow's steps go up to
+the bar's floor worked out the same way, and the "Houses on hills" entry is out of the new-features list.
+
 ## Beaudesert Road's median, drawn from the real one (21 November 2026)
 
 Ash, of the divider above: "I want you to fix Beaudesert rd, there is a divider in the middle, looks terrible". Three things were wrong
@@ -2099,7 +2110,7 @@ with it, and all three are fixed.
   make). The ground is also read every 2.5 m along both edges and down the middle, not every 3 m down the centre line.
 - **The model's own traffic ran too close to it.** On a one-way carriageway the cars' two lanes were counted out from the carriageway's
   median edge, which put the inner lane 0.6 m from the middle of the road where the two halves are close, and the kerb lane's cars
-  along the dashed line. `moorooka-model.js` (`?v=56`, `addTraffic`) now puts the lanes 1.7 m either side of the carriageway's dashed
+  along the dashed line. `moorooka-model.js` (`?v=58`, `addTraffic`) now puts the lanes 1.7 m either side of the carriageway's dashed
   centre line (the bus 1.35 m, clear of parked cars, which stand at least 2.9 m out). `design.py` then keeps each island clear of
   where the cars run (2.58 m in from each carriageway's line, and 0.3 m more): where the real island is wider it is cut back, and
   where a turn pocket has pushed it right over to one side a strip of it is kept against that side. Most of it is drawn as it is.

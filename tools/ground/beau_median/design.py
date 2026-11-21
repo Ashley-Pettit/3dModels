@@ -1,7 +1,7 @@
 """Beaudesert Road's median as the model draws it: the real one (real.py, read off the photograph), kept clear of where the model's own
 traffic runs, with gentle edges.
 
-The model's cars on a one-way carriageway run 1.7 m either side of its mapped centre line (moorooka-model.js ?v=56, addTraffic:
+The model's cars on a one-way carriageway run 1.7 m either side of its mapped centre line (moorooka-model.js ?v=58, addTraffic:
 two lanes about the dashed line) and are 0.88 m either side of that, so each side of the median has a line it must not cross. Where the
 real island is wider than the room, it is cut back to the room; where it lies wholly outside it (a turn pocket has pushed it over), a
 narrow strip is kept against that side.
