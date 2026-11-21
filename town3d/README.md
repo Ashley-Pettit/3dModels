@@ -2035,3 +2035,20 @@ Street junction, and Brisbane Car Yard's front row of cars on the footpath. Each
 - **The Magic Mile's footpath.** Where a car yard's or car park's asphalt ran straight into Ipswich Road ("the business still stretches
   out onto the main road"), the first 2.4 m past the kerb on each carriageway's outer side is now a concrete footpath
   (`tools/ground/mile_verge.py`, about 680 m2 in eight ground blocks); side streets and roofs are left alone.
+
+## High-set fronts on hillside houses, Ipswich Road's median (21 November 2026)
+
+- **Stairs.** Ash: "There are huge stairs now, is this true to reality?", then "use Google street view again to make them accurate to
+  reality. Just don't put the house in the dirt but make realistic". Street View on the steep blocks the model picked (1 Nicholls St, 65
+  Homestead St, 22 Beverley Hill St and others) shows Brisbane's hillside houses as high-sets: the floor up on the low side, the space under
+  closed in and painted like the house, often with a garage door, and the stairs running along the front to a landing at the door. So
+  houses still stand on their highest ground (never in the dirt), and in `moorooka-model.js` (`?v=55`):
+  - a front door more than 1.2 m up gets a landing and the stairs down along the wall (whichever side has room), with a sloped rail;
+    a door 2.3 m or more up also gets a garage door under the floor beside the stairs;
+  - the walls under a floor more than 1.6 m up are the house's own colour (a little darker) with a white band at the floor, a closed-in
+    lower level; under a lower floor the base is a lighter painted band than the dark grey it was.
+- **Ipswich Road's median** through the Magic Mile and up to the Beaudesert Road corner (Ash: "The magic mile I also mean the business and the
+  road. They don't look like the real thing"; Street View: a divided road, two lanes each way, a raised median). `MOO_MEDIAN` in `app.html`
+  holds runs of the line midway between the two carriageways and their spacing (worked out from `town.json`'s roads, opening at each side
+  street); `townBowls` draws a raised median 1.2 to 6 m wide (spacing less 7.4 m), concrete when narrow and grassed with concrete kerbs when
+  wider, rounded at the ends, with a white edge line on the road each side. About 1 km of it.
