@@ -140,6 +140,26 @@ shutil.copy(os.path.join(here, "sw.js"), site)
 # The whole-town 3D models of Inverloch and Moorooka ("Virtually explore"; Admin > 3D scenes): scripts and data, only fetched when one is opened.
 if os.path.isdir(os.path.join(here, "town3d")):
     shutil.copytree(os.path.join(here, "town3d"), os.path.join(site, "town3d"), dirs_exist_ok=True, ignore=shutil.ignore_patterns("*.md"))
+# The balcony concept (Ash, 21 November 2026: "I want to be able to walk around the 3d model. Put it into my other 3d models. I want to be
+# able to walk up the stairs"): its own walk-through page at /balcony/explore/, not part of the towns' Explore. balcony/src/main.js is
+# the source; balcony/explore/balcony.js is it bundled with three.js (see balcony/README.md). The page shows the commit it was built from.
+if os.path.isdir(os.path.join(here, "balcony", "explore")):
+    bal_out = os.path.join(site, "balcony", "explore")
+    shutil.copytree(os.path.join(here, "balcony", "explore"), bal_out, dirs_exist_ok=True)
+    shutil.copy(os.path.join(here, "balcony", "index.html"), os.path.join(site, "balcony", "index.html"))
+    bal_commit = (os.environ.get("AN_COMMIT") or os.environ.get("GITHUB_SHA") or "")[:7]
+    if not bal_commit:
+        try:
+            import subprocess
+            bal_commit = subprocess.run(["git", "rev-parse", "--short=7", "HEAD"], capture_output=True, text=True, cwd=here).stdout.strip()
+        except Exception:
+            bal_commit = ""
+    bal_page = os.path.join(bal_out, "index.html")
+    bal_html = open(bal_page, encoding="utf-8").read()
+    assert "__COMMIT__" in bal_html, "balcony page"
+    with open(bal_page, "w", encoding="utf-8") as f:
+        f.write(bal_html.replace("__COMMIT__", bal_commit or "dev"))
+    print(f"Built {bal_out}/index.html")
 # Council news pictures sent from the work PC (council_news.py), served next to the app.
 if os.path.isdir(os.path.join(here, "council", "img")):
     shutil.copytree(os.path.join(here, "council", "img"), os.path.join(site, "council", "img"), dirs_exist_ok=True)

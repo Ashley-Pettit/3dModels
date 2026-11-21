@@ -9,3 +9,6 @@ council/council-news-console.txt
 council/awesome-news/
 ratings/todo.tsv
 ratings/scores.tsv
+balcony/node_modules/
+!balcony/index.html
+!balcony/explore/index.html
