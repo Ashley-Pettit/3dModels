@@ -43,7 +43,7 @@
   #hint { position: fixed; left: 50%; bottom: calc(30px + env(safe-area-inset-bottom)); transform: translateX(-50%);
           max-width: min(420px, calc(100vw - 190px)); padding: 10px 14px; border-radius: 14px; background: rgba(12, 22, 36, .8);
           text-align: center; transition: opacity .6s; pointer-events: none; }
-  @media (pointer: coarse) { #hint { left: auto; right: 14px; transform: none; max-width: calc(100vw - 180px); } }
+  @media (pointer: coarse) { #hint { left: auto; right: 14px; transform: none; max-width: calc(100vw - 200px); } }
   #hint.gone { opacity: 0; }
   #ver { position: fixed; right: 8px; bottom: calc(4px + env(safe-area-inset-bottom)); font-size: 11px; color: rgba(255, 255, 255, .55);
          pointer-events: none; }
@@ -52,15 +52,16 @@
   .short { display: none; }
   body.shot .bar, body.shot #joy, body.shot #hint, body.shot #ver, body.shot .note { display: none !important; }
   @media (max-width: 520px) { .title small { display: none; } .title b { font-size: 14px; } .pill { padding: 0 11px; } .long { display: none; } .short { display: inline; } }
-  @media (max-width: 360px) { .title { display: none; } }
+  @media (max-width: 440px) { .title { display: none; } }
 </style>
 </head>
 <body>
 <canvas id="c" aria-label="3D model of the balcony concept. Use the stick or W A S D keys to walk, drag to look around."></canvas>
 <div class="bar">
   <a class="pill" href="../../" aria-label="Back to the 3D models">&#8592;<span class="kb"> 3D models</span></a>
-  <div class="title"><b>Balcony concept</b><small>Walk it, climb the stairs</small></div>
+  <div class="title"><b>Balcony concept</b><small>Two ways up: tap Stairs to switch</small></div>
   <div class="spacer"></div>
+  <button class="pill" id="access" type="button" aria-label="Stairs: new side stairs. Tap to switch."><span>Stairs: <b id="accessState">side</b></span></button>
   <button class="pill" id="doors" type="button" aria-pressed="true" aria-label="French doors: on"><span><span class="long">French doors</span><span class="short">Doors</span>: <b id="doorsState">on</b></span></button>
   <div class="wrap">
     <button class="pill" id="jump" type="button" aria-expanded="false" aria-controls="places">Jump to</button>
@@ -72,7 +73,7 @@
 <div id="hint">
   <span class="tc">Left stick to walk. Drag anywhere else to look. Push the stick all the way to jog.</span>
   <span class="kb">W A S D or arrow keys to walk, drag to look, Shift to jog.</span>
-  The stairs are at the end of the side walkway.
+  <span id="hintWay">The new stairs are down the side, past the hexagon.</span>
 </div>
 <div id="ver">__COMMIT__</div>
 <script src="balcony.js?v=__COMMIT__"></script>
