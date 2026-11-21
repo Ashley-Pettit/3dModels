@@ -254,6 +254,7 @@ G = doorsG;
     boxMM(12.02, FL, a - 0.06, 12.1, FL + 0.42, b + 0.06, M.white);
   }
   for (let i = 1; i < 4; i++) { const z = SDZ0 + i * leaf; boxMM(12.02, FL, z - 0.05, 12.12, 4.76, z + 0.05, M.white); }
+  sideOpening(SDZ0, SDZ1, 4.88, 5.2, 4, 1, M.glass);   // fanlight, so the doors sit like the house's own
   boxMM(12.0, 4.72, SDZ0 - 0.12, 12.14, 4.86, SDZ1 + 0.12, M.white);
   boxMM(12.0, FL, SDZ0 - 0.12, 12.14, 4.86, SDZ0 - 0.02, M.white);
   boxMM(12.0, FL, SDZ1 + 0.02, 12.14, 4.86, SDZ1 + 0.12, M.white);
@@ -296,11 +297,15 @@ for (const z of [(SDZ1 - 1.35) / 2, SDZ0 - 0.22]) boxMM(12.02, 4.2, z - 0.07, 12
   for (let i = 0; i < 4; i++) panel(4.44 + i * 1.04, -3.0);
 }
 
-// ---------- new balcony (owner's design: narrow rear balcony + hexagon covered deck) ----------
+// ---------- new balcony (owner's design: narrow rear balcony + covered side deck with hexagon corners) ----------
+// Ash, 21 November 2026: the deck has to stay on his side of the north fence (the survey puts it about 3.1 m from the side
+// wall), so the hexagon is stretched along the side instead of pushed out: 2.25 m out from the wall with 60 degree corners,
+// long enough that the French doors open straight onto it under its roof, and the stairs start off its back edge.
 const FRONT = 1.51;
-const HX = { cx: 12.9, cz: 1.511 - 3.7 * Math.sin(Math.PI / 3), r: 3.7 };
-const hexV = (r, i) => [HX.cx + r * Math.cos(i * Math.PI / 3), HX.cz + r * Math.sin(i * Math.PI / 3)];
-const VE = 5.1;
+const VE = 5.1, VW = 5.35;                           // eave height, and where the verandah roofs meet the walls
+const SD = { out: 14.25, ch: 0.85, back: -7.6 };     // side deck: outer edge x, corner chamfer, back edge z
+SD.chz = SD.ch * Math.sqrt(3);
+const DECK = [[12.0, FRONT], [SD.out - SD.ch, FRONT], [SD.out, FRONT - SD.chz], [SD.out, SD.back + SD.chz], [SD.out - SD.ch, SD.back], [12.0, SD.back]];
 function deckBox(x0, x1, z0, z1) {
   const w = x1 - x0, d = z1 - z0;
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, 0.32, d), [M.white, M.white, deckMat(w, d), M.under, M.white, M.white]);
@@ -313,20 +318,18 @@ function deckPoly(pts) {
   m.rotation.x = -Math.PI / 2; m.position.y = FL - 0.32; add(m);
   poly(pts.map(([x, z]) => [x, FL - 0.325, z]), M.under);
 }
-deckBox(2.0, 12.0, 0, FRONT);                                   // rear balcony
-deckPoly([[12.0, FRONT], hexV(HX.r, 1), hexV(HX.r, 0), hexV(HX.r, 5), [12.0, hexV(HX.r, 5)[1]]]); // hexagon deck
-const WK = { x0: 12.0, x1: 13.2, z0: -7.6, z1: hexV(HX.r, 5)[1] }; // stairs start further towards the front  // side walkway to the stairs
-deckBox(WK.x0, WK.x1, WK.z0, WK.z1);
+deckBox(2.0, 12.0, 0, FRONT);   // rear balcony
+deckPoly(DECK);                 // side deck
+const WK = { z0: SD.back };     // the stairs start straight off the side deck's back edge
 
-// posts: square under the open decks, round Queenslander posts on the hexagon
-for (const [x, z] of [[2.05, 1.45], [5.0, 1.45], [8.0, 1.45], [13.12, (WK.z0 + WK.z1) / 2], [13.12, WK.z0 + 0.08]]) {
+// posts: square under the rear balcony, round Queenslander posts carrying the side deck and its roof
+for (const [x, z] of [[2.05, 1.45], [5.0, 1.45], [8.0, 1.45]]) {
   boxMM(x - 0.06, 0, z - 0.06, x + 0.06, FL - 0.32, z + 0.06, M.white);
   boxMM(x - 0.2, -0.01, z - 0.2, x + 0.2, 0.05, z + 0.2, M.concrete);
 }
 const roundPost = new THREE.CylinderGeometry(0.07, 0.07, 1, 20);
-const HZ = HX.cz, HB = hexV(3.4, 5)[1];
-const V0 = hexV(HX.r, 0), V1 = hexV(HX.r, 1), V2 = hexV(HX.r, 2);
-const hexPosts = [[V2[0] + 0.1, 1.45], [V1[0] - 0.05, 1.45], [V0[0] - 0.08, HZ], [V1[0] - 0.05, HB + 0.06], [12.12, HB + 0.06]];
+const hexPosts = [[11.0, 1.45], [SD.out - SD.ch - 0.04, 1.45], [SD.out - 0.06, FRONT - SD.chz], [SD.out - 0.06, (FRONT + SD.back) / 2],
+  [SD.out - 0.06, SD.back + SD.chz], [SD.out - SD.ch - 0.04, SD.back + 0.06], [12.12, SD.back + 0.06]];
 for (const [x, z] of hexPosts) {
   const top = VE - 0.05;
   const m = new THREE.Mesh(roundPost, M.white); m.scale.y = top; m.position.set(x, top / 2, z); add(m);
@@ -338,31 +341,50 @@ for (let i = 0; i < hexPosts.length - 1; i++) {
   beam([x0, VE - 0.16, z0], [x1, VE - 0.16, z1], 0.1, 0.22, M.white);
 }
 
-// hexagonal hip roof with radiating rafters (as per the owner's mockup)
+// roof: a hip roof over the side deck's outline, every eave sloping up to the house walls at one pitch, with the corners
+// hipped like the hexagon's and rafters radiating from them
 {
-  const o = 0.35, Re = HX.r + o, pitch = 0.42;
-  const apexY = VE + Re * Math.cos(Math.PI / 6) * pitch;
-  const A = [HX.cx, apexY, HX.cz];
-  const E = (i, dy = 0) => { const [x, z] = hexV(Re, ((i % 6) + 6) % 6); return [x, VE + dy, z]; };
-  for (let i = 0; i < 6; i++) {
-    poly([E(i), E(i + 1), A], M.roof);
-    poly([E(i, -0.07), E(i + 1, -0.07), [A[0], A[1] - 0.07, A[2]]], M.ceiling);
-    beam([...E(i, -0.12)].map((v, k) => k === 1 ? v : v + (A[k] - v) * 0.1), [A[0], A[1] - 0.16, A[2]], 0.08, 0.14, M.white);
-    beam([E(i)[0], VE + 0.03, E(i)[2]], [A[0], A[1] + 0.03, A[2]], 0.14, 0.04, M.gutter);
+  const o = 0.3, s = (VW - VE) / (SD.out + o - 12), dmax = (VW - VE) / s;
+  const N = [[0, 1], [0.8660, 0.5], [1, 0], [0.8660, -0.5], [0, -1]];   // outward normals: front, corner, side, corner, back
+  const lineC = [FRONT + o, null, SD.out + o, null, -(SD.back - o)];
+  lineC[1] = N[1][0] * DECK[1][0] + N[1][1] * DECK[1][1] + o;
+  lineC[3] = N[3][0] * DECK[3][0] + N[3][1] * DECK[3][1] + o;
+  const meet = (i, j) => { const [a, b] = N[i], [c, d] = N[j], det = a * d - b * c; return [(lineC[i] * d - b * lineC[j]) / det, (a * lineC[j] - lineC[i] * c) / det]; };
+  const E = [[10.9, FRONT + o], meet(0, 1), meet(1, 2), meet(2, 3), meet(3, 4), [12.0, SD.back - o]];
+  const dist = (i, p) => lineC[i] - (N[i][0] * p[0] + N[i][1] * p[1]);
+  const clip = (P, f) => { const out = []; for (let k = 0; k < P.length; k++) { const a = P[k], b = P[(k + 1) % P.length], fa = f(a), fb = f(b);
+    if (fa <= 0) out.push(a); if ((fa <= 0) !== (fb <= 0)) { const t = fa / (fa - fb); out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]); } } return out; };
+  for (let i = 0; i < 5; i++) {
+    let F = E.slice();
+    for (let j = 0; j < 5; j++) if (j !== i) F = clip(F, (p) => dist(i, p) - dist(j, p));
+    F = clip(F, (p) => dist(i, p) - dmax);
+    if (F.length < 3) continue;
+    const dir = [E[i + 1][0] - E[i][0], 0, E[i + 1][1] - E[i][1]];
+    poly(F.map((p) => [p[0], VE + s * dist(i, p), p[1]]), M.roof, dir);
+    poly(F.map((p) => [p[0], VE + s * dist(i, p) - 0.07, p[1]]), M.ceiling);
   }
-  for (const i of [5, 0, 1, 2, 4]) beam(E(i, -0.06), E(i + 1, -0.06), 0.12, 0.14, M.gutter);
-  const dp = E(0); boxMM(dp[0] - 0.12, 0.05, dp[2] - 0.04, dp[0] - 0.04, VE - 0.1, dp[2] + 0.04, M.gutter);
+  for (let i = 0; i < 5; i++) beam([E[i][0], VE - 0.06, E[i][1]], [E[i + 1][0], VE - 0.06, E[i + 1][1]], 0.12, 0.14, M.gutter);
+  // hips from the four corners, capped, with a rafter under each
+  for (let i = 1; i <= 4; i++) {
+    const a = N[i - 1], b = N[i], det = a[0] * b[1] - a[1] * b[0];
+    const ca = lineC[i - 1] - dmax, cb = lineC[i] - dmax;
+    const end = [(ca * b[1] - a[1] * cb) / det, (a[0] * cb - ca * b[0]) / det];
+    beam([E[i][0], VE + 0.03, E[i][1]], [end[0], VW + 0.03, end[1]], 0.14, 0.04, M.gutter);
+    beam([E[i][0], VE - 0.14, E[i][1]], [end[0], VW - 0.14, end[1]], 0.08, 0.14, M.white);
+  }
+  for (let z = E[2][1] - 0.6; z > E[3][1] + 0.4; z -= 1.1) beam([SD.out + 0.2, VE - 0.12 + s * 0.1, z], [12.0, VW - 0.12, z], 0.07, 0.12, M.white);
+  boxMM(E[2][0] - 0.12, 0.05, E[2][1] - 0.04, E[2][0] - 0.04, VE - 0.1, E[2][1] + 0.04, M.gutter);  // downpipe
 }
 
 // back roof extended over the rear balcony (Ash, 21 November 2026: "The back roof should cover the balcony"),
-// its front edge lining up with the hexagon's eaves
+// its front edge lining up with the side deck's eaves
 {
-  const x0 = 1.85, x1 = 11.6, zW = 0, zE = 1.85, yW = 5.45, yE = VE;
+  const x0 = 1.85, x1 = 10.9, zW = 0, zE = 1.81, yW = VW, yE = VE;
   poly([[x0, yW, zW], [x1, yW, zW], [x1, yE, zE], [x0, yE, zE]], M.roof, [1, 0, 0]);
   poly([[x0, yW - 0.06, zW + 0.01], [x1, yW - 0.06, zW + 0.01], [x1, yE - 0.06, zE - 0.04], [x0, yE - 0.06, zE - 0.04]], M.ceiling);
   boxMM(x0, yE - 0.15, zE - 0.02, x1, yE + 0.02, zE + 0.1, M.gutter);
   boxMM(x0 - 0.06, yE - 0.12, zW, x0, yW, zE, M.white);
-  beam([2.05, VE - 0.16, 1.45], [V2[0] + 0.1, VE - 0.16, 1.45], 0.1, 0.22, M.white);
+  beam([2.05, VE - 0.16, 1.45], [11.0, VE - 0.16, 1.45], 0.1, 0.22, M.white);
   for (const x of [2.05, 5.0, 8.0]) {
     const m = new THREE.Mesh(roundPost, M.white); m.scale.y = VE - 0.05 - FL; m.position.set(x, (FL + VE - 0.05) / 2, 1.45); add(m);
     boxMM(x - 0.11, FL, 1.34, x + 0.11, FL + 0.12, 1.56, M.white);
@@ -385,11 +407,11 @@ function glassBal(x0, z0, x1, z1) {
   }
 }
 glassBal(2.04, 0.03, 2.04, 1.46);
-glassBal(2.04, 1.46, V1[0] - 0.03, 1.46);
-glassBal(V1[0] - 0.03, 1.46, V0[0] - 0.06, HZ);
-glassBal(V0[0] - 0.06, HZ, V1[0] - 0.03, HB + 0.05);
-glassBal(V1[0] - 0.03, HB + 0.05, 13.2, HB + 0.05);
-glassBal(13.16, HB + 0.01, 13.16, WK.z0 + 0.04);
+glassBal(2.04, 1.46, SD.out - SD.ch - 0.02, 1.46);
+glassBal(SD.out - SD.ch - 0.02, 1.46, SD.out - 0.05, FRONT - SD.chz);
+glassBal(SD.out - 0.05, FRONT - SD.chz, SD.out - 0.05, SD.back + SD.chz);
+glassBal(SD.out - 0.05, SD.back + SD.chz, SD.out - SD.ch - 0.02, SD.back + 0.05);
+glassBal(SD.out - SD.ch - 0.02, SD.back + 0.05, 13.25, SD.back + 0.05);
 
 // ---------- stairs: further forward, at the end of the side walkway, heading towards the street ----------
 const S = { x0: 12.12, x1: 13.22, risers: 14, going: 0.25, z: WK.z0 };
@@ -431,25 +453,27 @@ for (let x = -0.4; x <= 11.4; x += 1.25) {
   instanced(new THREE.BoxGeometry(0.018, 1, 0.018), M.black, fm);
 }
 
-// ---------- round outdoor setting and fan in the hexagon ----------
+// ---------- a table for two in the corner (a 2.25 m deck has no room for a dining setting and a way past), a fan over the doors ----------
 const wickerDark = new THREE.MeshStandardMaterial({ color: 0x34302c, roughness: 0.9 });
 {
-  const T = [14.6, HZ];
-  const top = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.04, 32), M.tabletop); top.position.set(T[0], FL + 0.74, T[1]); add(top);
+  const T = [13.55, 0.15];
+  const top = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.04, 32), M.tabletop); top.position.set(T[0], FL + 0.74, T[1]); add(top);
   boxMM(T[0] - 0.04, FL, T[1] - 0.04, T[0] + 0.04, FL + 0.72, T[1] + 0.04, M.black);
-  for (let k = 0; k < 6; k++) {
-    const th = k * Math.PI / 3 + Math.PI / 6;
+  for (let k = 0; k < 2; k++) {
+    const th = k * Math.PI + Math.PI / 2;
     const g = new THREE.Group();
     const part = (w, h, d, x, y, z, mat) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; g.add(m); };
-    part(0.5, 0.05, 0.5, 0, 0.45, 0, wickerDark);
-    part(0.5, 0.52, 0.06, 0, 0.73, 0.24, wickerDark);
-    for (const [dx, dz] of [[-0.22, -0.22], [0.22, -0.22], [-0.22, 0.22], [0.22, 0.22]]) part(0.03, 0.43, 0.03, dx, 0.215, dz, M.black);
-    g.position.set(T[0] + Math.cos(th) * 0.95, FL, T[1] + Math.sin(th) * 0.95);
+    part(0.48, 0.05, 0.48, 0, 0.45, 0, wickerDark);
+    part(0.48, 0.52, 0.06, 0, 0.73, 0.23, wickerDark);
+    for (const [dx, dz] of [[-0.21, -0.21], [0.21, -0.21], [-0.21, 0.21], [0.21, 0.21]]) part(0.03, 0.43, 0.03, dx, 0.215, dz, M.black);
+    g.position.set(T[0] + Math.cos(th) * 0.6, FL, T[1] + Math.sin(th) * 0.6);
     g.rotation.y = Math.PI / 2 - th; G.add(g);
   }
-  boxMM(13.68, 5.35, HZ - 0.02, 13.72, 6.1, HZ + 0.02, M.black);
-  boxMM(13.6, 5.25, HZ - 0.1, 13.8, 5.37, HZ + 0.1, M.black);
-  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + 0.4; beam([13.7, 5.31, HZ], [13.7 + Math.cos(a) * 0.6, 5.31, HZ + Math.sin(a) * 0.6], 0.13, 0.015, M.trunk); }
+  const fz = -4.95, fx = 13.1;
+  boxMM(fx - 0.02, 4.95, fz - 0.02, fx + 0.02, 5.25, fz + 0.02, M.black);
+  boxMM(fx - 0.1, 4.85, fz - 0.1, fx + 0.1, 4.97, fz + 0.1, M.black);
+  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + 0.4; beam([fx, 4.91, fz], [fx + Math.cos(a) * 0.55, 4.91, fz + Math.sin(a) * 0.55], 0.13, 0.015, M.trunk); }
+  boxMM(12.2, FL, -5.75, 12.9, FL + 0.015, -4.15, new THREE.MeshStandardMaterial({ color: 0x4a4038, roughness: 1 })); // doormat
 }
 
 // ---------- trees and context ----------
@@ -600,19 +624,17 @@ const EYE = 1.65, STEP = 0.5, R = 0.25;
 const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.05, 300);
 camera.rotation.order = 'YXZ';
 
-const HEXR = HX.r - 0.35; // walkable hexagon, kept clear of the balustrade
-function inHex(x, z) {
-  const dx = Math.abs(x - HX.cx), dz = Math.abs(z - HX.cz);
-  return dz <= HEXR * Math.sqrt(3) / 2 && Math.sqrt(3) * dx + dz <= Math.sqrt(3) * HEXR;
-}
-const TABLE = { x: 14.6, z: HZ, r: 1.25 };
+const TABLE = { x: 13.55, z: 0.15, r: 0.72 };
+const DN = [[0, 1], [0.8660, 0.5], [1, 0], [0.8660, -0.5], [0, -1]];
+const DC = DN.map((n, i) => n[0] * DECK[i + 1][0] + n[1] * DECK[i + 1][1]);
 function onDeck(x, z) {
   if (Math.hypot(x - TABLE.x, z - TABLE.z) < TABLE.r) return false;          // table and chairs
   if (x >= 2.3 && x <= 12.3 && z >= 0.25 && z <= 1.25) return true;          // rear balcony
   if (x >= 2.3 && x <= 3.15 && z >= -0.95 && z <= 0.3) return true;          // back door porch
-  if (inHex(x, z) && !(x < 12.25 && z < 0.25)) return true;                  // hexagon deck
-  if (x >= 12.3 && x <= 12.95 && z >= WK.z0 - 0.05 && z <= HB + 0.4) return true; // side walkway
-  return false;
+  if (x >= 12.3 && x <= 12.95 && z >= SD.back - 0.05 && z <= SD.back + 0.5) return true; // to the top of the stairs
+  if (x < 12.25) return false;                                               // the house (and nothing past the rear balcony's end)
+  for (let i = 0; i < 5; i++) if (DC[i] - (DN[i][0] * x + DN[i][1] * z) < 0.28) return false; // clear of the balustrade
+  return true;                                                               // side deck
 }
 const ST = { x0: 12.32, x1: 13.02, zTop: WK.z0, zBot: WK.z0 - run };     // between the stair rails
 const onStairs = (x, z) => x >= ST.x0 && x <= ST.x1 && z <= ST.zTop + 0.02 && z >= ST.zBot - 0.1;
@@ -662,7 +684,7 @@ const PLACES = {
   yard:   { label: 'Side yard',          x: 14.5, z: -15.5, y: 0,  look: [12.7, -7.5],  pitch: 0.14 },
   street: { label: 'Out the front',      x: 6.0,  z: -36.5, y: 0,  look: [6, -10],      pitch: 0.08 },
   stairs: { label: 'Bottom of the stairs', x: 12.67, z: WK.z0 - run - 1.0, y: 0, look: [12.67, -5], pitch: 0.28 },
-  hex:    { label: 'Hexagon deck',       x: 14.3, z: 0.7,   y: FL, look: [12.0, -3.0], pitch: -0.05 },
+  hex:    { label: 'Side deck by the doors', x: 13.75, z: -2.2, y: FL, look: [12.0, -5.0], pitch: -0.05 },
   rear:   { label: 'Rear balcony',       x: 3.0,  z: 0.75,  y: FL, look: [14, 0.75],   pitch: -0.02 },
   pool:   { label: 'By the pool',        x: 9.0,  z: 12.5,  y: 0,  look: [10, 0],      pitch: 0.12 },
 };

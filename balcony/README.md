@@ -33,7 +33,11 @@ wall with z = 0 (the walk-through's house is 12 m wide; the survey's is 10.6 m, 
 sit in `NB` in `src/main.js`. The neighbours have no stairs (Ash: the Moorooka model's stairs on the house next to the balcony
 aren't right) and their walls are a fixed height band, not modelled in detail. Fences and the houses stop you walking.
 
-What the survey shows: the north fence is only about 3.1 to 3.4 m from the house's north wall, so the hexagon as drawn (4.6 m out)
-reaches past it. That is left visible on purpose so Ash can decide how to reshape it.
+What the survey shows: the north fence is only about 3.1 to 3.4 m from the house's north wall. The hexagon (4.6 m out) reached past
+it, so (Ash: "the hex needs to not come out quite so far as that's my neighbours property") it is now stretched along the side
+instead: a covered side deck 2.25 m out from the wall with 60 degree corners and a hipped roof (`SD`, `DECK` in `src/main.js`), long
+enough that the French doors open straight onto it and the stairs start off its back edge. It is still inside the usual 1.5 m side
+boundary clearance, which the brief flags. At 2.25 m wide it fits a table for two in the corner, not a dining setting, if you are
+to walk past.
 
 Sizes are approximate (a concept, not drawings).
