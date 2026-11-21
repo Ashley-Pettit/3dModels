@@ -33,11 +33,15 @@ wall with z = 0 (the walk-through's house is 12 m wide; the survey's is 10.6 m, 
 sit in `NB` in `src/main.js`. The neighbours have no stairs (Ash: the Moorooka model's stairs on the house next to the balcony
 aren't right) and their walls are a fixed height band, not modelled in detail. Fences and the houses stop you walking.
 
-What the survey shows: the north fence is only about 3.1 to 3.4 m from the house's north wall. The hexagon (4.6 m out) reached past
-it, so (Ash: "the hex needs to not come out quite so far as that's my neighbours property") it is now stretched along the side
-instead: a covered side deck 2.25 m out from the wall with 60 degree corners and a hipped roof (`SD`, `DECK` in `src/main.js`), long
-enough that the French doors open straight onto it and the stairs start off its back edge. It is still inside the usual 1.5 m side
-boundary clearance, which the brief flags. At 2.25 m wide it fits a table for two in the corner, not a dining setting, if you are
-to walk past.
+Where the north fence is: the survey data puts it about 3.1 m from the house's north wall, but Ash says it is 4.5 m (21 November
+2026: "from the current house there is 4.5m before the fence. move the fence and their property away"). The model goes with Ash:
+everything in `NB` beyond the fence line (the fence, the corner and rear-corner neighbours, their trees and tank, Bohain Street) is
+moved out by `NB_DX` so the fence sits at x = 16.5 (`NORTH_FENCE` in `src/main.js`).
+
+The hexagon (Ash: "then go back to the hex style"): a hexagon with its point outwards, 60 degree faces and a hip roof rising to a
+short ridge, stretched along the side wall (`HEX`, `DECK` in `src/main.js`). It reaches 4 m out from the wall (eaves about 4.35 m),
+inside the fence, and runs from the rear balcony back past the French doors, so they open straight onto it. A short landing behind
+it leads to the stairs. It holds a round table for six with room to walk around it. It is inside the usual 1.5 to 2 m side boundary
+clearance, which the brief flags.
 
 Sizes are approximate (a concept, not drawings).
