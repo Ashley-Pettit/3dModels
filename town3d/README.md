@@ -2295,6 +2295,14 @@ building triangles.
 aerial for its roof, `add_set.py app.html picks.json <roofs> "<note>"`, rebuild, save what `window.anSetRec` is told, then
 `clear_fronts.py ... --write`.
 
+### Part 2 of the houses set on their slope (22 November 2026)
+
+- The next 100 inside Moorooka (1.37 to 1.65 m of wall in the ground), 200 so far; 1,828 left at half a metre or more (1,002 inside
+  Moorooka). Same pipeline as part 1; roofs again from the aerial photo, house by house. Across the 200: 192 with a closed-in lower
+  level and 8 on stumps, 119 with stairs (55 straight, 64 along the wall), 33 garage doors, 14 with no wall facing a street.
+- `pick_sunk.py` only left out the first house on each line of `MOO_SET` as already done; it now leaves out all of them (found before
+  anything was built from it).
+
 ## GPS: directions to an address (22 November 2026)
 
 Ash: "Can you add a gps in the game to navigate to an address?"
