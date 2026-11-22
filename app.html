@@ -16071,7 +16071,7 @@ const handle = async (m, post) => {
       for (let t = 0; t < 40; t++) { const r = roads[Math.floor(Math.random() * roads.length)], i = Math.floor(Math.random() * (r.n - 1)), x = r.p[i * 2], z = r.p[i * 2 + 1];
         if (Math.hypot(x - home[0], z - home[1]) > R) continue;
         if (P.cars.some(D => D !== C && D.x != null && Math.hypot(D.x - x, D.z - z) < 40)) continue;  // not on top of another
-        Object.assign(C, { r, i, d: r.one || Math.random() < 0.5 ? 1 : -1, s: 0, v: 0, y: null, p: null, rl: null, still: 0, x, z }); if (C.d < 0) C.i = i + 1; C.h = null; return true; }
+        Object.assign(C, { r, i, d: r.one || Math.random() < 0.5 ? 1 : -1, s: 0, v: 0, y: null, p: null, rl: null, ln: null, still: 0, x, z }); if (C.d < 0) C.i = i + 1; C.h = null; return true; }
       return false; };
     const seg = C => { const r = C.r, a = C.i, b = C.i + C.d; return [r.p[a * 2], r.p[a * 2 + 1], r.p[b * 2], r.p[b * 2 + 1]]; };
     // Divided roads (Beaudesert, Ipswich and Fairfield Roads and the rest) are two one-way carriageways: a car drives each only the way it
@@ -16086,16 +16086,25 @@ const handle = async (m, post) => {
       if (ways.length && (end || Math.random() < 0.3)) { ways.sort((a, b) => a[3] - b[3]); const w = end && Math.random() < 0.6 ? ways[0] : ways[Math.floor(Math.random() * ways.length)]; C.r = w[0]; C.i = w[1]; C.d = w[2]; return; }
       if (!end) { C.i = at; return; }
       if (r.one && start(C)) return;  // the end of a one-way carriageway with nowhere to go: start again elsewhere, never back up it
-      C.i = at; C.d = -C.d; };  // a dead end: turn round
+      if (Math.hypot(x - F.pos.x, z - F.pos.z) > 150 && !C.rider && start(C)) return;  // a dead end with nobody near: start again elsewhere (turning round here is a spin on the spot onto the other side of the street)
+      C.i = at; C.d = -C.d; };  // a dead end, and you are watching or riding: turn round
     setTimeout(async () => { if (dead) return;
       let d; try { d = await townStreetData(cfg); } catch { return; } if (dead) return;
       if (d.town) d.roads.forEach((r, i) => { r.wd = (d.town.roads[i]?.[3] || 0) / 10; });  // Moorooka and Inverloch know each street's width
       T.roadsAll = d.roads;  // (for the car's Unstick: the nearest road)
       const pick = lim => d.roads.filter(r => r.cls <= lim && r.pts.length >= 4);
+      // How far left of a street's line a car runs: down the middle of its lane, where the model paints the lanes (3.4 m wide, counted as
+      // the model counts them). On a one-way carriageway that is the left lane of its two or three, 1.7 or 3.4 m left of its line, and
+      // down the line itself where there is one lane. On a two-way street it is 1.75 m left of the centre line, or the middle of its
+      // half on a narrow one. (Ash, 22 November 2026: "Improve how cars drive (left)". It was a quarter of the width whatever the
+      // street: 2.4 m on Beaudesert Road's 9.6 m carriageways, 0.7 m left of the lane's middle with the left wheels in the parking
+      // lane, and on a two-way street with parking, along the parked cars.) A town with no widths keeps what it had.
+      const laneOf = r => { const w = r.wd || 0; if (!(w > 3)) return r.one ? 1.2 : 1.9;
+        return r.one ? 1.7 * (Math.max(1, Math.min(w < 13 ? 2 : 3, Math.round((w - 2.4) / 3.4))) - 1) : Math.min(1.75, w / 4); };
       let list = pick(2); if (list.length < 20) list = pick(3);  // the main roads (classes 0 to 2) where there are enough of them
       // the streets within 800 m of where you are (again whenever you've gone 450 m on: the traffic comes with you, rather than staying
       // round where you started. Ash, 16 November 2026: "There's no cars in moorooka moving anymore", away from number 6)
-      reroad = () => { const R2 = []; for (const r of list) { const p = r.pts; let near = false; for (let k = 0; k < p.length; k += 2) if (Math.hypot(p[k] - home[0], p[k + 1] - home[1]) < FAR) { near = true; break; } if (near) R2.push({ p, n: p.length / 2, one: !!r.one, lane: r.one ? (r.wd > 3 ? bsClamp(r.wd / 4, 0.9, 2.6) : 1.2) : r.wd > 3 ? bsClamp(r.wd / 4, 1.5, 3.2) : 1.9 }); }
+      reroad = () => { const R2 = []; for (const r of list) { const p = r.pts; let near = false; for (let k = 0; k < p.length; k += 2) if (Math.hypot(p[k] - home[0], p[k + 1] - home[1]) < FAR) { near = true; break; } if (near) R2.push({ p, n: p.length / 2, one: !!r.one, lane: laneOf(r) }); }
         if (R2.length < 3) return false; roads = R2; nodes = new Map(); for (const r of roads) for (let j = 0; j < r.n; j++) { const k = key(r.p[j * 2], r.p[j * 2 + 1]); let a = nodes.get(k); if (!a) nodes.set(k, a = []); a.push([r, j]); } return true; };
       if (!reroad()) return;
       for (let i = 0; i < N; i++) { const C = { col: COLS[i % COLS.length], top: 8 + Math.random() * 6 }; if (!start(C)) continue;
@@ -16136,7 +16145,8 @@ const handle = async (m, post) => {
         C.still = C.v < 0.2 && !(C.stopT > 0) ? (C.still || 0) + dt : 0; if (C.still > 10 && !C.rider) { start(C); return; }  // stuck for 10 s: start again somewhere else
         for (let k = 0; k < 6 && C.s >= L; k++) { C.s -= L; next(C); [ax, az, bx, bz] = seg(C); L = Math.hypot(bx - ax, bz - az) || 0.01; }
         const h = Math.atan2(bx - ax, bz - az); C.h = C.h == null ? h : C.h + wrap(h - C.h) * Math.min(1, dt * 5);
-        const t = Math.min(1, C.s / L), lx = Math.cos(C.h), lz = -Math.sin(C.h)  /* (on the left of the road, as in Australia: Ash, 16 November 2026, "The cars should drive on the left side of the road"; then "the traffic is often on the wrong side of the roads ... all cars should drive on the left, and buses etc.": heading h runs (sin h, cos h) with z to the south, so the left is (cos h, -sin h); it had the right) */, x = ax + (bx - ax) * t + lx * C.r.lane, z = az + (bz - az) * t + lz * C.r.lane;
+        C.ln = C.ln == null ? C.r.lane : C.ln + bsClamp(C.r.lane - C.ln, -1.5 * dt, 1.5 * dt);  // (its place across the road: over to the next street's lane a bit at a time, not in one jump at the corner)
+        const t = Math.min(1, C.s / L), lx = Math.cos(C.h), lz = -Math.sin(C.h)  /* (on the left of the road, as in Australia: Ash, 16 November 2026, "The cars should drive on the left side of the road"; then "the traffic is often on the wrong side of the roads ... all cars should drive on the left, and buses etc.": heading h runs (sin h, cos h) with z to the south, so the left is (cos h, -sin h); it had the right) */, x = ax + (bx - ax) * t + lx * C.ln, z = az + (bz - az) * t + lz * C.ln;
         if (Math.hypot(x - home[0], z - home[1]) > FAR && !C.rider) { start(C); return; }
         C.x = x; C.z = z;
         // on its four wheels, as the car you drive sits (the middle of the four, tipped to the slope), eased so it never jumps
