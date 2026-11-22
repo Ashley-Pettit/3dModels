@@ -2114,6 +2114,9 @@ with it, and all three are fixed.
   centre line (the bus 1.35 m, clear of parked cars, which stand at least 2.9 m out). `design.py` then keeps each island clear of
   where the cars run (2.58 m in from each carriageway's line, and 0.3 m more): where the real island is wider it is cut back, and
   where a turn pocket has pushed it right over to one side a strip of it is kept against that side. Most of it is drawn as it is.
+  (Correction, 22 November 2026: `addTraffic` is never called in `moorooka-model.js`, so the change to it does nothing you can see:
+  the model has no moving cars of its own. The cars that drive are the page's, `townTraffic` in `app.html`. See "Moorooka's traffic
+  in the middle of its lane" below. The islands are still kept clear of both lanes of each carriageway, which does no harm.)
 
 `MOO_BEAU` in `app.html` is each island as points of `[east edge x, z, west edge x, z, kind]` (0 concrete, 1 garden bed, 2 lawn;
 3 striped concrete came later, below),
@@ -2271,3 +2274,82 @@ back streets by kind) and each name compared with the names in `MOO_FRONTS`.
   - The Cleo Collective is drawn at 2/116 from Ash's photos of the pharmacy row. Google Maps has "Cleo Hairdressing" at 49 Beaudesert
     Road (Colebrook Corner). Left where the photos have it.
   - "DINDER GIFTWARE" at 205 was read off Street View. Google Maps lists "Austra Giftware" at 5/207 and no Dinder Giftware. Left.
+
+## Moorooka's traffic in the middle of its lane (22 November 2026)
+
+Ash: "Improve how cars drive (left)". The cars that drive themselves (and the bus) are the page's (`townTraffic`): they follow a
+street's line, set off to the left of it by `lane`. They were on the left, but too far over.
+
+- **What was wrong.** `lane` was a quarter of the street's width whatever the street. On Beaudesert Road's 9.6 m carriageways that is
+  2.4 m left of the dashed line, where the left lane's middle is 1.7 m: the cars ran with their left wheels in the parking lane, hard
+  against the kerb at the wide junctions. On a two-way street with parking it put them along the parked cars.
+- **Now** (`laneOf`): a car runs down the middle of its lane, where the model paints the lanes (3.4 m wide, counted the way the model
+  counts them). On a one-way carriageway that is the left lane of its two or three (1.7 or 3.4 m left of its line), or down the line
+  itself where there is one lane (the roundabouts and slip lanes). On a two-way street it is 1.75 m left of the centre line, or the
+  middle of its half on a narrow one. A town whose streets have no widths (Logan) keeps what it had.
+- **Corners.** A car's place across the road now moves over to the next street's lane at 1.5 m a second (`C.ln`); it used to jump
+  across at the corner where the two streets' lanes differed.
+- **Dead ends.** A car that reaches one with nobody within 150 m starts again somewhere else. Turning round there is a spin on the
+  spot onto the other side of the street; it still does that when you are near or riding in it, so a car never vanishes in front of you.
+
+Checked on a local build: each car photographed from behind on Beaudesert Road, round Mayfield Road and at two roundabouts; and 70
+seconds of every car's position recorded four times a second (`left of its line` 1.70 m on the two-lane carriageways, 1.75 m on
+two-way streets, 0 on single lanes; no jump from one sample to the next; none within 1.6 m of a parked car's middle, where one was
+before). Not done: cars still turn across a divided road wherever the map joins the streets, and they do not use the turn lanes.
+
+## Moorooka's drone waits inside number 6 (22 November 2026)
+
+Ash: "move the drone into inside my house in moorooka". The drone and its remote were at a random spot on the grass (an oval, Stimpson
+Park, the field off School Road).
+
+- **Where they are now.** The drone sits on a rug in the front room of 6 Beaudesert Road. Its remote lies on the grass beside the front
+  path (`TOWN_RIDES.moo.drone.at`), because you can't walk into the house: the model's houses are solid, with painted doors. Pick the
+  remote up there and the view goes to the drone, from behind it, with the open front door ahead. Push forward and it flies out of the
+  door, up over the landing's rail and out over the front lawn. It can fly back in through the door the same way.
+- **The room** (`townRoom6`, `T.room6`): one small unlit part drawn inside the model's house, about 180 triangles: floorboards, walls,
+  ceiling, the door and the two front windows painted as daylight, a rug, a couch and a television, a table and stools, a kitchen
+  bench, Arlo's bed. It is made up: there are no photos of the inside. Its walls stand 0.62 m inside the lot survey's outline
+  (`MOO_NO6.sixHouse`), because the model draws the house's walls 0.3 to 0.5 m inside that outline and the room showed through them
+  at 0.14 m. The door (8.5 to 9.37 m along the front wall from its south end, 2.1 m high) and the floor (the eave less 2.75 m) were
+  measured off the model's own front with marker lines.
+- **How the drone is let through.** Everything else in Explore stands on `surf()`, which is the roof over a building. The drone asks
+  `T.room6.floorAt(x, z, y)` first (`dsurf`): the floor under a point in the room, in the doorway or on the landing, null anywhere
+  else or above the ceiling, so the roof is still a roof for the possum, the pigeon and a drone coming down on it. `ceilAt` keeps it
+  under the ceiling and under the door's lintel. In line with the door the floor rises to the height of the rail by the time the
+  drone is over it. The doorway is 0.2 m wider each side than the painted door, so it is not fiddly on a phone.
+- **The view.** Indoors it stays in the room (`floorAt` of where the view would be), and comes right up behind the drone as the drone
+  reaches the door (`near`), so the drone is not lost behind the wall on its way out. Once it is out, the view is kept out of the
+  house too (`inHouse`).
+
+Tested on a local build at desktop and phone sizes (`scripts`-style Playwright run: stand by the remote, pick it up, hold forward):
+the drone goes from the rug out through the door without stopping, rises to 1.15 m over the landing and carries on over the lawn;
+putting the remote down lands it where it is. Not done: you still can't walk into the house, and the other towns' drones are as
+they were.
+
+## Number 6's balcony concept, in Moorooka (22 November 2026)
+
+Ash: "Merge the balcony concept into the moorooka game. Allow me to press a button on the house to change from how it is to the
+balcony model. You'll need to merge the models a bit as neither are perfect."
+
+- **The button:** a yellow pill floating over number 6's roof whenever you're within 70 m (on foot or flying low). "Show the
+  balcony" switches to the concept, "Show it as it is" switches back. The choice is kept on the device (`an3d-bal6`).
+- **One house, both ways:** within 300 m, number 6 is drawn by the app (`townBalcony6` in `app.html`, numbers in `MOO_BAL6`), not
+  by the model. The model's own house (and its lot's fences, which are in the same piece) is hidden through a hook added to
+  `moorooka-model.js` (`?v=62`): the detailed houses' `cull` asks `window.anDetailOff(id)`. Further off, the model's own house shows.
+- **What came from where:** the Moorooka model gives the position and size (the survey outline, walls 0.45 m in: about 9.4 by 12 m),
+  the floor and eave heights, the roof (gable to the street, sloping to the back), the front (door, two hooded windows, the entrance
+  landing, porch roof and stairs along the front wall) and the south side's windows. The balcony page (`balcony/src/main.js`) gives
+  the weatherboards, the back and north walls' windows and doors (spread to fit the narrower house), solar on the back of the roof,
+  the open slab under the back, and the whole balcony: the rear balcony, the hexagon covered deck with its table and fan, the
+  landing, the new stairs down the side, glass balustrades, posts and roofs. The north fence is 4.5 m from the house, as Ash measured.
+- **As it is:** the window where the French doors go (with its hood), and the existing steel stairs: a landing outside the back
+  door, then down along the back wall towards the north, landing outside the pool fence. Where they run is a guess from the quote
+  brief; worth checking against the real thing.
+- **Walking:** the house floor, both landings, the decks and all three sets of stairs are surfaces. Explore's `ground` asks
+  `T.bal6.top`, which only counts one within 0.8 m of your feet (so you walk under the decks, and up the stairs a step at a
+  time). Up on them, `bsBlock` asks `T.bal6.block`, which stops you stepping off except by the stairs, a step back from the glass.
+  Under a roof or a deck your eyes come down to fit (`T.bal6.eye`).
+- **Lag and load:** nothing to download; built once when Moorooka opens, three sets of a few draw calls each, shown or hidden by
+  moving them (no rebuilding mid-game).
+- **Tested:** both versions from the back, side, front and the air; walking up the new stairs to the hexagon and into the
+  balustrade; the two-finger stick test at phone size in all three towns, and again after two minutes; tapping the button on a phone.
