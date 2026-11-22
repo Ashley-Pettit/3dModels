@@ -17083,7 +17083,7 @@ const handle = async (m, post) => {
     const card = document.createElement("div"); card.className = "bs-gps"; card.hidden = true; card.setAttribute("role", "status");
     card.innerHTML = `<svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 16-7-4-7 4z" fill="#fff"/></svg><div><b></b><span></span></div><button type="button" aria-label="Stop the GPS">×</button>`;
     const arr = card.querySelector(".arr"), cb = card.querySelector("b"), cs = card.querySelector("span");
-    box.append(boxEl, card);
+    ($("bsFly") || box).append(boxEl, card);  // (over the town's own buttons, as the race's are)
     const say = t => { note.hidden = !t; note.textContent = t || ""; };
     let items = [];
     const show = list => { items = list; ul.innerHTML = ""; for (const [i, s] of list.entries()) { const li = document.createElement("li"), b = document.createElement("button"); b.type = "button"; b.dataset.i = i;
