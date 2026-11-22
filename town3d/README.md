@@ -2619,3 +2619,68 @@ a wall.
 Checked: built; the three towns' scripts parse; the workshop, the Starbucks wall, the shop, the Keats Street wall and the arcade
 looked at in headless Chrome at 1280 x 800 and at phone size (390 x 844), against the Street View pictures; one name tag each for
 Auto Masters and Bugsy's; the two-finger stick test in all three towns, before and after a two-minute run.
+
+## The Beaudesert Road strip and the main roads against Street View (23 November 2026)
+
+Ash, with a picture of the strip from above: "Do the businesses along here and the other ones using Google maps from my pc. Lowish
+to moderate res don't make app laggy".
+
+How it was done (Chrome on Ash's PC): a Street View panorama every 15 m along each carriageway of Beaudesert Road from the Willow
+(215) to inline physio (101), looking at the near side, 61 views, and the model rendered from the same 61 spots to set beside
+them. Street View is October 2024 from the west carriageway and September 2025 from the east one, so what trades there now came
+from Google Maps: its labels on the map at its closest zoom, and the listing of every business the two disagreed about. Then one
+Street View look at each of 54 more businesses: most of those on Ipswich Road and the rest of Beaudesert Road, and a first few
+on the back streets.
+
+On the strip, west side, south to north:
+
+- **207**: the south half is the Willow's gaming room under its black fascia, with no shop sign. The kebab shop is the north
+  half, under a yellow sign. Google Maps lists it as Cha Charcoal Grill and shows the Istanbul Kebabs sign: the sign carries
+  both. (It was one green sign across the lot, with the Willow's "$20 main meals" under the name.)
+- **205**: the barber's sign is black (it was dark red); Ariana's is red with "bakery, fresh hot bread" (it was cream).
+- **193**: two fronts under one awning, Roo Kitchen & Bar and H24 Gym (2/193, new). It was one sign high on a blank wall.
+- **173-175**: the street signs are Way Future and Red Sea Grocery, then the tobacconist and Habos Kitchen. JB Stevenson & Co,
+  which the model had on the first sign, is still listed at 173 but has no sign on the street.
+- **145-147**: Culture Cuts, the second barber, north of the arcade's door (5/147).
+- **143**: Clear Radiology's sign is navy with white letters (it was white with teal).
+
+East side, south to north:
+
+- **204 (the Hughes Centre)**: the shops are in the order they stand: Ho Choi at the corner end, then the barber, Baba Burger,
+  Zeitoon, Maywand, a plain front and the laundromat. Ho Choi was fourth. The plain front was Kabul Bazar, whose sign is still up
+  in Street View and which Google Maps has closed for good. The building is white render, not salmon.
+- **182**: QML Pathology, new, in the cream corner building north of Mayfield Road, and Rooka Acai's sign round the corner is
+  dark with "acai, coffee, juice" (it was purple).
+- **166-168**: Skye Therapy's sign beside the chiropractor's (it is upstairs, its sign is on the awning).
+- **160**: King of Hong Kong's sign is cream with red letters. **152**: the halal butcher's is yellow with red letters.
+
+Away from the strip:
+
+- **1029 Ipswich Road is a Liberty**, not a Reddy Express: Google Maps has the Shell there closed for good and Liberty Oil
+  Moorooka trading, and Street View (September 2025) has Liberty's canopy and flags. The shop is Time Saver; Subway and Gloria
+  Jean's are as they were.
+- **1071 Ipswich Road**: the signs say Isuzu UTE (it read Moorooka Motor Group). **1095**: The Woodworkers' sign is dark green
+  and gold.
+
+Right as they were, and left: the Willow, the arcade, the post office and Domino's, the Woolworths centre's names (Nando's has
+closed for good, so it is not added), Moorooka Central, the pharmacy centre, the houses that are businesses at the north end, and
+on the main roads National Storage, Oliver's, the water ski shop, Dom's, Pro Honda, City Hire, TeamMoto, Tyrepower, Fourby's,
+Pedders, the Hyundai, Suzuki and Nissan yards, Pearl Energy, Red Rooster, the BPs, the Ampol, the foodstore, Payless Tyres, Future
+Auto, Advance Mechanical, Melody Massage, Saigon Flavour (the Grumpy Duck sign in Street View is of a closed business), the vet and
+Bauer's on Fegen Drive.
+
+Not done: the vacant front at 185-191 and the ochre building beside the Moorooka Mall have no sign in the model or on the street
+worth drawing; Franco's Hair (183, on Moorvale Lane) is not in; the Woolworths centre is still a row of signs where the real one
+is one curved fascia; most of the back streets' workshops (about 60; the 15 looked at mostly showed a shed from the road and
+settled nothing) and the businesses in Salisbury, Rocklea, Yeerongpilly and Annerley (about 90) have not been looked at.
+
+Cost, measured in headless Chrome with the whole strip in view, before and after: 15 more small pictures (688, was 673; five signs
+and ten shopfronts), 1.25 MB more picture memory (207.1 MB, was 205.8), triangles up 0.15% (1.971 million, was 1.968). Nothing new
+runs per frame: every change is a record, drawn once when the shops are built. The page is 2.4 KB bigger.
+
+The lessons: the two carriageways' panoramas are a year apart, so look from both. A sign in Street View can be a closed
+business's: Google Maps' listing settles who trades there. And splitting one long front into several lets each sit at its own
+ground level on a sloping street, which uncovers the model's own awning behind: give the building `noShop`.
+
+Checked: built; the three towns' scripts parse; the changed stretches rendered at 1280 x 800 and set beside the Street View
+pictures; the two-finger stick test in all three towns, before and after a two-minute run.
