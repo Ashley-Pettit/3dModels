@@ -8694,7 +8694,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=21", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=61", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=62", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -10266,6 +10266,42 @@ const handle = async (m, post) => {
     // MMG Auto's showroom strip and the white office on the Gow Street corner: flat roofs, pale walls (Street View)
     { at: [-539.89, -809.36], flat: true, wall: [228, 230, 232] }, { at: [-489.46, -866.18], flat: true, wall: [242, 242, 240] },
   ];
+  // ---- houses set on their slope (Ash, 22 November 2026: "a lot of the houses are in the ground. If they are I want you to rebuild them in
+  // low res ... make the houses like the real thing but in low res"). A house's floor is the ground at its middle, so on a slope its
+  // uphill walls stood in the dirt. Each house listed here is rebuilt by the model (moorooka-model.js ?v=62, tools/houses/set_on_slope.py)
+  // the way Brisbane's hillside houses are built: the roof where the survey has it, the floor a storey under it and never below the
+  // uphill ground, and under the floor a closed-in lower level (with a garage door where the drive meets the house) or stumps behind
+  // battens, with a landing and stairs at the front door and a pad joining them to the path. No memory to speak of: about 30 bytes a
+  // house here and some 150 more triangles in the suburb's own building pieces (no new draw calls).
+  // [x, z of the building's middle, the roof on the Queensland aerial photo (0 as the data has it, 1 hip, 2 gable, 3 flat or a low
+  // skillion), then where the drive meets the house (from the ground plan) if it does, then what Street View shows once it is checked:
+  // { w: wall colour, b: the colour under the floor, e: 1 closed in or 0 on stumps }]. Picked by tools/houses/pick_sunk.py, worst first.
+  const MOO_SET = [
+    // Part 1 (22 November 2026): the 100 most sunk inside Moorooka, 1.65 to 3.56 m of wall in the ground
+    [308.26,328.88,0,307.7,317.3], [856.29,105.78], [666.39,334.41,2,661.6,329], [1132.21,-319.27], [400.14,-873.62], [269.93,-962.61],
+    [594.34,-739.39], [372.62,-515.33,1,367.1,-521.3], [914.71,92.58,3], [387.26,-1025.2,1,402.6,-1020.4], [425.56,-629.09,1], [784.28,586.12,1],
+    [329.26,-819.48,1], [474.56,608.21,1,486.4,608.2], [829.22,321.51,2], [506.08,-571.81,3], [755.43,561.89,0,754,574.5], [226.22,-970.75],
+    [574.71,284.08], [380.55,-904.7,1,380.3,-910.3], [848.45,572.72], [664.43,-659.4], [907.45,-243,2,897.7,-249], [463.04,169.98,3],
+    [393.86,317.42,1,395.7,326.6], [141.44,272.83,1], [461.41,-883.76,2], [904.82,-212.43,1,894.6,-210.7], [537.72,-679.7,1,527.5,-689],
+    [358.78,-569.18,1], [948.65,43.89], [342.7,-1037.48,2,351.6,-1042.6], [464.57,-464.72,1,459,-474], [146.04,-591.55,1,148.6,-578.8],
+    [320.83,-762.82], [412.12,143.75,3,413.1,153.6], [820.12,273.54,3], [714.68,331.94,1,724.1,337], [107.87,-201.67,1], [518.38,654.33],
+    [767.35,281.83,2], [551.48,-685.14,3], [155.42,222.9,1], [579.13,305.37,1,568.4,298.5], [762.71,-375.81,1,753,-373.5],
+    [897.73,-196.13,1,889.1,-201.9], [613.78,-458.75,1,612.5,-468.5], [246.9,248.41,1], [911.26,-285.8,1,903.2,-290.7], [393.18,-672.97,1],
+    [408.83,325.75,1,412,333.8], [280.42,315.55,3], [743.2,-246.37,2,756.9,-236.6], [397.8,-1207,1], [202.92,262.58,1],
+    [478.18,-1075.18,1,470,-1067.9], [427.95,109,1,425.6,101.3], [427.22,153.14,3,427.9,166.3], [481.38,591.7,3,491.1,592.2],
+    [560.39,-522,1,560.9,-516.9], [444.33,218.2,2], [470.66,-1085.58,1,461.6,-1082.8], [455.95,-453.21,1], [385.48,-418.1,1,381.6,-413.4],
+    [703.78,545.97], [881.87,125.37,1], [611.52,-515.35,1], [571.13,341.32,1], [772.93,635.22,3], [430.1,-1049.26,1,439.9,-1043.7],
+    [586.47,-863.6,1,581.9,-873.1], [218.38,-821.77,1], [158.07,208.2,1,151.1,203], [700.3,400.05,1], [658.57,363.64,1], [533.83,620.69,2],
+    [732.87,610.52,0,726.8,597.1], [460.14,-579.41,1], [857.85,135.62], [786.59,237.46], [530.25,599.38,3,526.7,592.9], [123.7,-830.97,1],
+    [-81.45,176.97,1,-72.9,184.7], [531.31,232.24,1,540.5,228.2], [435.84,-1031.08,1], [170.79,-782.42,1,168.4,-794.3], [144.28,306.4,2],
+    [-118,-1202.08,2], [329.33,-979.73,1,326.6,-969.8], [529.96,-838.68,0,544.1,-832.8], [348.15,-398.98,1,336.4,-390.7], [198.1,-273.24,1],
+    [442.65,318.92,1], [442.12,-986.47,1], [471.72,-648.85,1,458.1,-648.9], [340,-766.75], [519,-477.42,1], [663.54,-399.6,1],
+    [210.05,349.08,1,203.7,357.1], [262.61,360.75,1],
+  ];
+  { const cells = new Map(); for (const q of MOO_SET) { const k = Math.floor(q[0] / 4) + "_" + Math.floor(q[1] / 4); let l = cells.get(k); if (!l) cells.set(k, l = []); l.push(q); }
+    window.anSet = (x, z) => { const cx = Math.floor(x / 4), cz = Math.floor(z / 4);
+      for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) { const l = cells.get((cx + a) + "_" + (cz + b)); if (l) for (const q of l) if (Math.abs(q[0] - x) < 0.5 && Math.abs(q[1] - z) < 0.5) return q; }
+      return null; }; }
   window.anStyle = (x, z) => { for (const q of MOO_STYLE) if (Math.abs(q.at[0] - x) < 0.6 && Math.abs(q.at[1] - z) < 0.6) return q; return null; };
   // No window hoods on a wall that carries a business's sign: they stuck out through the board and flickered across it (Ash, 21 November
   // 2026, "Quite a lot of the signs are hidden by these things", and the dashes along the Guardian's awning: "an example of the flashing").
@@ -10706,6 +10742,7 @@ const handle = async (m, post) => {
   // top with each change worth a look, and take off what Ash has seen (Ash, 19 November 2026: "I want you to have a btn for the player with
   // name ash that jumps to new features so I can quickly review")
   const MOO_NEW = [
+    ["Houses out of the dirt, part 1", "The 100 most sunk houses rebuilt on their slope: the floor above the uphill ground, a lower level or stumps under it, stairs to the front door, a garage door where the drive meets the house (this one, on Northview Outlook)", 569.2, -874.6, -2.136, 0.183],
     ["The Willow's way in", "Redone from Street View: the steps up at the south corner between white piers, under the red slatted canopy, with the sign over them and the timber-clad corner beside", -74.0, -116.0, 1.27, 0.08],
     ["Moorooka bowls club", "Moorooka Sports & Community Club on Koala Road: three bowling greens with their ditches and shade shelters", 160.0, -462.0, -2.24, -0.1],
     ["School pool and courts", "Moorooka State School's 25 m pool and its two tennis courts. St Brendan's has a play frame and shade sail on its lawn", -226.0, 175.0, 1.571, -0.15],
