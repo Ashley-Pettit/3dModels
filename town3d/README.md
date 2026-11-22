@@ -2548,11 +2548,13 @@ Ash: "Add them" (the four from the shops check above). Each was looked into firs
   Keats Street that the model called Star Seafood (fish and chips; the name came from the map's older data). Google Maps has no Star
   Seafood. So it is taken as the same shop under its new name, and the front is renamed (its pole sign, its tag and Jump to), not a
   second fish and chip shop added to the same building. The sign keeps the old sign's blue and white: there is no photo of the new
-  one. `MOO_FOOD` (the food list) still says Star Seafood.
+  one. `MOO_FOOD` (the food list) still says Star Seafood. (The sign was on the wrong wall: put right the same day, see "The three
+  places reviewed against Street View" below.)
 - **Auto Masters, 1115 Ipswich Road.** It shares the address with Starbucks. Google Maps puts it 1.6 m outside the Starbucks
   building's other side, the one that faces Unwin Street, so it has a sign on that wall and a place in Jump to. This is the best that
   is known, not something seen: the 2022 aerial photograph shows the lot still empty, and its workshop may be a building of its own
-  that the model has not got.
+  that the model has not got. (It is a building of its own, and the model had it: put right the same day, see "The three places reviewed
+  against Street View" below.)
 - **Dufanda, a barber in the Rannchhod Arcade (shop 19, 197).** On the arcade's tenant board with K:B Barbershop, which Google Maps
   has at the same shop, and in the arcade's tag. The board has ten lines now and its lettering is a fifth smaller to fit.
 - **Umdorman Cafe, 173 Beaudesert Road: not added.** Must Do Brisbane's page for it (1/173, the same phone number as Google's
@@ -2574,3 +2576,46 @@ Ash: "Stop no point without google images", then, with Chrome on his PC connecte
   level, and whether there is a garage door (`moorooka-model.js ?v=64` reads `d` and `g`). The other 5 were behind trees, blurred by
   Google or did not draw. 88 of part 1 and all of part 2 are still by rule.
 - `streetview-part1.json` lists the houses in the order they were picked (`order`), so the next chat carries on from the 13th.
+
+## The three places reviewed against Street View (22 November 2026)
+
+Ash: "Review those changes you just made. Make sure you use Google maps for images". The changes were the three places in "The
+places Google Maps had and the model did not", which went in from Google Maps' pins and listings without a look at a photo. Street
+View and the places' own photos on Google Maps (through Chrome) show two of the three were in the wrong spot.
+
+- **Auto Masters was on the wrong building.** It is not in the Starbucks building. It is the bright yellow workshop north of the
+  Starbucks car park, on Unwin Street, on the same lot (1115 Ipswich Road), next door to 21 Unwin Street (Street View, September
+  2024). Google's pin for the business sits beside the Starbucks building, which is how the sign got there, and the 2022 aerial
+  photograph could not show either building: the lot was still empty. The model had the workshop as a grey two-storey house shape
+  with windows. Now `MOO_STYLE` makes it a flat-roofed yellow shed about 7 m high with no windows (kind 1), and three `MOO_FRONTS`
+  records draw what its three walls show: the corner piece (the office's glass front under the big sign; the name tag and Jump to
+  are here), the Unwin Street wall (one workshop bay under a flat awning, a sign by the corner) and the car park wall (two bays
+  under an awning, a sign over them), all on a black base. The sign is yellow in a red frame with black letters, as it is. The red
+  sign is gone from the Starbucks building.
+- **Bugsy's sign was on the wrong wall.** The shop is the end of its building that faces Beaudesert Road, at the corner of Keats
+  Street: an open front under a blue awning on blue posts with QUALITY SEAFOOD along its edge, and the name on a blue sign standing
+  on the roof (Google Maps' photo of the shop; Street View, October 2024, has the same blue signs reading The Boatshed, and May
+  2024 has Star Seafood's red ones. Google Maps marks both of those permanently closed and has Bugsy's trading, so the new name was
+  right). The sign was on a pole half way along the Keats Street wall, which is the side of the house behind the shop (137 Keats
+  Street): that wall keeps its red roller door and has no sign now. The blue is the photo's. `MOO_FOOD` says Bugsy's Fish & Chips
+  too now.
+- **The arcade's barbers: right as they were.** Google Maps has K:B Barbershop and Dufanda both at shop 19, 197 Beaudesert Road,
+  both trading, with different phone numbers, so both stay on the tenant board. The Kingz Barbershop A-frame outside the arcade in
+  Street View (October 2024) points across the road: Kingz is at 180, where the model has it.
+
+New in the drawing for these (plain shapes in the one piece, bar each sign's own small picture): `frame` on a sign (a border of
+another colour), `awnings` (a flat awning out from a wall, no posts), `skirt` (a band of another colour along the foot of a wall),
+`t` on a verandah's sign (other words on it than the shop's name), and a wall record with no name at all (`shops: [{ w }]` with
+`noBoard`: only its doors are drawn). Five small sign pictures replace two, about half a megabyte more memory and 4 KB more to
+download.
+
+Not done: the ground round the workshop and Starbucks is still the 2022 photograph's empty lot (grass, and the old fence between
+the two) where there is now one sealed car park, and Starbucks' wall on that side is plain where Street View has its glass front
+and a roundel.
+
+The lesson: a map pin says which lot a business is on, not which building or which wall. Look at Street View before a sign goes on
+a wall.
+
+Checked: built; the three towns' scripts parse; the workshop, the Starbucks wall, the shop, the Keats Street wall and the arcade
+looked at in headless Chrome at 1280 x 800 and at phone size (390 x 844), against the Street View pictures; one name tag each for
+Auto Masters and Bugsy's; the two-finger stick test in all three towns, before and after a two-minute run.
