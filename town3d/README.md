@@ -2260,7 +2260,7 @@ balcony model. You'll need to merge the models a bit as neither are perfect."
   balcony" switches to the concept, "Show it as it is" switches back. The choice is kept on the device (`an3d-bal6`).
 - **One house, both ways:** within 300 m, number 6 is drawn by the app (`townBalcony6` in `app.html`, numbers in `MOO_BAL6`), not
   by the model. The model's own house (and its lot's fences, which are in the same piece) is hidden through a hook added to
-  `moorooka-model.js` (`?v=61`): the detailed houses' `cull` asks `window.anDetailOff(id)`. Further off, the model's own house shows.
+  `moorooka-model.js` (`?v=62`): the detailed houses' `cull` asks `window.anDetailOff(id)`. Further off, the model's own house shows.
 - **What came from where:** the Moorooka model gives the position and size (the survey outline, walls 0.45 m in: about 9.4 by 12 m),
   the floor and eave heights, the roof (gable to the street, sloping to the back), the front (door, two hooded windows, the entrance
   landing, porch roof and stairs along the front wall) and the south side's windows. The balcony page (`balcony/src/main.js`) gives

@@ -8699,7 +8699,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=21", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=61", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=62", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -14202,7 +14202,7 @@ const handle = async (m, post) => {
   // ---- 6 Beaudesert Road's balcony concept, in the game (Ash, 22 November 2026: "Merge the balcony concept into the moorooka game. Allow
   // me to press a button on the house to change from how it is to the balcony model. You'll need to merge the models a bit as neither are
   // perfect"). Number 6 is drawn here instead of by the model (the model's own house and its lot's fences are hidden: window.anDetailOff,
-  // a hook in moorooka-model.js ?v=61), as one house taking the best of both:
+  // a hook in moorooka-model.js ?v=62), as one house taking the best of both:
   // - from the Moorooka model: where it stands and its size (the survey's outline, walls 0.45 m in from it: 9.4 by 12 m), the floor and
   //   eave heights, the roof (a gable to the street, hipped at the back, its colour), the front (door, two hooded windows, the entrance
   //   landing at the north end with its porch roof and the stairs along the front wall) and the south wall's windows;
