@@ -2254,6 +2254,27 @@ Ipswich Road end) a piece of it survived, it was the first piece built at the st
 Measured (`t/walk.js`, six places, the network filling at a phone's speed): people with someone else within 3 m went from 67% to 10%,
 and the median distance to the nearest other person from 1.7 m to 15.7 m; none on a road.
 
+## Moorooka's shops checked against Google Maps again (22 November 2026)
+
+Ash: "look at the shops in moorooka. Check against google maps for accuracy and improve model using low res". 110 places that Google
+Maps lists in Moorooka were looked up (the shopping strip address by address, then the Magic Mile, the servos, the workshops and the
+back streets by kind) and each name compared with the names in `MOO_FRONTS`.
+
+- **In the model already:** all but eight. The strip's shops, the two arcades' tenant boards, the shopping centre, the car yards and
+  the workshops agree with Google Maps by name and address.
+- **Changed** (words only, nothing drawn): the tobacconist at 173 is Cigar Heaven (its tag says so now; the sign still reads
+  TOBACCONIST), and the Rannchhod Arcade's tag names K:B Barbershop and Anina Dubai as well.
+- **On Google Maps and not in the model** (not added: each needs its wall worked out from the lot survey, which `tools/ground/shops.py`
+  does with `shapely`, and that could not be installed in this session): Bugsy's Fish & Chips, 293 Beaudesert Road; Auto Masters,
+  1115 Ipswich Road (the Starbucks address); Umdorman Cafe, 173 Beaudesert Road (which shopfront is not known); Dufanda, a barber in
+  the arcade at 197.
+- **Not settled:**
+  - Yeshi Buna, 1/131 Beaudesert Road. Taken out on 21 November as closed for good. Google's places data still lists it (472 reviews,
+    no opening hours), and a booking site shows hours for it. Left out; Ash would know.
+  - The Cleo Collective is drawn at 2/116 from Ash's photos of the pharmacy row. Google Maps has "Cleo Hairdressing" at 49 Beaudesert
+    Road (Colebrook Corner). Left where the photos have it.
+  - "DINDER GIFTWARE" at 205 was read off Street View. Google Maps lists "Austra Giftware" at 5/207 and no Dinder Giftware. Left.
+
 ## Moorooka's traffic in the middle of its lane (22 November 2026)
 
 Ash: "Improve how cars drive (left)". The cars that drive themselves (and the bus) are the page's (`townTraffic`): they follow a
