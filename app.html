@@ -9243,6 +9243,7 @@ const handle = async (m, post) => {
         if (!OFF.has("gps")) try { T.gps = townGps(T, m, F, ground, cfg, box); T.gps.places = places; } catch (e) { console.warn("Town model: the GPS couldn't start", e); }
         // its own button in the top row, not in Jump to (Ash, 22 November 2026: "Move gps out of jump to so users can find it more easily")
         { const gb = $("bsGpsBtn"); if (gb && T.gps) { gb.hidden = false; gb.onclick = () => { if (!list.hidden) openList(false); T.gps?.open(); gb.blur(); }; } }
+        setTimeout(() => T.gps?.warm?.(), 6000);  // its streets made ready in the background, once the town has settled
         if (cfg.place === "moo" && !OFF.has("race")) try { T.race = townRace(T, m, F, ground, box); } catch (e) { console.warn("Town model: the race couldn't start", e); }
         if (!OFF.has("mail")) try { T.mail = townMail(T); } catch (e) { console.warn("Town model: the post couldn't start", e); }
         if (!OFF.has("animal")) try { T.critter = townCritter(T, m, ground, cfg.place); } catch (e) { console.warn("Town model: the animal couldn't start", e); }
@@ -16250,6 +16251,7 @@ const handle = async (m, post) => {
       let d; try { d = await townStreetData(cfg); } catch { return; } if (dead) return;
       if (d.town) d.roads.forEach((r, i) => { r.wd = (d.town.roads[i]?.[3] || 0) / 10; });  // Moorooka and Inverloch know each street's width
       T.roadsAll = d.roads;  // (for the car's Unstick: the nearest road)
+      T.streets = { names: d.names, roads: d.roads, town: d.town && { buildings: d.town.buildings, houses: d.town.houses } };  // (and the GPS: no second download or read of the same file; only what it needs is kept)
       const pick = lim => d.roads.filter(r => r.cls <= lim && r.pts.length >= 4);
       // How far left of a street's line a car runs: down the middle of its lane, where the model paints the lanes (3.4 m wide, counted as
       // the model counts them). On a one-way carriageway that is the left lane of its two or three, 1.7 or 3.4 m left of its line, and
@@ -17280,27 +17282,31 @@ const handle = async (m, post) => {
     // roads"): no footpaths or laneways between houses, bush tracks, or unnamed driveways and car park aisles. Logan counts its
     // residential streets as class 4 and service roads 5; Moorooka and Inverloch count them 3 and 4. A named service road is a street.
     // Every point of every street is a node, the same point on two streets being one junction
-    const load = () => netP || (netP = townStreetData(cfg).then(async d => {
+    let budget = 6;  // ms of work per slice: 6 warming up in the background, 24 once someone is waiting for it
+    const load = () => netP || (netP = (T.streets ? Promise.resolve(T.streets) : townStreetData(cfg)).then(async d => {
       const t0 = performance.now(), names = d.names || [], top = cfg.place === "logan" ? 4 : 3;
-      // built a slice at a time (about 24 ms, then the game gets a turn), so opening the GPS never stalls the game for long: Logan's is
-      // 65,000 points, about half a second of work in all
-      let tick = performance.now(); const breathe = async () => { if (performance.now() - tick > 24) { await new Promise(r => setTimeout(r, 0)); tick = performance.now(); if (dead) throw new Error("gone"); } };
+      // built a slice at a time (6 ms in the background, 24 when you're waiting; then the game gets a turn), so it never stalls the
+      // game: Logan's is 65,000 points, about half a second of work in all
+      let tick = performance.now(); const breathe = async () => { if (performance.now() - tick > budget) { await new Promise(r => setTimeout(r, 0)); tick = performance.now(); if (dead) throw new Error("gone"); } };
       const roads = d.roads.filter(r => r.pts.length >= 4 && (r.cls <= top || (r.cls === top + 1 && r.name >= 0 && names[r.name])));
-      let blocked = null; if (d.town) try { blocked = await townStreetBlocks(cfg, d.town); } catch {}  // (Moorooka and Inverloch: is a join clear of buildings?)
-      const key = (x, z) => Math.round(x * 2) + "," + Math.round(z * 2), id = new Map, X = [], Z = [], adj = [], ends = [];
+      let blocked = null; if (d.town) try { await breathe(); blocked = await townStreetBlocks(cfg, d.town); } catch {}  // (Moorooka and Inverloch: is a join clear of buildings?)
+      // (keys are numbers, not text: Logan has 65,000 points)
+      const key = (x, z) => (Math.round(x * 2) + 262144) * 524288 + Math.round(z * 2) + 262144; let id = new Map, X = [], Z = [], adj = [], ends = [];
       const node = (x, z) => { const k = key(x, z); let i = id.get(k); if (i == null) { i = X.length; id.set(k, i); X.push(x); Z.push(z); adj.push([]); } return i; };
-      // the pieces of street, in a 25 m grid, for finding the nearest street to a point: [a, b, street name, which street]
-      const segs = [], cell = new Map, ck = (x, z) => Math.floor(x / 25) + "," + Math.floor(z / 25);
-      const file = (s, at) => { const ax = X[s[0]], az = Z[s[0]], bx = X[s[1]], bz = Z[s[1]];
-        for (let i = Math.floor(Math.min(ax, bx) / 25); i <= Math.floor(Math.max(ax, bx) / 25); i++) for (let j = Math.floor(Math.min(az, bz) / 25); j <= Math.floor(Math.max(az, bz) / 25); j++) {
-          const k = i + "," + j; if (!cell.has(k)) cell.set(k, []); cell.get(k).push(at); } };
+      // the pieces of street, in a 25 m grid, for finding the nearest street to a point: [a, b, street name, which street]. Each piece
+      // goes in the squares it passes through (every 10 m along it), not every square of the box round it: a long diagonal piece in
+      // the box round it was what made Logan's take 134 MB (it's about 20 MB now)
+      let segs = [], cell = new Map; const ck = (i, j) => (i + 32768) * 65536 + j + 32768;
+      const file = (s, at) => { const ax = X[s[0]], az = Z[s[0]], bx = X[s[1]], bz = Z[s[1]], n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 10)); let last = -1;
+        for (let q = 0; q <= n; q++) { const k = ck(Math.floor((ax + (bx - ax) * q / n) / 25), Math.floor((az + (bz - az) * q / n) / 25)); if (k === last) continue; last = k;
+          let c = cell.get(k); if (!c) cell.set(k, c = []); if (c[c.length - 1] !== at) c.push(at); } };
       const edge = (a, b, nm, one, ri) => { const w = Math.hypot(X[b] - X[a], Z[b] - Z[a]); if (!(w > 0)) return; adj[a].push([b, w, nm, 0]); adj[b].push([a, w, nm, one ? 1 : 0]); segs.push([a, b, nm, ri]); file(segs[segs.length - 1], segs.length - 1); };
       for (let ri = 0; ri < roads.length; ri++) { const p = roads[ri].pts, r = roads[ri]; let a = node(p[0], p[1]); ends.push([a, ri]);
         for (let k = 2; k < p.length; k += 2) { const b = node(p[k], p[k + 1]); edge(a, b, r.name, r.one, ri); a = b; }
         ends.push([a, ri]); if ((ri & 63) === 0) await breathe(); }
       // the nearest point on a piece of street to (x, z): [piece, how far, t along it, px, pz], optionally only on one street or not on one
       const near = (x, z, ok, maxR = 6) => { let best = null;
-        for (let r = 1; r <= maxR && !best; r++) for (let a = -r; a <= r; a++) for (let b = -r; b <= r; b++) for (const si of cell.get((Math.floor(x / 25) + a) + "," + (Math.floor(z / 25) + b)) || []) {
+        for (let r = 1; r <= maxR && !best; r++) for (let a = -r; a <= r; a++) for (let b = -r; b <= r; b++) for (const si of cell.get(ck(Math.floor(x / 25) + a, Math.floor(z / 25) + b)) || []) {
           const s = segs[si]; if (ok && !ok(s)) continue; const ax = X[s[0]], az = Z[s[0]], dx = X[s[1]] - ax, dz = Z[s[1]] - az, L2 = dx * dx + dz * dz || 1;
           const t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L2)), px = ax + dx * t, pz = az + dz * t, d = Math.hypot(x - px, z - pz);
           if (!best || d < best[1]) best = [si, d, t, px, pz]; }
@@ -17322,15 +17328,38 @@ const handle = async (m, post) => {
       let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (let i = 0; i < X.length; i++) { x0 = Math.min(x0, X[i]); x1 = Math.max(x1, X[i]); z0 = Math.min(z0, Z[i]); z1 = Math.max(z1, Z[i]); }
       const mid = new Map; roads.forEach(r => { const nm = names[r.name]; if (!nm) return; const p = r.pts, L = p.length / 2; let len = 0; for (let k = 2; k < p.length; k += 2) len += Math.hypot(p[k] - p[k - 2], p[k + 1] - p[k - 1]);
         const best = mid.get(nm); if (!best || len > best.len) { const h = (L >> 1) * 2; mid.set(nm, { len, x: p[h], z: p[h + 1] }); } });
-      net = { X, Z, adj, segs, near, flag, mid, names, bb: [x0 - 60, z0 - 60, x1 + 60, z1 + 60], ms: Math.round(performance.now() - t0) }; return net; }));
+      // packed into flat number arrays once built, and the lists it was built from let go (Ash, 22 November 2026: "GPS sounds mem load
+      // intense. Is it?"): Logan's network as lists of lists took 69 MB; packed it's a few MB. Moorooka's and Inverloch's are small
+      await breathe(); const n = X.length, PX = Float64Array.from(X), PZ = Float64Array.from(Z); let m = 0; for (const a of adj) m += a.length;
+      const off = new Int32Array(n + 1), to = new Int32Array(m), wt = new Float32Array(m), en = new Int32Array(m), bk = new Uint8Array(m);
+      for (let i = 0, k = 0; i < n; i++) { off[i] = k; for (const e of adj[i]) { to[k] = e[0]; wt[k] = e[1]; en[k] = e[2]; bk[k] = e[3]; k++; } } off[n] = m;
+      const ns = segs.length, SA = new Int32Array(ns), SB = new Int32Array(ns), SN = new Int32Array(ns); segs.forEach((g, i) => { SA[i] = g[0]; SB[i] = g[1]; SN[i] = g[2]; });
+      await breathe(); const keys = [...cell.keys()].sort((a, b) => a - b), CK = Float64Array.from(keys), CS = new Int32Array(keys.length + 1); let tot = 0; keys.forEach((k, i) => { CS[i] = tot; tot += cell.get(k).length; }); CS[keys.length] = tot;
+      const CL = new Int32Array(tot); keys.forEach((k, i) => CL.set(cell.get(k), CS[i]));
+      id = X = Z = adj = ends = segs = cell = null; if (T.streets) T.streets.town = null;  // (the buildings were only for checking joins)
+      const sq = k => { let lo = 0, hi = CK.length - 1; while (lo <= hi) { const md = (lo + hi) >> 1; if (CK[md] < k) lo = md + 1; else if (CK[md] > k) hi = md - 1; else return md; } return -1; };
+      // the nearest point on a piece of street to (x, z), as above, on the packed network: [piece, how far, t, px, pz]
+      const nearP = (x, z, ok, maxR = 6) => { let best = null;
+        for (let r = 1; r <= maxR && !best; r++) for (let a = -r; a <= r; a++) for (let b = -r; b <= r; b++) { const c = sq(ck(Math.floor(x / 25) + a, Math.floor(z / 25) + b)); if (c < 0) continue;
+          for (let q = CS[c]; q < CS[c + 1]; q++) { const si = CL[q]; if (ok && !ok(si)) continue; const ax = PX[SA[si]], az = PZ[SA[si]], dx = PX[SB[si]] - ax, dz = PZ[SB[si]] - az, L2 = dx * dx + dz * dz || 1;
+            const t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L2)), px = ax + dx * t, pz = az + dz * t, d = Math.hypot(x - px, z - pz); if (!best || d < best[1]) best = [si, d, t, px, pz]; } }
+        return best; };
+      const flagP = (a, b) => { for (let k = off[a]; k < off[a + 1]; k++) if (to[k] === b) return bk[k]; return 1; };
+      net = { X: PX, Z: PZ, off, to, wt, en, bk, SA, SB, SN, near: nearP, flag: flagP, mid, names, bb: [x0 - 60, z0 - 60, x1 + 60, z1 + 60], ms: Math.round(performance.now() - t0) }; mark(); return net; }).catch(e => { netP = null; mark(); throw e; }));  // (failed: try again next time)
+    // warming up: built quietly in the background a few seconds after the town opens (Ash, 22 November 2026: "GPS sounds mem load
+    // intense. Is it? If so load it in the background. Show gps warming up or words to effect"); the button says so until it's ready
+    const mark = () => { const gb = document.getElementById("bsGpsBtn"), sp = gb?.querySelector("span"); if (!gb || !sp) return; const warm = !!netP && !net;
+      sp.textContent = warm ? "GPS warming up" : "GPS"; gb.setAttribute("aria-busy", String(warm)); gb.title = warm ? "GPS warming up: getting the streets ready" : "GPS: directions to an address (I)"; };
+    G.warm = () => { if (dead || netP) return; load().catch(() => {}); mark(); };
+    G.ready = () => !!net;
     // the street an address is on, from its words ("12 Mayfield Rd, Moorooka" is on Mayfield Road): the longest street name in it
     const ABBR = { rd: "road", st: "street", ave: "avenue", av: "avenue", dr: "drive", cres: "crescent", cr: "crescent", ct: "court", pl: "place", tce: "terrace", pde: "parade", hwy: "highway", cl: "close", gr: "grove", esp: "esplanade", bvd: "boulevard", blvd: "boulevard", ln: "lane", cct: "circuit", pkwy: "parkway", wy: "way" };
     const words = s => " " + String(s || "").toLowerCase().replace(/[^a-z0-9' ]+/g, " ").split(/\s+/).filter(Boolean).map(w => ABBR[w] || w).join(" ") + " ";
     const streetOf = label => { const L = words(label); let best = -1, bl = 0; net.names.forEach((n, i) => { if (!n) return; const w = words(n); if (w.length > bl && L.includes(w)) { best = i; bl = w.length; } }); return best; };
     // where a point meets the streets: the nearest piece of street (on the address's own street when it's known and within 150 m)
-    const snap = (x, z, nm = -1) => { const N = net; const h = (nm >= 0 && N.near(x, z, s => s[2] === nm, 6)) || null;
-      const k = h && h[1] < 150 ? h : N.near(x, z, null, 8); if (!k) return null; const s = N.segs[k[0]];
-      return { a: s[0], b: s[1], nm: s[2], px: k[3], pz: k[4], t: k[2], fa: N.flag(s[0], s[1]), fb: N.flag(s[1], s[0]) }; };
+    const snap = (x, z, nm = -1) => { const N = net; const h = (nm >= 0 && N.near(x, z, si => N.SN[si] === nm, 6)) || null;
+      const k = h && h[1] < 150 ? h : N.near(x, z, null, 8); if (!k) return null; const a = N.SA[k[0]], b = N.SB[k[0]];
+      return { a, b, nm: N.SN[k[0]], px: k[3], pz: k[4], t: k[2], fa: N.flag(a, b), fb: N.flag(b, a) }; };
     // the shortest way (Dijkstra, a binary heap) from a point on a street to a point on a street; one-way streets kept to when driving
     const shortest = (S, E, oneWay) => { const N = net, n = N.X.length, dist = new Float64Array(n).fill(Infinity), prev = new Int32Array(n).fill(-1), pname = new Int32Array(n).fill(-1), h = [];
       const push = (d, i) => { h.push([d, i]); let k = h.length - 1; while (k) { const p = (k - 1) >> 1; if (h[p][0] <= h[k][0]) break; [h[p], h[k]] = [h[k], h[p]]; k = p; } };
@@ -17343,7 +17372,7 @@ const handle = async (m, post) => {
       const same = S.a === E.a && S.b === E.b, fwd = E.t >= S.t, direct = same && (!oneWay || (fwd ? !S.fa : !S.fb)) ? Math.hypot(E.px - S.px, E.pz - S.pz) : Infinity;
       const done = new Set, want = [E.a, E.b];
       while (h.length) { const [d, i] = pop(); if (d > dist[i]) continue; done.add(i); if (want.every(w => done.has(w))) break;
-        for (const [j, w, nm, back] of N.adj[i]) { if (oneWay && back) continue; const nd = d + w; if (nd < dist[j]) { dist[j] = nd; prev[j] = i; pname[j] = nm; push(nd, j); } } }
+        for (let k = N.off[i], ke = N.off[i + 1]; k < ke; k++) { if (oneWay && N.bk[k]) continue; const j = N.to[k], nd = d + N.wt[k]; if (nd < dist[j]) { dist[j] = nd; prev[j] = i; pname[j] = N.en[k]; push(nd, j); } } }
       // on to where it ends on its street: from that piece's start (going its way) or its end (going back)
       const viaA = !oneWay || !E.fa ? dist[E.a] + dd(E.a, E.px, E.pz) : Infinity, viaB = !oneWay || !E.fb ? dist[E.b] + dd(E.b, E.px, E.pz) : Infinity;
       if (direct <= Math.min(viaA, viaB)) return isFinite(direct) ? { path: [], names: [], d: direct } : null;
@@ -17406,7 +17435,7 @@ const handle = async (m, post) => {
     // a route: the line every 3 m, how far along each point is, and the turns (where the street's name changes, or it turns sharply)
     // The line runs on the streets only: from the street beside you to the point on the place's own street nearest it; the pin stands
     // on the place itself
-    const start = async dest => { await load(); if (dead) return; const [hx, hz] = here();
+    const start = async dest => { budget = 24; if (!net) toast("GPS warming up. The way shows in a moment.", 2500); await load(); if (dead) return; const [hx, hz] = here();
       if (dest.nm == null) dest.nm = streetOf(dest.label); const S = snap(hx, hz), E = snap(dest.x, dest.z, dest.nm);
       if (!S || !E) return toast("No way there along the streets from here.", 2500);
       const r = (T.car?.in && shortest(S, E, true)) || shortest(S, E, false); if (!r) return toast("No way there along the streets from here.", 2500);
@@ -17424,10 +17453,11 @@ const handle = async (m, post) => {
         const text = deg < 28 ? `Carry on onto ${nm2}` : deg > 150 ? (nm2 ? `Turn round onto ${nm2}` : "Turn round") : nm2 ? `Turn ${side} onto ${nm2}` : `Turn ${side}`;
         const last = turns[turns.length - 1]; if (last && at[i] - last.at < 15) turns.pop(); turns.push({ at: at[i], text }); }
       route = { pts, at, turns, dest, i: 0, on: false }; draw(pts, dest); card.hidden = false; hudT = 0; document.getElementById("bsGpsBtn")?.setAttribute("aria-pressed", "true"); G.frame(true); };
-    G.open = () => { if (dead) return; boxEl.hidden = false; inp.value = ""; show([]); say(route ? `Going to ${route.dest.label}. Pick somewhere else, or Cancel.` : ""); load().catch(() => {}); setTimeout(() => inp.focus(), 30); };
+    G.open = () => { if (dead) return; boxEl.hidden = false; inp.value = ""; show([]); budget = 24;
+      say(route ? `Going to ${route.dest.label}. Pick somewhere else, or Cancel.` : net ? "" : "GPS warming up. Type an address now: the way shows as soon as it's ready."); load().catch(() => {}); mark(); setTimeout(() => inp.focus(), 30); };
     G.close = () => { boxEl.hidden = true; ctl?.abort(); inp.blur(); };
     G.routePts = () => route && { pts: Array.from(route.pts), dest: route.dest };  // (for tests)
-    G.netInfo = () => net && { nodes: net.X.length, pieces: net.segs.length, ms: net.ms };  // (for tests: how big, and how long it took to build)
+    G.netInfo = () => net && { nodes: net.X.length, pieces: net.SA.length, ms: net.ms };  // (for tests: how big, and how long it took to build)
     G.stop = () => { route = null; clearParts(); card.hidden = true; document.getElementById("bsGpsBtn")?.setAttribute("aria-pressed", "false"); };
     G.active = () => !!route;
     G.frame = force => { if (!route || dead) return; const now = performance.now(); if (!force && now - hudT < 250) return; hudT = now;
