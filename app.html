@@ -1382,8 +1382,9 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 .bs-peer-edge { position: absolute; left: 0; top: 0; z-index: 1; padding: 4px 10px; border-radius: 999px; background: #ffd166; color: #1b1830; font: 700 0.76rem/1.3 var(--ui); white-space: nowrap; pointer-events: none; will-change: transform; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35); }
 .bs-peer-edge[hidden] { display: none; }
 /* number 6's button, floating over its roof: the house as it is, or with the balcony concept (Ash, 22 November 2026) */
-.bs-bal6 { position: absolute; left: 0; top: 0; z-index: 2; min-height: 40px; padding: 8px 16px; border: 0; border-radius: 999px; background: #ffd166; color: #1b1830; font: 700 0.85rem/1.3 var(--ui); white-space: nowrap; pointer-events: auto; cursor: pointer; will-change: transform; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); touch-action: manipulation; }
-.bs-bal6[aria-pressed="true"] { background: #fff; }
+/* number 6's balcony button: no label, just where to tap over the yellow button by the front stairs (Ash, 22 November 2026: "Remove the label for the button") */
+.bs-bal6 { position: absolute; left: 0; top: 0; z-index: 2; width: 48px; height: 48px; padding: 0; border: 0; border-radius: 50%; background: none; pointer-events: auto; cursor: pointer; will-change: transform; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.bs-bal6:focus-visible { outline: 3px solid #ffd166; outline-offset: 2px; }
 .bs-bal6[hidden] { display: none; }
 /* the quieter ones, past the nearest two when more than three are playing */
 .bs-peer-edge.far { padding: 2px 8px; background: rgba(20, 22, 34, 0.55); color: #fff; font-size: 0.66rem; box-shadow: none; opacity: 0.85; }
@@ -8734,7 +8735,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=21", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=64", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=65", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -9111,6 +9112,10 @@ const handle = async (m, post) => {
         const openList = on => { if (on) players(); list.hidden = !on; jump.setAttribute("aria-expanded", String(on)); if (on) { fl.hidden = true; fb.setAttribute("aria-expanded", "false"); list.querySelector("button")?.focus({ preventScroll: true }); } };
         jump.hidden = !places.length; jump.textContent = "Jump to…"; jump.setAttribute("aria-haspopup", "menu"); openList(false);
         jump.onclick = () => openList(list.hidden);
+        // a tap anywhere else closes it (Ash, 22 November 2026: "If I tap out of the jump to menu, close the menu"). Passive, and it never
+        // stops the tap: a thumb that lands on a stick still drives it
+        T.listOut = e => { if (!list.hidden && !list.contains(e.target) && !jump.contains(e.target) && !$("bsTownNew")?.contains(e.target)) openList(false); };
+        document.addEventListener("pointerdown", T.listOut, { capture: true, passive: true });
         const newBtn = $("bsTownNew"), newShow = () => { newBtn.hidden = !(cfg.place === "moo" && isAsh() && MOO_NEW.length); };
         if (newBtn) { newShow(); clearInterval(BS.newT); BS.newT = setInterval(newShow, 4000);  // (the name can be set after Explore opens)
           newBtn.onclick = () => { openList(true); const h = list.querySelector(".bs-town-newhead"); if (h) { list.scrollTop = 0; h.nextElementSibling?.focus({ preventScroll: true }); } }; }
@@ -10358,6 +10363,26 @@ const handle = async (m, post) => {
     [-118,-1202.08,2], [329.33,-979.73,1,326.6,-969.8], [529.96,-838.68,0,544.1,-832.8], [348.15,-398.98,1,336.4,-390.7], [198.1,-273.24,1],
     [442.65,318.92,1], [442.12,-986.47,1], [471.72,-648.85,1,458.1,-648.9], [340,-766.75], [519,-477.42,1], [663.54,-399.6,1],
     [210.05,349.08,1,203.7,357.1], [262.61,360.75,1],
+    // Part 2 (22 November 2026): the next 100 inside Moorooka, 1.37 to 1.65 m of wall in the ground
+    [688.9,411.17,2,700,422.6], [716.31,115.54,3], [686.45,-629.91,3], [905.23,-227.98,3], [577.32,661.34,3,584.6,667.2], [943.9,82.18],
+    [303.1,-995.42,1,295.6,-987], [376.78,-436.11,1], [921.69,15.51], [322.23,-538.17], [344.56,-1022.73,1], [445.15,-825.44,1,439.2,-830.4],
+    [647.53,394.32,0,637.2,394.9], [436.42,-427.51,1,433,-435.8], [666.62,287.8,1], [443.25,413.32,1,439.9,406], [867.98,456.24,3], [766.34,574.18,2],
+    [-3.68,-163.7,1,-1.9,-173.4], [-848.15,461.36,1], [559.38,-611.25,3], [593.94,-465.45,1], [413.09,387.6,2,420,392.8],
+    [357.27,-682.47,1,356.8,-692.9], [152.92,-785.74,3], [-52.76,-575.94,2,-35.5,-574.3], [1061.33,-327.35,1,1072.9,-331.8], [-1005.26,-183.34],
+    [447.27,62.63,3], [-16.39,361.82,1], [386.17,-1038.63,1,379.5,-1038.4], [648.19,-400.33], [873.15,-286.7,1], [748.49,393.85,3,744,394.8],
+    [386.5,-199.52,1,391.1,-209.2], [575.42,320,2], [641.18,-969.8,1,630.9,-967.2], [694.4,-397.78,2,688.5,-387.7], [745.35,243.96,1],
+    [396.65,-531.55,1,392.7,-538.7], [140.52,294.38,1,135.7,302.7], [345.81,293.95,3,340.4,293.6], [763.85,502.71,1,765.1,494.3],
+    [588.6,-692.53,2,592,-701.7], [-1042.93,-142.65,2,-1032.8,-142.5], [145.43,378.42,1,133.7,378.4], [676.28,629.04], [625.76,452.63,2,613.6,453.4],
+    [591.71,-810,2,586.8,-804.2], [-556.3,-187.3,2,-561.7,-184.1], [157.57,240.42,1], [-94.7,241.22,1,-82.1,239.1], [670.53,273.98,2],
+    [-775.75,-517.15,3,-774.1,-510.9], [-47.78,252.65], [325.53,330.15,3], [836.86,369.16,1], [748.27,499.75,1], [65.27,689.88,1,63.4,678.3],
+    [374.47,-854.93,2], [237.29,-742.97,1,232.1,-728.8], [806.14,-80.5,3], [825.51,514.39,2], [190.05,-785.41,1], [609.87,-616.63,3,611.8,-605.2],
+    [538.7,-314.52,1,535.7,-305.1], [660.58,254.55,1], [769.5,405.02,3,767.7,393.7], [735.08,-322.46,1], [342,-970.8,1], [96.75,-101.25],
+    [494.14,143.48,1,499.7,132.5], [567.1,359.22,1,556.8,362], [802.8,463.6,3], [450.8,-838.25,1], [253.4,-817.72,1], [641.56,-676.2],
+    [-110.4,331.65,1,-96.2,329], [272.18,-812.85,1], [-24.83,309.87,1], [502.16,498.62,1,501.2,486.2], [359.48,-907.75,1,357.6,-915.2],
+    [442.93,-791.03,1,432.7,-796.9], [-367.59,-402.19,1,-360.7,-408.4], [771.45,-285.42,1], [908.48,-260.52,1], [320.29,-262.02,1], [409.6,105.14,1],
+    [640.79,525.69,1,653.6,526], [475,-946.41,1,471,-954.6], [585.32,-426.32], [659.14,381.15,1,643.9,381], [99.57,-794.3,1,99.3,-804.5],
+    [-309.25,-142.69,1,-319.6,-139.5], [153.96,-1095.43,1,149.4,-1104.5], [370.72,-496.02,1], [-399.72,-443.72,2], [798.93,209.35,2,790.7,203.7],
+    [288.21,-1142.06,1,282,-1153.6], [438.92,-1002.18,1,442.9,-1007.7],
   ];
   { const cells = new Map(); for (const q of MOO_SET) { const k = Math.floor(q[0] / 4) + "_" + Math.floor(q[1] / 4); let l = cells.get(k); if (!l) cells.set(k, l = []); l.push(q); }
     window.anSet = (x, z) => { const cx = Math.floor(x / 4), cz = Math.floor(z / 4);
@@ -10803,8 +10828,9 @@ const handle = async (m, post) => {
   // top with each change worth a look, and take off what Ash has seen (Ash, 19 November 2026: "I want you to have a btn for the player with
   // name ash that jumps to new features so I can quickly review")
   const MOO_NEW = [
+    ["Houses out of the dirt, part 2", "The next 100 sunk houses rebuilt on their slope: floors above the uphill ground, lower levels, stumps, stairs and garage doors (this one is on Glendale Grove)", 367.9, -1041.5, -1.727, 0.071],
     ["Houses out of the dirt, part 1", "The 100 most sunk houses rebuilt on their slope: the floor above the uphill ground, a lower level or stumps under it, stairs to the front door, a garage door where the drive meets the house (this one, on Northview Outlook)", 569.2, -874.6, -2.136, 0.183],
-    ["Number 6's balcony", "The balcony concept on the house: tap the yellow button over the roof to switch between it and the house as it is, and walk up the new stairs down the side", -217.7, -990.3, 1.295, 0.12],
+    ["Number 6's balcony", "The balcony concept on the house: tap the yellow button by the front stairs to switch between it and the house as it is, and walk up the new stairs down the side", -217.7, -990.3, 1.295, 0.12],
     ["The Willow's way in", "Redone from Street View: the steps up at the south corner between white piers, under the red slatted canopy, with the sign over them and the timber-clad corner beside", -74.0, -116.0, 1.27, 0.08],
     ["Moorooka bowls club", "Moorooka Sports & Community Club on Koala Road: three bowling greens with their ditches and shade shelters", 160.0, -462.0, -2.24, -0.1],
     ["School pool and courts", "Moorooka State School's 25 m pool and its two tennis courts. St Brendan's has a play frame and shade sail on its lawn", -226.0, 175.0, 1.571, -0.15],
@@ -14624,15 +14650,16 @@ const handle = async (m, post) => {
       if (ok(F.pos.x, F.pos.z)) return false;
       if (ok(F.pos.x, oz)) F.pos.z = oz; else if (ok(ox, F.pos.z)) F.pos.x = ox; else { F.pos.x = ox; F.pos.z = oz; } if (F.wv) F.wv = [0, 0]; return true; };
 
-    // ---- the label on the balcony button (by the front stairs): shown when you're within 30 m on foot; how it is, or the balcony
+    // ---- tapping the balcony button (by the front stairs): an unlabelled spot over it, there when you're within 30 m on foot (Ash, 22
+    // November 2026: "Remove the label for the button"); how it is, or the balcony. What it does is said once you've pressed it
     const btn = document.createElement("button"); btn.type = "button"; btn.className = "bs-bal6"; btn.hidden = true;
-    const label = () => { btn.textContent = P.mode === "bal" ? "Show it as it is" : "Show the balcony"; btn.setAttribute("aria-pressed", String(P.mode === "bal")); };
+    const label = () => { btn.setAttribute("aria-label", P.mode === "bal" ? "Show number 6 as it is" : "Show the balcony concept"); btn.setAttribute("aria-pressed", String(P.mode === "bal")); };
     P.set = mode => { P.mode = mode; label(); if (P.near) { show("now", mode === "now"); show("bal", mode === "bal"); } };
     btn.addEventListener("click", e => { e.stopPropagation(); btn.blur(); P.set(P.mode === "bal" ? "now" : "bal"); try { localStorage.setItem("an3d-bal6", P.mode); } catch {}
       toast(P.mode === "bal" ? "The balcony concept: walk up the new stairs down the side" : "Number 6 as it is now", 2400); });
     ($("bsFly") || document.body).append(btn);
     try { P.mode = localStorage.getItem("an3d-bal6") === "bal" ? "bal" : "now"; } catch {} label();
-    const PIN = toModel(BTN.x, BTN.z), PINY = y0 + BTN.y + 0.3;  // where it floats: just over the button
+    const PIN = toModel(BTN.x, BTN.z), PINY = y0 + BTN.y + 0.03;  // the button's middle
     let last = "";
     P.frame = () => { const F = BS.fly; if (!F || P.dead) return;
       const d = Math.hypot(F.pos.x - C[0], F.pos.z - C[1]), near = d < B.near;
@@ -14645,8 +14672,9 @@ const handle = async (m, post) => {
       if (dep < 1) { if (!btn.hidden) btn.hidden = true; return; }
       const sx = Math.round(w / 2 + (ax * rx + az * rz) / dep * f * (h / 2)), sy = Math.round(h / 2 - (ax * ux + ay * uy + az * uz) / dep * f * (h / 2));
       if (sx < 40 || sx > w - 40 || sy < 70 || sy > h - 60) { if (!btn.hidden) btn.hidden = true; return; }
-      const k = sx + "," + sy; if (btn.hidden) btn.hidden = false; if (k !== last) { last = k; btn.style.transform = `translate(${sx}px, ${sy}px) translate(-50%, -100%)`; } };
-    P.toModel = toModel; P.toLocal = toLocal; P.levels = { y0, FL, E }; P.button = { x: PIN[0], y: PINY - 0.3, z: PIN[1], local: BTN };  // (for checking in the console)
+      const size = Math.round(Math.max(48, Math.min(140, 0.5 / dep * f * h)));  // the head (0.4 m across) and a little round it, never under 48 px
+      const k = sx + "," + sy + "," + size; if (btn.hidden) btn.hidden = false; if (k !== last) { last = k; btn.style.width = btn.style.height = size + "px"; btn.style.transform = `translate(${sx}px, ${sy}px) translate(-50%, -50%)`; } };
+    P.toModel = toModel; P.toLocal = toLocal; P.levels = { y0, FL, E }; P.button = { x: PIN[0], y: PINY - 0.03, z: PIN[1], local: BTN };  // (for checking in the console)
     P.dispose = () => { P.dead = true; P.near = false; btn.remove(); for (const k in handles) try { handles[k].remove(); } catch {} };
     P.frame();
     return P;
@@ -19531,7 +19559,7 @@ const handle = async (m, post) => {
     BS.town = null; T.dead = true; T.on = false; T.ungest?.(); T.unlay?.(); T.unflood?.();
     T.streets?.dispose(); T.streets = null; $("bsNamesBtn").hidden = true;
     T.admin?.dispose(); T.admin = null;
-    T.gps?.dispose(); T.gps = null; T.car?.dispose(); T.car = null; T.peers?.dispose(); T.peers = null; T.me?.dispose(); T.me = null; T.here?.dispose(); T.here = null; T.yards?.dispose(); T.yards = null; T.bowls?.dispose(); T.bowls = null; T.walkers?.dispose(); T.walkers = null; T.traffic?.dispose(); T.traffic = null; T.mayor?.dispose(); T.mayor = null; T.council?.dispose(); T.council = null; T.critter?.dispose(); T.critter = null; T.home6?.dispose(); T.home6 = null; T.bal6?.dispose(); T.bal6 = null; T.locals?.dispose(); T.locals = null; T.mail?.dispose(); T.mail = null;
+    if (T.listOut) { document.removeEventListener("pointerdown", T.listOut, true); T.listOut = null; } T.gps?.dispose(); T.gps = null; T.car?.dispose(); T.car = null; T.peers?.dispose(); T.peers = null; T.me?.dispose(); T.me = null; T.here?.dispose(); T.here = null; T.yards?.dispose(); T.yards = null; T.bowls?.dispose(); T.bowls = null; T.walkers?.dispose(); T.walkers = null; T.traffic?.dispose(); T.traffic = null; T.mayor?.dispose(); T.mayor = null; T.council?.dispose(); T.council = null; T.critter?.dispose(); T.critter = null; T.home6?.dispose(); T.home6 = null; T.bal6?.dispose(); T.bal6 = null; T.locals?.dispose(); T.locals = null; T.mail?.dispose(); T.mail = null;
     T.unbar?.();
     if (BS.fly) { const F = BS.fly; F.walk = F.speed = F.floor = F.hot = F.drive = null; F.ceil = 0; F.lim = null; }  // Explore, if it carries on, is its old self
     try { T.model?.dispose(); } catch {}
