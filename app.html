@@ -1422,6 +1422,9 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 .bs-gps button { flex: none; width: 32px; height: 32px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.2); color: #fff; font: 700 1.05rem var(--ui); cursor: pointer; }
 /* a race around Moorooka: the card (place, time, the way), the big countdown, and the panel for starting one and for the results */
 .bs-race { pointer-events: auto; position: absolute; z-index: 4; left: 50%; top: calc(104px + env(safe-area-inset-top)); transform: translateX(-50%); width: max-content; max-width: min(420px, calc(100% - 32px)); box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 7px 7px 7px 10px; border-left: 6px solid #ffc93c; border-radius: 14px; background: #1d1d27; color: #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35); }
+/* On a phone or tablet the buttons up top take two rows, and the tyre badge and the New button sit under them: the GPS and race cards
+   go below those, not over them (Ash, 23 November 2026, on his iPhone: "Consider layout on iPhone") */
+@media (max-width: 999px) { .bs-gps, .bs-race { top: calc(152px + env(safe-area-inset-top)); } }
 .bs-race[hidden], .bs-race-n[hidden], .bs-race-ask[hidden] { display: none; }
 .bs-race div { min-width: 0; }
 .bs-race b { display: block; font: 800 0.95rem/1.2 var(--ui); white-space: nowrap; }
@@ -15403,6 +15406,9 @@ const handle = async (m, post) => {
     const note = list => { for (const r of list.getEntries ? list.getEntries() : list) { try { BS.assetSeen.set(new URL(r.name).pathname, r.name); } catch {} } };
     note(performance.getEntriesByType("resource")); try { new PerformanceObserver(note).observe({ type: "resource", buffered: true }); } catch {} };
   const townAsset = (cfg, f) => BS.assetSeen?.get(new URL(cfg.assets + f, document.baseURI).pathname) || cfg.assets + f;
+  // how far left of a street's line a car keeps (the traffic's rule, below; the GPS draws its line down the same lane)
+  const townLaneOf = r => { const w = r.wd || 0; if (!(w > 3)) return r.one ? 1.2 : 1.9;
+    return r.one ? 1.7 * (Math.max(1, Math.min(w < 13 ? 2 : 3, Math.round((w - 2.4) / 3.4))) - 1) : Math.min(1.75, w / 4); };
   async function townStreetData(cfg) {
     if (cfg.place === "logan") {
       const [buf, map] = await Promise.all([fetch(townAsset(cfg, "roads.bin")).then(r => { if (!r.ok) throw new Error("roads"); return r.arrayBuffer(); }),
@@ -16282,8 +16288,7 @@ const handle = async (m, post) => {
       // half on a narrow one. (Ash, 22 November 2026: "Improve how cars drive (left)". It was a quarter of the width whatever the
       // street: 2.4 m on Beaudesert Road's 9.6 m carriageways, 0.7 m left of the lane's middle with the left wheels in the parking
       // lane, and on a two-way street with parking, along the parked cars.) A town with no widths keeps what it had.
-      const laneOf = r => { const w = r.wd || 0; if (!(w > 3)) return r.one ? 1.2 : 1.9;
-        return r.one ? 1.7 * (Math.max(1, Math.min(w < 13 ? 2 : 3, Math.round((w - 2.4) / 3.4))) - 1) : Math.min(1.75, w / 4); };
+      const laneOf = townLaneOf;  // (shared with the GPS, which draws its line down the same lane)
       let list = pick(2); if (list.length < 20) list = pick(3);  // the main roads (classes 0 to 2) where there are enough of them
       // the streets within 800 m of where you are (again whenever you've gone 450 m on: the traffic comes with you, rather than staying
       // round where you started. Ash, 16 November 2026: "There's no cars in moorooka moving anymore", away from number 6)
@@ -17311,8 +17316,9 @@ const handle = async (m, post) => {
       // built a slice at a time (6 ms in the background, 24 when you're waiting; then the game gets a turn), so it never stalls the
       // game: Logan's is 65,000 points, about half a second of work in all
       let tick = performance.now(); const breathe = async () => { if (performance.now() - tick > budget) { await new Promise(r => setTimeout(r, 0)); tick = performance.now(); if (dead) throw new Error("gone"); } };
-      const roads = d.roads.filter(r => r.pts.length >= 4 && (r.cls <= top || (r.cls === top + 1 && r.name >= 0 && names[r.name])));
-      let blocked = null; if (d.town) try { await breathe(); blocked = await townStreetBlocks(cfg, d.town); } catch {}  // (Moorooka and Inverloch: is a join clear of buildings?)
+      if (d.town) d.roads.forEach((r, i) => { if (r.wd == null) r.wd = (d.town.roads[i]?.[3] || 0) / 10; });  // (each street's width, for its lane)
+      const roads = d.roads.filter(r => r.pts.length >= 4 && (r.cls <= top || (r.cls === top + 1 && r.name >= 0 && names[r.name]))), LN = roads.map(townLaneOf);
+      let blocked = null; if (d.town) try { await breathe(); blocked = await townStreetBlocks(cfg, d.town); } catch {}  // (Moorooka and Inverloch: is a join clear of buildings? Kept, for keeping the line's lane out of them)
       // (keys are numbers, not text: Logan has 65,000 points)
       const key = (x, z) => (Math.round(x * 2) + 262144) * 524288 + Math.round(z * 2) + 262144; let id = new Map, X = [], Z = [], adj = [], ends = [];
       const node = (x, z) => { const k = key(x, z); let i = id.get(k); if (i == null) { i = X.length; id.set(k, i); X.push(x); Z.push(z); adj.push([]); } return i; };
@@ -17323,7 +17329,7 @@ const handle = async (m, post) => {
       const file = (s, at) => { const ax = X[s[0]], az = Z[s[0]], bx = X[s[1]], bz = Z[s[1]], n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 10)); let last = -1;
         for (let q = 0; q <= n; q++) { const k = ck(Math.floor((ax + (bx - ax) * q / n) / 25), Math.floor((az + (bz - az) * q / n) / 25)); if (k === last) continue; last = k;
           let c = cell.get(k); if (!c) cell.set(k, c = []); if (c[c.length - 1] !== at) c.push(at); } };
-      const edge = (a, b, nm, one, ri) => { const w = Math.hypot(X[b] - X[a], Z[b] - Z[a]); if (!(w > 0)) return; adj[a].push([b, w, nm, 0]); adj[b].push([a, w, nm, one ? 1 : 0]); segs.push([a, b, nm, ri]); file(segs[segs.length - 1], segs.length - 1); };
+      const edge = (a, b, nm, one, ri) => { const w = Math.hypot(X[b] - X[a], Z[b] - Z[a]); if (!(w > 0)) return; adj[a].push([b, w, nm, 0, LN[ri]]); adj[b].push([a, w, nm, one ? 1 : 0, LN[ri]]); segs.push([a, b, nm, ri]); file(segs[segs.length - 1], segs.length - 1); };
       for (let ri = 0; ri < roads.length; ri++) { const p = roads[ri].pts, r = roads[ri]; let a = node(p[0], p[1]); ends.push([a, ri]);
         for (let k = 2; k < p.length; k += 2) { const b = node(p[k], p[k + 1]); edge(a, b, r.name, r.one, ri); a = b; }
         ends.push([a, ri]); if ((ri & 63) === 0) await breathe(); }
@@ -17339,7 +17345,7 @@ const handle = async (m, post) => {
       const cut = (si, t) => { const s = segs[si], [a, b, nm, ri] = s; if (t < 0.02) return a; if (t > 0.98) return b;
         const fa = flag(a, b), fb = flag(b, a), p = node(X[a] + (X[b] - X[a]) * t, Z[a] + (Z[b] - Z[a]) * t); if (p === a || p === b) return p;
         const wa = Math.hypot(X[p] - X[a], Z[p] - Z[a]), wb = Math.hypot(X[b] - X[p], Z[b] - Z[p]);
-        adj[a] = adj[a].map(e => e[0] === b ? [p, wa, nm, fa] : e); adj[b] = adj[b].map(e => e[0] === a ? [p, wb, nm, fb] : e); adj[p].push([a, wa, nm, fb], [b, wb, nm, fa]);
+        adj[a] = adj[a].map(e => e[0] === b ? [p, wa, nm, fa, LN[ri]] : e); adj[b] = adj[b].map(e => e[0] === a ? [p, wb, nm, fb, LN[ri]] : e); adj[p].push([a, wa, nm, fb, LN[ri]], [b, wb, nm, fa, LN[ri]]);
         s[1] = p; segs.push([p, b, nm, ri]); file(segs[segs.length - 1], segs.length - 1); return p; };
       // a street's loose end that stops short of another street (or meets it between two of its points): joined to the nearest
       // point on that street's line, within 12 m, or up to 25 m where the join is clear of buildings. Never further, so a dead end
@@ -17347,19 +17353,19 @@ const handle = async (m, post) => {
       for (let q = 0; q < ends.length; q++) { const [i, ri] = ends[q]; if ((q & 127) === 0) await breathe(); if (adj[i].length > 1) continue;
         const h = near(X[i], Z[i], s => s[3] !== ri, 2); if (!h || h[1] < 0.3 || h[1] > 25) continue;
         if (h[1] > 12 && (!blocked || blocked(X[i], Z[i], h[3], h[4]))) continue;
-        const p = cut(h[0], h[2]); if (p === i) continue; const w = Math.hypot(X[p] - X[i], Z[p] - Z[i]); adj[i].push([p, w, -1, 0]); adj[p].push([i, w, -1, 0]); }
+        const p = cut(h[0], h[2]); if (p === i) continue; const w = Math.hypot(X[p] - X[i], Z[p] - Z[i]); adj[i].push([p, w, -1, 0, NaN]); adj[p].push([i, w, -1, 0, NaN]); }  // (a join has no lane of its own)
       let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (let i = 0; i < X.length; i++) { x0 = Math.min(x0, X[i]); x1 = Math.max(x1, X[i]); z0 = Math.min(z0, Z[i]); z1 = Math.max(z1, Z[i]); }
       const mid = new Map; roads.forEach(r => { const nm = names[r.name]; if (!nm) return; const p = r.pts, L = p.length / 2; let len = 0; for (let k = 2; k < p.length; k += 2) len += Math.hypot(p[k] - p[k - 2], p[k + 1] - p[k - 1]);
         const best = mid.get(nm); if (!best || len > best.len) { const h = (L >> 1) * 2; mid.set(nm, { len, x: p[h], z: p[h + 1] }); } });
       // packed into flat number arrays once built, and the lists it was built from let go (Ash, 22 November 2026: "GPS sounds mem load
       // intense. Is it?"): Logan's network as lists of lists took 69 MB; packed it's a few MB. Moorooka's and Inverloch's are small
       await breathe(); const n = X.length, PX = Float64Array.from(X), PZ = Float64Array.from(Z); let m = 0; for (const a of adj) m += a.length;
-      const off = new Int32Array(n + 1), to = new Int32Array(m), wt = new Float32Array(m), en = new Int32Array(m), bk = new Uint8Array(m);
-      for (let i = 0, k = 0; i < n; i++) { off[i] = k; for (const e of adj[i]) { to[k] = e[0]; wt[k] = e[1]; en[k] = e[2]; bk[k] = e[3]; k++; } } off[n] = m;
+      const off = new Int32Array(n + 1), to = new Int32Array(m), wt = new Float32Array(m), en = new Int32Array(m), bk = new Uint8Array(m), ln = new Float32Array(m);
+      for (let i = 0, k = 0; i < n; i++) { off[i] = k; for (const e of adj[i]) { to[k] = e[0]; wt[k] = e[1]; en[k] = e[2]; bk[k] = e[3]; ln[k] = e[4]; k++; } } off[n] = m;
       const ns = segs.length, SA = new Int32Array(ns), SB = new Int32Array(ns), SN = new Int32Array(ns); segs.forEach((g, i) => { SA[i] = g[0]; SB[i] = g[1]; SN[i] = g[2]; });
       await breathe(); const keys = [...cell.keys()].sort((a, b) => a - b), CK = Float64Array.from(keys), CS = new Int32Array(keys.length + 1); let tot = 0; keys.forEach((k, i) => { CS[i] = tot; tot += cell.get(k).length; }); CS[keys.length] = tot;
       const CL = new Int32Array(tot); keys.forEach((k, i) => CL.set(cell.get(k), CS[i]));
-      id = X = Z = adj = ends = segs = cell = null; if (T.streetData) T.streetData.town = null;  // (the buildings were only for checking joins)
+      id = X = Z = adj = ends = segs = cell = null; if (T.streetData) T.streetData.town = null;  // (the town file itself isn't needed again: the building check has what it needs)
       const sq = k => { let lo = 0, hi = CK.length - 1; while (lo <= hi) { const md = (lo + hi) >> 1; if (CK[md] < k) lo = md + 1; else if (CK[md] > k) hi = md - 1; else return md; } return -1; };
       // the nearest point on a piece of street to (x, z), as above, on the packed network: [piece, how far, t, px, pz]
       const nearP = (x, z, ok, maxR = 6) => { let best = null;
@@ -17368,7 +17374,9 @@ const handle = async (m, post) => {
             const t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L2)), px = ax + dx * t, pz = az + dz * t, d = Math.hypot(x - px, z - pz); if (!best || d < best[1]) best = [si, d, t, px, pz]; } }
         return best; };
       const flagP = (a, b) => { for (let k = off[a]; k < off[a + 1]; k++) if (to[k] === b) return bk[k]; return 1; };
-      net = { X: PX, Z: PZ, off, to, wt, en, bk, SA, SB, SN, near: nearP, flag: flagP, mid, names, bb: [x0 - 60, z0 - 60, x1 + 60, z1 + 60], ms: Math.round(performance.now() - t0) }; mark(); return net; }).catch(e => { netP = null; mark(); throw e; }));  // (failed: try again next time)
+      // how far left of the street's line to keep going from a to b: its lane (the right of a one-way's line when going against it on foot)
+      const laneP = (a, b) => { for (let k = off[a]; k < off[a + 1]; k++) if (to[k] === b) return bk[k] ? -ln[k] : ln[k]; return NaN; };
+      net = { X: PX, Z: PZ, off, to, wt, en, bk, SA, SB, SN, near: nearP, flag: flagP, lane: laneP, blocked, mid, names, bb: [x0 - 60, z0 - 60, x1 + 60, z1 + 60], ms: Math.round(performance.now() - t0) }; mark(); return net; }).catch(e => { netP = null; mark(); throw e; }));  // (failed: try again next time)
     // warming up: built quietly in the background a few seconds after the town opens (Ash, 22 November 2026: "GPS sounds mem load
     // intense. Is it? If so load it in the background. Show gps warming up or words to effect"); the button says so until it's ready
     const mark = () => { const gb = document.getElementById("bsGpsBtn"), sp = gb?.querySelector("span"); if (!gb || !sp) return; const warm = !!netP && !net;
@@ -17462,10 +17470,14 @@ const handle = async (m, post) => {
       if (dest.nm == null) dest.nm = streetOf(dest.label); const S = snap(hx, hz), E = snap(dest.x, dest.z, dest.nm);
       if (!S || !E) return toast("No way there along the streets from here.", 2500);
       const r = (T.car?.in && shortest(S, E, true)) || shortest(S, E, false); if (!r) return toast("No way there along the streets from here.", 2500);
-      const N = net, P = [S.px, S.pz], nm = [S.nm]; for (let k = 0; k < r.path.length; k++) { P.push(N.X[r.path[k]], N.Z[r.path[k]]); nm.push(r.names[k]); }
+      const N = net, P = [S.px, S.pz], nm = [S.nm], pa = r.path; for (let k = 0; k < pa.length; k++) { P.push(N.X[pa[k]], N.Z[pa[k]]); nm.push(r.names[k]); }
       P.push(E.px, E.pz); nm.push(E.nm);
-      const pts = [P[0], P[1]], names = [nm[0]]; for (let i = 2; i < P.length; i += 2) { const L = Math.hypot(P[i] - P[i - 2], P[i + 1] - P[i - 1]), n = Math.ceil(L / 3);
-        for (let k = 1; k <= n; k++) { pts.push(P[i - 2] + (P[i] - P[i - 2]) * k / n, P[i - 1] + (P[i + 1] - P[i - 1]) * k / n); names.push(nm[i / 2]); } }
+      // each leg's lane: on from your piece of street, street by street, then along the place's piece (a join takes the lane either side)
+      const lg = pa.length ? [pa[0] === S.b ? N.lane(S.a, S.b) : N.lane(S.b, S.a)] : [E.t >= S.t ? N.lane(S.a, S.b) : N.lane(S.b, S.a)];
+      for (let k = 1; k < pa.length; k++) lg.push(N.lane(pa[k - 1], pa[k])); if (pa.length) lg.push(pa[pa.length - 1] === E.a ? N.lane(E.a, E.b) : N.lane(E.b, E.a));
+      for (let k = 1; k < lg.length; k++) if (isNaN(lg[k])) lg[k] = lg[k - 1]; for (let k = lg.length - 2; k >= 0; k--) if (isNaN(lg[k])) lg[k] = lg[k + 1]; if (isNaN(lg[0])) lg.fill(1.5);
+      const pts = [P[0], P[1]], names = [nm[0]], lane = [lg[0]]; for (let i = 2; i < P.length; i += 2) { const L = Math.hypot(P[i] - P[i - 2], P[i + 1] - P[i - 1]), n = Math.ceil(L / 3);
+        for (let k = 1; k <= n; k++) { pts.push(P[i - 2] + (P[i] - P[i - 2]) * k / n, P[i - 1] + (P[i + 1] - P[i - 1]) * k / n); names.push(nm[i / 2]); lane.push(k === n && i + 2 < P.length ? (lg[i / 2 - 1] + lg[i / 2]) / 2 : lg[i / 2 - 1]); } }
       const at = [0]; for (let i = 2; i < pts.length; i += 2) at.push(at[at.length - 1] + Math.hypot(pts[i] - pts[i - 2], pts[i + 1] - pts[i - 1]));
       const dirAt = (i, step) => { const j = Math.max(0, Math.min(at.length - 1, i + step)); return [pts[j * 2] - pts[i * 2], pts[j * 2 + 1] - pts[i * 2 + 1]]; };
       const turns = []; for (let i = 2; i < names.length - 1; i++) { if (names[i] === names[i - 1] || names[i] < 0) continue;
@@ -17475,7 +17487,21 @@ const handle = async (m, post) => {
         if (!nm2 && deg < 28) continue;  // straight on to a street with no name: nothing to say
         const text = deg < 28 ? `Carry on onto ${nm2}` : deg > 150 ? (nm2 ? `Turn round onto ${nm2}` : "Turn round") : nm2 ? `Turn ${side} onto ${nm2}` : `Turn ${side}`;
         const last = turns[turns.length - 1]; if (last && at[i] - last.at < 15) turns.pop(); turns.push({ at: at[i], text }); }
-      route = { pts, at, turns, dest, i: 0, on: false }; draw(pts, dest); card.hidden = false; hudT = 0; document.getElementById("bsGpsBtn")?.setAttribute("aria-pressed", "true"); G.frame(true); };
+      // the line down the left lane, not the middle of the street (Ash, 23 November 2026: "The gps navigates me often down the wrong
+      // side of the road"): each point moved left of the way you're going by its street's lane, as the traffic drives. On a corner
+      // the inside never doubles back on itself
+      const lp = pts.slice(), np = at.length, lx = new Float64Array(np), lz = new Float64Array(np), fr = new Float32Array(np);
+      for (let j = 0; j < np; j++) { const u = (a, b) => { const dx = pts[b * 2] - pts[a * 2], dz = pts[b * 2 + 1] - pts[a * 2 + 1], L = Math.hypot(dx, dz) || 1; return [dx / L, dz / L]; };
+        const d1 = j > 0 ? u(j - 1, j) : u(j, j + 1), d2 = j < np - 1 ? u(j, j + 1) : d1; let dx = d1[0] + d2[0], dz = d1[1] + d2[1], L = Math.hypot(dx, dz); if (L < 0.3) { [dx, dz] = d1; L = 1; }
+        lx[j] = dz / L * lane[j]; lz[j] = -dx / L * lane[j];  // (x east, z south: left of (dx, dz) is (dz, -dx))
+        // a building mapped over the lane (on Wall Street, Giardini Lane and Carson Street): closer to the middle there, easing in over
+        // the points either side
+        const px = pts[j * 2], pz = pts[j * 2 + 1], inB = (x, z) => (N.blocked && N.blocked(px, pz, x, z)) || m.solidAt?.(x, z);
+        fr[j] = 1; for (const f of [1, 0.5, 0]) { fr[j] = f; if (!f || !inB(px + lx[j] * f, pz + lz[j] * f)) break; } }
+      for (let j = 0; j < np; j++) { let f = 1; for (let k = Math.max(0, j - 2); k <= Math.min(np - 1, j + 2); k++) f = Math.min(f, fr[k] + Math.abs(k - j) * 0.34);
+        lp[j * 2] = pts[j * 2] + lx[j] * Math.min(1, f); lp[j * 2 + 1] = pts[j * 2 + 1] + lz[j] * Math.min(1, f);
+        if (j > 0 && (lp[j * 2] - lp[j * 2 - 2]) * (pts[j * 2] - pts[j * 2 - 2]) + (lp[j * 2 + 1] - lp[j * 2 - 1]) * (pts[j * 2 + 1] - pts[j * 2 - 1]) < 0) { lp[j * 2] = lp[j * 2 - 2]; lp[j * 2 + 1] = lp[j * 2 - 1]; } }
+      route = { pts: lp, at, turns, dest, i: 0, on: false, car: !!T.car?.in }; draw(lp, dest); card.hidden = false; hudT = 0; document.getElementById("bsGpsBtn")?.setAttribute("aria-pressed", "true"); G.frame(true); };
     G.open = () => { if (dead) return; boxEl.hidden = false; inp.value = ""; show([]); budget = 24;
       say(route ? `Going to ${route.dest.label}. Pick somewhere else, or Cancel.` : net ? "" : "GPS warming up. Type an address now: the way shows as soon as it's ready."); load().catch(() => {}); mark(); setTimeout(() => inp.focus(), 30); };
     G.close = () => { boxEl.hidden = true; ctl?.abort(); inp.blur(); };
@@ -17489,10 +17515,12 @@ const handle = async (m, post) => {
         if (d < bd) { bd = d; bi = i; bt = t; } }
       R.i = bi; const along = R.at[bi] + (R.at[Math.min(n - 1, bi + 1)] - R.at[bi]) * bt, left = R.at[n - 1] - along, toDest = Math.hypot(R.dest.x - x, R.dest.z - z);
       if (toDest < 15 || left < 12) { const lab = R.dest.label; G.stop(); toast(`You've arrived: ${lab}.`, 3200); return; }
+      if (R.car !== !!T.car?.in && now - rerouteT > 1500) { rerouteT = now; start(R.dest); return; }  // got in or out of a car: driving keeps to the one-ways
       if (bd < 35) R.on = true;  // (off the route only counts once you've been on it: you may start off in a park)
       if (R.on && bd > 35) { if (!offT) offT = now; if (now - offT > 1500 && now - rerouteT > 3000) { rerouteT = now; offT = 0; start(R.dest); return; } } else offT = 0;
       const nx = R.turns.find(q => q.at > along + 3);
-      cb.textContent = nx ? `${nx.text}` : `Arrive at ${R.dest.label}`; cs.textContent = nx ? `in ${fmt(nx.at - along)} · ${fmt(left)} to ${R.dest.label}` : `in ${fmt(left)}`;
+      const to = String(R.dest.label).split(",")[0];  // (the address without its suburb, so it fits on a phone)
+      cb.textContent = nx ? `${nx.text}` : `Arrive at ${to}`; cs.textContent = nx ? `in ${fmt(nx.at - along)} · ${fmt(left)} to ${to}` : `in ${fmt(left)}`;
       // the arrow: towards the line 25 m ahead, turned to how you're facing
       let j = bi; while (j < n - 1 && R.at[j] < along + 25) j++; const tx = R.pts[j * 2] - x, tz = R.pts[j * 2 + 1] - z, want = Math.atan2(-tx, -tz);
       const rel = Math.atan2(Math.sin(want - F.yaw), Math.cos(want - F.yaw)); arr.style.transform = `rotate(${(-rel * 180 / Math.PI).toFixed(0)}deg)`; };

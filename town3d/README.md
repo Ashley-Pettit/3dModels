@@ -2319,6 +2319,15 @@ Ash: "Can you add a gps in the game to navigate to an address?"
   clear of buildings (`townStreetBlocks`); never further, so a dead end is never joined to the street behind the houses.
 - **The ends:** the blue line starts on the street beside you and ends on the place's own street (the street named in the address,
   when it's within 150 m), at the point nearest the place. The red pin stands on the place itself, so no line crosses a yard.
+- **Which side of the road** (Ash, 23 November 2026: "The gps navigates me often down the wrong side of the road"): the line runs
+  down the left lane, not the middle of the street, as far left of the street's line as the traffic drives (`townLaneOf`, shared
+  with the traffic: 1.75 m on a two-way street, the left lane of a one-way carriageway, a bit less on narrow streets; 1.9 m in Logan,
+  which has no widths). Where a building's outline is mapped over the lane (Wall Street, Giardini Lane, Carson Street) the line eases
+  back toward the middle, using the same building check as the joins. Getting in or out of a car works the route out again, since
+  driving keeps to one-way carriageways and walking doesn't. Logan's map doesn't say which roads are one-way, so there a divided road's
+  two halves both count as two-way.
+- **On a phone** (Ash, 23 November 2026: "Consider layout on iPhone"): under 1000 px wide the card (and the race card) sits below the
+  upgrade badge and the New button instead of over them, and shows the address without its suburb so it fits.
 - **The card:** the next turn ("Turn left onto Beaudesert Road"), how far to it and how far to go, and an arrow that points the way
   from where you're facing. Straight on to a street with no name says nothing. Off the route by 35 m for 1.5 s (once you've been on it) and it
   works the route out again. Within 15 m of the pin (or 12 m left on the route) it says you've arrived and clears the line.
