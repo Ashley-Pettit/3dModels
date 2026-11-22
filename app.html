@@ -10712,7 +10712,7 @@ const handle = async (m, post) => {
     ["Off the roads", "Street lights, trees and badly parked cars are off the roads, kerbs are out of the asphalt (Bohain Street here), fences open at drives and car yard cars stay behind the footpath", -262.0, -1080.0, -0.35, -0.05],
     ["Houses further out, part 10", "The last of the houses: Muriel Avenue, Gladstone Street, Cobden Street, John Bright Street and Coin Street, and the ones Street View showed black the first time round: fences, walls, hedges and drives, with their paths and drives joined up", -772.4, 1050.9, -1.744, 0.05],
     ["Houses further out, part 9", "Robinson Street, Anson Street, Timothy Street, Abel Street, Beckford Street, O'Neil Street, Newman Road, Davey Street, Kerrianne Place, Desanne Place, Sharon Street and the streets between: fences, walls, hedges and drives, with their paths and drives joined up", -1030.0, 783.4, 1.390, 0.05],
-    ["Unstick", "Stuck in a car, rocking forward and back? After 5 seconds an Unstick button shows above Boost: it puts you on the nearest road", -901.0, -1310.0, 0.0, -0.1],
+    ["Unstick", "Stuck in a car, rocking forward and back? After 8 seconds an Unstick button shows above Boost: it puts you on the nearest road", -901.0, -1310.0, 0.0, -0.1],
     ["Construction worker: take out more", "As a construction worker, Delete now takes out front fences, walls and hedges, side and back fences and street lights too. The tools are fewer and bigger", -279.0, -985.0, -1.571, 0.05],
     ["Houses further out, part 8", "Tarragindi Road, Charmaine Street, Tonks Street, Rabaul Street, Nettleton Crescent, Rachael Street, Blackburn Street and the streets between: fences, walls, hedges and drives, with their paths and drives joined up", 854.1, -78.1, 1.386, 0.05],
     ["Houses further out, part 7", "Longueval Street, Hamilton Road, Holmes Street, Glendale Grove, Northview Outlook, Tarragindi Road and the streets between: fences, walls, hedges and drives, with their paths and drives joined up", -800.3, 436.4, 2.944, 0.05],
@@ -18390,16 +18390,18 @@ const handle = async (m, post) => {
     // a above boost anti stuck which teleports to closest road"): forward and back both pushed in the last 5 s while the car has stayed
     // within 6 m of where it was all that time: a button over Boost (U on a keyboard) puts it on the nearest road, in its lane, facing
     // along it the way it was pointing. It goes once the car is 12 m on, or after 20 s. The roads are the traffic's (T.roadsAll), so
-    // nothing is fetched or worked out until it's tapped
+    // nothing is fetched or worked out until it's tapped. Now 8 s, not 5 (Ash, 22 November 2026: "Unstick comes up a bit too quick"): a
+    // three-point turn or backing out of a drive is over before it shows (UN_MS)
+    const UN_MS = 8000;
     const unBtn = document.createElement("button"); unBtn.type = "button"; unBtn.className = "bs-fly-x bs-unstick"; unBtn.textContent = "Unstick"; unBtn.dataset.key = "U"; unBtn.hidden = true;
     $("bsFly")?.append(unBtn);
-    const un = { f: 0, b: 0, trail: [], at: null, placed: 0 };
+    const un = { f: -1e9, b: -1e9, trail: [], at: null, placed: 0 };  // (never pushed yet, not "pushed when the page opened")
     const unPlace = () => { const o = $("bsFly")?.getBoundingClientRect(), r = boostBtn.getBoundingClientRect(); if (!o || !r.width) return; unBtn.style.left = Math.round(r.left + r.width / 2 - o.left) + "px"; unBtn.style.top = Math.round(r.top - o.top - 10) + "px"; };
-    const unReset = () => { un.f = un.b = 0; un.trail = []; un.at = null; unBtn.hidden = true; };
+    const unReset = () => { un.f = un.b = -1e9; un.trail = []; un.at = null; unBtn.hidden = true; };
     const unTick = (now, thr) => { if (thr > 0.4) un.f = now; else if (thr < -0.4) un.b = now;
-      if (!un.trail.length || now - un.trail[un.trail.length - 1][0] > 400) { un.trail.push([now, car.x, car.z]); while (now - un.trail[0][0] > 5200) un.trail.shift(); }
-      const t0 = un.trail[0], still = now - t0[0] > 4500 && un.trail.every(q => Math.hypot(q[1] - car.x, q[2] - car.z) < 6);
-      const show = un.at ? Math.hypot(car.x - un.at[0], car.z - un.at[1]) < 12 && now - un.at[2] < 20000 : still && now - un.f < 5000 && now - un.b < 5000 && !!T.roadsAll;
+      if (!un.trail.length || now - un.trail[un.trail.length - 1][0] > 400) { un.trail.push([now, car.x, car.z]); while (now - un.trail[0][0] > UN_MS + 200) un.trail.shift(); }
+      const t0 = un.trail[0], still = now - t0[0] > UN_MS - 500 && un.trail.every(q => Math.hypot(q[1] - car.x, q[2] - car.z) < 6);
+      const show = un.at ? Math.hypot(car.x - un.at[0], car.z - un.at[1]) < 12 && now - un.at[2] < 20000 : still && now - un.f < UN_MS && now - un.b < UN_MS && !!T.roadsAll;
       if (show && !un.at) un.at = [car.x, car.z, now]; else if (!show) un.at = null;
       if (unBtn.hidden === show) { unBtn.hidden = !show; if (show) { un.placed = now; unPlace(); } } else if (show && now - un.placed > 500) { un.placed = now; unPlace(); } };
     unBtn.onclick = e => { e.stopPropagation(); unBtn.blur(); const roads = T.roadsAll; if (veh !== "car" || !car || !roads) return;
