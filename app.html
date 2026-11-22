@@ -1397,6 +1397,24 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 .bs-fly-x.bs-chat[hidden] { display: none; }
 .bs-chatbar { pointer-events: auto; position: absolute; z-index: 5; left: 50%; top: calc(62px + env(safe-area-inset-top)); transform: translateX(-50%); width: min(440px, calc(100% - 32px)); display: flex; gap: 6px; padding: 6px; box-sizing: border-box; border-radius: 16px; background: rgba(22, 24, 34, 0.9); }
 .bs-chatbar[hidden] { display: none; }
+/* GPS: the address box, and while it shows the way a blue card under the top buttons with the next turn, how far, and an arrow */
+.bs-gps-box { pointer-events: auto; position: absolute; z-index: 6; left: 50%; top: calc(62px + env(safe-area-inset-top)); transform: translateX(-50%); width: min(420px, calc(100% - 32px)); box-sizing: border-box; padding: 8px; border-radius: 16px; background: rgba(22, 24, 34, 0.95); color: #fff; }
+.bs-gps-box[hidden], .bs-gps[hidden] { display: none; }
+.bs-gps-box form { display: flex; gap: 6px; margin: 0; }
+.bs-gps-box input { flex: 1; min-width: 0; height: 42px; padding: 0 12px; border: 0; border-radius: 10px; background: rgba(255, 255, 255, 0.13); color: #fff; font: 600 1rem var(--ui); }
+.bs-gps-box input::placeholder { color: rgba(255, 255, 255, 0.6); }
+.bs-gps-box .x { height: 42px; padding: 0 12px; border: 0; border-radius: 10px; background: rgba(255, 255, 255, 0.14); color: #fff; font: 700 0.86rem var(--ui); cursor: pointer; }
+.bs-gps-box ul { list-style: none; margin: 6px 0 0; padding: 0; max-height: 42vh; overflow: auto; }
+.bs-gps-box li button { display: block; width: 100%; min-height: 42px; padding: 6px 10px; border: 0; border-radius: 10px; background: none; color: #fff; font: 600 0.9rem/1.3 var(--ui); text-align: left; cursor: pointer; }
+.bs-gps-box li button:hover, .bs-gps-box li button:focus-visible { background: rgba(255, 255, 255, 0.1); }
+.bs-gps-box small { display: block; opacity: 0.7; font: 500 0.75rem/1.3 var(--ui); }
+.bs-gps-box p { margin: 8px 6px 2px; font: 600 0.8rem/1.4 var(--ui); opacity: 0.88; }
+.bs-gps { pointer-events: auto; position: absolute; z-index: 4; left: 50%; top: calc(104px + env(safe-area-inset-top)); transform: translateX(-50%); width: max-content; max-width: min(420px, calc(100% - 32px)); box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 7px 7px 7px 10px; border-radius: 14px; background: #2f6fe0; color: #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35); }
+.bs-gps div { min-width: 0; }
+.bs-gps b { display: block; font: 800 0.92rem/1.2 var(--ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bs-gps span { display: block; font: 600 0.74rem/1.3 var(--ui); opacity: 0.92; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bs-gps .arr { flex: none; width: 28px; height: 28px; transition: transform 0.25s; }
+.bs-gps button { flex: none; width: 32px; height: 32px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.2); color: #fff; font: 700 1.05rem var(--ui); cursor: pointer; }
 /* who is riding with you (or holding on), while you drive or fly: a card under the top buttons and their names over your car or plane */
 .bs-ridecard { pointer-events: none; position: absolute; z-index: 5; left: 50%; top: calc(62px + env(safe-area-inset-top)); transform: translateX(-50%); max-width: calc(100% - 32px); box-sizing: border-box; padding: 8px 14px 8px 34px; border-radius: 999px; background: #ffd166; color: #1b1830; font: 700 0.86rem/1.2 var(--ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); }
 .bs-ridecard::before { content: ""; position: absolute; left: 12px; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; background: #1b1830; box-shadow: 0 0 0 3px rgba(27, 24, 48, 0.25); }
@@ -9023,6 +9041,9 @@ const handle = async (m, post) => {
           const goldEls = golds.length ? [(() => { const h = document.createElement("p"); h.className = "bs-town-group bs-town-players"; h.setAttribute("role", "presentation"); h.textContent = "Just for you"; return h; })(),
             ...golds.map((g, i) => { const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "menuitem"); b.className = "bs-town-players"; b.dataset.townGold = i;
               const sm = document.createElement("small"); sm.textContent = g.what; b.append(g.name, sm); return b; })] : [];
+          // the GPS, first (Ash, 22 November 2026: "Can you add a gps in the game to navigate to an address?")
+          if (T.gps) { const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "menuitem"); b.className = "bs-town-players bs-town-gpsitem"; b.dataset.townGps = "1";
+            const sm = document.createElement("small"); sm.textContent = T.gps.active() ? "Showing the way. Tap to go somewhere else" : "Directions to an address"; b.append("GPS", sm); list.prepend(b); }
           list.append(...goldEls);  // at the bottom of the list (Ash, 15 November 2026: "move just for you to the bottom")
           const news = isAsh() && cfg.place === "moo" ? MOO_NEW : [];  // New: at the top, Ash only
           if (news.length) { const h = document.createElement("p"); h.className = "bs-town-group bs-town-players bs-town-newhead"; h.setAttribute("role", "presentation"); h.textContent = "New to check";
@@ -9056,6 +9077,7 @@ const handle = async (m, post) => {
         if (newBtn) { newShow(); clearInterval(BS.newT); BS.newT = setInterval(newShow, 4000);  // (the name can be set after Explore opens)
           newBtn.onclick = () => { openList(true); const h = list.querySelector(".bs-town-newhead"); if (h) { list.scrollTop = 0; h.nextElementSibling?.focus({ preventScroll: true }); } }; }
         list.onclick = e => { if (e.target.closest("[data-town-fly]")) { openList(false); flyTo(); jump.focus({ preventScroll: true }); return; }
+          if (e.target.closest("[data-town-gps]")) { openList(false); T.gps?.open(); return; }
           const nw = e.target.closest("[data-town-new]"); if (nw) { const q = MOO_NEW[+nw.dataset.townNew]; openList(false); if (q) { T.tween = null; if (!T.walk) setMode(true);
             F.pos.set(q[2], ground(q[2], q[3]) + F.eye, q[3]); F.yaw = q[4]; F.pitch = q[5]; } return; }
           const gd = e.target.closest("[data-town-gold]"); if (gd) { openList(false); toGold(+gd.dataset.townGold); jump.focus({ preventScroll: true }); return; }
@@ -9154,6 +9176,7 @@ const handle = async (m, post) => {
         if (cfg.place === "moo" && !OFF.has("yards")) try { T.yards = townMagicMile(T, m); } catch (e) { console.warn("Town model: the Magic Mile couldn't start", e); }
         if (cfg.place === "moo" && !OFF.has("yards")) try { T.bowls = townBowls(T, m); } catch (e) { console.warn("Town model: the bowls club couldn't start", e); }
         if (cfg.place === "moo" && !OFF.has("walkers")) try { T.walkers = townWalkers(T, m, cfg); } catch (e) { console.warn("Town model: the walkers couldn't start", e); }
+        if (!OFF.has("gps")) try { T.gps = townGps(T, m, F, ground, cfg, box); T.gps.places = places; } catch (e) { console.warn("Town model: the GPS couldn't start", e); }
         if (!OFF.has("mail")) try { T.mail = townMail(T); } catch (e) { console.warn("Town model: the post couldn't start", e); }
         if (!OFF.has("animal")) try { T.critter = townCritter(T, m, ground, cfg.place); } catch (e) { console.warn("Town model: the animal couldn't start", e); }
         F.hot = { f: () => toMode(!T.walk),
@@ -16535,6 +16558,141 @@ const handle = async (m, post) => {
   // People walking the footpaths of Moorooka's busy streets: the shops on Beaudesert Road and Moorooka Road, and the Magic Mile on
   // Ipswich Road (Ash, 19 November 2026: "mooroka needs a few more moving cars and people but consider lag impacts"). Six on a phone,
   // ten on a computer; each a few parts, drawn only within 300 m of the view and parked out of sight beyond
+  // ---- GPS (Ash, 22 November 2026: "Can you add a gps in the game to navigate to an address?"). In Jump to: type an address (or a
+  // place on the map), pick it, and a blue line on the road leads you there by the shortest way along the streets, a red pin marks
+  // the spot, and a card under the top buttons says where to turn and how far, with an arrow pointing the way. Off the line by
+  // 35 m it finds a new way from where you are; within 15 m you've arrived. Queensland addresses come from the State's own address
+  // finder (QldLocator, the same data as the map's streets); Inverloch's from OpenStreetMap. Driving, it keeps to one-way streets.
+  // The streets are read and joined into a network the first time it's used, never mid-game unasked; nothing runs while it's off. ----
+  function townGps(T, m, F, ground, cfg, box) {
+    const G = { places: [] }; let dead = false, net = null, netP = null, route = null, parts = null, hudT = 0, offT = 0, rerouteT = 0, ctl = null, sugT = 0, lastPick = null;
+    const lin = hex => { const v = parseInt(hex.slice(1), 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255].map(c => Math.pow(c / 255, 2.2)); };
+    const fmt = d => d < 1000 ? `${Math.max(10, Math.round(d / 10) * 10)} m` : `${(d / 1000).toFixed(1)} km`;
+    // lat/lon both ways (the model's conversion is straight-line)
+    const a0 = m.fromLatLon(-27, 153), a1 = m.fromLatLon(-28, 154), kx = a1[0] - a0[0], kz = a1[1] - a0[1];
+    const toLL = (x, z) => [-27 + (z - a0[1]) / kz, 153 + (x - a0[0]) / kx];  // [lat, lon]
+    // ---- the streets as a network: every point of every street, the same point on two streets being one junction; a street's
+    // loose end joined to the nearest other street within 20 m (roundabouts and slip lanes aren't in Logan's street list)
+    const load = () => netP || (netP = townStreetData(cfg).then(d => {
+      const key = (x, z) => Math.round(x * 2) + "," + Math.round(z * 2), id = new Map, X = [], Z = [], adj = [];
+      const node = (x, z) => { const k = key(x, z); let i = id.get(k); if (i == null) { i = X.length; id.set(k, i); X.push(x); Z.push(z); adj.push([]); } return i; };
+      const ends = [];
+      d.roads.forEach((r, ri) => { const p = r.pts; let a = node(p[0], p[1]); ends.push([a, ri]);
+        for (let k = 2; k < p.length; k += 2) { const b = node(p[k], p[k + 1]), w = Math.hypot(X[b] - X[a], Z[b] - Z[a]); if (w > 0) { adj[a].push([b, w, r.name, 0]); adj[b].push([a, w, r.name, r.one ? 1 : 0]); } a = b; }
+        ends.push([a, ri]); });
+      const cell = new Map, ck = (x, z) => Math.floor(x / 25) + "," + Math.floor(z / 25);
+      for (let i = 0; i < X.length; i++) { const k = ck(X[i], Z[i]); if (!cell.has(k)) cell.set(k, []); cell.get(k).push(i); }
+      for (const [i] of ends) if (adj[i].length <= 1) { let best = -1, bd = 20;
+        for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (const j of cell.get((Math.floor(X[i] / 25) + a) + "," + (Math.floor(Z[i] / 25) + b)) || []) {
+          if (j === i || adj[i].some(e => e[0] === j)) continue; const dd = Math.hypot(X[j] - X[i], Z[j] - Z[i]); if (dd < bd && dd > 0.6) { bd = dd; best = j; } }
+        if (best >= 0) { adj[i].push([best, bd, -1, 0]); adj[best].push([i, bd, -1, 0]); } }
+      let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (let i = 0; i < X.length; i++) { x0 = Math.min(x0, X[i]); x1 = Math.max(x1, X[i]); z0 = Math.min(z0, Z[i]); z1 = Math.max(z1, Z[i]); }
+      const mid = new Map; d.roads.forEach(r => { const nm = (d.names || [])[r.name]; if (!nm) return; const p = r.pts, L = p.length / 2; let len = 0; for (let k = 2; k < p.length; k += 2) len += Math.hypot(p[k] - p[k - 2], p[k + 1] - p[k - 1]);
+        const best = mid.get(nm); if (!best || len > best.len) { const h = (L >> 1) * 2; mid.set(nm, { len, x: p[h], z: p[h + 1] }); } });
+      net = { X, Z, adj, cell, mid, names: d.names || [], bb: [x0 - 60, z0 - 60, x1 + 60, z1 + 60] }; return net; }));
+    const nearest = (x, z) => { const N = net; let best = -1, bd = Infinity;
+      for (let r = 1; r <= 6 && best < 0; r++) for (let a = -r; a <= r; a++) for (let b = -r; b <= r; b++) for (const j of N.cell.get((Math.floor(x / 25) + a) + "," + (Math.floor(z / 25) + b)) || []) {
+        const d = Math.hypot(N.X[j] - x, N.Z[j] - z); if (d < bd) { bd = d; best = j; } }
+      return best; };
+    // the shortest way (Dijkstra, a binary heap); one-way streets kept to when driving
+    const shortest = (s, t, oneWay) => { const N = net, n = N.X.length, dist = new Float64Array(n).fill(Infinity), prev = new Int32Array(n).fill(-1), pname = new Int32Array(n).fill(-1), h = [];
+      const push = (d, i) => { h.push([d, i]); let k = h.length - 1; while (k) { const p = (k - 1) >> 1; if (h[p][0] <= h[k][0]) break; [h[p], h[k]] = [h[k], h[p]]; k = p; } };
+      const pop = () => { const top = h[0], last = h.pop(); if (h.length) { h[0] = last; let k = 0; for (;;) { const l = 2 * k + 1, r = l + 1; let mn = k; if (l < h.length && h[l][0] < h[mn][0]) mn = l; if (r < h.length && h[r][0] < h[mn][0]) mn = r; if (mn === k) break; [h[mn], h[k]] = [h[k], h[mn]]; k = mn; } } return top; };
+      dist[s] = 0; push(0, s);
+      while (h.length) { const [d, i] = pop(); if (d > dist[i]) continue; if (i === t) break;
+        for (const [j, w, nm, back] of N.adj[i]) { if (oneWay && back) continue; const nd = d + w; if (nd < dist[j]) { dist[j] = nd; prev[j] = i; pname[j] = nm; push(nd, j); } } }
+      if (!isFinite(dist[t])) return null; const path = [], names = []; for (let i = t; i >= 0; i = prev[i]) { path.push(i); names.push(pname[i]); } path.reverse(); names.reverse(); return { path, names }; };
+    // ---- what's on the screen: the address box, the card with the next turn, the line and the pin
+    const boxEl = document.createElement("div"); boxEl.className = "bs-gps-box"; boxEl.hidden = true; boxEl.setAttribute("role", "dialog"); boxEl.setAttribute("aria-label", "GPS: where to?");
+    boxEl.innerHTML = `<form><input type="text" autocomplete="off" autocapitalize="words" enterkeyhint="search" placeholder="Address or place, e.g. 12 Mayfield Road" aria-label="Address or place to go to"><button type="button" class="x">Cancel</button></form><ul role="listbox"></ul><p hidden></p>`;
+    const inp = boxEl.querySelector("input"), ul = boxEl.querySelector("ul"), note = boxEl.querySelector("p");
+    const card = document.createElement("div"); card.className = "bs-gps"; card.hidden = true; card.setAttribute("role", "status");
+    card.innerHTML = `<svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 16-7-4-7 4z" fill="#fff"/></svg><div><b></b><span></span></div><button type="button" aria-label="Stop the GPS">×</button>`;
+    const arr = card.querySelector(".arr"), cb = card.querySelector("b"), cs = card.querySelector("span");
+    box.append(boxEl, card);
+    const say = t => { note.hidden = !t; note.textContent = t || ""; };
+    let items = [];
+    const show = list => { items = list; ul.innerHTML = ""; for (const [i, s] of list.entries()) { const li = document.createElement("li"), b = document.createElement("button"); b.type = "button"; b.dataset.i = i;
+      b.append(s.text); if (s.sub) { const sm = document.createElement("small"); sm.textContent = s.sub; b.append(sm); } li.append(b); ul.append(li); } };
+    // suggestions: places on this map first, then addresses
+    const local = q => { const w = q.toLowerCase().trim(), st = w.replace(/^\d+[a-z]?\s+/, ""); if (!w) return [];
+      const pl = G.places.filter(p => p.walk && (p.name || "").toLowerCase().includes(w)).slice(0, 4).map(p => ({ text: p.name[0].toUpperCase() + p.name.slice(1), sub: p.what || "On this map", x: p.walk.x, z: p.walk.z }));
+      const sts = net && st.length >= 3 ? [...net.mid].filter(([nm]) => nm.toLowerCase().startsWith(st) || nm.toLowerCase().includes(" " + st)).slice(0, 3).map(([nm, v]) => ({ text: nm, sub: "The street (its middle)", x: v.x, z: v.z })) : [];
+      return [...pl, ...sts]; };
+    const QLD = cfg.place !== "inv";
+    const suggest = async q => { ctl?.abort(); ctl = new AbortController(); const sig = ctl.signal, loc = local(q); let more = [];
+      try { const [lat, lon] = toLL(F.pos.x, F.pos.z);
+        if (QLD) { const u = `https://spatial-gis.information.qld.gov.au/arcgis/rest/services/Location/QldLocator/GeocodeServer/suggest?f=json&maxSuggestions=6&distance=6000&location=${lon.toFixed(5)},${lat.toFixed(5)}&text=${encodeURIComponent(q)}`;
+          const j = await fetch(u, { signal: sig }).then(r => r.json()); more = (j.suggestions || []).filter(s => !s.isCollection).map(s => ({ text: s.text.replace(/, Queensland$/, ""), key: s.magicKey, full: s.text })); }
+        else { const [la0, lo0] = toLL(net ? net.bb[0] : -2000, net ? net.bb[1] : -2000), [la1, lo1] = toLL(net ? net.bb[2] : 2000, net ? net.bb[3] : 2000);
+          const u = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&countrycodes=au&bounded=1&viewbox=${Math.min(lo0, lo1)},${Math.max(la0, la1)},${Math.max(lo0, lo1)},${Math.min(la0, la1)}&q=${encodeURIComponent(q)}`;
+          const j = await fetch(u, { signal: sig }).then(r => r.json()); more = j.map(s => ({ text: s.display_name.split(", ").slice(0, 3).join(", "), lat: +s.lat, lon: +s.lon })); } }
+      catch (e) { if (sig.aborted) return; if (!loc.length) say("Couldn't look that up just now. Check you're online and try again."); }
+      if (sig.aborted || dead) return; show(/^\d/.test(q) ? [...more, ...loc] : [...loc, ...more]);  /* a house number: the addresses first */ if (loc.length || more.length) say(""); else say("Nothing found here by that name. Try the street number and name."); };
+    inp.addEventListener("input", () => { clearTimeout(sugT); const q = inp.value.trim(); if (q.length < 3) { show(local(q)); say(""); return; } sugT = setTimeout(() => suggest(q), 300); });
+    inp.onkeydown = e => { e.stopPropagation(); if (e.key === "Escape") G.close(); else if (e.key === "Enter") { e.preventDefault(); if (items.length) pick(0); else if (inp.value.trim().length >= 3) suggest(inp.value.trim()); } };
+    inp.onkeyup = e => e.stopPropagation();
+    boxEl.querySelector(".x").onclick = () => G.close();
+    ul.onclick = e => { const b = e.target.closest("button[data-i]"); if (b) pick(+b.dataset.i); };
+    card.querySelector("button").onclick = () => { G.stop(); toast("GPS off.", 1500); };
+    const pick = async i => { const s = items[i]; if (!s) return; say("Finding it…");
+      try { let x = s.x, z = s.z;
+        if (x == null) { let lat = s.lat, lon = s.lon;
+          if (lat == null) { const u = `https://spatial-gis.information.qld.gov.au/arcgis/rest/services/Location/QldLocator/GeocodeServer/findAddressCandidates?f=json&outSR=4326&maxLocations=1&SingleLine=${encodeURIComponent(s.full)}&magicKey=${encodeURIComponent(s.key)}`;
+            const j = await fetch(u).then(r => r.json()), c = j.candidates?.[0]; if (!c) return say("Couldn't find that one. Try another."); lat = c.location.y; lon = c.location.x; }
+          [x, z] = m.fromLatLon(lat, lon); }
+        await load(); if (dead) return; const b = net.bb;
+        if (!(x > b[0] && x < b[2] && z > b[1] && z < b[3])) return say("That's outside this map. Pick somewhere in town.");
+        lastPick = { x, z, label: s.text }; G.close(); start(lastPick); }
+      catch { say("Couldn't look that up just now. Check you're online and try again."); } };
+    // where you are: your car, or you
+    const here = () => { const w = T.car?.in ? T.car.where?.() : null; return w && w.x != null ? [w.x, w.z] : [F.pos.x, F.pos.z]; };
+    const clearParts = () => { try { parts?.remove(); } catch {} parts = null; };
+    const draw = pts => { clearParts(); const pos = [], nor = [], col = [], c = lin("#3d8bff"), pc = lin("#ff4d6d"), W = 0.8;
+      const quad = (a, b, cc, d, k) => { for (const q of [a, b, cc, a, cc, d]) { pos.push(q[0], q[1], q[2]); nor.push(0, 1, 0); col.push(k[0], k[1], k[2]); } };
+      for (let i = 0; i + 3 < pts.length; i += 2) { const ax = pts[i], az = pts[i + 1], bx = pts[i + 2], bz = pts[i + 3], L = Math.hypot(bx - ax, bz - az); if (L < 0.05) continue;
+        const nx = -(bz - az) / L * W, nz = (bx - ax) / L * W, ya = ground(ax, az) + 0.18, yb = ground(bx, bz) + 0.18;
+        quad([ax - nx, ya, az - nz], [ax + nx, ya, az + nz], [bx + nx, yb, bz + nz], [bx - nx, yb, bz - nz], c); }
+      const ex = pts[pts.length - 2], ez = pts[pts.length - 1], g = ground(ex, ez);  // the pin: a tall red beam you can see from streets away
+      for (const [dx, dz] of [[0.6, 0], [0, 0.6]]) quad([ex - dx, g, ez - dz], [ex + dx, g, ez + dz], [ex + dx, g + 30, ez + dz], [ex - dx, g + 30, ez - dz], pc);
+      parts = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.6, doubleSide: true, matrix: new BS.B.THREE.Matrix4().elements }]); };
+    // a route: the line every 3 m, how far along each point is, and the turns (where the street's name changes, or it turns sharply)
+    const start = async dest => { await load(); if (dead) return; const [hx, hz] = here(), s = nearest(hx, hz), t = nearest(dest.x, dest.z);
+      if (s < 0 || t < 0) return toast("No way there along the streets from here.", 2500);
+      const r = (T.car?.in && shortest(s, t, true)) || shortest(s, t, false); if (!r) return toast("No way there along the streets from here.", 2500);
+      const N = net, P = [hx, hz], nm = [-1]; for (let k = 0; k < r.path.length; k++) { P.push(N.X[r.path[k]], N.Z[r.path[k]]); nm.push(r.names[k]); }
+      P.push(dest.x, dest.z); nm.push(-2);
+      const pts = [P[0], P[1]], names = [nm[0]]; for (let i = 2; i < P.length; i += 2) { const L = Math.hypot(P[i] - P[i - 2], P[i + 1] - P[i - 1]), n = Math.ceil(L / 3);
+        for (let k = 1; k <= n; k++) { pts.push(P[i - 2] + (P[i] - P[i - 2]) * k / n, P[i - 1] + (P[i + 1] - P[i - 1]) * k / n); names.push(nm[i / 2]); } }
+      const at = [0]; for (let i = 2; i < pts.length; i += 2) at.push(at[at.length - 1] + Math.hypot(pts[i] - pts[i - 2], pts[i + 1] - pts[i - 1]));
+      const dirAt = (i, step) => { const j = Math.max(0, Math.min(at.length - 1, i + step)); return [pts[j * 2] - pts[i * 2], pts[j * 2 + 1] - pts[i * 2 + 1]]; };
+      const turns = []; for (let i = 2; i < names.length - 1; i++) { if (names[i] === names[i - 1] || names[i] < 0) continue;
+        const back = dirAt(i, -4), a = [-back[0], -back[1]], b = dirAt(i, 4), la = Math.hypot(a[0], a[1]) || 1, lb = Math.hypot(b[0], b[1]) || 1;
+        const deg = Math.acos(Math.max(-1, Math.min(1, (a[0] * b[0] + a[1] * b[1]) / la / lb))) * 180 / Math.PI;  // 0: straight on
+        const side = a[0] * b[1] - a[1] * b[0] > 0 ? "right" : "left", nm2 = N.names[names[i]] || "";  // (x east, z south)
+        if (!nm2 && deg < 28) continue;  // straight on to a street with no name: nothing to say
+        const text = deg < 28 ? `Carry on onto ${nm2}` : deg > 150 ? (nm2 ? `Turn round onto ${nm2}` : "Turn round") : nm2 ? `Turn ${side} onto ${nm2}` : `Turn ${side}`;
+        const last = turns[turns.length - 1]; if (last && at[i] - last.at < 15) turns.pop(); turns.push({ at: at[i], text }); }
+      route = { pts, at, turns, dest, i: 0 }; draw(pts); card.hidden = false; hudT = 0; G.frame(true); };
+    G.open = () => { if (dead) return; boxEl.hidden = false; inp.value = ""; show([]); say(route ? `Going to ${route.dest.label}. Pick somewhere else, or Cancel.` : ""); load().catch(() => {}); setTimeout(() => inp.focus(), 30); };
+    G.close = () => { boxEl.hidden = true; ctl?.abort(); inp.blur(); };
+    G.stop = () => { route = null; clearParts(); card.hidden = true; };
+    G.active = () => !!route;
+    G.frame = force => { if (!route || dead) return; const now = performance.now(); if (!force && now - hudT < 250) return; hudT = now;
+      const R = route, [x, z] = here(), n = R.at.length; let bi = R.i, bd = Infinity, bt = 0;
+      for (let i = Math.max(0, R.i - 15); i < Math.min(n - 1, R.i + 80); i++) { const ax = R.pts[i * 2], az = R.pts[i * 2 + 1], dx = R.pts[i * 2 + 2] - ax, dz = R.pts[i * 2 + 3] - az, L2 = dx * dx + dz * dz || 1, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L2)), d = Math.hypot(x - ax - dx * t, z - az - dz * t);
+        if (d < bd) { bd = d; bi = i; bt = t; } }
+      R.i = bi; const along = R.at[bi] + (R.at[Math.min(n - 1, bi + 1)] - R.at[bi]) * bt, left = R.at[n - 1] - along, toDest = Math.hypot(R.dest.x - x, R.dest.z - z);
+      if (toDest < 15 || left < 12) { const lab = R.dest.label; G.stop(); toast(`You've arrived: ${lab}.`, 3200); return; }
+      if (bd > 35) { if (!offT) offT = now; if (now - offT > 1500 && now - rerouteT > 3000) { rerouteT = now; offT = 0; start(R.dest); return; } } else offT = 0;
+      const nx = R.turns.find(q => q.at > along + 3);
+      cb.textContent = nx ? `${nx.text}` : `Arrive at ${R.dest.label}`; cs.textContent = nx ? `in ${fmt(nx.at - along)} · ${fmt(left)} to ${R.dest.label}` : `in ${fmt(left)}`;
+      // the arrow: towards the line 25 m ahead, turned to how you're facing
+      let j = bi; while (j < n - 1 && R.at[j] < along + 25) j++; const tx = R.pts[j * 2] - x, tz = R.pts[j * 2 + 1] - z, want = Math.atan2(-tx, -tz);
+      const rel = Math.atan2(Math.sin(want - F.yaw), Math.cos(want - F.yaw)); arr.style.transform = `rotate(${(-rel * 180 / Math.PI).toFixed(0)}deg)`; };
+    G.dispose = () => { dead = true; G.stop(); ctl?.abort(); boxEl.remove(); card.remove(); };
+    return G;
+  }
   function townWalkers(T, m, cfg) {
     const P = { frame() {}, dispose() {} }; if (!m.addParts || !m.groundAt) return P;
     const THREE = BS.B.THREE, M = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), ONE = new THREE.Vector3(1, 1, 1);
@@ -18584,7 +18742,7 @@ const handle = async (m, post) => {
     // (the worker view sets the camera first, so names and bubbles are placed from where you really look; the traffic, the animal,
     // number 6 and the people out the front had been left out of every frame by a note on the same line, from #128 to 15 November 2026)
     T.car?.frame(); T.me?.frame(); T.peers?.frame(); T.here?.frame();
-    T.traffic?.frame(); T.critter?.frame(); T.no6?.frame(); T.home6?.frame(); T.mayor?.frame(); T.council?.frame(); T.locals?.frame(); T.yards?.frame(); T.walkers?.frame();
+    T.traffic?.frame(); T.critter?.frame(); T.no6?.frame(); T.home6?.frame(); T.mayor?.frame(); T.council?.frame(); T.locals?.frame(); T.yards?.frame(); T.walkers?.frame(); T.gps?.frame();
     // flying: held down at the lowest you can fly (Down, or C) for a moment, and you are on foot there
     if (!T.walk && !T.tween && !F.drive && F.floor && F.hot?.f) { const low = F.pos.y <= F.floor() + 0.1, down = F.vert < -0.3 || F.keys.has("KeyC"), now = performance.now();
       if (!(low && down)) T.downAt = 0; else if (!T.downAt) T.downAt = now; else if (now - T.downAt > 1200) { T.downAt = 0; F.hot.f(); } }
@@ -18603,7 +18761,7 @@ const handle = async (m, post) => {
     BS.town = null; T.dead = true; T.on = false; T.ungest?.(); T.unlay?.(); T.unflood?.();
     T.streets?.dispose(); T.streets = null; $("bsNamesBtn").hidden = true;
     T.admin?.dispose(); T.admin = null;
-    T.car?.dispose(); T.car = null; T.peers?.dispose(); T.peers = null; T.me?.dispose(); T.me = null; T.here?.dispose(); T.here = null; T.yards?.dispose(); T.yards = null; T.bowls?.dispose(); T.bowls = null; T.walkers?.dispose(); T.walkers = null; T.traffic?.dispose(); T.traffic = null; T.mayor?.dispose(); T.mayor = null; T.council?.dispose(); T.council = null; T.critter?.dispose(); T.critter = null; T.home6?.dispose(); T.home6 = null; T.locals?.dispose(); T.locals = null; T.mail?.dispose(); T.mail = null;
+    T.gps?.dispose(); T.gps = null; T.car?.dispose(); T.car = null; T.peers?.dispose(); T.peers = null; T.me?.dispose(); T.me = null; T.here?.dispose(); T.here = null; T.yards?.dispose(); T.yards = null; T.bowls?.dispose(); T.bowls = null; T.walkers?.dispose(); T.walkers = null; T.traffic?.dispose(); T.traffic = null; T.mayor?.dispose(); T.mayor = null; T.council?.dispose(); T.council = null; T.critter?.dispose(); T.critter = null; T.home6?.dispose(); T.home6 = null; T.locals?.dispose(); T.locals = null; T.mail?.dispose(); T.mail = null;
     T.unbar?.();
     if (BS.fly) { const F = BS.fly; F.walk = F.speed = F.floor = F.hot = F.drive = null; F.ceil = 0; F.lim = null; }  // Explore, if it carries on, is its old self
     try { T.model?.dispose(); } catch {}

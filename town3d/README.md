@@ -2250,3 +2250,21 @@ Ipswich Road end) a piece of it survived, it was the first piece built at the st
 
 Measured (`t/walk.js`, six places, the network filling at a phone's speed): people with someone else within 3 m went from 67% to 10%,
 and the median distance to the nearest other person from 1.7 m to 15.7 m; none on a road.
+
+## GPS: directions to an address (22 November 2026)
+
+Ash: "Can you add a gps in the game to navigate to an address?"
+
+- **Opening it:** Jump to, then GPS at the top of the list. Type an address or a place. Moorooka and Logan look addresses up with
+  the Queensland Government's address finder (`QldLocator` suggest, then `findAddressCandidates`); Inverloch uses OpenStreetMap's
+  Nominatim, which has few house numbers there. Places on the map and street names (the middle of the street) are matched on the
+  device too, so a street still comes up when the finder has nothing.
+- **The route:** the town's own street lines (`townStreetData`) joined into a network (loose ends within 20 m bridged), shortest
+  path by Dijkstra from the nearest point to you. Drawn as one blue ribbon 0.18 m above the ground with a red pin at the end
+  (`m.addParts`, one part, removed when you stop or arrive).
+- **The card:** the next turn ("Turn left onto Beaudesert Road"), how far to it and how far to go, and an arrow that points the way
+  from where you're facing. Straight on to a street with no name says nothing. Off the route by 35 m for 1.5 s and it works the route
+  out again. Within 15 m of the pin (or 12 m left on the route) it says you've arrived and clears the line.
+- **Lag:** the network is built once, the first time the GPS is opened. Each frame only looks along the next 80 points of the route,
+  and the card is updated at most a few times a second. No fetching mid-game except the address lookups you type.
+- **Code:** `townGps` in `app.html` (`T.gps`); can be turned off with `OFF` key `gps`.
