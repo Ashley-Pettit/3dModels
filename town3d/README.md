@@ -2114,6 +2114,9 @@ with it, and all three are fixed.
   centre line (the bus 1.35 m, clear of parked cars, which stand at least 2.9 m out). `design.py` then keeps each island clear of
   where the cars run (2.58 m in from each carriageway's line, and 0.3 m more): where the real island is wider it is cut back, and
   where a turn pocket has pushed it right over to one side a strip of it is kept against that side. Most of it is drawn as it is.
+  (Correction, 22 November 2026: `addTraffic` is never called in `moorooka-model.js`, so the change to it does nothing you can see:
+  the model has no moving cars of its own. The cars that drive are the page's, `townTraffic` in `app.html`. See "Moorooka's traffic
+  in the middle of its lane" below. The islands are still kept clear of both lanes of each carriageway, which does no harm.)
 
 `MOO_BEAU` in `app.html` is each island as points of `[east edge x, z, west edge x, z, kind]` (0 concrete, 1 garden bed, 2 lawn;
 3 striped concrete came later, below),
@@ -2263,7 +2266,7 @@ windows (1,202 inside Moorooka), 813 by a metre or more. Lifting every house on 
 back the same day (tall blank bases, huge stairs, doors in the air).
 
 **What is done instead, per house.** Only the houses listed in `MOO_SET` (`app.html`) change. The model rebuilds each the way Brisbane's
-hillside houses are built (`moorooka-model.js ?v=62`, patched by `tools/houses/set_on_slope.py`, which says how):
+hillside houses are built (`moorooka-model.js ?v=63` once merged with the balcony hook, patched by `tools/houses/set_on_slope.py`, which says how):
 
 - the roof stays where the survey has it, the floor is one storey under the eave and never below the uphill ground;
 - under the floor, down the slope: a closed-in lower level (masonry, small windows, a garage door where the ground plan's drive meets
@@ -2291,3 +2294,209 @@ building triangles.
 **How to do the next 100:** `pick_sunk.py <repo> 100 picks.json` (it leaves out what is already in `MOO_SET`), look at each on the
 aerial for its roof, `add_set.py app.html picks.json <roofs> "<note>"`, rebuild, save what `window.anSetRec` is told, then
 `clear_fronts.py ... --write`.
+
+## GPS: directions to an address (22 November 2026)
+
+Ash: "Can you add a gps in the game to navigate to an address?"
+
+- **Opening it:** Jump to, then GPS at the top of the list. Type an address or a place. Moorooka and Logan look addresses up with
+  the Queensland Government's address finder (`QldLocator` suggest, then `findAddressCandidates`); Inverloch uses OpenStreetMap's
+  Nominatim, which has few house numbers there. Places on the map and street names (the middle of the street) are matched on the
+  device too, so a street still comes up when the finder has nothing.
+- **The route:** the town's own street lines (`townStreetData`) joined into a network (loose ends within 20 m bridged), shortest
+  path by Dijkstra from the nearest point to you. Drawn as one blue ribbon 0.18 m above the ground with a red pin at the end
+  (`m.addParts`, one part, removed when you stop or arrive).
+- **The card:** the next turn ("Turn left onto Beaudesert Road"), how far to it and how far to go, and an arrow that points the way
+  from where you're facing. Straight on to a street with no name says nothing. Off the route by 35 m for 1.5 s and it works the route
+  out again. Within 15 m of the pin (or 12 m left on the route) it says you've arrived and clears the line.
+- **Lag:** the network is built once, the first time the GPS is opened. Each frame only looks along the next 80 points of the route,
+  and the card is updated at most a few times a second. No fetching mid-game except the address lookups you type.
+- **Code:** `townGps` in `app.html` (`T.gps`); can be turned off with `OFF` key `gps`.
+
+## Driving without being a gamer: click to drive, and Drive for me (22 November 2026)
+
+Ash: "How do pc controls work when driving using the google maps style atm. I'm trying to cater to both people used to pc games as well
+as not", then "Give it a shot, don't change the normal keys", then "Try to make simple keys for people to be able to drive without being
+a gamer. These keys just for google maps style. If the keys don't interfere with each other you can also put into the gamer mode".
+
+With Google Maps controls, driving still needed W A S D or the arrows, and the tutorial that says "F, then E" is hidden for that style.
+Now, in `app.html` (all three towns):
+
+- **A click on a car in the map view gets you into it** (Google Maps controls, on a computer). The mouse turns to a hand over a car,
+  with "Click to get in". A click, not a drag: under 6 px and under 0.8 s, timed by the events' own time stamps (a slow frame between
+  press and release must not turn a click into a drag). `mapClick` beside the map view's gestures; `C.carNear` and `C.enterCar` in
+  `townCar` (the app's own cars, the traffic, and the model's parked cars). You arrive seen from behind the car.
+- **A click on the road while you're in a car and it drives there** (`C.clickDrive`, `C.driveTo`). A blue ring and pin mark the spot.
+  From the map view, with your car waiting (F), a click anywhere sends it there. Where on the ground a click lands: `townClickAt`.
+- **Drive for me (G)**: the car sets off along the street it is on and follows it; G again stops it. **< and >** ask for the next left
+  and the next right. Three buttons under Get out carry the same keys with Google Maps controls (the mouse is free to click them
+  there); with the gamer's controls the keys work too and are listed bottom left. G was free in a car (it is the possum's Plant only
+  while you're the possum), and the comma and full stop keys did nothing.
+- **How it drives.** The streets are the traffic's list (`T.roadsAll`: nothing is fetched). `autoNet` joins up the streets within 700 m
+  into a network the first time (7 to 11 ms in the test browser), with loose street ends joined to the street they stop short of (within 8 m always; up to
+  35 m only where the end points at what it would join and no building is between, which is how Logan's missing roundabouts are
+  crossed). `autoRoute` is the shortest way through it (A*), one-way carriageways only the way they run unless there is no other way.
+  It keeps to the same left lane as the traffic, slows for bends (down to 15 km/h), drives at up to 50 km/h and stops on the spot. A
+  spot off the street (a car park) gets a last straight bit only if no building is in the way. Run into something, it backs off and
+  tries again, four times, then hands the car back with a message.
+- **Corners, roundabouts and dead ends** (`cruiseOn`): straight on is the street that bends least. A turn asked for is taken at the
+  first corner with a street off to that side by 35 to 135 degrees, and a bend in the same street does not count. At a roundabout it
+  looks right round for every exit first and leaves by the one that suits the way it came in. At a dead end it turns round. For the
+  roundabouts, `townStreetData` now passes on the street list's roundabout flag (`ring`, the second flag bit: 13 in Moorooka, 7 in
+  Inverloch, run one way the way their points go).
+- **Nothing about the normal keys changes.** W A S D, the arrows, the scroll wheel, the stick, the handbrake and the Boost button take
+  the car straight back. Shift alone does not (and does not boost while it drives itself), because < and > are often typed with Shift.
+- **Not on a phone**: the buttons and the clicks are for a mouse, and no touch listener is added or changed.
+
+Tested in headless Chrome at 1280 by 800, the game's own loop run on by hand: clicking a car from the map (and that a drag does not),
+clicking the road 25, 45 and 90 m ahead (it stops within 2 to 3 m, the lane's width), trips of 300 to 800 m in Moorooka, Logan and
+Inverloch with no sudden stops on the street, a Moorooka roundabout straight on, left and right, W and Space taking the car back,
+Shift not, and G, < and > with both styles. The two-finger stick test from CLAUDE.md at phone size in all three towns, at the start
+and after two minutes running. Other players were switched off for the later tests (`an3d-off`), after the first few runs joined the
+live game as a player called Tester.
+
+## A spot check of Moorooka: parked cars out in the lane (22 November 2026)
+
+Ash: "Spot check for mistakes through the app with paths, roads, trees, houses. Fix what you find".
+
+- **Looked at:** twelve streets spread across the model from 6.5 m up (a local build, 1280 x 800), and the other main roads (Ipswich,
+  Fairfield, Evans and Tarragindi Roads, Muriel Avenue).
+- **Counted from the town data:** every parked car against its nearest street, and every tree against every street.
+  - Trees: none of the 27,833 stands on a street (more than 0.4 m inside its edge). Nothing to fix.
+  - Parked cars: all 2,038 on a street are parallel to it, and nearly all stand 0.9 to 1.3 m in from its edge. **25 stood 1.85 to
+    2.6 m in**, which is out in the traffic lane beside the centre line. That is the one mistake found.
+- **Fixed:** `tools/ground/cars_kerb.py` moves each of those square across to 1.1 m from the street's edge when no other car is
+  within 5.4 m of the spot (it tries 6 and 12 m either way along the street as well). 24 moved, by 1.5 m at most; one has a car
+  beside it at the kerb and is left. Only `cars` in `town.json` changes (24 positions; no headings, colours or counts), and none of
+  the 24 is named by its place in `edits.json` or `app.html`. `town.json` is fetched with no version on its address, so it can be ten
+  minutes before a browser sees it.
+- **Seen and not changed:** Evans Road has no centre line where it was looked at; Fairfield Road's two carriageways have no island
+  between them; Ipswich Road's median is a plain strip of lawn with no turn lanes painted. Each is a road to do properly from the
+  aerial photograph, as Beaudesert Road was.
+
+## Moorooka's shops checked against Google Maps again (22 November 2026)
+
+Ash: "look at the shops in moorooka. Check against google maps for accuracy and improve model using low res". 110 places that Google
+Maps lists in Moorooka were looked up (the shopping strip address by address, then the Magic Mile, the servos, the workshops and the
+back streets by kind) and each name compared with the names in `MOO_FRONTS`.
+
+- **In the model already:** all but eight. The strip's shops, the two arcades' tenant boards, the shopping centre, the car yards and
+  the workshops agree with Google Maps by name and address.
+- **Changed** (words only, nothing drawn): the tobacconist at 173 is Cigar Heaven (its tag says so now; the sign still reads
+  TOBACCONIST), and the Rannchhod Arcade's tag names K:B Barbershop and Anina Dubai as well.
+- **On Google Maps and not in the model** (not added: each needs its wall worked out from the lot survey, which `tools/ground/shops.py`
+  does with `shapely`, and that could not be installed in this session): Bugsy's Fish & Chips, 293 Beaudesert Road; Auto Masters,
+  1115 Ipswich Road (the Starbucks address); Umdorman Cafe, 173 Beaudesert Road (which shopfront is not known); Dufanda, a barber in
+  the arcade at 197.
+- **Not settled:**
+  - Yeshi Buna, 1/131 Beaudesert Road. Taken out on 21 November as closed for good. Google's places data still lists it (472 reviews,
+    no opening hours), and a booking site shows hours for it. Left out; Ash would know.
+  - The Cleo Collective is drawn at 2/116 from Ash's photos of the pharmacy row. Google Maps has "Cleo Hairdressing" at 49 Beaudesert
+    Road (Colebrook Corner). Left where the photos have it.
+  - "DINDER GIFTWARE" at 205 was read off Street View. Google Maps lists "Austra Giftware" at 5/207 and no Dinder Giftware. Left.
+
+## Moorooka's traffic in the middle of its lane (22 November 2026)
+
+Ash: "Improve how cars drive (left)". The cars that drive themselves (and the bus) are the page's (`townTraffic`): they follow a
+street's line, set off to the left of it by `lane`. They were on the left, but too far over.
+
+- **What was wrong.** `lane` was a quarter of the street's width whatever the street. On Beaudesert Road's 9.6 m carriageways that is
+  2.4 m left of the dashed line, where the left lane's middle is 1.7 m: the cars ran with their left wheels in the parking lane, hard
+  against the kerb at the wide junctions. On a two-way street with parking it put them along the parked cars.
+- **Now** (`laneOf`): a car runs down the middle of its lane, where the model paints the lanes (3.4 m wide, counted the way the model
+  counts them). On a one-way carriageway that is the left lane of its two or three (1.7 or 3.4 m left of its line), or down the line
+  itself where there is one lane (the roundabouts and slip lanes). On a two-way street it is 1.75 m left of the centre line, or the
+  middle of its half on a narrow one. A town whose streets have no widths (Logan) keeps what it had.
+- **Corners.** A car's place across the road now moves over to the next street's lane at 1.5 m a second (`C.ln`); it used to jump
+  across at the corner where the two streets' lanes differed.
+- **Dead ends.** A car that reaches one with nobody within 150 m starts again somewhere else. Turning round there is a spin on the
+  spot onto the other side of the street; it still does that when you are near or riding in it, so a car never vanishes in front of you.
+
+Checked on a local build: each car photographed from behind on Beaudesert Road, round Mayfield Road and at two roundabouts; and 70
+seconds of every car's position recorded four times a second (`left of its line` 1.70 m on the two-lane carriageways, 1.75 m on
+two-way streets, 0 on single lanes; no jump from one sample to the next; none within 1.6 m of a parked car's middle, where one was
+before). Not done: cars still turn across a divided road wherever the map joins the streets, and they do not use the turn lanes.
+
+## Moorooka's drone waits inside number 6 (22 November 2026)
+
+Ash: "move the drone into inside my house in moorooka". The drone and its remote were at a random spot on the grass (an oval, Stimpson
+Park, the field off School Road).
+
+- **Where they are now.** The drone sits on a rug in the front room of 6 Beaudesert Road. Its remote lies on the grass beside the front
+  path (`TOWN_RIDES.moo.drone.at`), because you can't walk into the house: the model's houses are solid, with painted doors. Pick the
+  remote up there and the view goes to the drone, from behind it, with the open front door ahead. Push forward and it flies out of the
+  door, up over the landing's rail and out over the front lawn. It can fly back in through the door the same way.
+- **The room** (`townRoom6`, `T.room6`): one small unlit part drawn inside the model's house, about 180 triangles: floorboards, walls,
+  ceiling, the door and the two front windows painted as daylight, a rug, a couch and a television, a table and stools, a kitchen
+  bench, Arlo's bed. It is made up: there are no photos of the inside. Its walls stand 0.62 m inside the lot survey's outline
+  (`MOO_NO6.sixHouse`), because the model draws the house's walls 0.3 to 0.5 m inside that outline and the room showed through them
+  at 0.14 m. The door (8.5 to 9.37 m along the front wall from its south end, 2.1 m high) and the floor (the eave less 2.75 m) were
+  measured off the model's own front with marker lines.
+- **How the drone is let through.** Everything else in Explore stands on `surf()`, which is the roof over a building. The drone asks
+  `T.room6.floorAt(x, z, y)` first (`dsurf`): the floor under a point in the room, in the doorway or on the landing, null anywhere
+  else or above the ceiling, so the roof is still a roof for the possum, the pigeon and a drone coming down on it. `ceilAt` keeps it
+  under the ceiling and under the door's lintel. In line with the door the floor rises to the height of the rail by the time the
+  drone is over it. The doorway is 0.2 m wider each side than the painted door, so it is not fiddly on a phone.
+- **The view.** Indoors it stays in the room (`floorAt` of where the view would be), and comes right up behind the drone as the drone
+  reaches the door (`near`), so the drone is not lost behind the wall on its way out. Once it is out, the view is kept out of the
+  house too (`inHouse`).
+
+Tested on a local build at desktop and phone sizes (`scripts`-style Playwright run: stand by the remote, pick it up, hold forward):
+the drone goes from the rug out through the door without stopping, rises to 1.15 m over the landing and carries on over the lawn;
+putting the remote down lands it where it is. Not done: you still can't walk into the house, and the other towns' drones are as
+they were.
+
+## Number 6's balcony concept, in Moorooka (22 November 2026)
+
+Ash: "Merge the balcony concept into the moorooka game. Allow me to press a button on the house to change from how it is to the
+balcony model. You'll need to merge the models a bit as neither are perfect."
+
+- **The button:** a post by the foot of the front stairs with a big yellow button on it, and its label floating just over it
+  whenever you're within 30 m on foot (not driving or flying high). Before 22 November 2026 it was a pill over the roof, seen from
+  70 m (Ash: "Make the see the balcony a button in the actual game near the front stairs"). "Show the balcony" switches to the
+  concept, "Show it as it is" switches back. The choice is kept on the device (`an3d-bal6`).
+- **One house, both ways:** within 300 m, number 6 is drawn by the app (`townBalcony6` in `app.html`, numbers in `MOO_BAL6`), not
+  by the model. The model's own house (and its lot's fences, which are in the same piece) is hidden through a hook added to
+  `moorooka-model.js` (`?v=62`): the detailed houses' `cull` asks `window.anDetailOff(id)`. Further off, the model's own house shows.
+- **What came from where:** the Moorooka model gives the position and size (the survey outline, walls 0.45 m in: about 9.4 by 12 m),
+  the floor and eave heights, the roof (gable to the street, sloping to the back), the front (door, two hooded windows, the entrance
+  landing, porch roof and stairs along the front wall) and the south side's windows. The balcony page (`balcony/src/main.js`) gives
+  the weatherboards, the back and north walls' windows and doors (spread to fit the narrower house), solar on the back of the roof,
+  the open slab under the back, and the whole balcony: the rear balcony, the hexagon covered deck with its table and fan, the
+  landing, the new stairs down the side, glass balustrades, posts and roofs. The north fence is 4.5 m from the house, as Ash measured.
+- **As it is:** the window where the French doors go (with its hood), and the existing steel stairs: a landing outside the back
+  door, then down along the back wall towards the north, landing outside the pool fence. Where they run is a guess from the quote
+  brief; worth checking against the real thing.
+- **Walking:** the house floor, both landings, the decks and all three sets of stairs are surfaces. Explore's `ground` asks
+  `T.bal6.top`, which only counts one within 0.8 m of your feet (so you walk under the decks, and up the stairs a step at a
+  time). Up on them, `bsBlock` asks `T.bal6.block`, which stops you stepping off except by the stairs, a step back from the glass.
+  Under a roof or a deck your eyes come down to fit (`T.bal6.eye`).
+- **Lag and load:** nothing to download; built once when Moorooka opens, three sets of a few draw calls each, shown or hidden by
+  moving them (no rebuilding mid-game).
+- **Tested:** both versions from the back, side, front and the air; walking up the new stairs to the hexagon and into the
+  balustrade; the two-finger stick test at phone size in all three towns, and again after two minutes; tapping the button on a phone.
+
+## Evans Road and Fairfield Road: the painted middle (22 November 2026)
+
+Ash: "polish up other streets but avoid using much memory or adding load time. Low res". The map has both roads as two carriageways,
+and the model drew each as two strips of asphalt side by side with nothing between: one very wide bare road (Evans Road had no line on
+it at all).
+
+- **What is really there.** The aerial photograph was looked at before anything was drawn (an island was nearly put down the middle of
+  both, as on Ipswich Road, and that would have been wrong). Fairfield Road is four lanes with a painted middle: two solid lines about
+  3 m apart with turn arrows between them, and a small raised island here and there. Evans Road is four lanes with a narrow strip down
+  the middle, raised in places.
+- **What is drawn.** Two solid white lines down the middle of each (`MOO_CENTRE` in `app.html`: runs of x, z, h, the lines h either
+  side of the middle: half of what is between the two strips of asphalt, 0.25 to 1.5 m). 3.2 km of road in 24 runs, 353 points, 6.5 KB.
+  They are made by `tools/ground/medians/medians.py --paint` from `town.json`'s roads: one carriageway is walked every 5 m, the
+  nearest point of the one going the other way gives the middle, and the lines stop near every place another street meets either
+  carriageway and where the two are more than 7.5 m apart. (The same tool without `--paint` gives the runs an island would need.)
+- **Cost.** They go in the same part as the medians. A stretch is drawn as one piece for as far as the ground runs straight under it
+  (to 3 cm, up to 36 m), so it comes to about 800 triangles: the part is about 15,900 triangles on a phone (15,100 before) and still
+  takes 30 to 40 ms to make on a slow test machine. Nothing new is downloaded.
+
+Checked on a local build at desktop size (four stretches) and phone size (two). Not done: the turn arrows in Fairfield Road's painted
+middle, its small raised islands, Evans Road's raised strip (it is drawn as paint), a lane line on Evans Road's carriageways (the
+model has each as one 6 m lane, and the traffic drives down its middle), and the other roads the map has as two carriageways
+(Fernvale, Sherwood, Toohey and Orange Grove Roads, Muriel Avenue, Fairlie Terrace, King Arthur Terrace, Tennyson Memorial Avenue,
+and the parts of Ipswich Road with no median yet): each needs a look at the photograph first.
