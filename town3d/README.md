@@ -2509,3 +2509,15 @@ middle, its small raised islands, Evans Road's raised strip (it is drawn as pain
 model has each as one 6 m lane, and the traffic drives down its middle), and the other roads the map has as two carriageways
 (Fernvale, Sherwood, Toohey and Orange Grove Roads, Muriel Avenue, Fairlie Terrace, King Arthur Terrace, Tennyson Memorial Avenue,
 and the parts of Ipswich Road with no median yet): each needs a look at the photograph first.
+
+### Street View for the houses set on their slope: started (22 November 2026)
+
+Ash: "Stop no point without google images", then, with Chrome on his PC connected, "start with redo of the 100 you already do".
+
+- Street View opens through Chrome with `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=<nearest point of the street>&heading=<towards the house>&fov=60`.
+  Give it ten seconds: at five the picture is still black.
+- 12 of part 1's 100 looked at so far; 7 could be read and are in `MOO_SET` (`tools/houses/streetview-part1.json`, written in by
+  `tools/houses/apply_sv.py`): wall colour, the colour under the floor, closed in or on stumps, whether the front door is at the lower
+  level, and whether there is a garage door (`moorooka-model.js ?v=64` reads `d` and `g`). The other 5 were behind trees, blurred by
+  Google or did not draw. 88 of part 1 and all of part 2 are still by rule.
+- `streetview-part1.json` lists the houses in the order they were picked (`order`), so the next chat carries on from the 13th.
