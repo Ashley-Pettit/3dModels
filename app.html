@@ -17282,6 +17282,8 @@ const handle = async (m, post) => {
     // Every point of every street is a node, the same point on two streets being one junction
     const load = () => netP || (netP = townStreetData(cfg).then(async d => {
       const t0 = performance.now(), names = d.names || [], top = cfg.place === "logan" ? 4 : 3;
+      // built a slice at a time (8 ms, then the game gets a turn), so opening the GPS never stalls a frame: Logan's is 65,000 points
+      let tick = performance.now(); const breathe = async () => { if (performance.now() - tick > 8) { await new Promise(r => setTimeout(r, 0)); tick = performance.now(); if (dead) throw new Error("gone"); } };
       const roads = d.roads.filter(r => r.pts.length >= 4 && (r.cls <= top || (r.cls === top + 1 && r.name >= 0 && names[r.name])));
       let blocked = null; if (d.town) try { blocked = await townStreetBlocks(cfg, d.town); } catch {}  // (Moorooka and Inverloch: is a join clear of buildings?)
       const key = (x, z) => Math.round(x * 2) + "," + Math.round(z * 2), id = new Map, X = [], Z = [], adj = [], ends = [];
@@ -17292,9 +17294,9 @@ const handle = async (m, post) => {
         for (let i = Math.floor(Math.min(ax, bx) / 25); i <= Math.floor(Math.max(ax, bx) / 25); i++) for (let j = Math.floor(Math.min(az, bz) / 25); j <= Math.floor(Math.max(az, bz) / 25); j++) {
           const k = i + "," + j; if (!cell.has(k)) cell.set(k, []); cell.get(k).push(at); } };
       const edge = (a, b, nm, one, ri) => { const w = Math.hypot(X[b] - X[a], Z[b] - Z[a]); if (!(w > 0)) return; adj[a].push([b, w, nm, 0]); adj[b].push([a, w, nm, one ? 1 : 0]); segs.push([a, b, nm, ri]); file(segs[segs.length - 1], segs.length - 1); };
-      roads.forEach((r, ri) => { const p = r.pts; let a = node(p[0], p[1]); ends.push([a, ri]);
+      for (let ri = 0; ri < roads.length; ri++) { const p = roads[ri].pts, r = roads[ri]; let a = node(p[0], p[1]); ends.push([a, ri]);
         for (let k = 2; k < p.length; k += 2) { const b = node(p[k], p[k + 1]); edge(a, b, r.name, r.one, ri); a = b; }
-        ends.push([a, ri]); });
+        ends.push([a, ri]); if ((ri & 63) === 0) await breathe(); }
       // the nearest point on a piece of street to (x, z): [piece, how far, t along it, px, pz], optionally only on one street or not on one
       const near = (x, z, ok, maxR = 6) => { let best = null;
         for (let r = 1; r <= maxR && !best; r++) for (let a = -r; a <= r; a++) for (let b = -r; b <= r; b++) for (const si of cell.get((Math.floor(x / 25) + a) + "," + (Math.floor(z / 25) + b)) || []) {
@@ -17312,7 +17314,7 @@ const handle = async (m, post) => {
       // a street's loose end that stops short of another street (or meets it between two of its points): joined to the nearest
       // point on that street's line, within 12 m, or up to 25 m where the join is clear of buildings. Never further, so a dead end
       // is never joined to the street behind the houses
-      for (const [i, ri] of ends) { if (adj[i].length > 1) continue;
+      for (let q = 0; q < ends.length; q++) { const [i, ri] = ends[q]; if ((q & 127) === 0) await breathe(); if (adj[i].length > 1) continue;
         const h = near(X[i], Z[i], s => s[3] !== ri, 2); if (!h || h[1] < 0.3 || h[1] > 25) continue;
         if (h[1] > 12 && (!blocked || blocked(X[i], Z[i], h[3], h[4]))) continue;
         const p = cut(h[0], h[2]); if (p === i) continue; const w = Math.hypot(X[p] - X[i], Z[p] - Z[i]); adj[i].push([p, w, -1, 0]); adj[p].push([i, w, -1, 0]); }
