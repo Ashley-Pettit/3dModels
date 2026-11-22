@@ -2254,6 +2254,48 @@ Ipswich Road end) a piece of it survived, it was the first piece built at the st
 Measured (`t/walk.js`, six places, the network filling at a phone's speed): people with someone else within 3 m went from 67% to 10%,
 and the median distance to the nearest other person from 1.7 m to 15.7 m; none on a road.
 
+## Driving without being a gamer: click to drive, and Drive for me (22 November 2026)
+
+Ash: "How do pc controls work when driving using the google maps style atm. I'm trying to cater to both people used to pc games as well
+as not", then "Give it a shot, don't change the normal keys", then "Try to make simple keys for people to be able to drive without being
+a gamer. These keys just for google maps style. If the keys don't interfere with each other you can also put into the gamer mode".
+
+With Google Maps controls, driving still needed W A S D or the arrows, and the tutorial that says "F, then E" is hidden for that style.
+Now, in `app.html` (all three towns):
+
+- **A click on a car in the map view gets you into it** (Google Maps controls, on a computer). The mouse turns to a hand over a car,
+  with "Click to get in". A click, not a drag: under 6 px and under 0.8 s, timed by the events' own time stamps (a slow frame between
+  press and release must not turn a click into a drag). `mapClick` beside the map view's gestures; `C.carNear` and `C.enterCar` in
+  `townCar` (the app's own cars, the traffic, and the model's parked cars). You arrive seen from behind the car.
+- **A click on the road while you're in a car and it drives there** (`C.clickDrive`, `C.driveTo`). A blue ring and pin mark the spot.
+  From the map view, with your car waiting (F), a click anywhere sends it there. Where on the ground a click lands: `townClickAt`.
+- **Drive for me (G)**: the car sets off along the street it is on and follows it; G again stops it. **< and >** ask for the next left
+  and the next right. Three buttons under Get out carry the same keys with Google Maps controls (the mouse is free to click them
+  there); with the gamer's controls the keys work too and are listed bottom left. G was free in a car (it is the possum's Plant only
+  while you're the possum), and the comma and full stop keys did nothing.
+- **How it drives.** The streets are the traffic's list (`T.roadsAll`: nothing is fetched). `autoNet` joins up the streets within 700 m
+  into a network the first time (7 to 11 ms in the test browser), with loose street ends joined to the street they stop short of (within 8 m always; up to
+  35 m only where the end points at what it would join and no building is between, which is how Logan's missing roundabouts are
+  crossed). `autoRoute` is the shortest way through it (A*), one-way carriageways only the way they run unless there is no other way.
+  It keeps to the same left lane as the traffic, slows for bends (down to 15 km/h), drives at up to 50 km/h and stops on the spot. A
+  spot off the street (a car park) gets a last straight bit only if no building is in the way. Run into something, it backs off and
+  tries again, four times, then hands the car back with a message.
+- **Corners, roundabouts and dead ends** (`cruiseOn`): straight on is the street that bends least. A turn asked for is taken at the
+  first corner with a street off to that side by 35 to 135 degrees, and a bend in the same street does not count. At a roundabout it
+  looks right round for every exit first and leaves by the one that suits the way it came in. At a dead end it turns round. For the
+  roundabouts, `townStreetData` now passes on the street list's roundabout flag (`ring`, the second flag bit: 13 in Moorooka, 7 in
+  Inverloch, run one way the way their points go).
+- **Nothing about the normal keys changes.** W A S D, the arrows, the scroll wheel, the stick, the handbrake and the Boost button take
+  the car straight back. Shift alone does not (and does not boost while it drives itself), because < and > are often typed with Shift.
+- **Not on a phone**: the buttons and the clicks are for a mouse, and no touch listener is added or changed.
+
+Tested in headless Chrome at 1280 by 800, the game's own loop run on by hand: clicking a car from the map (and that a drag does not),
+clicking the road 25, 45 and 90 m ahead (it stops within 2 to 3 m, the lane's width), trips of 300 to 800 m in Moorooka, Logan and
+Inverloch with no sudden stops on the street, a Moorooka roundabout straight on, left and right, W and Space taking the car back,
+Shift not, and G, < and > with both styles. The two-finger stick test from CLAUDE.md at phone size in all three towns, at the start
+and after two minutes running. Other players were switched off for the later tests (`an3d-off`), after the first few runs joined the
+live game as a player called Tester.
+
 ## A spot check of Moorooka: parked cars out in the lane (22 November 2026)
 
 Ash: "Spot check for mistakes through the app with paths, roads, trees, houses. Fix what you find".
