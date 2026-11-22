@@ -61,3 +61,9 @@ switches between them, and `?access=front` opens the second one (the page keeps 
   layout for a high-set house, so it is worth checking against the real front.
 
 Sizes are approximate (a concept, not drawings).
+
+## In the Moorooka game (22 November 2026)
+
+The concept is also in Explore Moorooka, on number 6 itself, with a button on the house to switch between it and the house as it
+is. That version is merged with the Moorooka model (the house's real size, roof and front) and lives in `app.html`
+(`townBalcony6`); see `town3d/README.md`, "Number 6's balcony concept, in Moorooka". This page is unchanged.
