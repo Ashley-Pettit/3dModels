@@ -2331,6 +2331,16 @@ Ash: "Can you add a gps in the game to navigate to an address?"
 - **The card:** the next turn ("Turn left onto Beaudesert Road"), how far to it and how far to go, and an arrow that points the way
   from where you're facing. Straight on to a street with no name says nothing. Off the route by 35 m for 1.5 s (once you've been on it) and it
   works the route out again. Within 15 m of the pin (or 12 m left on the route) it says you've arrived and clears the line.
+- **Autodrive** (Ash, 23 November 2026: "When I type in the address allow standard or autodrive to drive me there automatically. Drive
+  like a hoon to get there"): the GPS box has **You drive** and **Autodrive**, remembered for next time (`an3d-gps-how`). With
+  Autodrive, if you're on foot it gets you into the nearest car within 300 m (else it says so and just shows the way), then the car
+  drives itself along the blue line (`C.drivePath` in `townCar`, the same self-drive as click to drive and Drive for me) like a hoon:
+  flat out to the car's own top speed, Boost down clear straights, braking late and hard (8.5 m/s every second) for each corner it
+  sees up to 90 m ahead, a third of a second of handbrake to swing round sharp corners taken quick, and a skid to a stop at the end.
+  The speed chip says "Autodrive". The Drive stick (or any driving key, the handbrake or Boost) takes the wheel back, and the line
+  stays to follow; the Look stick doesn't. × on the card stops the GPS and the car. Off the line by 35 m, it works the way out again
+  and carries on. In the tests: 771 m in 33 s and 2.3 km in 85 s in Moorooka, 951 m in 36 s in Inverloch, up to 118 km/h, never
+  more than 2.4 m off the line once on it.
 - **Lag:** the network is built once, the first time the GPS is opened. Each frame only looks along the next 80 points of the route,
   and the card is updated at most a few times a second. No fetching mid-game except the address lookups you type.
 - **Code:** `townGps` in `app.html` (`T.gps`); can be turned off with `OFF` key `gps`.
