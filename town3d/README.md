@@ -2250,3 +2250,31 @@ Ipswich Road end) a piece of it survived, it was the first piece built at the st
 
 Measured (`t/walk.js`, six places, the network filling at a phone's speed): people with someone else within 3 m went from 67% to 10%,
 and the median distance to the nearest other person from 1.7 m to 15.7 m; none on a road.
+
+## Number 6's balcony concept, in Moorooka (22 November 2026)
+
+Ash: "Merge the balcony concept into the moorooka game. Allow me to press a button on the house to change from how it is to the
+balcony model. You'll need to merge the models a bit as neither are perfect."
+
+- **The button:** a yellow pill floating over number 6's roof whenever you're within 70 m (on foot or flying low). "Show the
+  balcony" switches to the concept, "Show it as it is" switches back. The choice is kept on the device (`an3d-bal6`).
+- **One house, both ways:** within 300 m, number 6 is drawn by the app (`townBalcony6` in `app.html`, numbers in `MOO_BAL6`), not
+  by the model. The model's own house (and its lot's fences, which are in the same piece) is hidden through a hook added to
+  `moorooka-model.js` (`?v=62`): the detailed houses' `cull` asks `window.anDetailOff(id)`. Further off, the model's own house shows.
+- **What came from where:** the Moorooka model gives the position and size (the survey outline, walls 0.45 m in: about 9.4 by 12 m),
+  the floor and eave heights, the roof (gable to the street, sloping to the back), the front (door, two hooded windows, the entrance
+  landing, porch roof and stairs along the front wall) and the south side's windows. The balcony page (`balcony/src/main.js`) gives
+  the weatherboards, the back and north walls' windows and doors (spread to fit the narrower house), solar on the back of the roof,
+  the open slab under the back, and the whole balcony: the rear balcony, the hexagon covered deck with its table and fan, the
+  landing, the new stairs down the side, glass balustrades, posts and roofs. The north fence is 4.5 m from the house, as Ash measured.
+- **As it is:** the window where the French doors go (with its hood), and the existing steel stairs: a landing outside the back
+  door, then down along the back wall towards the north, landing outside the pool fence. Where they run is a guess from the quote
+  brief; worth checking against the real thing.
+- **Walking:** the house floor, both landings, the decks and all three sets of stairs are surfaces. Explore's `ground` asks
+  `T.bal6.top`, which only counts one within 0.8 m of your feet (so you walk under the decks, and up the stairs a step at a
+  time). Up on them, `bsBlock` asks `T.bal6.block`, which stops you stepping off except by the stairs, a step back from the glass.
+  Under a roof or a deck your eyes come down to fit (`T.bal6.eye`).
+- **Lag and load:** nothing to download; built once when Moorooka opens, three sets of a few draw calls each, shown or hidden by
+  moving them (no rebuilding mid-game).
+- **Tested:** both versions from the back, side, front and the air; walking up the new stairs to the hexagon and into the
+  balustrade; the two-finger stick test at phone size in all three towns, and again after two minutes; tapping the button on a phone.

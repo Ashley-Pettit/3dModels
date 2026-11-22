@@ -1381,6 +1381,10 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
    November 2026: "Make the players a bit easier to locate") */
 .bs-peer-edge { position: absolute; left: 0; top: 0; z-index: 1; padding: 4px 10px; border-radius: 999px; background: #ffd166; color: #1b1830; font: 700 0.76rem/1.3 var(--ui); white-space: nowrap; pointer-events: none; will-change: transform; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35); }
 .bs-peer-edge[hidden] { display: none; }
+/* number 6's button, floating over its roof: the house as it is, or with the balcony concept (Ash, 22 November 2026) */
+.bs-bal6 { position: absolute; left: 0; top: 0; z-index: 2; min-height: 40px; padding: 8px 16px; border: 0; border-radius: 999px; background: #ffd166; color: #1b1830; font: 700 0.85rem/1.3 var(--ui); white-space: nowrap; pointer-events: auto; cursor: pointer; will-change: transform; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); touch-action: manipulation; }
+.bs-bal6[aria-pressed="true"] { background: #fff; }
+.bs-bal6[hidden] { display: none; }
 /* the quieter ones, past the nearest two when more than three are playing */
 .bs-peer-edge.far { padding: 2px 8px; background: rgba(20, 22, 34, 0.55); color: #fff; font-size: 0.66rem; box-shadow: none; opacity: 0.85; }
 .bs-peer.bs-player.far { box-shadow: none; opacity: 0.7; font-size: 0.7rem; }
@@ -8469,7 +8473,8 @@ const handle = async (m, post) => {
     if (open("bsAdmin")) { $("bsEditBtn")?.click(); return true; }
     return false; }
   // on foot where a town makes its walls solid (Logan's council precinct): a step into one slides along it instead
-  function bsBlock(F, ox, oz) { const T = BS.town; if (!T?.solidWalk || !T.solid || !T.solid(F.pos.x, F.pos.z) || T.solid(ox, oz)) return;
+  function bsBlock(F, ox, oz) { const T = BS.town; if (T?.bal6?.block(F, ox, oz)) return;  // (up on number 6's balcony: no stepping off it)
+    if (!T?.solidWalk || !T.solid || !T.solid(F.pos.x, F.pos.z) || T.solid(ox, oz)) return;
     if (!T.solid(F.pos.x, oz)) F.pos.z = oz; else if (!T.solid(ox, F.pos.z)) F.pos.x = ox; else { F.pos.x = ox; F.pos.z = oz; } if (F.wv) F.wv = [0, 0]; }
   function bsFlyTick(dt) {
     const F = BS.fly, k = F.keys, has = (...c) => c.some(x => k.has(x));
@@ -8694,7 +8699,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=21", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=60", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=62", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -8884,6 +8889,7 @@ const handle = async (m, post) => {
         const LIFT = cfg.lift, b = m.bounds(), ground = (x = F.pos.x, z = F.pos.z) => { let g = Math.max(m.groundAt(x, z), m.waterAt ? m.waterAt(x, z) : m.waterLevel());
           if (LIFT && x > LIFT[0] && x < LIFT[2] && z > LIFT[1] && z < LIFT[3]) g += LIFT[4];
           if (T.pads) for (const P of T.pads) { const dx = x - P.x, dz = z - P.z; if (Math.abs(dx * P.c - dz * P.s) <= P.hw && Math.abs(dx * P.s + dz * P.c) <= P.hd && P.top > g) g = P.top; }
+          if (T.bal6) g = T.bal6.top(x, z, g);  // number 6's floor, decks and stairs, where you can step up onto them
           return g; };
         const { ceil = 4000, fast = 30, far = 7000, out = 9000, stride = 0, pad = 0, stand = [1, 30] } = cfg;  // a town's limits, unless the model is bigger (Logan)
         // where you can go: inside the model (flying over Logan, far enough outside it to see the whole city); flying, above the ground and the water, and faster the higher you are
@@ -8900,6 +8906,7 @@ const handle = async (m, post) => {
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
+        if (cfg.place === "moo" && m.addParts && m.getCamera && !OFF.has("bal6")) try { T.bal6 = townBalcony6(T, m); } catch (e) { T.bal6 = null; console.warn("Town model: number 6's house and balcony couldn't be added", e); }  // number 6 as it is, or with the balcony concept
         if (cfg.place === "moo" && m.addParts) try { townHouse24(T, m); } catch (e) { console.warn("Town model: 24 Beaudesert Road couldn't be added", e); }  // Pandy's house as it really is (a demo)
         if (cfg.place === "moo" && m.addParts) try { townHousesLite(T, m); } catch (e) { console.warn("Town model: the houses drawn the light way couldn't be added", e); }
         // the planes (townCar), each with somewhere to stand beside it
@@ -8931,7 +8938,7 @@ const handle = async (m, post) => {
         const tideBox = $("bsTownTide"), tideIn = $("bsTownTideIn"), tideOut = $("bsTownTideOut"), tidal = m.tide.max > m.tide.min, tideBtn = $("bsTideBtn");
         tideBtn.setAttribute("aria-expanded", "false"); tideBtn.onclick = () => { tideBox.hidden = !tideBox.hidden; tideBtn.setAttribute("aria-expanded", String(!tideBox.hidden)); };  // Moorooka has no tide to move
         const setMode = (walk, to) => { if (walk && F.home) { if (F.home.veh && T.car?.held?.()) T.car.drop?.(); F.home = null; }  // (Jump to from Explore mode, while in a car: it was left held, and you stuck half in it)
-          T.walk = walk; T.car?.walkKeys?.(walk); document.body.classList.toggle("bswalk", walk); F.walk = walk ? () => ground() + F.eye : null; tideBtn.hidden = walk || !tidal; tideBox.hidden = tideBtn.hidden || tideBtn.getAttribute("aria-expanded") !== "true"; F.lim = walk ? inner : outer;
+          T.walk = walk; T.car?.walkKeys?.(walk); document.body.classList.toggle("bswalk", walk); F.walk = walk ? () => ground() + (T.bal6 ? T.bal6.eye(F.eye) : F.eye) : null; tideBtn.hidden = walk || !tidal; tideBox.hidden = tideBtn.hidden || tideBtn.getAttribute("aria-expanded") !== "true"; F.lim = walk ? inner : outer;
           modeBox.querySelectorAll("button").forEach(bn => bn.setAttribute("aria-pressed", String(!walk)));
           if (F.on?.freeFor) F.on.freeFor(); else if (document.pointerLockElement) document.exitPointerLock?.();
           F.vert = 0; F.keys.clear();  // (the sticks are left alone: a thumb still on one carries on, and lifting it centres it)
@@ -10706,6 +10713,7 @@ const handle = async (m, post) => {
   // top with each change worth a look, and take off what Ash has seen (Ash, 19 November 2026: "I want you to have a btn for the player with
   // name ash that jumps to new features so I can quickly review")
   const MOO_NEW = [
+    ["Number 6's balcony", "The balcony concept on the house: tap the yellow button over the roof to switch between it and the house as it is, and walk up the new stairs down the side", -217.7, -990.3, 1.295, 0.12],
     ["The Willow's way in", "Redone from Street View: the steps up at the south corner between white piers, under the red slatted canopy, with the sign over them and the timber-clad corner beside", -74.0, -116.0, 1.27, 0.08],
     ["Moorooka bowls club", "Moorooka Sports & Community Club on Koala Road: three bowling greens with their ditches and shade shelters", 160.0, -462.0, -2.24, -0.1],
     ["School pool and courts", "Moorooka State School's 25 m pool and its two tennis courts. St Brendan's has a play frame and shade sail on its lawn", -226.0, 175.0, 1.571, -0.15],
@@ -14190,6 +14198,359 @@ const handle = async (m, post) => {
     // the white ute in the drive, nose to the street
     const [ux, uz] = xz(2.35, 6.8), M = new THREE.Matrix4().compose(new THREE.Vector3(ux, m.groundAt(ux, uz), uz), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.atan2(-n[0], -n[1]), 0)), new THREE.Vector3(1, 1, 1)).elements;
     m.addParts(townPlaneParts("#f2f2ee", "sedan").map(q => ({ ...q, matrix: M })));
+  }
+  // ---- 6 Beaudesert Road's balcony concept, in the game (Ash, 22 November 2026: "Merge the balcony concept into the moorooka game. Allow
+  // me to press a button on the house to change from how it is to the balcony model. You'll need to merge the models a bit as neither are
+  // perfect"). Number 6 is drawn here instead of by the model (the model's own house and its lot's fences are hidden: window.anDetailOff,
+  // a hook in moorooka-model.js ?v=62), as one house taking the best of both:
+  // - from the Moorooka model: where it stands and its size (the survey's outline, walls 0.45 m in from it: 9.4 by 12 m), the floor and
+  //   eave heights, the roof (a gable to the street, hipped at the back, its colour), the front (door, two hooded windows, the entrance
+  //   landing at the north end with its porch roof and the stairs along the front wall) and the south wall's windows;
+  // - from the balcony page (balcony/src/main.js): the weatherboards, the back wall (back porch and door, the windows; spread to fit the
+  //   narrower house), the north wall (the corner window, the window that becomes French doors, the little round window), solar on the
+  //   back of the roof, the open slab under the back of the house, and the whole balcony: the rear balcony, the hexagon covered deck
+  //   (its round table for six and fan), the landing and the new stairs down the side, glass balustrades, posts, roofs;
+  // - the north fence 4.5 m from the house, as Ash measured it (the survey has it about 3.5 m out; the hexagon reaches 3.85 m).
+  // How it is (the button's other side): the window where the French doors go (with its hood) and the existing steel stairs: a top landing
+  // outside the back door, the stairs running down along the back wall, landing outside the pool fence. Where they run is a guess from
+  // the quote brief ("The existing stairs land outside the pool fence", "Pool equipment sits under the existing stairs", and with the
+  // walkway over them "they would not have enough headroom"); the Moorooka model had them straight out from the north end, into the pool.
+  // You can walk it: the decks, landings, both sets of stairs and the house floor are surfaces (T.bal6.top, used by Explore's ground), you
+  // can't step off a raised one except by stairs (T.bal6.block), and your eyes come down under a roof (T.bal6.eye). Within 300 m it is
+  // drawn here; further off, the model's own house shows (it is lighter). Lag: built once when Moorooka opens (about 30 ms), in a few
+  // draw calls a set; nothing is fetched.
+  const MOO_BAL6 = {
+    survey: { sw: [-244.0, -987.3], nw: [-242.4, -997.5], ne: [-229.6, -995.6], se: [-231.2, -985.3] },  // number 6 in the survey: front south, front north, back north, back south
+    eave: 23.3, ridge: 24.8, roof: "#d8dbda", ridgeBack: 0.62, frontGable: 0.83, trim: "#a3c1d6",          // (the model's numbers for number 6)
+    // number 6's lot fences, as the model has them (front of the north side, north side, south side, back), model metres
+    fences: [[1, [-256.27, -1003.27], [-242.32, -1000.91]], [1.6, [-242.32, -1000.91], [-182.84, -990.86]], [1.6, [-240.75, -983.01], [-185.24, -974.26]], [1.7, [-182.84, -990.86], [-185.24, -974.26]]],
+    planters: [[-217, -980.65], [-214.26, -980.2], [-211.75, -979.92]], bed: [-255.52, -1001.86, 0.9],
+    northFence: 4.5,  // Ash, 21 November 2026: "from the current house there is 4.5m before the fence"
+    near: 300,        // drawn here within this many metres (the model's own house further off)
+  };
+  window.anDetailOff = id => id === "6-beaudesert" && !!BS.town?.bal6?.near;
+  function townBalcony6(T, m) {
+    const THREE = BS.B.THREE, B = MOO_BAL6, V = THREE.Vector3;
+    // ---- the frame: the survey's outline gives the house's centre, its depth (dB, to the back) and width (dS, to the south). Here, as in
+    // the balcony page, x runs south to north with the north wall at x = 12, z runs front to back with the back wall at z = 0, y is up
+    // from the ground at the house's centre (as the model stands its houses)
+    const { sw, nw, ne, se } = B.survey, mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], C = mid(mid(sw, nw), mid(ne, se));
+    const fr = mid(sw, nw), bk = mid(se, ne), no = mid(nw, ne), so = mid(sw, se);
+    const depth = Math.hypot(bk[0] - fr[0], bk[1] - fr[1]), width = Math.hypot(so[0] - no[0], so[1] - no[1]);
+    const dB = [(bk[0] - fr[0]) / depth, (bk[1] - fr[1]) / depth], dS = [-dB[1], dB[0]];  // (dS: dB turned to the right, which is south here)
+    const g0 = width / 2, v0 = depth / 2, HS = g0 - 0.45, HD = v0 - 0.45;  // half the outline (roof edge), half the walls
+    const WS = 12 - 2 * HS, WN = 12, ZF = -2 * HD;                          // the south wall, the north wall, the front wall
+    const toModel = (x, z) => { const s = 12 - HS - x, t = z + HD; return [C[0] + dS[0] * s + dB[0] * t, C[1] + dS[1] * s + dB[1] * t]; };
+    const toLocal = (X, Z) => { const dx = X - C[0], dz = Z - C[1]; return [12 - HS - (dx * dS[0] + dz * dS[1]), dx * dB[0] + dz * dB[1] - HD]; };
+    const y0 = m.groundAt(C[0], C[1]), gL = (x, z) => m.groundAt(...toModel(x, z)) - y0;  // the ground, from the house's level
+    const O = toModel(0, 0), FRAME = new THREE.Matrix4().makeBasis(new V(-dS[0], 0, -dS[1]), new V(0, 1, 0), new V(dB[0], 0, dB[1])).setPosition(O[0], y0, O[1]);
+    // ---- levels, as the model works them out for number 6: walls up to the eave, the floor 2.75 m under it
+    const E = Math.max(B.eave - y0, 2.6), FL = Math.max(0.3, E - 2.75), RM = Math.max(B.ridge - B.eave, 0.8);
+    const yy = y => FL + (y - 2.6);  // a height on the balcony page (floor 2.6) on this house
+
+    // ---- materials and pictures (the balcony page's)
+    const canvasTex = (w, h, draw) => { const c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; };
+    const rep = (t, x, y) => { const c = t.clone(); c.repeat.set(x, y); return c; };
+    const weatherTex = canvasTex(64, 256, (g, w, h) => { const n = 6, bh = h / n; for (let i = 0; i < n; i++) { const y = i * bh, gr = g.createLinearGradient(0, y, 0, y + bh);
+      gr.addColorStop(0, "#d9dbd8"); gr.addColorStop(0.12, "#f1f1ee"); gr.addColorStop(1, "#fbfbf9"); g.fillStyle = gr; g.fillRect(0, y, w, bh); g.fillStyle = "#b9bcb9"; g.fillRect(0, y, w, 2); } });
+    const roofTex = canvasTex(256, 16, (g, w, h) => { const n = 13, rw = w / n; for (let i = 0; i < n; i++) { const gr = g.createLinearGradient(i * rw, 0, (i + 1) * rw, 0);
+      gr.addColorStop(0, "#9aa1a6"); gr.addColorStop(0.5, "#d2d7da"); gr.addColorStop(1, "#9aa1a6"); g.fillStyle = gr; g.fillRect(i * rw, 0, rw, h); } });
+    const deckTex = canvasTex(512, 512, (g, w, h) => { g.fillStyle = "#3a2c22"; g.fillRect(0, 0, w, h); const n = 7, bh = h / n; let s = 7; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+      for (let i = 0; i < n; i++) { g.fillStyle = `rgb(${[138, 104, 78].map(v => Math.round(v + rnd() * 14 - 7)).join(",")})`; g.fillRect(0, i * bh + 2, w, bh - 4);
+        for (let k = 0; k < 40; k++) { g.strokeStyle = `rgba(60,40,28,${0.05 + rnd() * 0.08})`; g.lineWidth = 1 + rnd() * 1.5; const yv = i * bh + 4 + rnd() * (bh - 8); g.beginPath(); g.moveTo(0, yv); g.bezierCurveTo(w * 0.3, yv + 3, w * 0.6, yv - 3, w, yv + 1); g.stroke(); } } });
+    const mk = (hex, o = {}) => { const t = new THREE.MeshStandardMaterial({ roughness: o.r ?? 0.85, metalness: o.m ?? 0, side: o.two ? THREE.DoubleSide : THREE.FrontSide, map: o.map || null, transparent: (o.op ?? 1) < 1, opacity: o.op ?? 1 }); t.userData.hex = hex; return t; };
+    const M = { white: mk("#f5f5f2"), black: mk("#1c1e21", { r: 0.45, m: 0.3 }), roofPlain: mk("#b7bdc1", { r: 0.5, m: 0.3, two: true }), gutter: mk("#a9b0b4", { r: 0.4, m: 0.4 }),
+      ceiling: mk("#f7f7f4", { r: 0.9, two: true }), fascia: mk("#6b5140", { r: 0.7 }), tread: mk("#3c3e41", { r: 0.7 }), concrete: mk("#b8b4ab", { r: 0.95 }), stump: mk("#a7a299", { r: 0.95 }),
+      under: mk("#5b4b3d", { r: 0.9 }), dark: mk("#8a837b", { r: 0.95 }), glass: mk("#4e6672", { r: 0.04, m: 0.1 }), obscure: mk("#9fb0b8", { r: 0.35, m: 0.2 }),
+      fenceGlass: mk("#cfe7e2", { r: 0.05, m: 0.1, op: 0.22, two: true }), trunk: mk("#6d5a48", { r: 0.95 }), tabletop: mk("#9a7655", { r: 0.6 }), wicker: mk("#34302c", { r: 0.9 }),
+      trim: mk(B.trim, { r: 0.8 }), blueTrim: mk("#8fb4cf", { r: 0.8 }), batten: mk("#e2ded0", { r: 0.9 }), steel: mk("#8e959a", { r: 0.5, m: 0.5 }), paling: mk("#8c7d69", { r: 0.95 }),
+      leaf: mk("#4f7a3c", { r: 0.95 }), soil: mk("#5d4c3a", { r: 1 }), pv: mk("#1d2a3c", { r: 0.25, m: 0.4 }), mat: mk("#4a4038", { r: 1 }) };
+    const roofM = mk(B.roof, { r: 0.45, m: 0.35, two: true, map: roofTex });
+    const wbMats = new Map(), wb = (w, h) => { const k = w.toFixed(2) + "x" + h.toFixed(2); if (!wbMats.has(k)) wbMats.set(k, mk("#f3f2ec", { map: rep(weatherTex, w, h) })); return wbMats.get(k); };
+    const deckMat = (w, d) => mk("#ffffff", { r: 0.75, map: rep(deckTex, w, d) });
+
+    // ---- helpers (the balcony page's): each set of pieces is a group, flattened into a few parts for the model at the end
+    let G = null;
+    const add = o => { G.add(o); return o; };
+    const boxMM = (x0, y0, z0, x1, y1, z1, mat) => { const o = new THREE.Mesh(new THREE.BoxGeometry(Math.abs(x1 - x0) || 0.001, Math.abs(y1 - y0) || 0.001, Math.abs(z1 - z0) || 0.001), mat); o.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); return add(o); };
+    const poly = (pts, mat, uDir, scale = 1) => { const P = pts.map(p => new V(...p)), n = new V().subVectors(P[1], P[0]).cross(new V().subVectors(P[2], P[0])).normalize();
+      const u = (uDir ? new V(...uDir) : new V().subVectors(P[1], P[0])).normalize(), w = new V().crossVectors(n, u).normalize(), pos = [], uv = [];
+      for (let i = 1; i < P.length - 1; i++) for (const p of [P[0], P[i], P[i + 1]]) { pos.push(p.x, p.y, p.z); uv.push(p.dot(u) / scale, p.dot(w) / scale); }
+      const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); g.computeVertexNormals(); return add(new THREE.Mesh(g, mat)); };
+    const beam = (a, b, w, h, mat) => { const A = new V(...a), Bv = new V(...b), o = new THREE.Mesh(new THREE.BoxGeometry(w, h, A.distanceTo(Bv)), mat); o.position.copy(A).add(Bv).multiplyScalar(0.5); o.lookAt(Bv); return add(o); };
+    const cyl = (x, y0, z, r, h, mat, n = 14) => { const o = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, n), mat); o.position.set(x, y0 + h / 2, z); return add(o); };
+    const plane = (w, h, mat, x, y, z, ry = 0) => { const o = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat); o.position.set(x, y, z); o.rotation.y = ry; return add(o); };
+    const X = x => WS + x * (WN - WS) / 12;  // a place along the balcony page's 12 m back wall, on this house's back wall
+
+    const house = new THREE.Group(), now = new THREE.Group(), bal = new THREE.Group();
+
+    // =================== the house (both ways) ===================
+    G = house;
+    // walls: a white body (the floor's underside dark), weatherboards on each face, corner boards and the base band in the trim colour
+    { const h = E - FL, b = new THREE.Mesh(new THREE.BoxGeometry(WN - WS - 0.02, h, -ZF - 0.02), [M.white, M.white, M.white, M.under, M.white, M.white]); b.position.set((WS + WN) / 2, (FL - 0.2 + E) / 2, ZF / 2); b.scale.y = (h + 0.2) / h; add(b);
+      const yc = (FL + E) / 2 - 0.1, hh = h + 0.2;
+      plane(WN - WS, hh, wb(WN - WS, hh), (WS + WN) / 2, yc, 0.006);                        // back
+      plane(WN - WS, hh, wb(WN - WS, hh), (WS + WN) / 2, yc, ZF - 0.006, Math.PI);          // front
+      plane(-ZF, hh, wb(-ZF, hh), WN + 0.006, yc, ZF / 2, Math.PI / 2);                     // north
+      plane(-ZF, hh, wb(-ZF, hh), WS - 0.006, yc, ZF / 2, -Math.PI / 2);                    // south
+      for (const [x, z] of [[WS, ZF], [WS, 0], [WN, ZF], [WN, 0]]) boxMM(x - 0.08, FL - 0.2, z - 0.08, x + 0.08, E, z + 0.08, M.trim);
+      boxMM(WS - 0.05, FL - 0.32, ZF - 0.05, WN + 0.05, FL - 0.18, 0.05, M.trim); }
+    // under the house: the open slab at the back (used for outdoor dining), stumps, bearers, and white battens along the front and the
+    // south side as the model has them (open to the back and the north, where the yard is)
+    { const low = Math.min(0, ...[[WS, ZF], [WN, ZF], [WS, 0], [WN, 0]].map(([x, z]) => gL(x, z))) - 0.3;
+      boxMM(WS - 0.3, low, ZF + 4, WN + 0.6, 0.02, 1.9, M.concrete);
+      const nx = 3, nz = 4;
+      for (let i = 0; i <= nx; i++) for (let j = 0; j <= nz; j++) { const x = WS + 0.2 + (WN - WS - 0.4) * i / nx, z = -0.2 + (ZF + 0.4) * j / nz; boxMM(x - 0.1, low, z - 0.1, x + 0.1, FL - 0.32, z + 0.1, M.stump); }
+      for (let j = 0; j <= nz; j++) { const z = -0.2 + (ZF + 0.4) * j / nz; boxMM(WS, FL - 0.5, z - 0.08, WN, FL - 0.32, z + 0.08, M.under); }
+      boxMM(WS + 0.3, low, ZF + 0.3, WN - 0.3, FL - 0.32, ZF + 0.35, M.dark);  // the store room's back wall behind the front battens
+      for (let x = WS + 0.15; x < WN - 0.1; x += 0.22) boxMM(x, low, ZF + 0.02, x + 0.12, FL - 0.32, ZF + 0.05, M.batten);
+      for (let z = ZF + 0.15; z < ZF + 7; z += 0.22) boxMM(WS + 0.02, low, z, WS + 0.05, FL - 0.32, z + 0.12, M.batten); }
+
+    // windows and doors: the balcony page's frames, on any wall. along(a): a point a metres along the wall, out(d): d off its face
+    const wall = (o, u, n) => ({ at: (a, y, d) => [o[0] + u[0] * a + n[0] * d, y, o[1] + u[1] * a + n[1] * d], ry: Math.atan2(n[0], n[1]) });
+    const WALLS = { back: wall([WS, 0], [1, 0], [0, 1]), front: wall([WN, ZF], [-1, 0], [0, -1]), north: wall([WN, 0], [0, -1], [1, 0]), south: wall([WS, ZF], [0, 1], [-1, 0]) };
+    const piece = (W, a0, a1, y0, y1, d0, d1, mat) => { const p = W.at((a0 + a1) / 2, (y0 + y1) / 2, (d0 + d1) / 2), o = new THREE.Mesh(new THREE.BoxGeometry(Math.abs(a1 - a0), Math.abs(y1 - y0), Math.abs(d1 - d0)), mat);
+      o.position.set(...p); o.rotation.y = W.ry; return add(o); };
+    const opening = (W, a0, a1, y0, y1, cols, rows, glassMat, o = {}) => { const t = 0.06, d = 0.09, z = o.z ?? 0.02, fm = o.frame || M.white;
+      piece(W, a0 - t, a1 + t, y0 - t, y0, z, z + d, fm); piece(W, a0 - t, a1 + t, y1, y1 + t, z, z + d, fm); piece(W, a0 - t, a0, y0, y1, z, z + d, fm); piece(W, a1, a1 + t, y0, y1, z, z + d, fm);
+      const p = W.at((a0 + a1) / 2, (y0 + y1) / 2, z + 0.01); plane(a1 - a0, y1 - y0, glassMat, ...p, W.ry);
+      for (let i = 1; i < cols; i++) { const a = a0 + (a1 - a0) * i / cols; piece(W, a - 0.022, a + 0.022, y0, y1, z, z + d * 0.7, fm); }
+      for (let j = 1; j < rows; j++) { const y = y0 + (y1 - y0) * j / rows; piece(W, a0, a1, y - 0.022, y + 0.022, z, z + d * 0.7, fm); }
+      if (o.sill) piece(W, a0 - 0.1, a1 + 0.1, y0 - 0.1, y0 - 0.04, z, z + 0.14, o.sillMat || fm);
+      if (o.hood) { const q = (a, y, dd) => W.at(a, y, dd); poly([q(a1 + 0.15, y1 + 0.42, 0.02), q(a0 - 0.15, y1 + 0.42, 0.02), q(a0 - 0.15, y1 + 0.12, 0.57), q(a1 + 0.15, y1 + 0.12, 0.57)], roofM, null);
+        for (const a of [a0 - 0.05, a1 + 0.05]) beam(q(a, y1 - 0.2, 0.03), q(a, y1 + 0.14, 0.55), 0.04, 0.04, M.white); } };
+    // the front (the model's): the door 1 m in from the north corner, two hooded windows at 48% and 80% along
+    { const W = WALLS.front, L = WN - WS;
+      piece(W, 0.55, 1.45, FL, FL + 2.05, 0.02, 0.05, M.blueTrim); piece(W, 0.48, 1.52, FL + 2.05, FL + 2.12, 0.02, 0.09, M.white);
+      for (const a of [0.48, 1.45]) piece(W, a, a + 0.07, FL, FL + 2.05, 0.02, 0.09, M.white);
+      for (const k of [0.48, 0.8]) opening(W, L * k - 0.85, L * k + 0.85, FL + 0.95, FL + 2.15, 2, 3, M.obscure, { frame: M.trim, hood: true }); }
+    // the south side (the model's): four windows along it, every other one hooded
+    { const W = WALLS.south, L = -ZF; for (let k = 0; k < 4; k++) { const a = L * (0.14 + k * 0.24); opening(W, a - 0.7, a + 0.7, FL + 0.95, FL + 2.15, 2, 3, M.obscure, { frame: M.trim, hood: k % 2 === 1 }); } }
+    // the back (the balcony page's, spread over the narrower wall): the small window, the back porch and door, the narrow window, the big window
+    { const W = WALLS.back, a = x => X(x) - WS;
+      opening(W, a(0.5), a(1.45), yy(3.6), yy(4.4), 1, 1, M.glass, { sill: true, sillMat: M.blueTrim });
+      const p0 = a(2.0), p1 = p0 + 1.4;  // the back door (on the balcony page it's in a porch set into the wall; here it's on the wall's face)
+      piece(W, p0, p0 + 0.08, FL, E - 0.25, 0.02, 0.12, M.white); piece(W, p1 - 0.08, p1, FL, E - 0.25, 0.02, 0.12, M.white); piece(W, p0, p1, E - 0.33, E - 0.25, 0.02, 0.12, M.white);
+      opening(W, p0 + 0.3, p1 - 0.3, FL, yy(4.7), 3, 4, M.glass); piece(W, p0 + 0.3, p1 - 0.3, FL, yy(3.55), 0.03, 0.06, M.white);
+      piece(W, p0 - 0.1, p0, FL - 0.2, E - 0.2, -0.05, 0.08, M.blueTrim);
+      opening(W, a(4.5), a(5.1), yy(3.3), yy(4.85), 1, 1, M.obscure, { sill: true });
+      const bw = a(7.8); opening(W, bw - 1.1, bw + 1.1, yy(3.5), yy(4.85), 8, 4, M.obscure, { sill: true });  // the big window stays as it is
+      for (const x of [bw - 1.45, bw + 1.45]) piece(W, x - 0.07, x + 0.07, yy(4.2), yy(4.45), 0.02, 0.14, M.black); }
+    // the north side (the balcony page's): the window nearest the back corner, the little round window towards the front, and a hooded
+    // window by the front corner (the model's)
+    { const W = WALLS.north; opening(W, 0.45, 1.35, yy(3.55), yy(4.8), 2, 4, M.obscure);
+      { const a = 8.8, yc = yy(4.25), h = 0.31; piece(W, a - h - 0.06, a + h + 0.06, yc - h - 0.06, yc + h + 0.06, 0.02, 0.1, M.white);
+        const c = new THREE.Mesh(new THREE.CircleGeometry(h * 0.78, 28), M.obscure); c.position.set(...W.at(a, yc, 0.11)); c.rotation.y = W.ry; add(c);
+        piece(W, a - h - 0.1, a + h + 0.1, yc - h - 0.1, yc - h - 0.05, 0.02, 0.15, M.white); }
+      opening(W, -ZF - 1.7, -ZF - 0.5, FL + 0.95, FL + 2.15, 2, 3, M.obscure, { frame: M.trim, hood: true }); }
+    // the front: the entrance landing at the north end, its porch roof on two posts, and the stairs down along the front wall to the south
+    const FS = { top: WN - 1.85, z0: ZF - 0.12, z1: ZF - 1.12, risers: Math.max(8, Math.round(FL / 0.19)), going: 0.27 };
+    FS.rise = FL / FS.risers; FS.run = (FS.risers - 1) * FS.going; FS.bot = FS.top - FS.run;
+    const FLAND = { x0: FS.top, x1: WN - 0.15, z0: ZF - 1.25 };
+    { boxMM(FLAND.x0, FL - 0.16, FLAND.z0, FLAND.x1, FL, ZF, mk("#8f8a84"));
+      const rail = (x0, z0, x1, z1) => { beam([x0, FL + 0.98, z0], [x1, FL + 0.98, z1], 0.07, 0.05, M.white); beam([x0, FL + 0.1, z0], [x1, FL + 0.1, z1], 0.05, 0.05, M.white);
+        const l = Math.hypot(x1 - x0, z1 - z0), n = Math.floor(l / 0.11); for (let i = 0; i <= n; i++) { const k = i / n; boxMM(x0 + (x1 - x0) * k - 0.018, FL, z0 + (z1 - z0) * k - 0.018, x0 + (x1 - x0) * k + 0.018, FL + 0.97, z0 + (z1 - z0) * k + 0.018, M.white); } };
+      rail(FLAND.x0 + 0.05, FLAND.z0 + 0.04, FLAND.x1 - 0.04, FLAND.z0 + 0.04); rail(FLAND.x1 - 0.04, FLAND.z0 + 0.04, FLAND.x1 - 0.04, ZF);
+      for (let i = 1; i < FS.risers; i++) { const y = FL - i * FS.rise, xa = FS.top - (i - 1) * FS.going, xb = FS.top - i * FS.going; boxMM(xb - 0.02, y - 0.04, FS.z1 + 0.06, xa + 0.01, y, FS.z0 - 0.06, M.tread); }
+      for (const zz of [FS.z0 - 0.03, FS.z1 + 0.03]) {
+        beam([FS.top + 0.05, FL - 0.12, zz], [FS.bot - 0.2, -0.05, zz], 0.05, 0.26, M.white); beam([FS.top, FL + 0.95, zz], [FS.bot + 0.1, FS.rise + 0.9, zz], 0.06, 0.05, M.white);
+        beam([FS.top, FL + 0.1, zz], [FS.bot + 0.1, FS.rise + 0.05, zz], 0.04, 0.04, M.white); boxMM(FS.bot + 0.07, FS.rise, zz - 0.04, FS.bot + 0.15, FS.rise + 0.95, zz + 0.04, M.white);
+        for (let i = 1; i < 24; i++) { const k = i / 24, x = FS.top + (-FS.run + 0.1) * k, yb = FL + 0.1 + (FS.rise + 0.05 - FL - 0.1) * k, yt = FL + 0.95 + (FS.rise + 0.9 - FL - 0.95) * k; boxMM(x - 0.015, yb, zz - 0.015, x + 0.015, yt, zz + 0.015, M.white); } }
+      boxMM(FS.bot - 1.1, gL(FS.bot - 0.5, FS.z0) - 0.05, FS.z0 + 0.05, FS.bot + 0.05, gL(FS.bot - 0.5, FS.z0) + 0.06, FS.z1 - 0.15, M.concrete);
+      const px0 = FLAND.x0 - 0.15, px1 = FLAND.x1 + 0.15, pz = FLAND.z0 - 0.2;
+      poly([[px0, FL + 2.6, ZF], [px1, FL + 2.6, ZF], [px1, FL + 2.3, pz], [px0, FL + 2.3, pz]], roofM, [1, 0, 0]);
+      poly([[px0, FL + 2.55, ZF], [px1, FL + 2.55, ZF], [px1, FL + 2.25, pz + 0.05], [px0, FL + 2.25, pz + 0.05]], M.ceiling);
+      boxMM(px0, FL + 2.16, pz - 0.1, px1, FL + 2.3, pz, M.gutter);
+      for (const x of [FLAND.x0 + 0.05, FLAND.x1 - 0.05]) { const gy = gL(x, FLAND.z0); boxMM(x - 0.05, gy - 0.2, FLAND.z0, x + 0.05, FL + 2.3, FLAND.z0 + 0.1, M.white); }
+      beam([px0 + 0.05, FL + 2.22, FLAND.z0 + 0.05], [px1 - 0.05, FL + 2.22, FLAND.z0 + 0.05], 0.1, 0.14, M.white); }
+    // the roof (the model's): a ridge across the house a little behind the middle, a gable to the street, the back sloping to the back eave
+    { const hx = g0, hz = v0, A = (ux, y, uz) => [12 - HS - ux, y, -(uz + HD)];  // the model's own frame for it: ux to the south, uz to the street
+      const Lz = hz - B.ridgeBack * 2 * hz, Cy = E + RM, Dy = E + RM * B.frontGable, Az = hz - B.frontGable * (hz - Lz);
+      const R = pts => poly(pts.map(p => A(...p)), roofM, null);
+      poly([A(-hx, E - 0.02, hz), A(hx, E - 0.02, hz), A(hx, E - 0.02, -hz), A(-hx, E - 0.02, -hz)].reverse(), M.ceiling);
+      R([[-hx, E, hz], [0, Dy, hz], [0, Dy, Az]]); R([[hx, E, hz], [0, Dy, Az], [0, Dy, hz]]);
+      R([[-hx, E, hz], [0, Dy, Az], [0, Cy, Lz], [-hx, Cy, Lz]]); R([[hx, E, hz], [hx, Cy, Lz], [0, Cy, Lz], [0, Dy, Az]]);
+      R([[-hx, Cy, Lz], [hx, Cy, Lz], [hx, E, -hz], [-hx, E, -hz]]);
+      const WB = (pts, w) => poly(pts.map(p => A(...p)), wb(w, RM), null);
+      WB([[-HS, E, HD], [HS, E, HD], [0, Dy, HD]], 2 * HS);                                      // the front gable
+      WB([[-HS, E, HD], [-HS, Cy, Lz], [-HS, E, -HD]], 2 * HD); WB([[HS, E, -HD], [HS, Cy, Lz], [HS, E, HD]], 2 * HD);  // the side gables
+      poly([A(-0.3, Dy - 0.75, HD + 0.03), A(0.3, Dy - 0.75, HD + 0.03), A(0.3, Dy - 0.4, HD + 0.03), A(-0.3, Dy - 0.4, HD + 0.03)], M.dark);  // the vent in the gable
+      const bargeA = (a, b) => beam([a[0], a[1] + 0.05, a[2]], [b[0], b[1] + 0.05, b[2]], 0.12, 0.08, M.trim);
+      bargeA(A(-hx, E, hz), A(0, Dy, hz)); bargeA(A(0, Dy, hz), A(hx, E, hz));
+      for (const s of [-hx, hx]) { bargeA(A(s, E, hz), A(s, Cy, Lz)); bargeA(A(s, Cy, Lz), A(s, E, -hz)); }
+      boxMM(...[A(-hx, E - 0.12, -hz - 0.1), A(hx, E, -hz)].reduce((a, p, i) => i ? [Math.min(a[0], p[0]), Math.min(a[1], p[1]), Math.min(a[2], p[2]), Math.max(a[0], p[0]), Math.max(a[1], p[1]), Math.max(a[2], p[2])] : [...p, ...p], []), M.gutter);
+      // solar on the back of the roof, two rows (as the balcony page has them, seen from the pool)
+      const tilt = Math.atan2(Cy - E, Lz + hz), along = (Lz + hz) / Math.cos(tilt);
+      for (const [row, n] of [[0.28, 6], [0.62, 4]]) for (let i = 0; i < n; i++) { const ux = (i - (n - 1) / 2) * 1.04, t = row, uz = -hz + (Lz + hz) * t, y = E + (Cy - E) * t + 0.08;
+        const p = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.04, Math.min(1.65, along * 0.3)), M.pv); p.position.set(...A(ux, y, uz)); p.rotation.x = -tilt; add(p); } }
+    // the lot's fences (the model's, the north one moved out to where Ash measured it), the planters down the south side, the bed by the gate
+    { const NF = WN + B.northFence;
+      const fence = (a, b, h) => { let [x0, z0] = toLocal(...a), [x1, z1] = toLocal(...b); const l = Math.hypot(x1 - x0, z1 - z0), n = Math.max(1, Math.ceil(l / 2.4));
+        for (let i = 0; i < n; i++) { const k0 = i / n, k1 = (i + 1) / n, xa = x0 + (x1 - x0) * k0, za = z0 + (z1 - z0) * k0, xb = x0 + (x1 - x0) * k1, zb = z0 + (z1 - z0) * k1, gy = gL((xa + xb) / 2, (za + zb) / 2);
+          beam([xa, gy + h / 2, za], [xb, gy + h / 2, zb], 0.04, h, M.paling); boxMM(xa - 0.05, gL(xa, za) - 0.1, za - 0.05, xa + 0.05, gL(xa, za) + h + 0.05, za + 0.05, M.trunk); } };
+      const north = p => { const [x, z] = toLocal(...p), [X1, Z1] = toModel(NF, z); return x < NF ? [X1, Z1] : p; };
+      B.fences.forEach(([h, a, b], i) => { if (i === 0 || i === 1) fence(north(a), north(b), h); else if (i === 3) fence(north(a), b, h); else fence(a, b, h); });
+      for (const [px, pz] of B.planters) { const [x, z] = toLocal(px, pz), gy = gL(x, z); boxMM(x - 0.7, gy, z - 0.4, x + 0.7, gy + 0.4, z + 0.4, M.concrete); boxMM(x - 0.62, gy + 0.3, z - 0.32, x + 0.62, gy + 0.42, z + 0.32, M.soil);
+        for (let k = 0; k < 3; k++) { const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.24, 0), M.leaf); b.position.set(x + (k - 1) * 0.45, gy + 0.6, z); add(b); } }
+      { const [x, z] = toLocal(B.bed[0], B.bed[1]), gy = gL(x, z); cyl(x, gy, z, B.bed[2], 0.12, M.soil, 10); const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 0), M.leaf); b.position.set(x, gy + 0.55, z); add(b); } }
+
+    // =================== how it is ===================
+    G = now;
+    const P0 = X(2.0), P1 = P0 + 1.4;  // the back porch
+    // the side window where the French doors would go, with its hood
+    opening(WALLS.north, 4.35, 5.55, yy(3.55), yy(4.8), 2, 4, M.obscure, { hood: true });
+    // the existing steel stairs: a top landing outside the back door, the stairs down along the back wall towards the north, galvanised
+    // stringers and rails, dark treads, a pad at the foot
+    const OS = { x0: P1 + 0.05, z0: 0.1, z1: 1.1, risers: Math.max(8, Math.round(FL / 0.19)), going: 0.25 };
+    OS.rise = FL / OS.risers; OS.run = (OS.risers - 1) * OS.going; OS.x1 = OS.x0 + OS.run;
+    const OLAND = { x0: P0 - 0.1, x1: P1 + 0.05, z0: 0, z1: 1.2 };
+    { boxMM(OLAND.x0, FL - 0.12, OLAND.z0, OLAND.x1, FL, OLAND.z1, M.tread);
+      for (const [x, z] of [[OLAND.x0 + 0.05, OLAND.z1 - 0.05], [OLAND.x1 - 0.05, OLAND.z1 - 0.05]]) boxMM(x - 0.05, gL(x, z) - 0.2, z - 0.05, x + 0.05, FL + 1.0, z + 0.05, M.steel);
+      beam([OLAND.x0 + 0.05, FL + 1.0, OLAND.z1 - 0.05], [OLAND.x1 - 0.05, FL + 1.0, OLAND.z1 - 0.05], 0.05, 0.05, M.steel); beam([OLAND.x0 + 0.05, FL + 1.0, OLAND.z0 + 0.05], [OLAND.x0 + 0.05, FL + 1.0, OLAND.z1 - 0.05], 0.05, 0.05, M.steel);
+      for (let i = 1; i < OS.risers; i++) { const y = FL - i * OS.rise, xa = OS.x0 + (i - 1) * OS.going, xb = OS.x0 + i * OS.going; boxMM(xa - 0.01, y - 0.04, OS.z0 + 0.06, xb + 0.02, y, OS.z1 - 0.06, M.tread); }
+      for (const zz of [OS.z0 + 0.03, OS.z1 - 0.03]) { beam([OS.x0 - 0.05, FL - 0.1, zz], [OS.x1 + 0.2, -0.05, zz], 0.04, 0.22, M.steel); beam([OS.x0, FL + 0.95, zz], [OS.x1 - 0.1, OS.rise + 0.9, zz], 0.05, 0.05, M.steel);
+        for (let i = 0; i <= 4; i++) { const k = i / 4, x = OS.x0 + (OS.run - 0.1) * k, yb = FL - k * (FL - OS.rise); boxMM(x - 0.025, yb, zz - 0.025, x + 0.025, yb + 0.95, zz + 0.025, M.steel); } }
+      const gx = gL(OS.x1 + 0.6, (OS.z0 + OS.z1) / 2); boxMM(OS.x1 - 0.05, gx - 0.05, OS.z0, OS.x1 + 1.05, gx + 0.06, OS.z1 + 0.05, M.concrete); }
+
+    // =================== the balcony ===================
+    G = bal;
+    const FRONT = 1.51, VW = E - 0.12, VE = VW - 0.25;
+    const HEX = { cx: WN + 0.6, r: 2.9, back: -6.7 }; HEX.h = HEX.r * Math.sqrt(3) / 2; HEX.c1 = FRONT - HEX.h; HEX.c2 = HEX.back + HEX.h;
+    const SD = { out: HEX.cx + HEX.r, ch: HEX.r / 2, back: HEX.back };
+    const DECK = [[WN, FRONT], [SD.out - SD.ch, FRONT], [SD.out, HEX.c1], [SD.out, HEX.c2], [SD.out - SD.ch, SD.back], [WN, SD.back]];
+    const D0 = P0;  // the rear balcony starts at the back porch, so the back door opens onto it
+    const post = (x, z, top, mat = M.white) => boxMM(x - 0.06, gL(x, z) - 0.2, z - 0.06, x + 0.06, top, z + 0.06, mat);
+    const deckBox = (x0, x1, z0, z1) => { const w = x1 - x0, d = z1 - z0, o = new THREE.Mesh(new THREE.BoxGeometry(w, 0.32, d), [M.white, M.white, deckMat(w, d), M.under, M.white, M.white]); o.position.set((x0 + x1) / 2, FL - 0.16, (z0 + z1) / 2); add(o); };
+    const deckPoly = pts => { const shape = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(x, -z))), o = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: 0.32, bevelEnabled: false }), [deckMat(1, 1), M.white]);
+      o.rotation.x = -Math.PI / 2; o.position.y = FL - 0.32; add(o); poly(pts.map(([x, z]) => [x, FL - 0.325, z]), M.under); };
+    deckBox(D0, WN, 0, FRONT); deckPoly(DECK);
+    const WK = { z0: -7.6, z1: SD.back }; deckBox(WN, WN + 1.2, WK.z0, WK.z1);
+    for (const [x, z] of [[D0 + 0.05, 1.45], [X(5.0), 1.45], [X(8.0), 1.45], [WN + 1.12, WK.z0 + 0.08]]) post(x, z, FL - 0.32);
+    const hexPosts = [[SD.out - 2 * SD.ch + 0.1, 1.45], [SD.out - SD.ch - 0.04, 1.45], [SD.out - 0.07, HEX.c1], [SD.out - 0.07, HEX.c2], [SD.out - SD.ch - 0.04, SD.back + 0.06], [WN + 0.12, SD.back + 0.06]];
+    for (const [x, z] of hexPosts) { const gy = gL(x, z); cyl(x, gy - 0.2, z, 0.07, VE - 0.05 - gy + 0.2, M.white, 12); boxMM(x - 0.11, FL, z - 0.11, x + 0.11, FL + 0.12, z + 0.11, M.white); boxMM(x - 0.2, gy - 0.01, z - 0.2, x + 0.2, gy + 0.05, z + 0.2, M.concrete); }
+    for (let i = 0; i < hexPosts.length - 1; i++) { const [x0, z0] = hexPosts[i], [x1, z1] = hexPosts[i + 1]; beam([x0, VE - 0.16, z0], [x1, VE - 0.16, z1], 0.1, 0.22, M.white); }
+    // the hexagon's roof: level eaves all round, faces rising to two apexes joined by a short ridge, rafters under it
+    { const o = 0.35, Re = HEX.r + o, apexY = VE + Re * Math.sqrt(3) / 2 * 0.42, A1 = [HEX.cx, apexY, HEX.c1], A2 = [HEX.cx, apexY, HEX.c2];
+      const at = (c, deg) => [HEX.cx + Re * Math.cos(deg * Math.PI / 180), VE, c + Re * Math.sin(deg * Math.PI / 180)];
+      const faces = [[at(HEX.c1, 0), at(HEX.c1, 60), A1], [at(HEX.c1, 60), at(HEX.c1, 120), A1], [at(HEX.c1, 120), at(HEX.c1, 180), A1],
+        [at(HEX.c2, 180), at(HEX.c2, 240), A2], [at(HEX.c2, 240), at(HEX.c2, 300), A2], [at(HEX.c2, 300), at(HEX.c2, 360), A2], [at(HEX.c2, 0), at(HEX.c1, 0), A1, A2], [at(HEX.c1, 180), at(HEX.c2, 180), A2, A1]];
+      for (const f of faces) { poly(f, roofM, [f[1][0] - f[0][0], 0, f[1][2] - f[0][2]]); poly(f.map(p => [p[0], p[1] - 0.07, p[2]]), M.ceiling); }
+      const cap = (a, b) => beam([a[0], a[1] + 0.03, a[2]], [b[0], b[1] + 0.03, b[2]], 0.14, 0.04, M.gutter);
+      for (const d of [0, 60, 120]) cap(at(HEX.c1, d), A1); for (const d of [240, 300, 0]) cap(at(HEX.c2, d), A2); cap(A1, A2);
+      const eave = [at(HEX.c1, 120), at(HEX.c1, 60), at(HEX.c1, 0), at(HEX.c2, 0), at(HEX.c2, 300), at(HEX.c2, 240)];
+      for (let i = 0; i < eave.length - 1; i++) beam([eave[i][0], VE - 0.06, eave[i][2]], [eave[i + 1][0], VE - 0.06, eave[i + 1][2]], 0.12, 0.14, M.gutter);
+      const raft = (p, Ap) => { const s = 0.05, q = [p[0] + (Ap[0] - p[0]) * s, VE + (Ap[1] - VE) * s, p[2] + (Ap[2] - p[2]) * s]; beam([q[0], q[1] - 0.17, q[2]], [Ap[0], Ap[1] - 0.17, Ap[2]], 0.08, 0.14, M.white); };
+      const onEave = (c, d) => { const k = d % 60 === 0 ? 1 : Math.sqrt(3) / 2, a = d * Math.PI / 180; return [HEX.cx + Re * k * Math.cos(a), VE, c + Re * k * Math.sin(a)]; };
+      for (const d of [0, 30, 60, 90, 120, 150]) raft(onEave(HEX.c1, d), A1); for (const d of [210, 240, 270, 300, 330, 360]) raft(onEave(HEX.c2, d), A2);
+      for (let z = HEX.c1 - 0.8; z > HEX.c2 + 0.4; z -= 0.8) raft([HEX.cx + Re, VE, z], [HEX.cx, apexY, z]);
+      const dp = at(HEX.c1, 0); boxMM(dp[0] - 0.12, gL(dp[0], dp[2]), dp[2] - 0.04, dp[0] - 0.04, VE - 0.1, dp[2] + 0.04, M.gutter); }
+    // the back roof carried out over the rear balcony, its front edge in line with the hexagon's eaves
+    { const x0 = D0 - 0.15, x1 = HEX.cx - (HEX.r + 0.35) / 2 + 0.05, zE = FRONT + 0.3;
+      poly([[x0, VW, 0], [x1, VW, 0], [x1, VE, zE], [x0, VE, zE]], roofM, [1, 0, 0]); poly([[x0, VW - 0.06, 0.01], [x1, VW - 0.06, 0.01], [x1, VE - 0.06, zE - 0.04], [x0, VE - 0.06, zE - 0.04]], M.ceiling);
+      boxMM(x0, VE - 0.15, zE - 0.02, x1, VE + 0.02, zE + 0.1, M.gutter); boxMM(x0 - 0.06, VE - 0.12, 0, x0, VW, zE, M.white);
+      beam([D0 + 0.05, VE - 0.16, 1.45], [hexPosts[0][0], VE - 0.16, 1.45], 0.1, 0.22, M.white);
+      for (const x of [D0 + 0.05, X(5.0), X(8.0)]) { cyl(x, FL, 1.45, 0.07, VE - 0.05 - FL, M.white, 12); boxMM(x - 0.11, FL, 1.34, x + 0.11, FL + 0.12, 1.56, M.white); }
+      boxMM(x0 - 0.05, gL(x0, zE), zE - 0.02, x0 + 0.04, VE - 0.1, zE + 0.07, M.gutter); }
+    // the balustrade: black aluminium frame, glass between
+    const glassBal = (x0, z0, x1, z1) => { const yB = FL, yT = FL + 1.05, l = Math.hypot(x1 - x0, z1 - z0); beam([x0, yT, z0], [x1, yT, z1], 0.06, 0.05, M.black); beam([x0, yB + 0.08, z0], [x1, yB + 0.08, z1], 0.04, 0.04, M.black);
+      const n = Math.max(1, Math.ceil(l / 1.6)); for (let i = 0; i <= n; i++) { const k = i / n, x = x0 + (x1 - x0) * k, z = z0 + (z1 - z0) * k; boxMM(x - 0.03, yB, z - 0.03, x + 0.03, yT, z + 0.03, M.black); }
+      for (let i = 0; i < n; i++) { const k = (i + 0.5) / n, o = new THREE.Mesh(new THREE.BoxGeometry(l / n - 0.1, yT - yB - 0.16, 0.012), M.fenceGlass); o.position.set(x0 + (x1 - x0) * k, (yB + 0.1 + yT - 0.03) / 2, z0 + (z1 - z0) * k); o.rotation.y = -Math.atan2(z1 - z0, x1 - x0); add(o); } };
+    glassBal(D0 + 0.04, 0.03, D0 + 0.04, 1.46); glassBal(D0 + 0.04, 1.46, SD.out - SD.ch - 0.02, 1.46); glassBal(SD.out - SD.ch - 0.02, 1.46, SD.out - 0.05, HEX.c1);
+    glassBal(SD.out - 0.05, HEX.c1, SD.out - 0.05, HEX.c2); glassBal(SD.out - 0.05, HEX.c2, SD.out - SD.ch - 0.02, SD.back + 0.05); glassBal(SD.out - SD.ch - 0.02, SD.back + 0.05, WN + 1.2, SD.back + 0.05);
+    glassBal(WN + 1.16, SD.back + 0.01, WN + 1.16, WK.z0 + 0.04);
+    // French doors on the north wall, opening onto the hexagon (in place of the window there)
+    { const W = WALLS.north, a0 = 3.85, a1 = 6.05, leaf = (a1 - a0) / 4;
+      for (let i = 0; i < 4; i++) { const a = a0 + i * leaf + 0.03, b = a0 + (i + 1) * leaf - 0.03; opening(W, a, b, FL + 0.42, yy(4.72), 2, 5, M.glass); piece(W, a - 0.06, b + 0.06, FL, FL + 0.42, 0.02, 0.1, M.white); }
+      opening(W, a0, a1, yy(4.88), Math.min(yy(5.2), E - 0.1), 4, 1, M.glass);
+      piece(W, a0 - 0.12, a1 + 0.12, yy(4.72), yy(4.86), 0, 0.14, M.white); piece(W, a0 - 0.12, a0 - 0.02, FL, yy(4.86), 0, 0.14, M.white); piece(W, a1 + 0.02, a1 + 0.12, FL, yy(4.86), 0, 0.14, M.white);
+      for (const a of [1.35 + (a0 - 1.35) / 2, a1 + 0.22]) piece(W, a - 0.07, a + 0.07, yy(4.2), yy(4.45), 0.02, 0.14, M.black);
+      boxMM(WN + 0.2, FL, -5.75, WN + 0.9, FL + 0.015, -4.15, M.mat); }
+    // the new stairs: down the side from the landing behind the hexagon, towards the street, landing in the side yard
+    const S = { x0: WN + 0.12, x1: WN + 1.22, risers: Math.max(8, Math.round(FL / 0.19)), going: 0.25, z: WK.z0 }; S.rise = FL / S.risers; S.run = (S.risers - 1) * S.going;
+    { for (let i = 1; i < S.risers; i++) { const y = FL - i * S.rise; boxMM(S.x0 + 0.06, y - 0.04, S.z - (i - 1) * S.going + 0.01, S.x1 - 0.06, y, S.z - i * S.going - 0.02, M.tread); }
+      for (const x of [S.x0 + 0.03, S.x1 - 0.03]) { beam([x, FL - 0.12, S.z + 0.05], [x, -0.05, S.z - S.run - 0.2], 0.05, 0.26, M.black);
+        beam([x, FL + 1.0, S.z], [x, S.rise + 0.9, S.z - S.run + 0.1], 0.05, 0.05, M.black); beam([x, FL + 0.08, S.z], [x, S.rise + 0.02, S.z - S.run + 0.1], 0.04, 0.04, M.black);
+        for (let i = 1; i < 24; i++) { const t = i / 24, z = S.z + (-S.run + 0.1) * t, yb = FL + 0.08 + (S.rise + 0.02 - FL - 0.08) * t, yt = FL + 1.0 + (S.rise + 0.9 - FL - 1.0) * t; boxMM(x - 0.01, yb, z - 0.01, x + 0.01, yt, z + 0.01, M.black); } }
+      const gy = gL((S.x0 + S.x1) / 2, S.z - S.run - 0.6); boxMM(S.x0 - 0.15, gy - 0.05, S.z - S.run - 0.05, S.x1 + 0.15, gy + 0.06, S.z - S.run - 1.15, M.concrete); }
+    // a round table for six in the hexagon, and a fan over it
+    const TABLE = [WN + 2.05, (HEX.c1 + HEX.c2) / 2 + 0.55];
+    { const [tx, tz] = TABLE; cyl(tx, FL + 0.72, tz, 0.6, 0.04, M.tabletop, 24); boxMM(tx - 0.04, FL, tz - 0.04, tx + 0.04, FL + 0.72, tz + 0.04, M.black);
+      for (let k = 0; k < 6; k++) { const th = k * Math.PI / 3 + Math.PI / 6, g = new THREE.Group(), part = (w, h, d, x, y, z, mat) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); o.position.set(x, y, z); g.add(o); };
+        part(0.48, 0.05, 0.48, 0, 0.45, 0, M.wicker); part(0.48, 0.52, 0.06, 0, 0.73, 0.23, M.wicker); for (const [dx, dz] of [[-0.21, -0.21], [0.21, -0.21], [-0.21, 0.21], [0.21, 0.21]]) part(0.03, 0.43, 0.03, dx, 0.215, dz, M.black);
+        g.position.set(tx + Math.cos(th) * 0.88, FL, tz + Math.sin(th) * 0.88); g.rotation.y = Math.PI / 2 - th; add(g); }
+      boxMM(tx - 0.02, VE - 0.1, tz - 0.02, tx + 0.02, VE + 0.45, tz + 0.02, M.black); boxMM(tx - 0.1, VE - 0.2, tz - 0.1, tx + 0.1, VE - 0.08, tz + 0.1, M.black);
+      for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + 0.4; beam([tx, VE - 0.14, tz], [tx + Math.cos(a) * 0.6, VE - 0.14, tz + Math.sin(a) * 0.6], 0.13, 0.015, M.trunk); } }
+
+    // ---- into the model: each set flattened into a few parts (by picture, see-through and two-sided; colours by vertex)
+    const lin = hex => { const v = parseInt(hex.slice(1), 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255].map(c => Math.pow(c / 255, 2.2)); };
+    const flatten = root => { root.updateMatrixWorld(true); const buckets = new Map(), nm = new THREE.Matrix3(), p = new V(), n = new V();
+      root.traverse(o => { if (!o.isMesh) return; const geo = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry; if (!geo.getAttribute("normal")) geo.computeVertexNormals();
+        const mats = Array.isArray(o.material) ? o.material : [o.material], groups = geo.groups.length ? geo.groups : [{ start: 0, count: geo.getAttribute("position").count, materialIndex: 0 }];
+        const P = geo.getAttribute("position"), N = geo.getAttribute("normal"), U = geo.getAttribute("uv"); nm.getNormalMatrix(o.matrixWorld);
+        for (const gr of groups) { const mat = Array.isArray(o.material) ? mats[gr.materialIndex] : o.material; if (!mat) continue; const map = mat.map, key = (map ? map.image.width + "x" + map.image.height + ":" + (map === roofTex || map.source === roofTex.source ? "r" : map.source === deckTex.source ? "d" : "w") : "-") + (mat.transparent ? "t" : "") + (mat.side === THREE.DoubleSide ? "2" : "") + (mat.metalness > 0.2 ? "m" : "");
+          let b = buckets.get(key); if (!b) buckets.set(key, b = { P: [], N: [], U: [], C: [], mat }); const col = lin(mat.userData.hex || "#ffffff"), rx = map ? map.repeat.x : 1, ry = map ? map.repeat.y : 1;
+          for (let i = gr.start; i < gr.start + gr.count; i++) { p.fromBufferAttribute(P, i).applyMatrix4(o.matrixWorld); n.fromBufferAttribute(N, i).applyMatrix3(nm).normalize();
+            b.P.push(p.x, p.y, p.z); b.N.push(n.x, n.y, n.z); b.C.push(col[0], col[1], col[2]); if (map) b.U.push(U ? U.getX(i) * rx : 0, U ? U.getY(i) * ry : 0); } } });
+      return [...buckets.values()].map(b => ({ positions: new Float32Array(b.P), normals: new Float32Array(b.N), colors: new Float32Array(b.C), ...(b.mat.map ? { uvs: new Float32Array(b.U), map: b.mat.map.image } : {}),
+        matrix: FRAME.elements.slice(), color: [1, 1, 1], roughness: b.mat.roughness, metalness: b.mat.metalness, opacity: b.mat.opacity, doubleSide: b.mat.side === THREE.DoubleSide })); };
+    const sets = { house: flatten(house), now: flatten(now), bal: flatten(bal) }, handles = {}, counts = {};
+    for (const k in sets) { counts[k] = sets[k].length; handles[k] = m.addParts(sets[k]); }
+    const ZERO = new THREE.Matrix4().makeScale(0, 0, 0).elements, ON = FRAME.elements.slice(), shown = { house: true, now: true, bal: true };
+    const show = (k, on) => { if (shown[k] === on) return; shown[k] = on; for (let i = 0; i < counts[k]; i++) handles[k].setMatrix(i, on ? ON : ZERO); };
+
+    // ---- walking on it: surfaces (in this frame, heights from the house's level). top(x, z, g): the highest one under you that you can
+    // step onto (no more than 0.8 m above your feet), else the ground
+    const inPoly = (x, z, Q) => { let c = false; for (let i = 0, j = Q.length - 1; i < Q.length; j = i++) { const [xi, zi] = Q[i], [xj, zj] = Q[j]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) c = !c; } return c; };
+    const rect = (x0, x1, z0, z1, y) => (x, z) => x >= Math.min(x0, x1) && x <= Math.max(x0, x1) && z >= Math.min(z0, z1) && z <= Math.max(z0, z1) ? y : null;
+    const ramp = (x0, x1, z0, z1, along, a0, a1) => (x, z) => { if (x < Math.min(x0, x1) || x > Math.max(x0, x1) || z < Math.min(z0, z1) || z > Math.max(z0, z1)) return null; const a = along === "x" ? x : z; return FL * Math.max(0, Math.min(1, (a - a1) / (a0 - a1))); };
+    const SURF = { both: [rect(WS, WN, ZF, 0, FL), rect(FLAND.x0, FLAND.x1, FLAND.z0, ZF, FL), ramp(FS.bot - 0.1, FS.top, FS.z1, FS.z0, "x", FS.top, FS.bot)],
+      now: [rect(OLAND.x0, OLAND.x1, OLAND.z0, OLAND.z1, FL), ramp(OS.x0, OS.x1 + 0.1, OS.z0 + 0.05, OS.z1 - 0.05, "x", OS.x0, OS.x1)],
+      bal: [rect(D0, WN, 0, FRONT, FL), (x, z) => inPoly(x, z, DECK) ? FL : null, rect(WN, WN + 1.2, WK.z0, WK.z1, FL), ramp(S.x0 + 0.1, S.x1 - 0.1, S.z - S.run - 0.1, S.z, "z", S.z, S.z - S.run)] };
+    // under a roof or a deck: how much room over your feet (the house and decks' undersides from the ground, their roofs on them)
+    const ROOF = { both: [[rect(WS, WN, ZF, 0, 1), E - 0.1], [rect(FLAND.x0, FLAND.x1, FLAND.z0, ZF, 1), FL + 2.2]], now: [], bal: [[rect(D0, WN, 0, FRONT + 0.3, 1), VE - 0.1], [(x, z) => inPoly(x, z, DECK) ? 1 : null, VE - 0.1]] };
+    const UNDER = { both: [rect(WS, WN, ZF, 0, 1), rect(FLAND.x0, FLAND.x1, FLAND.z0, ZF, 1)], now: [rect(OLAND.x0, OLAND.x1, OLAND.z0, OLAND.z1, 1)], bal: [rect(D0, WN, 0, FRONT, 1), (x, z) => inPoly(x, z, DECK) ? 1 : null, rect(WN, WN + 1.2, WK.z0, WK.z1, 1)] };
+    const P = { near: null, mode: "now", dead: false, eyeNow: null };
+    const list = o => [...o.both, ...o[P.mode]];
+    const surfAt = (x, z, feet, gl) => { let best = null; for (const f of list(SURF)) { const h = f(x, z); if (h !== null && h <= feet + 0.8 && h > gl + 0.05 && (best === null || h > best)) best = h; } return best; };
+    const feetY = () => { const F = BS.fly; return F ? F.pos.y - (P.eyeNow ?? F.eye ?? 2.6) - y0 : 0; };
+    P.top = (X0, Z0, g) => { if (!P.near) return g; const [x, z] = toLocal(X0, Z0); if (x < WS - 4 || x > SD.out + 2 || z < ZF - 3 || z > 4) return g; const s = surfAt(x, z, feetY(), g - y0); return s === null ? g : Math.max(g, y0 + s); };
+    // eyes: no higher than the room over you allows
+    P.eye = e => { P.eyeNow = e; const F = BS.fly; if (!P.near || !F) return e; const [x, z] = toLocal(F.pos.x, F.pos.z); if (x < WS - 1 || x > SD.out + 1 || z < ZF - 2 || z > 3) return e;
+      const feet = feetY(), gl = gL(x, z), s = surfAt(x, z, feet, gl), base = s ?? gl; let room = Infinity;
+      if (s === null) { for (const f of list(UNDER)) if (f(x, z)) room = Math.min(room, FL - 0.35 - base); }
+      else for (const [f, top] of list(ROOF)) if (f(x, z)) room = Math.min(room, top - base);
+      return P.eyeNow = Math.max(1.4, Math.min(e, room - 0.25)); };
+    // on a raised surface, a step to where there's none (over the balustrade, or out of a wall) is taken back: slide along it instead
+    P.block = (F, ox, oz) => { if (!P.near) return false; const [x0, z0] = toLocal(ox, oz), feet = feetY(), gl0 = gL(x0, z0); if (feet < gl0 + 1.2 || surfAt(x0, z0, feet, gl0) === null) return false;
+      const ok = (X1, Z1) => { const [x, z] = toLocal(X1, Z1), gl = gL(x, z); return [[0, 0], [0.3, 0], [-0.3, 0], [0, 0.3], [0, -0.3]].every(([a, b]) => surfAt(x + a, z + b, feet, gl) !== null); };  // (and a step back from the glass)
+      if (ok(F.pos.x, F.pos.z)) return false;
+      if (ok(F.pos.x, oz)) F.pos.z = oz; else if (ok(ox, F.pos.z)) F.pos.x = ox; else { F.pos.x = ox; F.pos.z = oz; } if (F.wv) F.wv = [0, 0]; return true; };
+
+    // ---- the button on the house: shown when you're within 70 m, floating over the back of the roof; how it is, or the balcony
+    const btn = document.createElement("button"); btn.type = "button"; btn.className = "bs-bal6"; btn.hidden = true;
+    const label = () => { btn.textContent = P.mode === "bal" ? "Show it as it is" : "Show the balcony"; btn.setAttribute("aria-pressed", String(P.mode === "bal")); };
+    P.set = mode => { P.mode = mode; label(); if (P.near) { show("now", mode === "now"); show("bal", mode === "bal"); } };
+    btn.addEventListener("click", e => { e.stopPropagation(); btn.blur(); P.set(P.mode === "bal" ? "now" : "bal"); try { localStorage.setItem("an3d-bal6", P.mode); } catch {}
+      toast(P.mode === "bal" ? "The balcony concept: walk up the new stairs down the side" : "Number 6 as it is now", 2400); });
+    ($("bsFly") || document.body).append(btn);
+    try { P.mode = localStorage.getItem("an3d-bal6") === "bal" ? "bal" : "now"; } catch {} label();
+    const PIN = toModel((WS + WN) / 2, -2.5), PINY = y0 + E + RM + 1.6;  // where it floats: over the roof, towards the back
+    let last = "";
+    P.frame = () => { const F = BS.fly; if (!F || P.dead) return;
+      const d = Math.hypot(F.pos.x - C[0], F.pos.z - C[1]), near = d < B.near;
+      if (near !== P.near) { P.near = near; show("house", near); show("now", near && P.mode === "now"); show("bal", near && P.mode === "bal"); }
+      const cam = m.getCamera?.(), box = $("bsTown"), up = F.pos.y - m.groundAt(F.pos.x, F.pos.z);
+      if (!cam || !box || d > 70 || up > 60 || F.drive) { if (!btn.hidden) btn.hidden = true; return; }
+      const w = box.clientWidth, h = box.clientHeight, f = 1 / Math.tan(((m.fov ? m.fov() : 50) * Math.PI) / 360), cp = Math.cos(cam.pitch), fx = -Math.sin(cam.yaw) * cp, fy = Math.sin(cam.pitch), fz = -Math.cos(cam.yaw) * cp, rx = Math.cos(cam.yaw), rz = -Math.sin(cam.yaw), ux = -fy * rz, uy = rz * fx - rx * fz, uz = fy * rx;
+      const ax = PIN[0] - cam.x, ay = PINY - cam.y, az = PIN[1] - cam.z, dep = ax * fx + ay * fy + az * fz;
+      if (dep < 1) { if (!btn.hidden) btn.hidden = true; return; }
+      const sx = Math.round(w / 2 + (ax * rx + az * rz) / dep * f * (h / 2)), sy = Math.round(h / 2 - (ax * ux + ay * uy + az * uz) / dep * f * (h / 2));
+      if (sx < 40 || sx > w - 40 || sy < 70 || sy > h - 60) { if (!btn.hidden) btn.hidden = true; return; }
+      const k = sx + "," + sy; if (btn.hidden) btn.hidden = false; if (k !== last) { last = k; btn.style.transform = `translate(${sx}px, ${sy}px) translate(-50%, -100%)`; } };
+    P.toModel = toModel; P.toLocal = toLocal; P.levels = { y0, FL, E };  // (for checking in the console)
+    P.dispose = () => { P.dead = true; P.near = false; btn.remove(); for (const k in handles) try { handles[k].remove(); } catch {} };
+    P.frame();
+    return P;
   }
   const MOO_NO6 = {
     six: [[-262.77, -986.34], [-256.82, -1003.76]],                       // number 6's front boundary, south to north
@@ -18605,7 +18966,7 @@ const handle = async (m, post) => {
     // (the worker view sets the camera first, so names and bubbles are placed from where you really look; the traffic, the animal,
     // number 6 and the people out the front had been left out of every frame by a note on the same line, from #128 to 15 November 2026)
     T.car?.frame(); T.me?.frame(); T.peers?.frame(); T.here?.frame();
-    T.traffic?.frame(); T.critter?.frame(); T.no6?.frame(); T.home6?.frame(); T.mayor?.frame(); T.council?.frame(); T.locals?.frame(); T.yards?.frame(); T.walkers?.frame();
+    T.traffic?.frame(); T.critter?.frame(); T.no6?.frame(); T.bal6?.frame(); T.home6?.frame(); T.mayor?.frame(); T.council?.frame(); T.locals?.frame(); T.yards?.frame(); T.walkers?.frame();
     // flying: held down at the lowest you can fly (Down, or C) for a moment, and you are on foot there
     if (!T.walk && !T.tween && !F.drive && F.floor && F.hot?.f) { const low = F.pos.y <= F.floor() + 0.1, down = F.vert < -0.3 || F.keys.has("KeyC"), now = performance.now();
       if (!(low && down)) T.downAt = 0; else if (!T.downAt) T.downAt = now; else if (now - T.downAt > 1200) { T.downAt = 0; F.hot.f(); } }
@@ -18624,7 +18985,7 @@ const handle = async (m, post) => {
     BS.town = null; T.dead = true; T.on = false; T.ungest?.(); T.unlay?.(); T.unflood?.();
     T.streets?.dispose(); T.streets = null; $("bsNamesBtn").hidden = true;
     T.admin?.dispose(); T.admin = null;
-    T.car?.dispose(); T.car = null; T.peers?.dispose(); T.peers = null; T.me?.dispose(); T.me = null; T.here?.dispose(); T.here = null; T.yards?.dispose(); T.yards = null; T.bowls?.dispose(); T.bowls = null; T.walkers?.dispose(); T.walkers = null; T.traffic?.dispose(); T.traffic = null; T.mayor?.dispose(); T.mayor = null; T.council?.dispose(); T.council = null; T.critter?.dispose(); T.critter = null; T.home6?.dispose(); T.home6 = null; T.locals?.dispose(); T.locals = null; T.mail?.dispose(); T.mail = null;
+    T.car?.dispose(); T.car = null; T.peers?.dispose(); T.peers = null; T.me?.dispose(); T.me = null; T.here?.dispose(); T.here = null; T.yards?.dispose(); T.yards = null; T.bowls?.dispose(); T.bowls = null; T.walkers?.dispose(); T.walkers = null; T.traffic?.dispose(); T.traffic = null; T.mayor?.dispose(); T.mayor = null; T.council?.dispose(); T.council = null; T.critter?.dispose(); T.critter = null; T.home6?.dispose(); T.home6 = null; T.bal6?.dispose(); T.bal6 = null; T.locals?.dispose(); T.locals = null; T.mail?.dispose(); T.mail = null;
     T.unbar?.();
     if (BS.fly) { const F = BS.fly; F.walk = F.speed = F.floor = F.hot = F.drive = null; F.ceil = 0; F.lim = null; }  // Explore, if it carries on, is its old self
     try { T.model?.dispose(); } catch {}
@@ -19237,7 +19598,7 @@ const handle = async (m, post) => {
   // Explore's parts, each switched on or off on this device by Ash (they were for finding what made an iPhone let go of the
   // stick, 15 November 2026). Read when a town opens.
   const EX_PARTS = [["traffic", "A few moving cars"], ["animal", "The animal by Norman Road's helicopter"], ["rides", "Cars, planes, helicopter and bus to drive"], ["admin", "Map editing (the pencil)"],
-    ["players", "Other players and the Settings gear"], ["me", "Construction worker view"], ["no6", "6 Beaudesert Road's street detail"], ["home6", "Ash, Arlo and Pandy on Beaudesert Road"], ["streets", "Street names"], ["places", "Place names on the model"]];
+    ["players", "Other players and the Settings gear"], ["me", "Construction worker view"], ["no6", "6 Beaudesert Road's street detail"], ["bal6", "Number 6's house and balcony concept"], ["home6", "Ash, Arlo and Pandy on Beaudesert Road"], ["streets", "Street names"], ["places", "Place names on the model"]];
   try { if (!localStorage.getItem("an3d-off-reset-1")) { localStorage.removeItem("an3d-off"); localStorage.setItem("an3d-off-reset-1", "1"); } } catch {}
   const exOff = () => { try { return new Set(JSON.parse(localStorage.getItem("an3d-off") || "[]")); } catch { return new Set(); } };
   // Ash's own Explore settings, in Explore's Settings panel (Ash, 15 November 2026: "Move the settings for explore into the
