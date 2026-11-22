@@ -18,7 +18,8 @@ it is about 70 more triangles (open treads, one rail bar and two posts a side, w
 
 MOO_SET entry: [x, z, roof, driveX, driveZ, more]: the middle of the building's outline (as the model works it out), the roof seen on
 the aerial photo (0 as the data has it, 1 hip, 2 gable, 3 flat or a low skillion), where the drive meets the house (or nothing), and what Street View shows
-once it is checked ({ w: wall colour, b: colour under the floor, e: 1 closed in or 0 on stumps }).
+once it is checked ({ w: wall colour, b: colour under the floor, e: 1 closed in or 0 on stumps, d: 0 the front door is at the
+lower level or 1 up the stairs, g: 0 no garage door }).
 
 window.anSetRec, when set, is told where each house's stairs, pads and garage apron stand (so tools can move trees and cars off them).
 
@@ -53,13 +54,13 @@ rep('anG=q=>t.yAt(anGx+q*Math.cos(dt)+.5*Math.sin(dt),anGz-q*Math.sin(dt)+.5*Mat
     'anG=(q,o=.5)=>t.yAt(anGx+q*Math.cos(dt)+o*Math.sin(dt),anGz-q*Math.sin(dt)+o*Math.cos(dt))-g,'
     'SG=ST&&F?anWall(i,ct,F,SE,anG,V===FE,Yt,ST,anGx,anGz,dt,M,p):null;')
 # 4. its front door, landing and stairs
-rep('V===FE&&anFront(i,ct,F,S,C,Yt,iu,anNH)', 'V===FE&&(ST&&F?anDoor(i,ct,F,S,C,Yt,iu,anG,SE,anNH,SG,M,p):anFront(i,ct,F,S,C,Yt,iu,anNH))')
+rep('V===FE&&anFront(i,ct,F,S,C,Yt,iu,anNH)', 'V===FE&&(ST&&F?anDoor(i,ct,F,S,C,Yt,iu,anG,SE,anNH,SG,M,p,ST):anFront(i,ct,F,S,C,Yt,iu,anNH))')
 # 5. the builders
 rep('function anFront(b,L,F,S,C,n,W,NH){', r'''const anPost=[.5,.49,.46],anTread=[.42,.4,.36],anRail=[.035,.035,.04],anPad=[.44,.43,.4],anGarC=[.52,.53,.53];
 function anBase(A,r){return r<.3?Ut(A,.8):r<.5?ru(152,92,70):r<.65?ru(128,96,78):r<.82?ru(198,176,144):ru(160,160,156)}
 function anRec(i,M,p,kind,x0,z0,x1,z1){try{typeof window<"u"&&window.anSetRec&&window.anSetRec(M,p,kind,[i.wx(x0,z0),i.wz(x0,z0),i.wx(x1,z0),i.wz(x1,z0),i.wx(x1,z1),i.wz(x1,z1),i.wx(x0,z1),i.wz(x0,z1)])}catch{}}
 function anWall(i,L,F,enc,G,front,n,ST,ox,oz,h,M,p){const top=F-.2,u=n?((n>>1)+.5)/n*L:L/2;let gx=null;
-if(ST[3]!=null&&L>=3.4){const dx=ST[3]-ox,dz=ST[4]-oz,o=dx*Math.sin(h)+dz*Math.cos(h);let x=dx*Math.cos(h)-dz*Math.sin(h);
+if(ST[3]!=null&&L>=3.4&&!(ST[5]&&ST[5].g===0)){const dx=ST[3]-ox,dz=ST[4]-oz,o=dx*Math.sin(h)+dz*Math.cos(h);let x=dx*Math.cos(h)-dz*Math.sin(h);
 if(o>-1.2&&o<2.6&&x>.4&&x<L-.4){x=Math.min(L-1.5,Math.max(1.5,x));front&&Math.abs(x-u)<2.15&&(x=x<u?u-2.15:u+2.15);
 const gy=Math.max(G(x-1.25),G(x+1.25));if(x>=1.5&&x<=L-1.5&&top-gy>=2.15){gx=x;
 i.quad(x-1.4,gy-.05,.03,x+1.4,gy-.05,.03,x+1.4,gy+2.25,.03,x-1.4,gy+2.25,.03,iu);i.quad(x-1.25,gy,.06,x+1.25,gy,.06,x+1.25,gy+2.12,.06,x-1.25,gy+2.12,.06,anGarC);
@@ -67,14 +68,14 @@ anRec(i,M,p,"gar",x-1.4,0,x+1.4,5)}}}
 if(!enc){const q=Math.max(1,Math.round(L/3.6));for(let k=0;k<=q;k++){const x=Math.min(L-.13,Math.max(.13,k/q*L)),gy=G(x);top-gy>.45&&i.quad(x-.11,gy-.2,.04,x+.11,gy-.2,.04,x+.11,top,.04,x-.11,top,.04,anPost)}return gx}
 const q=Math.floor(L/3.4);for(let k=0;k<q;k++){const x=(k+.5)/q*L;if(gx!=null&&Math.abs(x-gx)<2.3||front&&Math.abs(x-u)<1.5)continue;const gy=Math.max(G(x-.6),G(x+.6));if(top-gy<2.3)continue;const y0=top-1.6;
 i.quad(x-.6,y0,.04,x+.6,y0,.04,x+.6,y0+.9,.04,x-.6,y0+.9,.04,B_,0)}return gx}
-function anDoor(i,L,F,S,C,n,W,G,enc,NH,gx,M,p){const u=n?((n>>1)+.5)/n*L:L/2,D=[.147,.069,.031],
+function anDoor(i,L,F,S,C,n,W,G,enc,NH,gx,M,p,ST){const u=n?((n>>1)+.5)/n*L:L/2,D=[.147,.069,.031],
 door=y=>{i.quad(u-.58,y,.03,u+.58,y,.03,u+.58,y+2.2,.03,u-.58,y+2.2,.03,W);i.quad(u-.46,y,.06,u+.46,y,.06,u+.46,y+2.08,.06,u-.46,y+2.08,.06,D);
 const ah=Math.min(S-.12,y+2.75);NH||i.quad(u+1.05,ah,0,u-1.05,ah,0,u-1.05,ah-.3,1.2,u+1.05,ah-.3,1.2,C)},
 pad=(x0,z0,x1,z1)=>{const a=Math.min(x0,x1),b=Math.max(x0,x1),k=Math.max(1,Math.ceil((b-a)/2.5));for(let j=0;j<k;j++){const xa=a+(b-a)*j/k,xb=a+(b-a)*(j+1)/k;
 i.quad(xa,G(xa,z1)+.05,z1,xb,G(xb,z1)+.05,z1,xb,G(xb,z0)+.05,z0,xa,G(xa,z0)+.05,z0,anPad)}},
 g0=Math.max(G(u-.5,.6),G(u+.5,.6)),r0=F-g0;
 if(r0<=.4){door(F);i.box(u-.7,Math.min(F-.45,g0-.25),0,u+.7,F-.02,.9,anTread);return}
-if(r0>3.1&&enc&&(gx==null||Math.abs(gx-u)>=2.1)){const y=g0+.08;door(y);i.box(u-.7,g0-.35,0,u+.7,y-.02,.9,anTread);return}
+const dl=ST[5]?ST[5].d:null;if((dl===0?r0>=1.9:dl!==1&&r0>3.1)&&enc&&(gx==null||Math.abs(gx-u)>=2.1)){const y=g0+.08;door(y);i.box(u-.7,g0-.35,0,u+.7,y-.02,.9,anTread);return}
 door(F);const lw=.72,ld=1.1,
 post=(x,z,y)=>{const gy=G(x,z)-.25;i.quad(x-.05,gy,z,x+.05,gy,z,x+.05,y,z,x-.05,y,z,anPost);i.quad(x,gy,z-.1,x,gy,z,x,y,z,x,y,z-.1,anPost)},
 bar=(xa,ya,za,xb,yb,zb)=>i.quad(xa,ya+.9,za,xb,yb+.9,zb,xb,yb+.97,zb,xa,ya+.97,za,anRail),
