@@ -2703,3 +2703,25 @@ ground level on a sloping street, which uncovers the model's own awning behind: 
 
 Checked: built; the three towns' scripts parse; the changed stretches rendered at 1280 x 800 and set beside the Street View
 pictures; the two-finger stick test in all three towns, before and after a two-minute run.
+
+## Moorooka: Rooka Acai done up (23 November 2026)
+
+Ash: "Go to more effort on Rooka Acai. Moderately low res but a little more. Use Ash PC for Google images. In Moorooka Explore."
+
+Looked up on Google from Ash's PC: Must Do Brisbane's photos (December 2025) and the Google Maps ones (June 2025). Street View's latest at
+the corner (May 2024) is from before the shop opened, when the unit was boarded up under a red awning; the "dark sign with acai,
+coffee, juice" noted on 19 November isn't in any of the newer photos, so the front follows them.
+
+- **A new front kind, `cafe`** (`townShops`), used only for Rooka Acai (`MOO_FRONTS`, `1/186 Beaudesert Road`): a deep awning with a
+  white panelled soffit and downlights (a picture, not lit by the sun, so it stays white in the shade and glows at night), a grey fascia
+  round it with the white ROOKA ACAI sign in plum slab-serif letters, white rendered piers standing proud of the wall, a wall bay with
+  two dark screens and a pink OPEN 12PM - 12AM sign, and the open front: one picture of the shop inside (beige walls, the green wall
+  with red flowers over a timber bench and orange cushions, vines hanging from a dark ceiling, the menu board in pink tinsel, the white
+  fluted counter with its timber top, tinsel, glass case, sauces, coffee machine, cups and grinder, someone serving in a cap) with
+  the neon on a clear picture over it ("We make it, you take it" and the round logo). Under the awning: the white blade sign, read from
+  both ways, three round timber tables on black stands with two black slatted chairs each, and two black wheelie bins.
+- The building's `MOO_STYLE` entry has `noShop` (the model's own red awning showed through) and is off-white now. The front and the shop
+  picture stand 10 cm out from the wall: the model's own windows on that wall showed through.
+- **Lag:** about 1,500 more triangles in the one coloured piece, and six small pictures (the shop and its neon at 64 px a metre, about
+  300 x 174 each; the soffit, the two signs and the OPEN sign smaller), about 0.6 MB on the graphics card and six more draw calls, close
+  to where there was one. Nothing to download.
