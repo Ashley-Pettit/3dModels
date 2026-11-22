@@ -1420,6 +1420,23 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 .bs-gps span { display: block; font: 600 0.74rem/1.3 var(--ui); opacity: 0.92; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bs-gps .arr { flex: none; width: 28px; height: 28px; transition: transform 0.25s; }
 .bs-gps button { flex: none; width: 32px; height: 32px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.2); color: #fff; font: 700 1.05rem var(--ui); cursor: pointer; }
+/* a race around Moorooka: the card (place, time, the way), the big countdown, and the panel for starting one and for the results */
+.bs-race { pointer-events: auto; position: absolute; z-index: 4; left: 50%; top: calc(104px + env(safe-area-inset-top)); transform: translateX(-50%); width: max-content; max-width: min(420px, calc(100% - 32px)); box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 7px 7px 7px 10px; border-left: 6px solid #ffc93c; border-radius: 14px; background: #1d1d27; color: #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35); }
+.bs-race[hidden], .bs-race-n[hidden], .bs-race-ask[hidden] { display: none; }
+.bs-race div { min-width: 0; }
+.bs-race b { display: block; font: 800 0.95rem/1.2 var(--ui); white-space: nowrap; }
+.bs-race span { display: block; font: 600 0.76rem/1.3 var(--ui); opacity: 0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.bs-race .arr { flex: none; width: 26px; height: 26px; transition: transform 0.25s; }
+.bs-race button { flex: none; width: 32px; height: 32px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.16); color: #fff; font: 700 1.05rem var(--ui); cursor: pointer; }
+.bs-race-n { pointer-events: none; position: absolute; z-index: 5; left: 50%; top: 36%; transform: translate(-50%, -50%); font: 900 clamp(64px, 18vw, 128px)/1 var(--ui); color: #ffc93c; text-shadow: 0 4px 18px rgba(0, 0, 0, 0.55); }
+.bs-race-ask { pointer-events: auto; position: absolute; z-index: 6; left: 50%; top: calc(62px + env(safe-area-inset-top)); transform: translateX(-50%); width: min(400px, calc(100% - 32px)); box-sizing: border-box; padding: 14px; border-radius: 16px; background: rgba(22, 24, 34, 0.96); color: #fff; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
+.bs-race-ask h3 { margin: 0 0 6px; font: 800 1.05rem/1.25 var(--ui); }
+.bs-race-ask p { margin: 0 0 8px; font: 500 0.86rem/1.45 var(--ui); opacity: 0.92; }
+.bs-race-ask ol { margin: 0 0 10px; padding-left: 1.4em; max-height: 40vh; overflow: auto; font: 700 0.9rem/1.7 var(--ui); font-variant-numeric: tabular-nums; }
+.bs-race-ask ol small { opacity: 0.75; font-weight: 500; font-size: 0.82rem; }
+.bs-race-ask .row { display: flex; gap: 8px; }
+.bs-race-ask .row button { flex: 1; min-height: 44px; border: 0; border-radius: 12px; background: rgba(255, 255, 255, 0.14); color: #fff; font: 800 0.92rem var(--ui); cursor: pointer; }
+.bs-race-ask .row .go { background: #ffc93c; color: #1b1830; }
 /* who is riding with you (or holding on), while you drive or fly: a card under the top buttons and their names over your car or plane */
 .bs-ridecard { pointer-events: none; position: absolute; z-index: 5; left: 50%; top: calc(62px + env(safe-area-inset-top)); transform: translateX(-50%); max-width: calc(100% - 32px); box-sizing: border-box; padding: 8px 14px 8px 34px; border-radius: 999px; background: #ffd166; color: #1b1830; font: 700 0.86rem/1.2 var(--ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); }
 .bs-ridecard::before { content: ""; position: absolute; left: 12px; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; background: #1b1830; box-shadow: 0 0 0 3px rgba(27, 24, 48, 0.25); }
@@ -8997,6 +9014,9 @@ const handle = async (m, post) => {
           if (F.home?.veh && T.car?.held?.()) { F.home = null; setMode(true, null); T.car.unhold(); return; }  // (back in what you were in, as you left it)
           const H = F.home; F.home = null; const w = H ? { x: H.x, y: ground(H.x, H.z) + F.eye, z: H.z, yaw: H.yaw, pitch: H.pitch } : T.atStart?.() ? T.firstWalk() : null;
           setMode(true, w || walkFromHere()); };
+        // a race's grid (townRace): out of anything, on your feet beside your place (out of Explore mode), then into a standard car on it
+        T.toStart = (x, z, h) => { T.car?.out?.(); T.tween = null; if (!T.walk) setMode(true);
+          F.pos.set(x - Math.cos(h) * 1.8, ground(x, z) + F.eye, z + Math.sin(h) * 1.8); F.yaw = h + Math.PI; F.pitch = -0.04; return !!T.car?.grid?.(x, z, h); };
         T.firstWalk = () => { const fw = T.first?.walk; return fw ? { x: fw.x, y: ground(fw.x, fw.z) + F.eye, z: fw.z, yaw: fw.yaw, pitch: fw.pitch } : null; };
         modeBox.onclick = e => { const bn = e.target.closest("[data-town-mode]"); if (!bn) return; toMode(!T.walk); bn.blur(); };
         // Google Maps style (Ash, 19 November 2026: Standard or Google Maps, "Both" the controls and the look): the map from above (Explore
@@ -9080,6 +9100,9 @@ const handle = async (m, post) => {
           const goldEls = golds.length ? [(() => { const h = document.createElement("p"); h.className = "bs-town-group bs-town-players"; h.setAttribute("role", "presentation"); h.textContent = "Just for you"; return h; })(),
             ...golds.map((g, i) => { const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "menuitem"); b.className = "bs-town-players"; b.dataset.townGold = i;
               const sm = document.createElement("small"); sm.textContent = g.what; b.append(g.name, sm); return b; })] : [];
+          // the race around Moorooka, under the GPS (townRace)
+          if (T.race) { const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "menuitem"); b.className = "bs-town-players bs-town-gpsitem"; b.dataset.townRace = "1";
+            const sm = document.createElement("small"); sm.textContent = T.race.active() ? "In a race now" : "Everyone here, standard cars, one lap"; b.append("Race around Moorooka", sm); list.prepend(b); }
           // the GPS, first (Ash, 22 November 2026: "Can you add a gps in the game to navigate to an address?")
           if (T.gps) { const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "menuitem"); b.className = "bs-town-players bs-town-gpsitem"; b.dataset.townGps = "1";
             const sm = document.createElement("small"); sm.textContent = T.gps.active() ? "Showing the way. Tap to go somewhere else" : "Directions to an address"; b.append("GPS", sm); list.prepend(b); }
@@ -9121,6 +9144,7 @@ const handle = async (m, post) => {
           newBtn.onclick = () => { openList(true); const h = list.querySelector(".bs-town-newhead"); if (h) { list.scrollTop = 0; h.nextElementSibling?.focus({ preventScroll: true }); } }; }
         list.onclick = e => { if (e.target.closest("[data-town-fly]")) { openList(false); flyTo(); jump.focus({ preventScroll: true }); return; }
           if (e.target.closest("[data-town-gps]")) { openList(false); T.gps?.open(); return; }
+          if (e.target.closest("[data-town-race]")) { openList(false); T.race?.open(); return; }
           const nw = e.target.closest("[data-town-new]"); if (nw) { const q = MOO_NEW[+nw.dataset.townNew]; openList(false); if (q) { T.tween = null; if (!T.walk) setMode(true);
             F.pos.set(q[2], ground(q[2], q[3]) + F.eye, q[3]); F.yaw = q[4]; F.pitch = q[5]; } return; }
           const gd = e.target.closest("[data-town-gold]"); if (gd) { openList(false); toGold(+gd.dataset.townGold); jump.focus({ preventScroll: true }); return; }
@@ -9220,6 +9244,7 @@ const handle = async (m, post) => {
         if (cfg.place === "moo" && !OFF.has("yards")) try { T.bowls = townBowls(T, m); } catch (e) { console.warn("Town model: the bowls club couldn't start", e); }
         if (cfg.place === "moo" && !OFF.has("walkers")) try { T.walkers = townWalkers(T, m, cfg); } catch (e) { console.warn("Town model: the walkers couldn't start", e); }
         if (!OFF.has("gps")) try { T.gps = townGps(T, m, F, ground, cfg, box); T.gps.places = places; } catch (e) { console.warn("Town model: the GPS couldn't start", e); }
+        if (cfg.place === "moo" && !OFF.has("race")) try { T.race = townRace(T, m, F, ground, box); } catch (e) { console.warn("Town model: the race couldn't start", e); }
         if (!OFF.has("mail")) try { T.mail = townMail(T); } catch (e) { console.warn("Town model: the post couldn't start", e); }
         if (!OFF.has("animal")) try { T.critter = townCritter(T, m, ground, cfg.place); } catch (e) { console.warn("Town model: the animal couldn't start", e); }
         F.hot = { f: () => toMode(!T.walk),
@@ -15986,7 +16011,7 @@ const handle = async (m, post) => {
     const hello = setInterval(() => { send("hi", 1); const now = performance.now(); for (const [id, t] of seen) if (now - t > 15000) { seen.delete(id); onLeave(id); } }, 4000);
     setTimeout(() => send("hi", 1), 1200);
     const bye = () => send("bye", 1); addEventListener("pagehide", bye);
-    return { makeAction: name => [(data, to) => send(name, data, to), cb => { acts[name] = cb; }], onPeerJoin: f => { onJoin = f; }, onPeerLeave: f => { onLeave = f; },
+    return { id: me, makeAction: name => [(data, to) => send(name, data, to), cb => { acts[name] = cb; }], onPeerJoin: f => { onJoin = f; }, onPeerLeave: f => { onLeave = f; },
       count: () => socks.filter(S => S.ok).length,
       leave() { bye(); dead = true; clearInterval(hello); removeEventListener("pagehide", bye); for (const S of socks) { clearInterval(S.ping); try { S.ws?.close(); } catch {} } } };
   }
@@ -16399,6 +16424,8 @@ const handle = async (m, post) => {
     const smitten = (d, id) => { const q = peers.get(id); if (!q) return; F.smitten = { id, until: performance.now() + 30000 }; toast(`\ud83d\udc98 ${q.name || "Someone"} gave you a love potion. You can't help following them for 30 seconds!`, 4000); };
     emoteBtn.onclick = () => { P.menu(); emoteBtn.blur(); };
     let room = null, sendPose = null, sendName = null, dead = false, lastSent = null, lastAt = 0, tick = 0;
+    // for a race (townRace): who you are in the room, who else is in it, their names, and the race's own messages
+    let sendRace = null; P.myId = () => room?.id || null; P.ids = () => [...peers.keys()]; P.nameOf = id => peers.get(id)?.name || null; P.raceSend = d => { try { sendRace?.(d); } catch {} };
     let asked = true; try { asked = !!(localStorage.getItem("an-player") || localStorage.getItem("an-player-asked")); } catch {}
     let askBox = null, askWrap = null;
     const askKeys = e => { if (askBox && !askBox.contains(e.target)) e.stopPropagation(); };  // (the game's keys wait until it's answered)
@@ -16560,6 +16587,7 @@ const handle = async (m, post) => {
         const [sc, gc] = room.makeAction("chat"); sendChat = sc; gc(chatted);
         const [sl, gl] = room.makeAction("potion"); sendPotion = sl; gl(smitten);
         const [sw, gw] = room.makeAction("power"); sendPower = sw; gw((raw, id) => { const q = peers.get(id), a = Array.isArray(raw) ? raw : [raw]; if (a[0] === 1 || a[0] === 2) T.car?.power?.(a[0], !!a[1], q?.name || "A player", !!a[2]); });
+        const [sx, gx] = room.makeAction("race"); sendRace = sx; gx((raw, id) => { try { T.race?.got?.(raw, id); } catch (e) { console.warn("Town model: a race message", e); } });
         const [sr, gr] = room.makeAction("ride"); sendRide = sr; gr((raw, id) => { const q = peers.get(id), on = Array.isArray(raw) ? raw[0] : raw, at = Array.isArray(raw) && raw.slice(1, 4).every(Number.isFinite) ? { along: raw[1], side: raw[2], dh: raw[3] } : null;
           if (on) riders.set(id, { possum: on === 2, at }); else riders.delete(id);
           if (q?.name && (!on || !riders.get(id)?.told)) { toast(on === 2 ? `${q.name}, the possum, is holding on to you!` : on ? `${q.name} has got in with you.` : `${q.name} has got out.`, 3500); if (on) riders.get(id).told = true; } });
@@ -17119,6 +17147,129 @@ const handle = async (m, post) => {
   // 35 m it finds a new way from where you are; within 15 m you've arrived. Queensland addresses come from the State's own address
   // finder (QldLocator, the same data as the map's streets); Inverloch's from OpenStreetMap. Driving, it keeps to one-way streets.
   // The streets are read and joined into a network the first time it's used, never mid-game unasked; nothing runs while it's off. ----
+  // ---- A race around Moorooka (Ash, 22 November 2026: "Add a race around moorooka, all players are teleported into a starting postion
+  // using all standard cars but keep their upgrades"). Jump to > Race around Moorooka: everyone in town goes to a place on the grid on
+  // Beaudesert Road, just past Mayfield Road, in one of the model's ordinary parked cars (not the golden car, not a bus), with their own
+  // upgrades. Held still for the countdown, then one lap of 4.4 km: south down Beaudesert Road, east along Evans Road, north up
+  // Tarragindi Road, west along Mayfield Road and back down Beaudesert Road to the line. A yellow line marks the way, a checkpoint
+  // every 120 m or so keeps it honest, and each player's progress goes round the room once a second for the places.
+  // The lap is the town's own street lines (one-way carriageways the way they run), worked out ahead of time (tools/race/course.py),
+  // so nothing is fetched or worked out mid-game: x, z in decimetres.
+  const MOO_RACE = [-640,-1166,-677,-918,-774,-739,-1252,-33,-1358,149,-1425,243,-1603,436,-2252,1003,-2600,1298,-2746,1505,-3011,1965,-3255,2436,-3326,2592,-3354,2765,-3353,2871,-3340,2963,-3146,4030,-3142,4165,-3269,4961,-3327,5179,-3491,5714,-3652,6230,-3828,6725,-4256,7997,-3991,8994,-3828,9540,-3754,9687,-3661,9798,-3580,9855,-3469,9898,-3368,9964,-1904,10210,-617,10419,412,10600,1420,10775,2622,10982,3744,11185,4523,11315,4668,10470,6065,9324,6386,7426,6025,7374,4864,7183,5107,5819,5513,5449,6367,3500,6375,3451,6381,3415,6386,1754,6435,1351,6533,788,6539,747,6519,336,6652,-86,6725,-547,6676,-565,6650,-583,6628,-608,6612,-636,6602,-667,6601,-725,6318,-785,5965,-902,5528,-908,4940,-1011,4128,-1153,3298,-1303,3103,-1339,2368,-1472,1371,-1648,868,-1737,390,-1823,-692,-2019,-829,-1992,-921,-1948,-713,-1542,-655,-1347];
+  function townRace(T, m, F, ground, box) {
+    const R = { frame() {}, dispose() {}, got() {}, open() {}, active: () => false };
+    if (!m.addParts || !m.nearestCar) return R;
+    const lin = hex => { const v = parseInt(hex.slice(1), 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255].map(c => Math.pow(c / 255, 2.2)); };
+    const fmtD = d => d < 1000 ? `${Math.max(10, Math.round(d / 10) * 10)} m` : `${(d / 1000).toFixed(1)} km`;
+    const fmtT = ms => { const s = Math.max(0, ms) / 1000, mn = Math.floor(s / 60); return `${mn}:${(s - mn * 60).toFixed(1).padStart(4, "0")}`; };
+    const ord = n => n + (n % 100 > 10 && n % 100 < 14 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th");
+    // the lap: a point every 4 m or less, and how far along the lap each one is
+    const X = [], Z = [], A = []; let L = 0;
+    { const c = MOO_RACE, n = c.length / 2;
+      for (let i = 0; i < n; i++) { const j = (i + 1) % n, ax = c[i * 2] / 10, az = c[i * 2 + 1] / 10, bx = c[j * 2] / 10, bz = c[j * 2 + 1] / 10, d = Math.hypot(bx - ax, bz - az), k = Math.max(1, Math.ceil(d / 4));
+        for (let q = 0; q < k; q++) { X.push(ax + (bx - ax) * q / k); Z.push(az + (bz - az) * q / k); A.push(L + d * q / k); } L += d; } }
+    const N = X.length;
+    const at = s => { s = ((s % L) + L) % L; let lo = 0, hi = N - 1; while (lo < hi) { const md = (lo + hi + 1) >> 1; if (A[md] <= s) lo = md; else hi = md - 1; }
+      const j = (lo + 1) % N, a = A[lo], b = j ? A[j] : L, t = b > a ? (s - a) / (b - a) : 0; return { x: X[lo] + (X[j] - X[lo]) * t, z: Z[lo] + (Z[j] - Z[lo]) * t }; };
+    const headAt = s => { const a = at(s - 8), b = at(s + 8); return Math.atan2(b.x - a.x, b.z - a.z); };  // the way the lap runs there (a car's heading: x += sin, z += cos)
+    // checkpoints: one every 120 m or so, the last on the line
+    const NG = Math.max(8, Math.round(L / 120)), GA = [], GP = []; for (let k = 0; k <= NG; k++) { GA.push(k * L / NG); GP.push(at(k * L / NG)); }
+    // the grid: two by two behind the line, 7 m between rows, either side of the carriageway's middle
+    const slot = i => { const row = i >> 1, side = i & 1 ? -1 : 1, s = L - 10 - row * 7, p = at(s), h = headAt(s); return { x: p.x + Math.cos(h) * 1.7 * side, z: p.z - Math.sin(h) * 1.7 * side, h }; };
+    // ---- the yellow line, the chequered strip across the road at the line and a chequered banner over it on two posts
+    let parts = null; const clear = () => { try { parts?.remove(); } catch {} parts = null; };
+    const draw = () => { clear(); const pos = [], nor = [], col = [], Y = lin("#ffc93c"), K = lin("#18181f"), W = lin("#f2f2f2"), G = lin("#9aa0a8");
+      const quad = (a, b, c, d, k) => { for (const q of [a, b, c, a, c, d]) { pos.push(q[0], q[1], q[2]); nor.push(0, 1, 0); col.push(k[0], k[1], k[2]); } };
+      for (let s = 6; s < L - 4; s += 6) { const a = at(s), b = at(s + 3), dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz) || 1, nx = -dz / d * 0.22, nz = dx / d * 0.22, ya = ground(a.x, a.z) + 0.16, yb = ground(b.x, b.z) + 0.16;
+        quad([a.x - nx, ya, a.z - nz], [a.x + nx, ya, a.z + nz], [b.x + nx, yb, b.z + nz], [b.x - nx, yb, b.z - nz], Y); }
+      const s0 = at(0), h0 = headAt(0), fx = Math.sin(h0), fz = Math.cos(h0), lx = Math.cos(h0), lz = -Math.sin(h0), g0 = ground(s0.x, s0.z);
+      const on = (u, v, dy) => { const x = s0.x + lx * u + fx * v, z = s0.z + lz * u + fz * v; return [x, ground(x, z) + dy, z]; };  // u across the road, v along it
+      for (let i = 0; i < 16; i++) for (let j = 0; j < 2; j++) { const u = -8 + i, v = -0.9 + j * 0.9; quad(on(u, v, 0.17), on(u + 1, v, 0.17), on(u + 1, v + 0.9, 0.17), on(u, v + 0.9, 0.17), (i + j) % 2 ? K : W); }
+      const up = (u, y) => [s0.x + lx * u, g0 + y, s0.z + lz * u];
+      for (const u of [-8.6, 8.6]) for (const [ax, az] of [[0.15 * lx, 0.15 * lz], [0.15 * fx, 0.15 * fz]]) { const b = up(u, 0); quad([b[0] - ax, b[1], b[2] - az], [b[0] + ax, b[1], b[2] + az], [b[0] + ax, b[1] + 6, b[2] + az], [b[0] - ax, b[1] + 6, b[2] - az], G); }
+      for (let i = 0; i < 18; i++) for (let j = 0; j < 2; j++) { const u = -8.6 + i * 17.2 / 18, du = 17.2 / 18, y = 5.2 + j * 0.5; quad(up(u, y), up(u + du, y), up(u + du, y + 0.5), up(u, y + 0.5), (i + j) % 2 ? K : W); }
+      parts = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.6, doubleSide: true, matrix: new BS.B.THREE.Matrix4().elements }]); };
+    // ---- what's on the screen: the card (place, time, the way), the big countdown, and one panel for starting and for the results
+    const card = document.createElement("div"); card.className = "bs-race"; card.hidden = true; card.setAttribute("role", "status");
+    card.innerHTML = `<svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 16-7-4-7 4z" fill="#ffc93c"/></svg><div><b></b><span></span></div><button type="button" aria-label="Leave the race">×</button>`;
+    const arr = card.querySelector(".arr"), cb = card.querySelector("b"), cs = card.querySelector("span");
+    const big = document.createElement("div"); big.className = "bs-race-n"; big.hidden = true; big.setAttribute("aria-live", "assertive");
+    const panel = document.createElement("div"); panel.className = "bs-race-ask"; panel.hidden = true; panel.setAttribute("role", "dialog"); panel.setAttribute("aria-label", "Race around Moorooka");
+    ($("bsFly") || box).append(card, big, panel);  // over the town's own labels and buttons (number 6's balcony button sat on Start)
+    let race = null, dead = false, hudT = 0, bigT = 0, lastN = "";
+    const here = () => { const w = T.car?.in ? T.car.where?.() : null; return w && w.x != null ? [w.x, w.z] : [F.pos.x, F.pos.z]; };
+    const me = () => T.peers?.myId?.() || "me";
+    const send = d => T.peers?.raceSend?.(d);
+    const say = (t, ms = 900) => { big.textContent = t; big.hidden = false; bigT = performance.now() + ms; };
+    const end = () => { if (T.car) T.car.wait = false; race = null; clear(); card.hidden = true; big.hidden = true; panel.hidden = true; };
+    const leaveRace = () => { if (race && race.state !== "done") send(["out", race.id]); end(); };
+    card.querySelector("button").onclick = e => { leaveRace(); e.currentTarget.blur(); };
+    // everyone in it, in order: finished first (by time), then the furthest round
+    const standings = () => { const all = [{ id: me(), name: "You", m: race.m, fin: race.fin, you: true }, ...[...race.others].map(([id, o]) => ({ id, ...o }))];
+      return all.sort((a, b) => (a.fin && b.fin ? a.fin - b.fin : a.fin ? -1 : b.fin ? 1 : b.m - a.m)); };
+    const results = () => { const rows = standings(), ol = document.createElement("ol");
+      for (const r of rows) { const li = document.createElement("li"), sm = document.createElement("small"); li.append(r.you ? "You" : r.name || "A player", " ");
+        sm.textContent = r.fin ? fmtT(r.fin) : `still racing, ${fmtD(L - r.m)} to go`; li.append(sm); ol.append(li); }
+      const h = document.createElement("h3"); h.textContent = rows.every(r => r.fin) ? "Results" : "Results so far";
+      const row = document.createElement("div"); row.className = "row"; const x = document.createElement("button"); x.type = "button"; x.textContent = "Close"; x.onclick = end; row.append(x);
+      panel.replaceChildren(h, ol, row); panel.hidden = false; };
+    // ---- starting one: from Jump to, a word on what happens, then Start
+    R.open = () => { if (dead) return; if (race) { if (race.state === "done") results(); return; }
+      const n = (T.peers?.ids?.() || []).length, h = document.createElement("h3"), p1 = document.createElement("p"), p2 = document.createElement("p"), row = document.createElement("div");
+      h.textContent = "Race around Moorooka"; p1.textContent = `One lap, ${fmtD(L)}: down Beaudesert Road, along Evans Road, up Tarragindi Road and back along Mayfield Road. Follow the yellow line.`;
+      p2.textContent = n ? `You and the ${n === 1 ? "other player" : `${n} other players`} here go to the start line in standard cars, each with their own upgrades.` : "No one else is here right now, so it's a time trial: you against the clock, in a standard car with your upgrades.";
+      row.className = "row"; const go = document.createElement("button"), x = document.createElement("button"); go.type = x.type = "button"; go.className = "go"; go.textContent = "Start the race"; x.textContent = "Cancel";
+      x.onclick = () => { panel.hidden = true; };
+      go.onclick = () => { panel.hidden = true; const ids = [me(), ...(T.peers?.ids?.() || [])].filter((v, i, a) => a.indexOf(v) === i).sort(), rid = Math.random().toString(36).slice(2, 8), wait = ids.length > 1 ? 9000 : 6000;
+        send(["go", rid, wait, ids, playerName()]); begin(rid, ids, wait, null); };
+      row.append(go, x); panel.replaceChildren(h, p1, p2, row); panel.hidden = false; setTimeout(() => go.focus(), 30); };
+    // ---- on the grid: your place, a car on it, held still until Go
+    const begin = (rid, ids, wait, from) => { if (dead || (race && race.state !== "done")) return;
+      const i = ids.indexOf(me()); if (i < 0) return;
+      end(); T.gps?.stop?.(); const now = performance.now();
+      race = { id: rid, i, t0: now + wait, state: "grid", gate: 0, m: 0, fin: 0, others: new Map, seated: false, tries: 0, tryAt: 0, sentAt: 0 };
+      ids.forEach(id => { if (id !== me()) race.others.set(id, { name: T.peers?.nameOf?.(id) || "A player", m: 0, fin: 0, last: 0 }); });
+      draw(); card.hidden = false; if (T.car) T.car.wait = true; seat();
+      toast(from ? `${from} has started a race around Moorooka! You're on the grid.` : ids.length > 1 ? "You're on the grid. Get ready!" : "On the grid. Get ready!", 3200); R.frame(true); };
+    const seat = () => { const g = slot(race.i); race.tryAt = performance.now(); race.tries++; race.seated = !!T.toStart?.(g.x, g.z, g.h);
+      if (race.seated && T.car) T.car.wait = true; };
+    // messages from the others: a race starting, where each one is, someone leaving
+    R.got = (raw, id) => { if (dead || !Array.isArray(raw)) return; const [k, rid] = raw;
+      if (k === "go") { const ids = Array.isArray(raw[3]) ? raw[3].filter(v => typeof v === "string").slice(0, 32) : [], wait = Math.max(3000, Math.min(15000, +raw[2] || 0));
+        begin(String(rid), ids, wait, String(raw[4] || T.peers?.nameOf?.(id) || "A player").replace(/[<>]/g, "").slice(0, 16)); return; }
+      if (!race || String(rid) !== race.id) return; const o = race.others.get(id); if (!o) return;
+      if (k === "at") { o.m = Math.max(0, Math.min(L, +raw[2] || 0)); o.fin = Math.max(0, +raw[3] || 0); o.last = performance.now(); o.name = T.peers?.nameOf?.(id) || o.name; if (race.state === "done" && !panel.hidden) results(); }
+      else if (k === "out") { race.others.delete(id); if (race.state === "done" && !panel.hidden) results(); } };
+    R.active = () => !!race;
+    R.frame = force => { if (!race || dead) return; const now = performance.now();
+      if (!big.hidden && now > bigT) big.hidden = true;
+      if (race.state === "grid") { const left = race.t0 - now;
+        if (!race.seated && race.tries < 4 && now - race.tryAt > 700) seat();
+        const n = left <= 3000 && left > 0 ? String(Math.ceil(left / 1000)) : ""; if (n && n !== lastN) { say(n, 1100); T.snd?.pop?.(); } lastN = n;
+        if (left <= 0) { race.state = "go"; if (T.car) T.car.wait = false; say("Go!", 1100); T.snd?.pop?.();
+          if (!race.seated) toast("Couldn't get you a car: hop in any car close by and follow the yellow line.", 4000); } }
+      if (!force && now - hudT < 200) return; hudT = now;
+      const [x, z] = here();
+      if (race.state === "go") { const k = race.gate + 1, d = Math.hypot(GP[k].x - x, GP[k].z - z);
+        if (d < 26) { race.gate = k; if (k >= NG) { race.fin = now - race.t0; race.state = "done"; race.m = L; send(["at", race.id, Math.round(L), Math.round(race.fin)]); race.sentAt = now;
+            const pl = standings().findIndex(r => r.you) + 1; say(race.others.size ? `${ord(pl)}!` : "Finished!", 2200); T.snd?.pop?.(); results(); } }
+        if (race.state === "go") race.m = Math.max(GA[race.gate], Math.min(GA[race.gate + 1], GA[race.gate + 1] - Math.hypot(GP[race.gate + 1].x - x, GP[race.gate + 1].z - z))); }
+      // where you are, to the others, once a second (and for half a minute after you finish, so it gets there)
+      if (race.state !== "grid" && now - race.sentAt > 1000 && (race.state === "go" || now - race.t0 - race.fin < 30000)) { race.sentAt = now; send(["at", race.id, Math.round(race.m), Math.round(race.fin)]); }
+      // anyone who never says where they are (an older copy of the app, or gone) is dropped after 20 s
+      if (now > race.t0 + 20000) for (const [id, o] of race.others) if (!o.fin && now - (o.last || race.t0) > 20000) race.others.delete(id);
+      const n = race.others.size + 1, pl = standings().findIndex(r => r.you) + 1;
+      if (race.state === "grid") { cb.textContent = "On the grid"; cs.textContent = `${n > 1 ? `${n} racing` : "Time trial"} · starts in ${Math.max(0, Math.ceil((race.t0 - now) / 1000))} s`; }
+      else if (race.state === "go") { const k = race.gate + 1, off = Math.hypot(GP[k].x - x, GP[k].z - z) > GA[k] - GA[race.gate] + 60;
+        cb.textContent = n > 1 ? `${ord(pl)} of ${n}` : "Time trial"; cs.textContent = off ? "Missed a checkpoint: back to the yellow line" : `${fmtT(now - race.t0)} · ${fmtD(L - race.m)} to go`; }
+      else { cb.textContent = n > 1 ? `Finished ${ord(pl)} of ${n}` : "Finished!"; cs.textContent = `${fmtT(race.fin)} · tap × to close`; }
+      // the arrow: towards the next checkpoint (or the line), turned to how you're facing
+      const k = Math.min(NG, race.gate + 1), p = race.state === "go" ? GP[k] : at(Math.min(race.m + 30, L)), want = Math.atan2(-(p.x - x), -(p.z - z)), rel = Math.atan2(Math.sin(want - F.yaw), Math.cos(want - F.yaw));
+      arr.style.transform = `rotate(${(-rel * 180 / Math.PI).toFixed(0)}deg)`; };
+    R.dispose = () => { leaveRace(); dead = true; card.remove(); big.remove(); panel.remove(); };
+    R.lap = { L, NG, slot, at };  // (for tests)
+    return R;
+  }
   function townGps(T, m, F, ground, cfg, box) {
     const G = { places: [] }; let dead = false, net = null, netP = null, route = null, parts = null, hudT = 0, offT = 0, rerouteT = 0, ctl = null, sugT = 0, lastPick = null;
     const lin = hex => { const v = parseInt(hex.slice(1), 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255].map(c => Math.pow(c / 255, 2.2)); };
@@ -18731,6 +18882,7 @@ const handle = async (m, post) => {
         // driving itself (a click on the road, or Drive for me): until a driving key, the stick, the handbrake or the Boost button takes
         // it back. (Shift is left out: the < and > keys are often pressed with it, and that would boost the car out of it)
         if (auto) { if (Math.abs(thr) > 0.05 || Math.abs(str) > 0.05 || has("Space") || F.hand || F.boost) autoEnd(); else { [thr, str] = autoStep(dt); boost = false; } }
+        if (C.wait) { thr = 0; boost = false; car.v = 0; car.teamTil = 0; }  // on a race's grid: held still until Go (you can still look round)
         let v = car.v; const brake = has("Space") || !!F.hand;
         // the boost runs on a charge: about four seconds' worth, back in ten. Run right out, it waits until a fifth is back
         // Boost goes at full push forward whatever the stick says, unless the stick is pulled back (its lower half): then it boosts
@@ -19276,6 +19428,12 @@ const handle = async (m, post) => {
       for (const G of [...owns.filter(G => !G.takenBy), ...(T.traffic?.cars || []).filter(D => D.x != null && !D.away && !D.bus)]) { const d = Math.hypot(G.x - x, G.z - z); if (d < r && (!best || d < best.distance)) best = { own: G, gold: G.gold, distance: d, x: G.x, z: G.z, heading: G.h }; }
       const c = parked(x, z, r); return c && (!best || c.distance < best.distance) ? c : best; };
     C.enterCar = c => { if (veh || !c) return false; want = c; try { C.enter(); } finally { want = null; } return veh === "car"; };
+    // a race (townRace): out of whatever you're in, then into a standard car (one of the model's parked ones, brought to your place on
+    // the grid: not the golden car or a bus), with your upgrades as always
+    C.out = () => { if (veh) leave(false); };
+    C.grid = (x, z, h) => { if (veh) leave(false); if (!m.nearestCar || !m.driveCar) return false;
+      for (const [ox, oz] of [[0, 0], [150, 0], [-150, 0], [0, 150], [0, -150], [300, 300]]) { const c = parked(x + ox, z + oz, 2500); if (c && !c.bus) return C.enterCar({ ...c, x, z, heading: h, distance: 0 }); }
+      return false; };
     C.enter = () => { if (!veh && F.drunk) { toast("You've had a few at the Willow. No driving till the doctor at the Moorooka Medical Hub (by Woolworths) has checked you.", 3800); return true; }  // (Ash, 16 November 2026: "you can get drunk")
       if (veh === "ride" && ride?.local && ride.local.v > 1.5) { toast("Wait for the next stop: the bus stops every few hundred metres.", 2600); return true; }
       if (veh) { if (veh === "plane" && plane.heli && plane.air) return toast(touch ? "Land first: hold Down until it is on the ground." : "Land first: hold the up arrow (or C) until it is on the ground."), true;
@@ -19548,7 +19706,7 @@ const handle = async (m, post) => {
     // (the worker view sets the camera first, so names and bubbles are placed from where you really look; the traffic, the animal,
     // number 6 and the people out the front had been left out of every frame by a note on the same line, from #128 to 15 November 2026)
     T.car?.frame(); T.me?.frame(); T.peers?.frame(); T.here?.frame();
-    T.traffic?.frame(); T.critter?.frame(); T.no6?.frame(); T.bal6?.frame(); T.home6?.frame(); T.mayor?.frame(); T.council?.frame(); T.locals?.frame(); T.yards?.frame(); T.walkers?.frame(); T.gps?.frame();
+    T.traffic?.frame(); T.critter?.frame(); T.no6?.frame(); T.bal6?.frame(); T.home6?.frame(); T.mayor?.frame(); T.council?.frame(); T.locals?.frame(); T.yards?.frame(); T.walkers?.frame(); T.gps?.frame(); T.race?.frame();
     // flying: held down at the lowest you can fly (Down, or C) for a moment, and you are on foot there
     if (!T.walk && !T.tween && !F.drive && F.floor && F.hot?.f) { const low = F.pos.y <= F.floor() + 0.1, down = F.vert < -0.3 || F.keys.has("KeyC"), now = performance.now();
       if (!(low && down)) T.downAt = 0; else if (!T.downAt) T.downAt = now; else if (now - T.downAt > 1200) { T.downAt = 0; F.hot.f(); } }
@@ -19567,7 +19725,7 @@ const handle = async (m, post) => {
     BS.town = null; T.dead = true; T.on = false; T.ungest?.(); T.unlay?.(); T.unflood?.();
     T.streets?.dispose(); T.streets = null; $("bsNamesBtn").hidden = true;
     T.admin?.dispose(); T.admin = null;
-    if (T.listOut) { document.removeEventListener("pointerdown", T.listOut, true); T.listOut = null; } T.gps?.dispose(); T.gps = null; T.car?.dispose(); T.car = null; T.peers?.dispose(); T.peers = null; T.me?.dispose(); T.me = null; T.here?.dispose(); T.here = null; T.yards?.dispose(); T.yards = null; T.bowls?.dispose(); T.bowls = null; T.walkers?.dispose(); T.walkers = null; T.traffic?.dispose(); T.traffic = null; T.mayor?.dispose(); T.mayor = null; T.council?.dispose(); T.council = null; T.critter?.dispose(); T.critter = null; T.home6?.dispose(); T.home6 = null; T.bal6?.dispose(); T.bal6 = null; T.locals?.dispose(); T.locals = null; T.mail?.dispose(); T.mail = null;
+    if (T.listOut) { document.removeEventListener("pointerdown", T.listOut, true); T.listOut = null; } T.race?.dispose(); T.race = null; T.gps?.dispose(); T.gps = null; T.car?.dispose(); T.car = null; T.peers?.dispose(); T.peers = null; T.me?.dispose(); T.me = null; T.here?.dispose(); T.here = null; T.yards?.dispose(); T.yards = null; T.bowls?.dispose(); T.bowls = null; T.walkers?.dispose(); T.walkers = null; T.traffic?.dispose(); T.traffic = null; T.mayor?.dispose(); T.mayor = null; T.council?.dispose(); T.council = null; T.critter?.dispose(); T.critter = null; T.home6?.dispose(); T.home6 = null; T.bal6?.dispose(); T.bal6 = null; T.locals?.dispose(); T.locals = null; T.mail?.dispose(); T.mail = null;
     T.unbar?.();
     if (BS.fly) { const F = BS.fly; F.walk = F.speed = F.floor = F.hot = F.drive = null; F.ceil = 0; F.lim = null; }  // Explore, if it carries on, is its old self
     try { T.model?.dispose(); } catch {}

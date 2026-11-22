@@ -2485,6 +2485,31 @@ balcony model. You'll need to merge the models a bit as neither are perfect."
 - **Tested:** both versions from the back, side, front and the air; walking up the new stairs to the hexagon and into the
   balustrade; the two-finger stick test at phone size in all three towns, and again after two minutes; tapping the button on a phone.
 
+## A race around Moorooka (22 November 2026)
+
+Ash: "Add a race around moorooka, all players are teleported into a starting postion using all standard cars but keep their upgrades".
+
+- **Starting one:** Jump to, then Race around Moorooka, then Start the race. Everyone in town at that moment is sent the start
+  (`room.makeAction("race")`, message `["go", id, wait, ids, name]`); each one's place on the grid is their place in the sorted list.
+- **The grid:** on Beaudesert Road's southbound carriageway just before the line (a little past Mayfield Road), two by two, 7 m
+  between rows. `T.toStart` takes you out of whatever you're in (car, plane, possum, drone, a ride), out of Explore mode, onto your
+  feet beside your place, then `T.car.grid` brings one of the model's ordinary parked cars to it and puts you in (never the golden
+  car or a bus). Upgrades work as always: they belong to you, not the car. `T.car.wait` holds the car still until Go (looking round
+  still works). The countdown is 9 s with others, 6 s on your own (a time trial).
+- **The lap:** 4.4 km, south down Beaudesert Road, east along Evans Road, north up Tarragindi Road, west along Mayfield Road and back
+  down Beaudesert Road to the line. It is the town's own street lines (`MOO_RACE` in `app.html`, made by `tools/race/course.py`:
+  one-way carriageways only the way they run, main roads preferred), so nothing is fetched or worked out when a race starts. A
+  yellow dashed line marks it, with a chequered strip and banner at the line.
+- **Keeping it honest:** a checkpoint about every 120 m (36 of them), passed within 26 m, in order. Cut a corner and miss one and
+  the card says so until you go back. Progress is the checkpoints passed plus how close you are to the next.
+- **The card:** your place, the time and how far to go, with an arrow to the next checkpoint; × leaves the race. Each player sends
+  where they're up to once a second (`["at", id, metres, finish time]`), so places update as you go. Anyone who never sends (an older
+  copy of the app) drops off after 20 s. At the line: your place, your time, and the results so far, filling in as others finish.
+- **Lag:** building the line and banner is one part of about 1,600 triangles, once, at the start; each frame does one distance check
+  and the card at most five times a second.
+- **Code:** `townRace` in `app.html` (`T.race`); `C.wait`, `C.out` and `C.grid` in `townCar`; `T.toStart` in the town's setup;
+  `id` on `townRelay`; `myId`, `ids`, `nameOf` and `raceSend` on `townPeers`. Turn off with `OFF` key `race`.
+
 ## Evans Road and Fairfield Road: the painted middle (22 November 2026)
 
 Ash: "polish up other streets but avoid using much memory or adding load time. Low res". The map has both roads as two carriageways,
