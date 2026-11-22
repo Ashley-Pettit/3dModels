@@ -2295,6 +2295,14 @@ building triangles.
 aerial for its roof, `add_set.py app.html picks.json <roofs> "<note>"`, rebuild, save what `window.anSetRec` is told, then
 `clear_fronts.py ... --write`.
 
+### Part 2 of the houses set on their slope (22 November 2026)
+
+- The next 100 inside Moorooka (1.37 to 1.65 m of wall in the ground), 200 so far; 1,828 left at half a metre or more (1,002 inside
+  Moorooka). Same pipeline as part 1; roofs again from the aerial photo, house by house. Across the 200: 192 with a closed-in lower
+  level and 8 on stumps, 119 with stairs (55 straight, 64 along the wall), 33 garage doors, 14 with no wall facing a street.
+- `pick_sunk.py` only left out the first house on each line of `MOO_SET` as already done; it now leaves out all of them (found before
+  anything was built from it).
+
 ## GPS: directions to an address (22 November 2026)
 
 Ash: "Can you add a gps in the game to navigate to an address?"
@@ -2526,3 +2534,38 @@ middle, its small raised islands, Evans Road's raised strip (it is drawn as pain
 model has each as one 6 m lane, and the traffic drives down its middle), and the other roads the map has as two carriageways
 (Fernvale, Sherwood, Toohey and Orange Grove Roads, Muriel Avenue, Fairlie Terrace, King Arthur Terrace, Tennyson Memorial Avenue,
 and the parts of Ipswich Road with no median yet): each needs a look at the photograph first.
+
+## The places Google Maps had and the model did not (22 November 2026)
+
+Ash: "Add them" (the four from the shops check above). Each was looked into first, and they did not all turn out to be additions.
+
+- **Bugsy's Fish & Chips, 293 Beaudesert Road.** Google Maps has it trading, and its place is inside the building on the corner of
+  Keats Street that the model called Star Seafood (fish and chips; the name came from the map's older data). Google Maps has no Star
+  Seafood. So it is taken as the same shop under its new name, and the front is renamed (its pole sign, its tag and Jump to), not a
+  second fish and chip shop added to the same building. The sign keeps the old sign's blue and white: there is no photo of the new
+  one. `MOO_FOOD` (the food list) still says Star Seafood.
+- **Auto Masters, 1115 Ipswich Road.** It shares the address with Starbucks. Google Maps puts it 1.6 m outside the Starbucks
+  building's other side, the one that faces Unwin Street, so it has a sign on that wall and a place in Jump to. This is the best that
+  is known, not something seen: the 2022 aerial photograph shows the lot still empty, and its workshop may be a building of its own
+  that the model has not got.
+- **Dufanda, a barber in the Rannchhod Arcade (shop 19, 197).** On the arcade's tenant board with K:B Barbershop, which Google Maps
+  has at the same shop, and in the arcade's tag. The board has ten lines now and its lettering is a fifth smaller to fit.
+- **Umdorman Cafe, 173 Beaudesert Road: not added.** Must Do Brisbane's page for it (1/173, the same phone number as Google's
+  listing) says it has permanently closed, and the Street View the row was drawn from has Habos Kitchen, JB Stevenson and the
+  tobacconist at 173 and no Umdorman. Google's listing looks to be a leftover.
+
+`tools/ground/shop_wall.py` finds a business's building and the wall that faces its street from `town.json` alone (numpy only; it
+gives the same wall as the app has for Starbucks and for 104 Beaudesert Road). `tools/ground/shops.py` does it from the lot survey
+and needs `shapely`.
+
+### Street View for the houses set on their slope: started (22 November 2026)
+
+Ash: "Stop no point without google images", then, with Chrome on his PC connected, "start with redo of the 100 you already do".
+
+- Street View opens through Chrome with `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=<nearest point of the street>&heading=<towards the house>&fov=60`.
+  Give it ten seconds: at five the picture is still black.
+- 12 of part 1's 100 looked at so far; 7 could be read and are in `MOO_SET` (`tools/houses/streetview-part1.json`, written in by
+  `tools/houses/apply_sv.py`): wall colour, the colour under the floor, closed in or on stumps, whether the front door is at the lower
+  level, and whether there is a garage door (`moorooka-model.js ?v=64` reads `d` and `g`). The other 5 were behind trees, blurred by
+  Google or did not draw. 88 of part 1 and all of part 2 are still by rule.
+- `streetview-part1.json` lists the houses in the order they were picked (`order`), so the next chat carries on from the 13th.
