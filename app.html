@@ -1413,6 +1413,9 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 .bs-gps-box li button { display: block; width: 100%; min-height: 42px; padding: 6px 10px; border: 0; border-radius: 10px; background: none; color: #fff; font: 600 0.9rem/1.3 var(--ui); text-align: left; cursor: pointer; }
 .bs-gps-box li button:hover, .bs-gps-box li button:focus-visible { background: rgba(255, 255, 255, 0.1); }
 .bs-gps-box small { display: block; opacity: 0.7; font: 500 0.75rem/1.3 var(--ui); }
+.bs-gps-box .how { display: flex; gap: 4px; margin: 6px 0 0; padding: 3px; border-radius: 12px; background: rgba(255, 255, 255, 0.08); }
+.bs-gps-box .how button { flex: 1; min-height: 38px; border: 0; border-radius: 9px; background: none; color: #fff; font: 700 0.86rem var(--ui); cursor: pointer; }
+.bs-gps-box .how button[aria-checked="true"] { background: #fff; color: #1b1830; }
 .bs-gps-box p { margin: 8px 6px 2px; font: 600 0.8rem/1.4 var(--ui); opacity: 0.88; }
 .bs-gps { pointer-events: auto; position: absolute; z-index: 4; left: 50%; top: calc(104px + env(safe-area-inset-top)); transform: translateX(-50%); width: max-content; max-width: min(420px, calc(100% - 32px)); box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 7px 7px 7px 10px; border-radius: 14px; background: #2f6fe0; color: #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35); }
 .bs-gps div { min-width: 0; }
@@ -17411,8 +17414,12 @@ const handle = async (m, post) => {
       const path = [], nms = []; for (let i = t; i >= 0; i = prev[i]) { path.push(i); nms.push(pname[i]); } path.reverse(); nms.reverse(); return { path, names: nms, d: Math.min(viaA, viaB) }; };
     // ---- what's on the screen: the address box, the card with the next turn, the line and the pin
     const boxEl = document.createElement("div"); boxEl.className = "bs-gps-box"; boxEl.hidden = true; boxEl.setAttribute("role", "dialog"); boxEl.setAttribute("aria-label", "GPS: where to?");
-    boxEl.innerHTML = `<form><input type="text" autocomplete="off" autocapitalize="words" enterkeyhint="search" placeholder="Address or place, e.g. 12 Mayfield Road" aria-label="Address or place to go to"><button type="button" class="x">Cancel</button></form><ul role="listbox"></ul><p hidden></p>`;
+    boxEl.innerHTML = `<form><input type="text" autocomplete="off" autocapitalize="words" enterkeyhint="search" placeholder="Address or place, e.g. 12 Mayfield Road" aria-label="Address or place to go to"><button type="button" class="x">Cancel</button></form><div class="how" role="radiogroup" aria-label="How to get there"><button type="button" role="radio" data-how="you">You drive</button><button type="button" role="radio" data-how="auto">Autodrive</button></div><ul role="listbox"></ul><p hidden></p>`;
     const inp = boxEl.querySelector("input"), ul = boxEl.querySelector("ul"), note = boxEl.querySelector("p");
+    // You drive (the line shows the way) or Autodrive (the car takes you there, like a hoon): remembered for next time
+    const HOW_KEY = "an3d-gps-how"; let how = "you"; try { if (localStorage.getItem(HOW_KEY) === "auto") how = "auto"; } catch {}
+    const howShow = () => { for (const b of boxEl.querySelectorAll("[data-how]")) b.setAttribute("aria-checked", String(b.dataset.how === how)); }; howShow();
+    boxEl.querySelector(".how").onclick = e => { const b = e.target.closest("[data-how]"); if (!b) return; how = b.dataset.how; howShow(); try { localStorage.setItem(HOW_KEY, how); } catch {} inp.focus(); };
     const card = document.createElement("div"); card.className = "bs-gps"; card.hidden = true; card.setAttribute("role", "status");
     card.innerHTML = `<svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 16-7-4-7 4z" fill="#fff"/></svg><div><b></b><span></span></div><button type="button" aria-label="Stop the GPS">×</button>`;
     const arr = card.querySelector(".arr"), cb = card.querySelector("b"), cs = card.querySelector("span");
@@ -17450,7 +17457,11 @@ const handle = async (m, post) => {
           [x, z] = m.fromLatLon(lat, lon); }
         await load(); if (dead) return; const b = net.bb;
         if (!(x > b[0] && x < b[2] && z > b[1] && z < b[3])) return say("That's outside this map. Pick somewhere in town.");
-        lastPick = { x, z, label: s.text }; G.close(); start(lastPick); }
+        lastPick = { x, z, label: s.text, auto: how === "auto" }; G.close();
+        // Autodrive: into the nearest car first (within 300 m) if you're on foot
+        if (lastPick.auto && !T.car?.in) { const C = T.car, c = C?.carNear?.(F.pos.x, F.pos.z, 300);
+          if (!c || !C.enterCar(c)) { lastPick.auto = false; toast("There's no car close enough for Autodrive, so here's the way. Get in a car and pick the address again.", 4500); } }
+        start(lastPick); }
       catch { say("Couldn't look that up just now. Check you're online and try again."); } };
     // where you are: your car, or you
     const here = () => { const w = T.car?.in ? T.car.where?.() : null; return w && w.x != null ? [w.x, w.z] : [F.pos.x, F.pos.z]; };
@@ -17501,13 +17512,15 @@ const handle = async (m, post) => {
       for (let j = 0; j < np; j++) { let f = 1; for (let k = Math.max(0, j - 2); k <= Math.min(np - 1, j + 2); k++) f = Math.min(f, fr[k] + Math.abs(k - j) * 0.34);
         lp[j * 2] = pts[j * 2] + lx[j] * Math.min(1, f); lp[j * 2 + 1] = pts[j * 2 + 1] + lz[j] * Math.min(1, f);
         if (j > 0 && (lp[j * 2] - lp[j * 2 - 2]) * (pts[j * 2] - pts[j * 2 - 2]) + (lp[j * 2 + 1] - lp[j * 2 - 1]) * (pts[j * 2 + 1] - pts[j * 2 - 1]) < 0) { lp[j * 2] = lp[j * 2 - 2]; lp[j * 2 + 1] = lp[j * 2 - 1]; } }
-      route = { pts: lp, at, turns, dest, i: 0, on: false, car: !!T.car?.in }; draw(lp, dest); card.hidden = false; hudT = 0; document.getElementById("bsGpsBtn")?.setAttribute("aria-pressed", "true"); G.frame(true); };
+      route = { pts: lp, at, turns, dest, i: 0, on: false, car: !!T.car?.in, t0: performance.now() }; draw(lp, dest);
+      if (dest.auto && T.car?.in && T.car.drivePath?.(lp, { hoon: true }) && !dest.told) { dest.told = true;
+        toast(matchMedia("(pointer: coarse)").matches ? "Autodrive: hold on! Touch the Drive stick to take the wheel back." : "Autodrive: hold on! Any driving key takes the wheel back.", 4000); } card.hidden = false; hudT = 0; document.getElementById("bsGpsBtn")?.setAttribute("aria-pressed", "true"); G.frame(true); };
     G.open = () => { if (dead) return; boxEl.hidden = false; inp.value = ""; show([]); budget = 24;
       say(route ? `Going to ${route.dest.label}. Pick somewhere else, or Cancel.` : net ? "" : "GPS warming up. Type an address now: the way shows as soon as it's ready."); load().catch(() => {}); mark(); setTimeout(() => inp.focus(), 30); };
     G.close = () => { boxEl.hidden = true; ctl?.abort(); inp.blur(); };
     G.routePts = () => route && { pts: Array.from(route.pts), dest: route.dest };  // (for tests)
     G.netInfo = () => net && { nodes: net.X.length, pieces: net.SA.length, ms: net.ms };  // (for tests: how big, and how long it took to build)
-    G.stop = () => { route = null; clearParts(); card.hidden = true; document.getElementById("bsGpsBtn")?.setAttribute("aria-pressed", "false"); };
+    G.stop = () => { if (route?.dest?.auto) T.car?.autoStop?.(); route = null; clearParts(); card.hidden = true; document.getElementById("bsGpsBtn")?.setAttribute("aria-pressed", "false"); };
     G.active = () => !!route;
     G.frame = force => { if (!route || dead) return; const now = performance.now(); if (!force && now - hudT < 250) return; hudT = now;
       const R = route, [x, z] = here(), n = R.at.length; let bi = R.i, bd = Infinity, bt = 0;
@@ -17515,6 +17528,7 @@ const handle = async (m, post) => {
         if (d < bd) { bd = d; bi = i; bt = t; } }
       R.i = bi; const along = R.at[bi] + (R.at[Math.min(n - 1, bi + 1)] - R.at[bi]) * bt, left = R.at[n - 1] - along, toDest = Math.hypot(R.dest.x - x, R.dest.z - z);
       if (toDest < 15 || left < 12) { const lab = R.dest.label; G.stop(); toast(`You've arrived: ${lab}.`, 3200); return; }
+      if (R.dest.auto && now - R.t0 > 1500 && !T.car?.autoOn?.()) R.dest.auto = false;  // you've taken the wheel (or got out): the line stays
       if (R.car !== !!T.car?.in && now - rerouteT > 1500) { rerouteT = now; start(R.dest); return; }  // got in or out of a car: driving keeps to the one-ways
       if (bd < 35) R.on = true;  // (off the route only counts once you've been on it: you may start off in a park)
       if (R.on && bd > 35) { if (!offT) offT = now; if (now - offT > 1500 && now - rerouteT > 3000) { rerouteT = now; offT = 0; start(R.dest); return; } } else offT = 0;
@@ -19009,9 +19023,10 @@ const handle = async (m, post) => {
       } else if (veh === "car") {
         // driving itself (a click on the road, or Drive for me): until a driving key, the stick, the handbrake or the Boost button takes
         // it back. (Shift is left out: the < and > keys are often pressed with it, and that would boost the car out of it)
-        if (auto) { if (Math.abs(thr) > 0.05 || Math.abs(str) > 0.05 || has("Space") || F.hand || F.boost) autoEnd(); else { [thr, str] = autoStep(dt); boost = false; } }
+        // (Autodrive from the GPS drives like a hoon: it works the boost and the handbrake itself too)
+        let aHand = false; if (auto) { if (Math.abs(thr) > 0.05 || Math.abs(str) > 0.05 || has("Space") || F.hand || F.boost) autoEnd(); else { const a = autoStep(dt); thr = a[0]; str = a[1]; boost = !!a[2]; aHand = !!a[3]; } }
         if (C.wait) { thr = 0; boost = false; car.v = 0; car.teamTil = 0; }  // on a race's grid: held still until Go (you can still look round)
-        let v = car.v; const brake = has("Space") || !!F.hand;
+        let v = car.v; const brake = has("Space") || !!F.hand || aHand;
         // the boost runs on a charge: about four seconds' worth, back in ten. Run right out, it waits until a fifth is back
         // Boost goes at full push forward whatever the stick says, unless the stick is pulled back (its lower half): then it boosts
         // backwards (Ash, 15 November 2026: "If I hit boost without the control forward still go at max forward accel, unless the
@@ -19469,6 +19484,13 @@ const handle = async (m, post) => {
       if (R) { cx.push(...R.cx); cz.push(...R.cz); cl.push(...R.cl); const n = R.cx.length; if (R.off > 3.5 && clearWay(R.cx[n - 1], R.cz[n - 1], gx, gz)) { cx.push(gx); cz.push(gz); cl.push(0); } }
       else { cx.push(gx); cz.push(gz); }
       autoBegin(cx, cz, cl, {}); autoPin(auto.x[auto.x.length - 1], auto.z[auto.z.length - 1]); return true; };
+    // Autodrive (the GPS): along the GPS's own line (already in the left lane), from its point nearest the car, like a hoon if asked
+    C.drivePath = (pts, o = {}) => { if (veh !== "car" || !car || held || !pts || pts.length < 4) return false; const n = pts.length / 2; let k0 = 0, bd = Infinity;
+      for (let i = 0; i < Math.min(n, 60); i++) { const d = Math.hypot(pts[i * 2] - car.x, pts[i * 2 + 1] - car.z); if (d < bd) { bd = d; k0 = i; } }
+      const cx = [car.x], cz = [car.z]; for (let i = k0 + (bd < 2 ? 1 : 0); i < n; i++) { const x = pts[i * 2], z = pts[i * 2 + 1]; if (Math.hypot(x - cx[cx.length - 1], z - cz[cz.length - 1]) < 0.4) continue; cx.push(x); cz.push(z); }
+      if (cx.length < 3) return false; autoBegin(cx, cz, new Array(cx.length - 1).fill(0), { hoon: !!o.hoon }); autoPin(null); return true; };
+    C.autoOn = () => !!auto && !auto.done;  // (driving itself right now)
+    C.autoStop = () => { if (auto && !auto.done) { auto.done = true; ezShow(); } };  // (the GPS cancelled, or there: it brakes to a stop, a skid if it's hooning)
     // a click on the view while driving, with Google Maps controls: the ground under the mouse (or just short of the building there)
     C.clickDrive = (sx, sy) => { if (veh !== "car" || !car || held || !gmDesk()) return false;
       const hit = townClickAt(m, F, sx, sy, 700, true); if (!hit || !inside(hit.x, hit.z)) return false;
@@ -19522,35 +19544,51 @@ const handle = async (m, post) => {
       if (!cruise(side)) toast("There's no street near enough to follow. Drive onto a street first.", 3400); return true; };
     ezGo.onclick = e => { e.stopPropagation(); ezGo.blur(); C.autoGo(); }; ezL.onclick = e => { e.stopPropagation(); ezL.blur(); C.autoTurn(1); }; ezR.onclick = e => { e.stopPropagation(); ezR.blur(); C.autoTurn(-1); };
     const AUTO_V = 50 / 3.6;  // it drives at up to 50 km/h
+    // Autodrive from the GPS drives like a hoon (Ash, 23 November 2026: "When I type in the address allow standard or autodrive to drive
+    // me there automatically. Drive like a hoon to get there"): flat out to the car's own top speed, boost down the straights, braking
+    // late and hard for the corners, a flick of the handbrake to swing round the sharp ones, and a skid to a stop at the door
+    const HOON_A = 8.5;  // how hard it brakes for a corner, m/s every second (the car can do 11)
     // one step of it: what to do with the accelerator and the wheel, [go, steer]
     const autoStep = dt => { const A = auto, v = car.v; A.odo += Math.abs(v) * dt;
       if (A.cruise && !A.done) cruiseOn(A);
       const n = A.x.length;
       // where the car is along the way: the nearest point on the next few stretches, never back the way it came
       let best = Infinity, bi = A.i, bt = A.t;
-      for (let i = A.i; i < Math.min(n - 1, A.i + 5); i++) { const ax = A.x[i], az = A.z[i], dx = A.x[i + 1] - ax, dz = A.z[i + 1] - az, L2 = dx * dx + dz * dz || 1;
+      for (let i = A.i; i < Math.min(n - 1, A.i + (A.hoon ? 12 : 5)); i++) { const ax = A.x[i], az = A.z[i], dx = A.x[i + 1] - ax, dz = A.z[i + 1] - az, L2 = dx * dx + dz * dz || 1;
         const t = bsClamp(((car.x - ax) * dx + (car.z - az) * dz) / L2, i === A.i ? A.t : 0, 1), d = Math.hypot(car.x - ax - dx * t, car.z - az - dz * t); if (d < best - 0.01) { best = d; bi = i; bt = t; } }
       A.i = bi; A.t = bt;
       const at = A.s[bi] + ((A.s[bi + 1] ?? A.s[bi]) - A.s[bi]) * bt, total = A.s[n - 1], rem = total - at, toEnd = Math.hypot(A.x[n - 1] - car.x, A.z[n - 1] - car.z);
       const pt = d => { const sd = Math.min(total, at + d); let i = bi; while (i < n - 2 && A.s[i + 1] < sd) i++; const L = (A.s[i + 1] ?? A.s[i]) - A.s[i] || 1, f = bsClamp((sd - A.s[i]) / L, 0, 1), j = Math.min(i + 1, n - 1); return [A.x[i] + (A.x[j] - A.x[i]) * f, A.z[i] + (A.z[j] - A.z[i]) * f]; };
       if (A.sign && Math.hypot(A.sign.x - car.x, A.sign.z - car.z) < 7) A.sign.near = true; else if (A.sign?.near) { A.sign = null; ezShow(); }  // the turn it was asked for is behind it now
       // there (or as near as the way goes), or told to stop: brake to a stop, and it is yours again
-      if (A.done || rem < 1.6 || (rem < 7 && toEnd < 2.6)) { if (!A.done) { A.done = true; ezShow(); if (A.cruise) toast("That's as far as this street goes.", 2800); } if (Math.abs(v) < 0.6) { autoEnd(); return [0, 0]; } return [v > 0 ? -1 : 1, 0]; }
-      const big = car.bus ? 1.6 : 1, [tx, tz] = pt(bsClamp(4.5 + Math.abs(v) * 0.75, 5, 15) * big), e = wrap(Math.atan2(tx - car.x, tz - car.z) - car.h);
+      const H = !!A.hoon && !car.bus;
+      if (A.done || rem < 1.6 || (rem < 7 && toEnd < 2.6)) { if (!A.done) { A.done = true; ezShow(); if (A.cruise) toast("That's as far as this street goes.", 2800); } if (Math.abs(v) < 0.6) { autoEnd(); return [0, 0]; } return [v > 0 ? -1 : 1, 0, 0, H && v > 4]; }
+      const big = car.bus ? 1.6 : 1, [tx, tz] = pt(bsClamp(4.5 + Math.abs(v) * 0.75, 5, H ? 26 : 15) * big), e = wrap(Math.atan2(tx - car.x, tz - car.z) - car.h);
       // backing off something it has run into: a second or so in reverse, the wheel the other way, then on again
       if (A.rev > 0) { A.rev -= dt; return [-0.8, bsClamp(A.revE * 2.4, -1, 1)]; }
       if (A.odo - A.triedAt > 25) A.tries = 0;
       // the bend coming: how far round the way 10 and 24 m on is from the way the car points
       const [ax, az] = pt(10 * big), [bx, bz] = pt(24 * big), bend = rem > 12 ? Math.abs(wrap(Math.atan2(bx - ax, bz - az) - car.h)) : 0;
-      let vt = Math.max(4.2, AUTO_V / (1 + 2.2 * bend)) / (car.bus ? 1.3 : 1);
-      vt = Math.min(vt, Math.sqrt(2 * 2.4 * Math.max(0, rem - 1.2)) + 0.9); if (Math.abs(e) > 0.7) vt = Math.min(vt, 3.8);
-      let go = bsClamp((vt - v) * 0.6, -1, 1); if (go < 0 && v < 0.8) go = 0;
+      let vt = Math.max(4.2, AUTO_V / (1 + 2.2 * bend)) / (car.bus ? 1.3 : 1), hoonB = false, hoonH = false;
+      if (H) { // flat out, but slow enough at each corner coming to get round it: looked for up to 90 m ahead, braking at HOON_A
+        const top = VMAX * (car.gold ? GOLD : 1); vt = top; let worst = 0;
+        for (const d of [8, 20, 34, 50, 70, 90]) { if (d > rem - 6) break; const [px, pz] = pt(d), [qx, qz] = pt(d + 12), b = Math.abs(wrap(Math.atan2(qx - px, qz - pz) - car.h)); if (d <= 20) worst = Math.max(worst, b);
+          vt = Math.min(vt, Math.sqrt((Math.max(6.5, top / (1 + 2.6 * b))) ** 2 + 2 * HOON_A * Math.max(0, d - 6))); }
+        vt = Math.min(vt, Math.sqrt(2 * HOON_A * Math.max(0, rem - 3)) + 1.2); if (Math.abs(e) > 0.8) vt = Math.min(vt, 6.5);
+        // the boost down a clear straight; the handbrake flicked on (a third of a second, then not again for a while) going into a
+        // sharp corner quick, so the back swings round
+        hoonB = worst < 0.12 && Math.abs(e) < 0.12 && v > 4 && v < vt - 1.5 && rem > 80;
+        A.hc = Math.max(0, (A.hc || 0) - dt); A.ht = Math.max(0, (A.ht || 0) - dt);
+        if (!A.ht && !A.hc && v > 9 && worst > 0.9 && Math.abs(e) > 0.35 && rem > 25) { A.ht = 0.32; A.hc = 1.8; }
+        hoonH = A.ht > 0; }
+      else { vt = Math.min(vt, Math.sqrt(2 * 2.4 * Math.max(0, rem - 1.2)) + 0.9); if (Math.abs(e) > 0.7) vt = Math.min(vt, 3.8); }
+      let go = bsClamp((vt - v) * (H ? 1.4 : 0.6), -1, 1); if (go < 0 && v < 0.8) go = 0;
       // stuck against something: back off and try again, a few times, then leave it with the driver
       A.slow = Math.abs(v) < 0.5 && go > 0.2 ? A.slow + dt : 0;
       if (A.slow > 0.9) { A.slow = 0; A.triedAt = A.odo; if (++A.tries > 4) { autoEnd("The car can't find a way there. Click somewhere else, or drive it yourself."); return [0, 0]; } A.rev = 1.1 + 0.25 * A.tries; A.revE = Math.abs(e) > 0.15 ? e : (A.tries % 2 ? 0.6 : -0.6); return [-0.8, bsClamp(A.revE * 2.4, -1, 1)]; }
-      return [go, bsClamp(-e * 2.4, -1, 1)]; };
+      return [go, bsClamp(-e * (H ? 2.8 : 2.4), -1, 1), hoonB, hoonH]; };
     // what the speed chip adds while it drives itself
-    const autoText = () => !auto ? "" : auto.done ? " · Stopping" : auto.cruise ? (auto.turn ? ` · Next ${auto.turn > 0 ? "left" : "right"}` : auto.sign ? ` · Turning ${auto.sign.turn > 0 ? "left" : "right"}` : " · Driving for you") : " · Driving you there";
+    const autoText = () => !auto ? "" : auto.done ? " · Stopping" : auto.cruise ? (auto.turn ? ` · Next ${auto.turn > 0 ? "left" : "right"}` : auto.sign ? ` · Turning ${auto.sign.turn > 0 ? "left" : "right"}` : " · Driving for you") : auto.hoon ? " · Autodrive" : " · Driving you there";
     // the car to get into near a spot on the map (the map view's click): one of the app's own, one of the traffic, or one parked in the model
     C.carNear = (x, z, r) => { let best = null;
       for (const G of [...owns.filter(G => !G.takenBy), ...(T.traffic?.cars || []).filter(D => D.x != null && !D.away && !D.bus)]) { const d = Math.hypot(G.x - x, G.z - z); if (d < r && (!best || d < best.distance)) best = { own: G, gold: G.gold, distance: d, x: G.x, z: G.z, heading: G.h }; }
