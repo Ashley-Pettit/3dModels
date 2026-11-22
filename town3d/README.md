@@ -2254,6 +2254,25 @@ Ipswich Road end) a piece of it survived, it was the first piece built at the st
 Measured (`t/walk.js`, six places, the network filling at a phone's speed): people with someone else within 3 m went from 67% to 10%,
 and the median distance to the nearest other person from 1.7 m to 15.7 m; none on a road.
 
+## A spot check of Moorooka: parked cars out in the lane (22 November 2026)
+
+Ash: "Spot check for mistakes through the app with paths, roads, trees, houses. Fix what you find".
+
+- **Looked at:** twelve streets spread across the model from 6.5 m up (a local build, 1280 x 800), and the other main roads (Ipswich,
+  Fairfield, Evans and Tarragindi Roads, Muriel Avenue).
+- **Counted from the town data:** every parked car against its nearest street, and every tree against every street.
+  - Trees: none of the 27,833 stands on a street (more than 0.4 m inside its edge). Nothing to fix.
+  - Parked cars: all 2,038 on a street are parallel to it, and nearly all stand 0.9 to 1.3 m in from its edge. **25 stood 1.85 to
+    2.6 m in**, which is out in the traffic lane beside the centre line. That is the one mistake found.
+- **Fixed:** `tools/ground/cars_kerb.py` moves each of those square across to 1.1 m from the street's edge when no other car is
+  within 5.4 m of the spot (it tries 6 and 12 m either way along the street as well). 24 moved, by 1.5 m at most; one has a car
+  beside it at the kerb and is left. Only `cars` in `town.json` changes (24 positions; no headings, colours or counts), and none of
+  the 24 is named by its place in `edits.json` or `app.html`. `town.json` is fetched with no version on its address, so it can be ten
+  minutes before a browser sees it.
+- **Seen and not changed:** Evans Road has no centre line where it was looked at; Fairfield Road's two carriageways have no island
+  between them; Ipswich Road's median is a plain strip of lawn with no turn lanes painted. Each is a road to do properly from the
+  aerial photograph, as Beaudesert Road was.
+
 ## Moorooka's shops checked against Google Maps again (22 November 2026)
 
 Ash: "look at the shops in moorooka. Check against google maps for accuracy and improve model using low res". 110 places that Google
