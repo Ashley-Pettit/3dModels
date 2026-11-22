@@ -2254,6 +2254,55 @@ Ipswich Road end) a piece of it survived, it was the first piece built at the st
 Measured (`t/walk.js`, six places, the network filling at a phone's speed): people with someone else within 3 m went from 67% to 10%,
 and the median distance to the nearest other person from 1.7 m to 15.7 m; none on a road.
 
+## Houses set on their slope, part 1 (22 November 2026)
+
+Ash: "a lot of the houses are in the ground. If they are I want you to rebuild them in low res. To do this you'll need to use google maps
+in addition to satitile. Once done you'll need to fix any paths, fences, trees and cars so that they make sense inside the app ... iterate
+pushing 100 at a time. The idea here is to make the houses like the real thing but in low res."
+
+**Why they were in the ground.** A building's floor is the ground at its middle, so on a slope the uphill walls stand in the dirt. Counted
+the way the model draws them (`tools/houses/pick_sunk.py`): 2,028 houses have ground half a metre or more above their lowest floor with
+windows (1,202 inside Moorooka), 813 by a metre or more. Lifting every house on to its highest ground was tried on 21 November and taken
+back the same day (tall blank bases, huge stairs, doors in the air).
+
+**What is done instead, per house.** Only the houses listed in `MOO_SET` (`app.html`) change. The model rebuilds each the way Brisbane's
+hillside houses are built (`moorooka-model.js ?v=63` once merged with the balcony hook, patched by `tools/houses/set_on_slope.py`, which says how):
+
+- the roof stays where the survey has it, the floor is one storey under the eave and never below the uphill ground;
+- under the floor, down the slope: a closed-in lower level (masonry, small windows, a garage door where the ground plan's drive meets
+  the house) when it stands 2.15 m or more out of the ground, otherwise stumps behind dark battens;
+- the front door is at the floor with a landing and open-tread stairs: straight out for a rise up to 1.75 m, along the wall above
+  that, and at the lower level when the floor is more than 3.1 m up; a concrete pad joins the foot of the stairs to where the path
+  meets the house;
+- the roof's form (hip, gable, flat or a low skillion) is the one seen on the Queensland 10 cm aerial photo, looked at house by house.
+
+**Part 1:** the 100 most sunk houses inside Moorooka (1.65 to 3.56 m of wall in the ground). 99 have a closed-in lower level and one is
+on stumps; 51 got stairs (21 straight, 30 along the wall), 17 a garage door; 9 have no wall facing a street and so no door, as before.
+`tools/houses/clear_fronts.py` then moved 5 trees off the new stairs and pads and took out 1 parked car, 4 fence runs and 6 backyard
+things that stood on them.
+
+**Not from Street View yet.** No browser could be reached from the chat that did this (the desktop app's browser can't be added to a chat
+already under way, and Chrome's extension wasn't connected), so wall colours, what is really under each house and where its stairs run
+are by rule, not looked up. `MOO_SET` has a place for them (`{ w, b, e }`), and a house Street View shows differently can be corrected
+there.
+
+**Lag.** Download: about 2.5 KB more in `app.html`. Drawing: 5,446 more triangles for the 100 houses (0.4% of the suburb's 1.31 million
+building triangles), in the building pieces that are already there, so no new draw calls; about 0.65 MB on the graphics card. Seen from
+far off (the plain pieces) a rebuilt house is the same single ring of walls as before. All 2,028 done the same way would be about 8% more
+building triangles.
+
+**How to do the next 100:** `pick_sunk.py <repo> 100 picks.json` (it leaves out what is already in `MOO_SET`), look at each on the
+aerial for its roof, `add_set.py app.html picks.json <roofs> "<note>"`, rebuild, save what `window.anSetRec` is told, then
+`clear_fronts.py ... --write`.
+
+### Part 2 of the houses set on their slope (22 November 2026)
+
+- The next 100 inside Moorooka (1.37 to 1.65 m of wall in the ground), 200 so far; 1,828 left at half a metre or more (1,002 inside
+  Moorooka). Same pipeline as part 1; roofs again from the aerial photo, house by house. Across the 200: 192 with a closed-in lower
+  level and 8 on stumps, 119 with stairs (55 straight, 64 along the wall), 33 garage doors, 14 with no wall facing a street.
+- `pick_sunk.py` only left out the first house on each line of `MOO_SET` as already done; it now leaves out all of them (found before
+  anything was built from it).
+
 ## GPS: directions to an address (22 November 2026)
 
 Ash: "Can you add a gps in the game to navigate to an address?"
@@ -2410,10 +2459,11 @@ they were.
 Ash: "Merge the balcony concept into the moorooka game. Allow me to press a button on the house to change from how it is to the
 balcony model. You'll need to merge the models a bit as neither are perfect."
 
-- **The button:** a post by the foot of the front stairs with a big yellow button on it, and its label floating just over it
-  whenever you're within 30 m on foot (not driving or flying high). Before 22 November 2026 it was a pill over the roof, seen from
-  70 m (Ash: "Make the see the balcony a button in the actual game near the front stairs"). "Show the balcony" switches to the
-  concept, "Show it as it is" switches back. The choice is kept on the device (`an3d-bal6`).
+- **The button:** a post by the foot of the front stairs with a big yellow button on it. You tap the button itself: an invisible
+  spot over it (at least 48 px across) is there whenever you're within 30 m on foot, not driving or flying high, and a message says
+  what it did. Each tap swaps between the balcony concept and the house as it is. The choice is kept on the device (`an3d-bal6`).
+  (It began as a labelled pill over the roof, seen from 70 m. Ash, 22 November 2026: "Make the see the balcony a button in the
+  actual game near the front stairs", then "Remove the label for the button".)
 - **One house, both ways:** within 300 m, number 6 is drawn by the app (`townBalcony6` in `app.html`, numbers in `MOO_BAL6`), not
   by the model. The model's own house (and its lot's fences, which are in the same piece) is hidden through a hook added to
   `moorooka-model.js` (`?v=62`): the detailed houses' `cull` asks `window.anDetailOff(id)`. Further off, the model's own house shows.
@@ -2482,3 +2532,15 @@ Ash: "Add them" (the four from the shops check above). Each was looked into firs
 `tools/ground/shop_wall.py` finds a business's building and the wall that faces its street from `town.json` alone (numpy only; it
 gives the same wall as the app has for Starbucks and for 104 Beaudesert Road). `tools/ground/shops.py` does it from the lot survey
 and needs `shapely`.
+
+### Street View for the houses set on their slope: started (22 November 2026)
+
+Ash: "Stop no point without google images", then, with Chrome on his PC connected, "start with redo of the 100 you already do".
+
+- Street View opens through Chrome with `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=<nearest point of the street>&heading=<towards the house>&fov=60`.
+  Give it ten seconds: at five the picture is still black.
+- 12 of part 1's 100 looked at so far; 7 could be read and are in `MOO_SET` (`tools/houses/streetview-part1.json`, written in by
+  `tools/houses/apply_sv.py`): wall colour, the colour under the floor, closed in or on stumps, whether the front door is at the lower
+  level, and whether there is a garage door (`moorooka-model.js ?v=64` reads `d` and `g`). The other 5 were behind trees, blurred by
+  Google or did not draw. 88 of part 1 and all of part 2 are still by rule.
+- `streetview-part1.json` lists the houses in the order they were picked (`order`), so the next chat carries on from the 13th.
