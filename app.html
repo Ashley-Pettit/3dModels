@@ -1382,8 +1382,9 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 .bs-peer-edge { position: absolute; left: 0; top: 0; z-index: 1; padding: 4px 10px; border-radius: 999px; background: #ffd166; color: #1b1830; font: 700 0.76rem/1.3 var(--ui); white-space: nowrap; pointer-events: none; will-change: transform; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35); }
 .bs-peer-edge[hidden] { display: none; }
 /* number 6's button, floating over its roof: the house as it is, or with the balcony concept (Ash, 22 November 2026) */
-.bs-bal6 { position: absolute; left: 0; top: 0; z-index: 2; min-height: 40px; padding: 8px 16px; border: 0; border-radius: 999px; background: #ffd166; color: #1b1830; font: 700 0.85rem/1.3 var(--ui); white-space: nowrap; pointer-events: auto; cursor: pointer; will-change: transform; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); touch-action: manipulation; }
-.bs-bal6[aria-pressed="true"] { background: #fff; }
+/* number 6's balcony button: no label, just where to tap over the yellow button by the front stairs (Ash, 22 November 2026: "Remove the label for the button") */
+.bs-bal6 { position: absolute; left: 0; top: 0; z-index: 2; width: 48px; height: 48px; padding: 0; border: 0; border-radius: 50%; background: none; pointer-events: auto; cursor: pointer; will-change: transform; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.bs-bal6:focus-visible { outline: 3px solid #ffd166; outline-offset: 2px; }
 .bs-bal6[hidden] { display: none; }
 /* the quieter ones, past the nearest two when more than three are playing */
 .bs-peer-edge.far { padding: 2px 8px; background: rgba(20, 22, 34, 0.55); color: #fff; font-size: 0.66rem; box-shadow: none; opacity: 0.85; }
@@ -10804,7 +10805,7 @@ const handle = async (m, post) => {
   // name ash that jumps to new features so I can quickly review")
   const MOO_NEW = [
     ["Houses out of the dirt, part 1", "The 100 most sunk houses rebuilt on their slope: the floor above the uphill ground, a lower level or stumps under it, stairs to the front door, a garage door where the drive meets the house (this one, on Northview Outlook)", 569.2, -874.6, -2.136, 0.183],
-    ["Number 6's balcony", "The balcony concept on the house: tap the yellow button over the roof to switch between it and the house as it is, and walk up the new stairs down the side", -217.7, -990.3, 1.295, 0.12],
+    ["Number 6's balcony", "The balcony concept on the house: tap the yellow button by the front stairs to switch between it and the house as it is, and walk up the new stairs down the side", -217.7, -990.3, 1.295, 0.12],
     ["The Willow's way in", "Redone from Street View: the steps up at the south corner between white piers, under the red slatted canopy, with the sign over them and the timber-clad corner beside", -74.0, -116.0, 1.27, 0.08],
     ["Moorooka bowls club", "Moorooka Sports & Community Club on Koala Road: three bowling greens with their ditches and shade shelters", 160.0, -462.0, -2.24, -0.1],
     ["School pool and courts", "Moorooka State School's 25 m pool and its two tennis courts. St Brendan's has a play frame and shade sail on its lawn", -226.0, 175.0, 1.571, -0.15],
@@ -14624,15 +14625,16 @@ const handle = async (m, post) => {
       if (ok(F.pos.x, F.pos.z)) return false;
       if (ok(F.pos.x, oz)) F.pos.z = oz; else if (ok(ox, F.pos.z)) F.pos.x = ox; else { F.pos.x = ox; F.pos.z = oz; } if (F.wv) F.wv = [0, 0]; return true; };
 
-    // ---- the label on the balcony button (by the front stairs): shown when you're within 30 m on foot; how it is, or the balcony
+    // ---- tapping the balcony button (by the front stairs): an unlabelled spot over it, there when you're within 30 m on foot (Ash, 22
+    // November 2026: "Remove the label for the button"); how it is, or the balcony. What it does is said once you've pressed it
     const btn = document.createElement("button"); btn.type = "button"; btn.className = "bs-bal6"; btn.hidden = true;
-    const label = () => { btn.textContent = P.mode === "bal" ? "Show it as it is" : "Show the balcony"; btn.setAttribute("aria-pressed", String(P.mode === "bal")); };
+    const label = () => { btn.setAttribute("aria-label", P.mode === "bal" ? "Show number 6 as it is" : "Show the balcony concept"); btn.setAttribute("aria-pressed", String(P.mode === "bal")); };
     P.set = mode => { P.mode = mode; label(); if (P.near) { show("now", mode === "now"); show("bal", mode === "bal"); } };
     btn.addEventListener("click", e => { e.stopPropagation(); btn.blur(); P.set(P.mode === "bal" ? "now" : "bal"); try { localStorage.setItem("an3d-bal6", P.mode); } catch {}
       toast(P.mode === "bal" ? "The balcony concept: walk up the new stairs down the side" : "Number 6 as it is now", 2400); });
     ($("bsFly") || document.body).append(btn);
     try { P.mode = localStorage.getItem("an3d-bal6") === "bal" ? "bal" : "now"; } catch {} label();
-    const PIN = toModel(BTN.x, BTN.z), PINY = y0 + BTN.y + 0.3;  // where it floats: just over the button
+    const PIN = toModel(BTN.x, BTN.z), PINY = y0 + BTN.y + 0.03;  // the button's middle
     let last = "";
     P.frame = () => { const F = BS.fly; if (!F || P.dead) return;
       const d = Math.hypot(F.pos.x - C[0], F.pos.z - C[1]), near = d < B.near;
@@ -14645,8 +14647,9 @@ const handle = async (m, post) => {
       if (dep < 1) { if (!btn.hidden) btn.hidden = true; return; }
       const sx = Math.round(w / 2 + (ax * rx + az * rz) / dep * f * (h / 2)), sy = Math.round(h / 2 - (ax * ux + ay * uy + az * uz) / dep * f * (h / 2));
       if (sx < 40 || sx > w - 40 || sy < 70 || sy > h - 60) { if (!btn.hidden) btn.hidden = true; return; }
-      const k = sx + "," + sy; if (btn.hidden) btn.hidden = false; if (k !== last) { last = k; btn.style.transform = `translate(${sx}px, ${sy}px) translate(-50%, -100%)`; } };
-    P.toModel = toModel; P.toLocal = toLocal; P.levels = { y0, FL, E }; P.button = { x: PIN[0], y: PINY - 0.3, z: PIN[1], local: BTN };  // (for checking in the console)
+      const size = Math.round(Math.max(48, Math.min(140, 0.5 / dep * f * h)));  // the head (0.4 m across) and a little round it, never under 48 px
+      const k = sx + "," + sy + "," + size; if (btn.hidden) btn.hidden = false; if (k !== last) { last = k; btn.style.width = btn.style.height = size + "px"; btn.style.transform = `translate(${sx}px, ${sy}px) translate(-50%, -50%)`; } };
+    P.toModel = toModel; P.toLocal = toLocal; P.levels = { y0, FL, E }; P.button = { x: PIN[0], y: PINY - 0.03, z: PIN[1], local: BTN };  // (for checking in the console)
     P.dispose = () => { P.dead = true; P.near = false; btn.remove(); for (const k in handles) try { handles[k].remove(); } catch {} };
     P.frame();
     return P;

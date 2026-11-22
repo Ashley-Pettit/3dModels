@@ -2451,10 +2451,11 @@ they were.
 Ash: "Merge the balcony concept into the moorooka game. Allow me to press a button on the house to change from how it is to the
 balcony model. You'll need to merge the models a bit as neither are perfect."
 
-- **The button:** a post by the foot of the front stairs with a big yellow button on it, and its label floating just over it
-  whenever you're within 30 m on foot (not driving or flying high). Before 22 November 2026 it was a pill over the roof, seen from
-  70 m (Ash: "Make the see the balcony a button in the actual game near the front stairs"). "Show the balcony" switches to the
-  concept, "Show it as it is" switches back. The choice is kept on the device (`an3d-bal6`).
+- **The button:** a post by the foot of the front stairs with a big yellow button on it. You tap the button itself: an invisible
+  spot over it (at least 48 px across) is there whenever you're within 30 m on foot, not driving or flying high, and a message says
+  what it did. Each tap swaps between the balcony concept and the house as it is. The choice is kept on the device (`an3d-bal6`).
+  (It began as a labelled pill over the roof, seen from 70 m. Ash, 22 November 2026: "Make the see the balcony a button in the
+  actual game near the front stairs", then "Remove the label for the button".)
 - **One house, both ways:** within 300 m, number 6 is drawn by the app (`townBalcony6` in `app.html`, numbers in `MOO_BAL6`), not
   by the model. The model's own house (and its lot's fences, which are in the same piece) is hidden through a hook added to
   `moorooka-model.js` (`?v=62`): the detailed houses' `cull` asks `window.anDetailOff(id)`. Further off, the model's own house shows.
