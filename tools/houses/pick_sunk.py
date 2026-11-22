@@ -41,7 +41,7 @@ app = open(f'{repo}/app.html', encoding='utf-8').read()
 def table(name):
     i = app.index(f'  const {name} = ['); return app[i:app.index('\n  ];', i)]
 styled = [tuple(map(float, m)) for m in re.findall(r'\{ at: \[(-?[\d.]+), (-?[\d.]+)\]', table('MOO_STYLE'))]
-done = [tuple(map(float, m)) for m in re.findall(r'^\s*\[(-?[\d.]+), ?(-?[\d.]+)', table('MOO_SET'), re.M)] if '  const MOO_SET = [' in app else []
+done = [tuple(map(float, m)) for m in re.findall(r'\[(-?[\d.]+), ?(-?[\d.]+)', table('MOO_SET'))] if '  const MOO_SET = [' in app else []
 near = lambda L, x, z, d: any(abs(a - x) < d and abs(b - z) < d for a, b in L)
 b = np.frombuffer(base64.b64decode(T['buildings']), dtype='<i2'); i = 0; idx = 0; rows = []
 while i < len(b):
