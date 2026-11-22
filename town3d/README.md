@@ -2307,16 +2307,21 @@ aerial for its roof, `add_set.py app.html picks.json <roofs> "<note>"`, rebuild,
 
 Ash: "Can you add a gps in the game to navigate to an address?"
 
-- **Opening it:** Jump to, then GPS at the top of the list. Type an address or a place. Moorooka and Logan look addresses up with
+- **Opening it:** the GPS button in the top row, by Time and Flood (I on a keyboard); it lights up while it's showing the way. (It was
+  in Jump to until 22 November 2026, Ash: "Move gps out of jump to so users can find it more easily".) Type an address or a place. Moorooka and Logan look addresses up with
   the Queensland Government's address finder (`QldLocator` suggest, then `findAddressCandidates`); Inverloch uses OpenStreetMap's
   Nominatim, which has few house numbers there. Places on the map and street names (the middle of the street) are matched on the
   device too, so a street still comes up when the finder has nothing.
-- **The route:** the town's own street lines (`townStreetData`) joined into a network (loose ends within 20 m bridged), shortest
-  path by Dijkstra from the nearest point to you. Drawn as one blue ribbon 0.18 m above the ground with a red pin at the end
-  (`m.addParts`, one part, removed when you stop or arrive).
+- **The route:** only streets you can drive on (Ash, 22 November 2026: "The gps goes through houses. Stick to the roads"): no
+  footpaths or laneways between houses, bush tracks, or unnamed driveways and car park aisles (classes 0 to 3 and named class 4 in
+  Moorooka and Inverloch; 0 to 4 and named 5 in Logan). Shortest way by Dijkstra. A street that stops short of another, or meets it
+  between two of its points, is joined to the nearest point on that street's line within 12 m, or up to 25 m where the join is
+  clear of buildings (`townStreetBlocks`); never further, so a dead end is never joined to the street behind the houses.
+- **The ends:** the blue line starts on the street beside you and ends on the place's own street (the street named in the address,
+  when it's within 150 m), at the point nearest the place. The red pin stands on the place itself, so no line crosses a yard.
 - **The card:** the next turn ("Turn left onto Beaudesert Road"), how far to it and how far to go, and an arrow that points the way
-  from where you're facing. Straight on to a street with no name says nothing. Off the route by 35 m for 1.5 s and it works the route
-  out again. Within 15 m of the pin (or 12 m left on the route) it says you've arrived and clears the line.
+  from where you're facing. Straight on to a street with no name says nothing. Off the route by 35 m for 1.5 s (once you've been on it) and it
+  works the route out again. Within 15 m of the pin (or 12 m left on the route) it says you've arrived and clears the line.
 - **Lag:** the network is built once, the first time the GPS is opened. Each frame only looks along the next 80 points of the route,
   and the card is updated at most a few times a second. No fetching mid-game except the address lookups you type.
 - **Code:** `townGps` in `app.html` (`T.gps`); can be turned off with `OFF` key `gps`.
