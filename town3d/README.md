@@ -2414,3 +2414,28 @@ balcony model. You'll need to merge the models a bit as neither are perfect."
   moving them (no rebuilding mid-game).
 - **Tested:** both versions from the back, side, front and the air; walking up the new stairs to the hexagon and into the
   balustrade; the two-finger stick test at phone size in all three towns, and again after two minutes; tapping the button on a phone.
+
+## Evans Road and Fairfield Road: the painted middle (22 November 2026)
+
+Ash: "polish up other streets but avoid using much memory or adding load time. Low res". The map has both roads as two carriageways,
+and the model drew each as two strips of asphalt side by side with nothing between: one very wide bare road (Evans Road had no line on
+it at all).
+
+- **What is really there.** The aerial photograph was looked at before anything was drawn (an island was nearly put down the middle of
+  both, as on Ipswich Road, and that would have been wrong). Fairfield Road is four lanes with a painted middle: two solid lines about
+  3 m apart with turn arrows between them, and a small raised island here and there. Evans Road is four lanes with a narrow strip down
+  the middle, raised in places.
+- **What is drawn.** Two solid white lines down the middle of each (`MOO_CENTRE` in `app.html`: runs of x, z, h, the lines h either
+  side of the middle: half of what is between the two strips of asphalt, 0.25 to 1.5 m). 3.2 km of road in 24 runs, 353 points, 6.5 KB.
+  They are made by `tools/ground/medians/medians.py --paint` from `town.json`'s roads: one carriageway is walked every 5 m, the
+  nearest point of the one going the other way gives the middle, and the lines stop near every place another street meets either
+  carriageway and where the two are more than 7.5 m apart. (The same tool without `--paint` gives the runs an island would need.)
+- **Cost.** They go in the same part as the medians. A stretch is drawn as one piece for as far as the ground runs straight under it
+  (to 3 cm, up to 36 m), so it comes to about 800 triangles: the part is about 15,900 triangles on a phone (15,100 before) and still
+  takes 30 to 40 ms to make on a slow test machine. Nothing new is downloaded.
+
+Checked on a local build at desktop size (four stretches) and phone size (two). Not done: the turn arrows in Fairfield Road's painted
+middle, its small raised islands, Evans Road's raised strip (it is drawn as paint), a lane line on Evans Road's carriageways (the
+model has each as one 6 m lane, and the traffic drives down its middle), and the other roads the map has as two carriageways
+(Fernvale, Sherwood, Toohey and Orange Grove Roads, Muriel Avenue, Fairlie Terrace, King Arthur Terrace, Tennyson Memorial Avenue,
+and the parts of Ipswich Road with no median yet): each needs a look at the photograph first.
