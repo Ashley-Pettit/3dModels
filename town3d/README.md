@@ -2251,6 +2251,35 @@ Ipswich Road end) a piece of it survived, it was the first piece built at the st
 Measured (`t/walk.js`, six places, the network filling at a phone's speed): people with someone else within 3 m went from 67% to 10%,
 and the median distance to the nearest other person from 1.7 m to 15.7 m; none on a road.
 
+## Moorooka's drone waits inside number 6 (22 November 2026)
+
+Ash: "move the drone into inside my house in moorooka". The drone and its remote were at a random spot on the grass (an oval, Stimpson
+Park, the field off School Road).
+
+- **Where they are now.** The drone sits on a rug in the front room of 6 Beaudesert Road. Its remote lies on the grass beside the front
+  path (`TOWN_RIDES.moo.drone.at`), because you can't walk into the house: the model's houses are solid, with painted doors. Pick the
+  remote up there and the view goes to the drone, from behind it, with the open front door ahead. Push forward and it flies out of the
+  door, up over the landing's rail and out over the front lawn. It can fly back in through the door the same way.
+- **The room** (`townRoom6`, `T.room6`): one small unlit part drawn inside the model's house, about 180 triangles: floorboards, walls,
+  ceiling, the door and the two front windows painted as daylight, a rug, a couch and a television, a table and stools, a kitchen
+  bench, Arlo's bed. It is made up: there are no photos of the inside. Its walls stand 0.62 m inside the lot survey's outline
+  (`MOO_NO6.sixHouse`), because the model draws the house's walls 0.3 to 0.5 m inside that outline and the room showed through them
+  at 0.14 m. The door (8.5 to 9.37 m along the front wall from its south end, 2.1 m high) and the floor (the eave less 2.75 m) were
+  measured off the model's own front with marker lines.
+- **How the drone is let through.** Everything else in Explore stands on `surf()`, which is the roof over a building. The drone asks
+  `T.room6.floorAt(x, z, y)` first (`dsurf`): the floor under a point in the room, in the doorway or on the landing, null anywhere
+  else or above the ceiling, so the roof is still a roof for the possum, the pigeon and a drone coming down on it. `ceilAt` keeps it
+  under the ceiling and under the door's lintel. In line with the door the floor rises to the height of the rail by the time the
+  drone is over it. The doorway is 0.2 m wider each side than the painted door, so it is not fiddly on a phone.
+- **The view.** Indoors it stays in the room (`floorAt` of where the view would be), and comes right up behind the drone as the drone
+  reaches the door (`near`), so the drone is not lost behind the wall on its way out. Once it is out, the view is kept out of the
+  house too (`inHouse`).
+
+Tested on a local build at desktop and phone sizes (`scripts`-style Playwright run: stand by the remote, pick it up, hold forward):
+the drone goes from the rug out through the door without stopping, rises to 1.15 m over the landing and carries on over the lawn;
+putting the remote down lands it where it is. Not done: you still can't walk into the house, and the other towns' drones are as
+they were.
+
 ## Number 6's balcony concept, in Moorooka (22 November 2026)
 
 Ash: "Merge the balcony concept into the moorooka game. Allow me to press a button on the house to change from how it is to the
