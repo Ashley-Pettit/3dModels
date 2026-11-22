@@ -9112,6 +9112,10 @@ const handle = async (m, post) => {
         const openList = on => { if (on) players(); list.hidden = !on; jump.setAttribute("aria-expanded", String(on)); if (on) { fl.hidden = true; fb.setAttribute("aria-expanded", "false"); list.querySelector("button")?.focus({ preventScroll: true }); } };
         jump.hidden = !places.length; jump.textContent = "Jump to…"; jump.setAttribute("aria-haspopup", "menu"); openList(false);
         jump.onclick = () => openList(list.hidden);
+        // a tap anywhere else closes it (Ash, 22 November 2026: "If I tap out of the jump to menu, close the menu"). Passive, and it never
+        // stops the tap: a thumb that lands on a stick still drives it
+        T.listOut = e => { if (!list.hidden && !list.contains(e.target) && !jump.contains(e.target) && !$("bsTownNew")?.contains(e.target)) openList(false); };
+        document.addEventListener("pointerdown", T.listOut, { capture: true, passive: true });
         const newBtn = $("bsTownNew"), newShow = () => { newBtn.hidden = !(cfg.place === "moo" && isAsh() && MOO_NEW.length); };
         if (newBtn) { newShow(); clearInterval(BS.newT); BS.newT = setInterval(newShow, 4000);  // (the name can be set after Explore opens)
           newBtn.onclick = () => { openList(true); const h = list.querySelector(".bs-town-newhead"); if (h) { list.scrollTop = 0; h.nextElementSibling?.focus({ preventScroll: true }); } }; }
@@ -19534,7 +19538,7 @@ const handle = async (m, post) => {
     BS.town = null; T.dead = true; T.on = false; T.ungest?.(); T.unlay?.(); T.unflood?.();
     T.streets?.dispose(); T.streets = null; $("bsNamesBtn").hidden = true;
     T.admin?.dispose(); T.admin = null;
-    T.gps?.dispose(); T.gps = null; T.car?.dispose(); T.car = null; T.peers?.dispose(); T.peers = null; T.me?.dispose(); T.me = null; T.here?.dispose(); T.here = null; T.yards?.dispose(); T.yards = null; T.bowls?.dispose(); T.bowls = null; T.walkers?.dispose(); T.walkers = null; T.traffic?.dispose(); T.traffic = null; T.mayor?.dispose(); T.mayor = null; T.council?.dispose(); T.council = null; T.critter?.dispose(); T.critter = null; T.home6?.dispose(); T.home6 = null; T.bal6?.dispose(); T.bal6 = null; T.locals?.dispose(); T.locals = null; T.mail?.dispose(); T.mail = null;
+    if (T.listOut) { document.removeEventListener("pointerdown", T.listOut, true); T.listOut = null; } T.gps?.dispose(); T.gps = null; T.car?.dispose(); T.car = null; T.peers?.dispose(); T.peers = null; T.me?.dispose(); T.me = null; T.here?.dispose(); T.here = null; T.yards?.dispose(); T.yards = null; T.bowls?.dispose(); T.bowls = null; T.walkers?.dispose(); T.walkers = null; T.traffic?.dispose(); T.traffic = null; T.mayor?.dispose(); T.mayor = null; T.council?.dispose(); T.council = null; T.critter?.dispose(); T.critter = null; T.home6?.dispose(); T.home6 = null; T.bal6?.dispose(); T.bal6 = null; T.locals?.dispose(); T.locals = null; T.mail?.dispose(); T.mail = null;
     T.unbar?.();
     if (BS.fly) { const F = BS.fly; F.walk = F.speed = F.floor = F.hot = F.drive = null; F.ceil = 0; F.lim = null; }  // Explore, if it carries on, is its old self
     try { T.model?.dispose(); } catch {}
