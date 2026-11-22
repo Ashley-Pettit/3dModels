@@ -16251,7 +16251,7 @@ const handle = async (m, post) => {
       let d; try { d = await townStreetData(cfg); } catch { return; } if (dead) return;
       if (d.town) d.roads.forEach((r, i) => { r.wd = (d.town.roads[i]?.[3] || 0) / 10; });  // Moorooka and Inverloch know each street's width
       T.roadsAll = d.roads;  // (for the car's Unstick: the nearest road)
-      T.streets = { names: d.names, roads: d.roads, town: d.town && { buildings: d.town.buildings, houses: d.town.houses } };  // (and the GPS: no second download or read of the same file; only what it needs is kept)
+      T.streetData = { names: d.names, roads: d.roads, town: d.town && { buildings: d.town.buildings, houses: d.town.houses } };  // (and the GPS: no second download or read of the same file; only what it needs is kept)
       const pick = lim => d.roads.filter(r => r.cls <= lim && r.pts.length >= 4);
       // How far left of a street's line a car runs: down the middle of its lane, where the model paints the lanes (3.4 m wide, counted as
       // the model counts them). On a one-way carriageway that is the left lane of its two or three, 1.7 or 3.4 m left of its line, and
@@ -17283,7 +17283,7 @@ const handle = async (m, post) => {
     // residential streets as class 4 and service roads 5; Moorooka and Inverloch count them 3 and 4. A named service road is a street.
     // Every point of every street is a node, the same point on two streets being one junction
     let budget = 6;  // ms of work per slice: 6 warming up in the background, 24 once someone is waiting for it
-    const load = () => netP || (netP = (T.streets ? Promise.resolve(T.streets) : townStreetData(cfg)).then(async d => {
+    const load = () => netP || (netP = (T.streetData ? Promise.resolve(T.streetData) : townStreetData(cfg)).then(async d => {
       const t0 = performance.now(), names = d.names || [], top = cfg.place === "logan" ? 4 : 3;
       // built a slice at a time (6 ms in the background, 24 when you're waiting; then the game gets a turn), so it never stalls the
       // game: Logan's is 65,000 points, about half a second of work in all
@@ -17336,7 +17336,7 @@ const handle = async (m, post) => {
       const ns = segs.length, SA = new Int32Array(ns), SB = new Int32Array(ns), SN = new Int32Array(ns); segs.forEach((g, i) => { SA[i] = g[0]; SB[i] = g[1]; SN[i] = g[2]; });
       await breathe(); const keys = [...cell.keys()].sort((a, b) => a - b), CK = Float64Array.from(keys), CS = new Int32Array(keys.length + 1); let tot = 0; keys.forEach((k, i) => { CS[i] = tot; tot += cell.get(k).length; }); CS[keys.length] = tot;
       const CL = new Int32Array(tot); keys.forEach((k, i) => CL.set(cell.get(k), CS[i]));
-      id = X = Z = adj = ends = segs = cell = null; if (T.streets) T.streets.town = null;  // (the buildings were only for checking joins)
+      id = X = Z = adj = ends = segs = cell = null; if (T.streetData) T.streetData.town = null;  // (the buildings were only for checking joins)
       const sq = k => { let lo = 0, hi = CK.length - 1; while (lo <= hi) { const md = (lo + hi) >> 1; if (CK[md] < k) lo = md + 1; else if (CK[md] > k) hi = md - 1; else return md; } return -1; };
       // the nearest point on a piece of street to (x, z), as above, on the packed network: [piece, how far, t, px, pz]
       const nearP = (x, z, ok, maxR = 6) => { let best = null;
