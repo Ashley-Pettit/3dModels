@@ -17808,7 +17808,7 @@ const handle = async (m, post) => {
       if (k === "turbo") { T.car?.raceFx?.("turbo", 3500); say("🚀", 700); }
       else if (k === "star") { T.car?.raceFx?.("star", 7000); say("⭐", 800); tell("Golden star: 80% faster, sharper steering, and nothing can touch you for 7 s", false); send(["fx", race.id, "star", ""]); }
       else if (k === "auto") { const s0 = race.m, s1 = Math.min(s0 + 440, race.leg === 0 ? GA[NC] - 4 : L - 2), pts = []; for (let s = s0 + 4; s <= s1; s += 4) { const p = at(s); pts.push(p.x, p.z); }
-        if (T.car?.raceAuto?.(pts, 10000)) { say("🤖", 800); tell("Autodrive: the car's driving for 10 s, a quarter faster. Steer to take over", false); }
+        if (T.car?.raceAuto?.(pts, 10000)) { say("🤖", 800); tell("Autodrive: the car's driving for 10 s, a quarter faster. Keep your foot down, or steer hard to take over", false); }
         else { T.car?.raceFx?.("turbo", 3500); say("🚀", 700); tell("No car to drive: a Turbo instead", false); } }
       else if (k === "warp") { const s = Math.min(race.m + 150, TG[race.ti].s - 1), p = at(s), ok = T.car?.raceWarp?.(p.x, p.z, headAt(s)); say("🌀", 700);
         if (ok) { while (race.ti < NT - 1 && TG[race.ti].s < s + 5 && TG[race.ti].leg === race.leg) race.ti++; race.pv = null; } send(["fx", race.id, "warp", ""]); }
@@ -17862,9 +17862,9 @@ const handle = async (m, post) => {
       if (race.state === "go") {
         // a box: within 2.6 m, if your hands are empty (they come back after 6 s)
         if (!race.item && race.leg !== 1) for (const b of BOX) if (b.back < now && Math.abs(b.x - x) < 2.6 && Math.abs(b.z - z) < 2.6) { b.back = now + 6000; race.item = rollItem(); T.snd?.pop?.();
-          // the ones that only help you go off straight away; the ones aimed at someone wait for you (Ash, 23 November 2026: "I want where
-          // appropriate these to kick in automatically when I pick them up. Nothing aggressive should be automatic")
-          if (/^(turbo|star|auto|warp)$/.test(race.item)) { R.useItem(); } else { showItem(); tell(`${RACE_ITEMS[race.item][0]} ${RACE_ITEMS[race.item][1]}: ${RACE_ITEMS[race.item][2]}. ${matchMedia("(pointer: coarse)").matches ? "Tap it to use it" : "Press X (or click it) to use it"}`, false); }break; }
+          // every one waits for you to use it (Ash, 24 November 2026: "The autodrive didn't seem to work, with the extreme boost move back
+          // to manual activation": it started while your thumb was still driving, and that took it straight back off you)
+          { showItem(); tell(`${RACE_ITEMS[race.item][0]} ${RACE_ITEMS[race.item][1]}: ${RACE_ITEMS[race.item][2]}. ${matchMedia("(pointer: coarse)").matches ? "Tap it to use it" : "Press X (or click it) to use it"}`, false); }break; }
         // a peel: within 1.8 m of the car (not your own for the first 2 s)
         if (race.leg !== 1) for (const [key, p] of race.peels) if (Math.abs(p.x - x) < 1.8 && Math.abs(p.z - z) < 1.8 && !(p.mine && now - p.at < 2000)) { race.peels.delete(key); send(["peeloff", race.id, key]);
           const ok = T.car?.raceFx?.("hit", 0); if (ok) { say("🍌", 700); tell(p.mine ? "You slipped on your own peel!" : `${nameOf(p.from)}'s banana peel got you!`, true); if (p.from) send(["hit", race.id, "peel", p.from, 1]); } } }
@@ -19729,7 +19729,9 @@ const handle = async (m, post) => {
         // it back. (Shift is left out: the < and > keys are often pressed with it, and that would boost the car out of it)
         // (Autodrive from the GPS drives like a hoon: it works the boost and the handbrake itself too)
         const mine = Math.abs(thr) > 0.05 || Math.abs(str) > 0.05;  // (your own driving, before Autodrive's)
-        let aHand = false; if (auto) { if (Math.abs(thr) > 0.05 || Math.abs(str) > 0.05 || has("Space") || F.hand || F.boost) autoEnd(); else { const a = autoStep(dt); thr = a[0]; str = a[1]; boost = !!a[2]; aHand = !!a[3]; } }
+        let aHand = false; if (auto) { const rA = C.autoTil > performance.now(), gr = rA && performance.now() < (auto.t0 || 0) + 1000;
+          /* (the race's Autodrive: holding the throttle or the stick a little doesn't stop it, and nothing does for its first second; a hard steer or the handbrake takes over. Ash, 24 November 2026: "The autodrive didn't seem to work") */
+          if (rA ? !gr && (Math.abs(str) > 0.6 || has("Space") || F.hand) : Math.abs(thr) > 0.05 || Math.abs(str) > 0.05 || has("Space") || F.hand || F.boost) autoEnd(); else { const a = autoStep(dt); thr = a[0]; str = a[1]; boost = !!a[2]; aHand = !!a[3]; } }
         if (C.wait) { thr = 0; boost = false; car.v = 0; car.teamTil = 0; }  // on a race's grid: held still until Go (you can still look round)
         let v = car.v; const brake = has("Space") || !!F.hand || aHand;
         // the boost runs on a charge: about four seconds' worth, back in ten. Run right out, it waits until a fifth is back
@@ -20502,7 +20504,7 @@ const handle = async (m, post) => {
       else if (veh === "plane" && plane) { plane.v = Math.max(18, plane.v * 0.4); plane.r = 1.1; }
       else if (veh === "possum" && pos) { pos.v = 0; C.slowTil = now + 1500; }
       return true; };
-    C.raceAuto = (pts, ms) => { if (!C.drivePath(pts, { hoon: true })) return false; const now = performance.now(); C.autoTil = now + ms;
+    C.raceAuto = (pts, ms) => { if (!C.drivePath(pts, { hoon: true })) return false; const now = performance.now(); C.autoTil = now + ms; auto.t0 = now;
       setTimeout(() => { if (auto && !auto.done) autoEnd(); }, ms); return true; };  // (the race's Autodrive: 10 s along the course, a quarter faster; then it's yours again)
     C.raceWarp = (x, z, h, y) => { if (veh === "car" && car) { car.x = x; car.z = z; car.h = car.dir = h; car.y = ground(x, z) + 0.05; car.v = Math.max(car.v, 15); return true; }
       if (veh === "possum" && pos) { pos.x = x; pos.z = z; pos.h = h; pos.y = surf(x, z); return true; } if (veh === "plane" && plane) { plane.x = x; plane.z = z; plane.h = h; if (y != null) plane.y = y; return true; } return false; };
