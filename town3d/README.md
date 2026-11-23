@@ -2942,3 +2942,9 @@ turns", "Move the time trial thing to smaller and to the right of launch control
 - The card is smaller and sits right of the upgrade chip on a phone; the way to go is a big arrow tilted into the view with the
   distance under it (and climb or dive for the rings).
 
+### Houses dropped again far away (23 November 2026)
+
+Ash, flying the plane in the race: "Browser reclaimed graphics" (the browser took back the graphics memory). The detailed houses built as
+you near each block stayed built, so flying across Moorooka built them all again (about 180 MB). Now (moorooka-model.js ?v=70) a block's
+detailed houses are dropped once you're 650 m past where they show, and built again if you come back.
+
