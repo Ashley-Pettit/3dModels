@@ -2976,3 +2976,11 @@ detailed houses are dropped once you're 650 m past where they show, and built ag
 - The countdown beeps for 3, 2, 1 and a higher one for Go; the car picker goes at 3. The plain possum has no Boost (the golden one keeps
   it). Share no longer offers "Text message" (it didn't work on Ash's iPhone; More options has Messages).
 
+### Houses built at load again (23 November 2026)
+
+Ash, on his iPhone: "Joystick bug back" and "App feels a bit laggy". Following the rule (revert the latest change to Explore's loading
+first): building each block's detailed houses mid-game (?v=68 to ?v=70) is undone, and they're built at load again as before
+(moorooka-model.js ?v=71 is ?v=67's bundle). Mid-game building was heavy main-thread work while you play, which is the known way the
+stick drops on an iPhone, and dropping them far away (?v=70) made it happen again each time you came back. The other memory savings
+(no weather town centre on Moorooka and Logan, the half-size Inverloch ground on phones) stay.
+
