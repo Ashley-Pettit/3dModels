@@ -42,3 +42,53 @@ lead=route([on("Mayfield Road",494,-101),on("Weir Street",101,-262)])
 show('the plane, before the lap',lead)
 sJ,_,_=lap_near(X[lead[-1]],Z[lead[-1]]); print('  then the lap backwards from',round(sJ),'m to the line')
 print('RACE_POSSUM =',pts(pos)); print('RACE_PLANE =',pts(lead))
+
+# ---- the possum's gum leaves (24 November 2026; Ash: "I want the gum leaves to be more obvious and at the tops of trees houses and light
+# poles and occasionally on the ground"): one about every 24 m along the possum's way once its straight is done, each on the nearest free
+# thing of the kind its turn asks for, within 16 m of the way: Kingwell Street's five street lights (the ones the possum climbs) first,
+# then by turns a house's roof (its middle; houses of 40 to 400 m2, within 28 m), a tree of 4 m or more, and now and then the ground
+# beside the way. None within
+# 12 m of another. Printed as RACE_LEAVES: x, z (decimetres), kind (0 ground, 1 tree, 2 roof, 3 street light), and a tree's height (dm)
+import base64,struct
+town=json.load(open(os.path.join(HERE,'..','..','town3d','moorooka','town.json')))
+raw=base64.b64decode(town['trees']); A=struct.unpack('<%dh'%(len(raw)//2),raw[:len(raw)//2*2])
+TREES=[(A[i]/4,A[i+1]/4,(A[i+2]&255)/10) for i in range(0,len(A)-2,3) if (A[i+2]&255)/10>=4]
+raw=base64.b64decode(town['buildings']); B=struct.unpack('<%dh'%(len(raw)//2),raw[:len(raw)//2*2]); HOUSES=[]; i=0
+while i<len(B):
+    k=B[i]; p=[(B[i+7+2*q]/10,B[i+8+2*q]/10) for q in range(k)]; i+=7+2*k
+    if k<3: continue
+    ar=0;cx=0;cz=0
+    for (ax,az),(bx,bz) in zip(p,p[1:]+p[:1]): c=ax*bz-bx*az; ar+=c; cx+=(ax+bx)*c; cz+=(az+bz)*c
+    if abs(ar)<1e-6: continue
+    cx/=3*ar; cz/=3*ar; ar=abs(ar)/2
+    if 40<=ar<=400: HOUSES.append((cx,cz))
+POLES=[tuple(map(float,q)) for q in re.findall(r'\[(-?[\d.]+), (-?[\d.]+)\]',re.search(r'poles: (\[\[.*?\]\])',app).group(1))]
+PX=[X[i] for i in pos]; PZ=[Z[i] for i in pos]; PA=[0]
+for a,b in zip(range(len(PX)),range(1,len(PX))): PA.append(PA[-1]+math.hypot(PX[b]-PX[a],PZ[b]-PZ[a]))
+def pat(d):
+    for j in range(1,len(PA)):
+        if PA[j]>=d: t=(d-PA[j-1])/max(1e-9,PA[j]-PA[j-1]); return PX[j-1]+(PX[j]-PX[j-1])*t,PZ[j-1]+(PZ[j]-PZ[j-1])*t,math.atan2(PX[j]-PX[j-1],PZ[j]-PZ[j-1])
+    return PX[-1],PZ[-1],0
+def near_way(x,z):
+    return min(math.hypot(x-pat(d)[0],z-pat(d)[1]) for d in range(0,int(PA[-1]),4))
+chosen=[]; order=['roof','tree','roof','tree','ground','tree','roof']; turn=0; counts=collections.Counter()
+free=lambda x,z: all(math.hypot(x-a,z-b)>=12 for a,b,_,_ in chosen)
+for d in range(320,int(PA[-1])-20,24):
+    px,pz,h=pat(d); pick=None
+    for (x,z) in POLES:
+        if math.hypot(x-px,z-pz)<16 and free(x,z): pick=(x,z,3,0); break
+    tries=0
+    while not pick and tries<len(order):
+        want=order[turn%len(order)]; turn+=1; tries+=1
+        if want=='tree':
+            c=[(math.hypot(x-px,z-pz),x,z,ht) for x,z,ht in TREES if math.hypot(x-px,z-pz)<16 and free(x,z)]
+            if c: _,x,z,ht=min(c); pick=(x,z,1,ht)
+        elif want=='roof':
+            c=[(math.hypot(x-px,z-pz),x,z) for x,z in HOUSES if math.hypot(x-px,z-pz)<28 and free(x,z)]
+            if c: _,x,z=min(c); pick=(x,z,2,0)
+        else:
+            s=1 if len(chosen)%2 else -1; x=px+math.cos(h)*2.5*s; z=pz-math.sin(h)*2.5*s
+            if free(x,z): pick=(x,z,0,0)
+    if pick: chosen.append(pick); counts[pick[2]]+=1
+print('the leaves:',len(chosen),'(ground, tree, roof, street light):',[counts[k] for k in range(4)])
+print('RACE_LEAVES =',json.dumps([v for x,z,k,ht in chosen for v in (round(x*10),round(z*10),k,round(ht*10))],separators=(',',':')))

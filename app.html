@@ -17602,6 +17602,8 @@ const handle = async (m, post) => {
   // the possum's way, from the giant possum house to the parked plane, and the plane's, from there to where it joins the lap backwards
   // (tools/race/legs.py; x, z in decimetres)
   const RACE_POSSUM = [237,-2854,927,-2706,946,-2745,979,-2775,1021,-2789,1051,-2788,1086,-2775,1118,-2745,1137,-2706,1137,-2667,3156,-2340,3158,-2302,3179,-2255,3217,-2220,3255,-2207,3103,-1339,3298,-1303,3012,238,3812,607,4128,-1153,4940,-1011];
+  // the possum's gum leaves: x, z (decimetres), what it's on (0 the ground, 1 a tree, 2 a roof, 3 a street light), a tree's height (dm)
+  const RACE_LEAVES = [3095,-2095,2,0,3298,-1922,1,69,3027,-1762,2,0,3040,-1478,1,197,3119,-1311,0,0,3311,-1237,0,0,3198,-1100,1,48,2957,-795,2,0,2920,-618,2,0,3058,-345,1,175,3308,-65,2,0,2895,158,1,50,3160,334,0,0,3345,295,1,80,3693,270,2,0,3888,494,3,0,4042,465,2,0,3948,159,3,0,4018,-228,3,0,3918,-455,1,54,4087,-615,3,0,3895,-915,2,0,4157,-1002,3,0,4258,-1228,1,78,4504,-1062,0,0];
   const RACE_PLANE = [4940,-1011,4128,-1153,3298,-1303,3103,-1339,2368,-1472,1371,-1648,868,-1737,1013,-2579];
   // ---- The race, since 23 November 2026, in three legs (Ash: "Make the car part about 50% shorter. After completing the car part add in
   // plane and raccoon sections"; the town's climbing animal is the possum). Since 24 November 2026 the car, then the possum, then the plane:
@@ -17704,12 +17706,16 @@ const handle = async (m, post) => {
     const BOX = [], rowAt = (p, h, leg) => { const ux = Math.cos(h), uz = -Math.sin(h), r = { leg, h, back: 0, b: [] }; for (const u of [-2.6, 0, 2.6]) { const x = p.x + ux * u, z = p.z + uz * u; r.b.push({ x, z, y: ground(x, z) + 1.15 }); } BOX.push(r); };
     for (let s = 170; s < sH - 120; s += 230) rowAt(at(s), headAt(s), 0);
     for (const d of [70, 210]) rowAt(PW.at(d), PW.head(d), 1);
-    // the gum leaves (the possum's game, once its straight is done): a bunch every 20 m, weaving from side to side; every fifth one up high
-    // (jump for it), every seventh golden. You need 15 to fly (a golden one counts 3, and gives a burst of speed): the plane won't take you
-    // without them. Taking one takes it from the others too, for 12 s (Ash, 24 November 2026: "Focus less on time trial and more on
-    // multiplayer. For example make the person have to get gum leaves as time off is not relevant for multiplayer")
-    const NEED = 15, LEAF = []; { let k = 0; for (let d = 330; d < PW.len - 24; d += 20, k++) { const p = PW.at(d), h = PW.head(d), u = 3 * Math.sin(k * 1.3), x = p.x + Math.cos(h) * u, z = p.z - Math.sin(h) * u, g = ground(x, z), high = k % 5 === 4;
-      LEAF.push({ x, z, g, y: g + (high ? 2.9 : 0.75), high, gold: k % 7 === 6, got: 0 }); } }
+    // the gum leaves (the possum's game, once its straight is done): up on the tops of trees, roofs and Kingwell Street's street lights, and
+    // now and then on the ground (Ash, 24 November 2026: "I want the gum leaves to be more obvious and at the tops of trees houses and light
+    // poles and occasionally on the ground"; where each goes: tools/race/legs.py). Every sixth one up high is golden. You need 15 to fly (a
+    // golden one counts 3, and gives a burst of speed): the plane won't take you without them. Taking one takes it from the others too, for
+    // 12 s (Ash, 24 November 2026: "Focus less on time trial and more on multiplayer. For example make the person have to get gum leaves as
+    // time off is not relevant for multiplayer")
+    const NEED = 15, LEAF = []; for (let i = 0; i < RACE_LEAVES.length; i += 4) { const x = RACE_LEAVES[i] / 10, z = RACE_LEAVES[i + 1] / 10, kind = RACE_LEAVES[i + 2], th = RACE_LEAVES[i + 3] / 10, g = ground(x, z), n = i / 4;
+      LEAF.push({ x, z, g, kind, y: g + 1 + (kind === 1 ? th * 0.97 : kind === 3 ? 8.24 : kind === 2 ? 6 : 0), high: kind !== 0, gold: kind !== 0 && n % 6 === 5, got: 0 }); }
+    // each one a metre over what it's on, as the possum finds it (the roofs and trees are in by the possum's turn: loaded on the grid)
+    const placeLeaves = () => { for (const q of LEAF) { const y = T.car?.raceSurf?.(q.x, q.z); if (y != null && Number.isFinite(y)) q.y = y + 1; q.shown = undefined; } };
     // the grid: two by two behind the line, 7 m between rows, either side of the carriageway's middle
     const slot = i => { const row = i >> 1, side = i & 1 ? -1 : 1, s = L - 10 - row * 7, p = at(s), h = headAt(s); return { x: p.x + Math.cos(h) * 1.7 * side, z: p.z - Math.sin(h) * 1.7 * side, h }; };
     // ---- what's drawn: the yellow line (the car's way) and the green one (the possum's), the chequered line and banner, the gates, the
@@ -17776,11 +17782,13 @@ const handle = async (m, post) => {
         for (const u of [-2.6, 0, 2.6]) cube(u, 0);
         const one = { positions: new Float32Array(o), normals: new Float32Array(nn), colors: new Float32Array(cc), color: [1, 1, 1], unlit: true };
         boxes = m.addParts(BOX.map(() => ({ ...one, matrix: new BS.B.THREE.Matrix4().elements }))); }
-      // the gum leaves: three long leaves in a bunch (gold for the golden ones), one part each
-      { const mk = k => { const o = [], cc = []; for (let i = 0; i < 3; i++) { const a = i * 2.1, ca = Math.cos(a), sa = Math.sin(a), L1 = 0.62, W1 = 0.13;
+      // the gum leaves: three long leaves in a bunch (gold for the golden ones), with a column of little diamonds rising over it so it shows
+      // from down the street, up on a roof or a tree; one part each
+      { const mk = (k, sp) => { const o = [], cc = []; for (let i = 0; i < 3; i++) { const a = i * 2.1, ca = Math.cos(a), sa = Math.sin(a), L1 = 0.62, W1 = 0.13;
           const pt = (u, v, y) => [ca * u - sa * v, y, sa * u + ca * v]; for (const q of [pt(0, 0, 0), pt(L1 * 0.5, W1, 0.08), pt(L1, 0, 0.2), pt(0, 0, 0), pt(L1, 0, 0.2), pt(L1 * 0.5, -W1, 0.08)]) { o.push(...q); cc.push(...k); } }
+          for (let j = 1; j <= 5; j++) { const y0 = 0.35 + j * 0.42, r = 0.16 - j * 0.015, e = [[r, 0, 0], [0, 0, r], [-r, 0, 0], [0, 0, -r]]; for (const t of [[0, y0 + r * 1.4, 0], [0, y0 - r * 1.4, 0]]) for (let a = 0; a < 4; a++) { o.push(...t, e[a][0], y0, e[a][2], e[(a + 1) % 4][0], y0, e[(a + 1) % 4][2]); cc.push(...sp, ...sp, ...sp); } }
           return { positions: new Float32Array(o), normals: new Float32Array(o.length).map((_, i) => i % 3 === 1 ? 1 : 0), colors: new Float32Array(cc), color: [1, 1, 1], unlit: true, doubleSide: true }; };
-        const gl = mk(lin("#5fc24a")), gg = mk(lin("#ffd23c")); leaves = m.addParts(LEAF.map(q => ({ ...(q.gold ? gg : gl), matrix: new BS.B.THREE.Matrix4().elements }))); } };
+        const gl = mk(lin("#5fd84a"), lin("#c8ff9a")), gg = mk(lin("#ffd23c"), lin("#fff3a8")); leaves = m.addParts(LEAF.map(q => ({ ...(q.gold ? gg : gl), matrix: new BS.B.THREE.Matrix4().elements }))); } };
     const MQ = new BS.B.THREE.Quaternion(), MV = new BS.B.THREE.Vector3(), MS = new BS.B.THREE.Vector3(), MM = new BS.B.THREE.Matrix4(), MY = new BS.B.THREE.Vector3(0, 1, 0);
     const markAt = (t, x, z) => { if (!mark?.setMatrix || !t) return; const tm = performance.now() / 1000, d = Math.hypot(t.x - x, t.z - z), sc = bsClamp(d * 0.02, t.kind === "door" ? 1.2 : 1.6, 7), y = t.y != null ? t.y + t.r + 2.5 + sc * 0.5 : ground(t.x, t.z) + (t.kind === "door" ? 9.4 : t.kind === "board" ? 6.5 : t.leg === 1 ? 4 : 5.6) + sc * 0.9;
       MQ.setFromAxisAngle(MY, tm * 1.6); MM.compose(MV.set(t.x, y + Math.sin(tm * 3) * 0.25, t.z), MQ, MS.set(sc, sc * 1.25, sc)); mark.setMatrix(0, MM.elements.slice()); };
@@ -17789,7 +17797,7 @@ const handle = async (m, post) => {
       if (boxes?.setMatrix) BOX.forEach((r, i) => { const b = r.b[1], near = Math.abs(b.x - x) + Math.abs(b.z - z) < 260, up = r.back < now; if (!near && r.shown === up) return; r.shown = up;
         MQ.setFromAxisAngle(MY, r.h); MM.compose(MV.set(b.x, b.y + Math.sin(tm * 2.2 + i) * 0.18, b.z), MQ, MS.setScalar(up ? 1 : 1e-4)); boxes.setMatrix(i, MM.elements.slice()); });
       if (leaves?.setMatrix) LEAF.forEach((q, i) => { const near = Math.abs(q.x - x) + Math.abs(q.z - z) < 200, up = !q.got && !(q.gone > now); if (!near && q.shown === up) return; q.shown = up;
-        MQ.setFromAxisAngle(MY, tm * 1.3 + i); MM.compose(MV.set(q.x, q.y + Math.sin(tm * 2.6 + i) * 0.15, q.z), MQ, MS.setScalar(up ? (q.gold ? 2.2 : 1.7) : 1e-4)); leaves.setMatrix(i, MM.elements.slice()); }); };
+        MQ.setFromAxisAngle(MY, tm * 1.3 + i); MM.compose(MV.set(q.x, q.y + Math.sin(tm * 2.6 + i) * 0.15, q.z), MQ, MS.setScalar(up ? (q.gold ? 3.1 : 2.5) : 1e-4)); leaves.setMatrix(i, MM.elements.slice()); }); };
     // ---- what's on the screen: the card (place, time, the way, the others, a line of news), the item button, the countdown, the panel
     const card = document.createElement("div"); card.className = "bs-race"; card.hidden = true; card.setAttribute("role", "status");
     card.innerHTML = `<svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 16-7-4-7 4z" fill="#ffc93c"/></svg><div><b></b><span></span><span class="std"></span><span class="news" aria-live="polite"></span></div><button type="button" aria-label="Leave the race">×</button>`;
@@ -17867,7 +17875,7 @@ const handle = async (m, post) => {
       const h = document.createElement("h3"), p1 = document.createElement("p"), p2 = document.createElement("p"), row = document.createElement("div");
       h.innerHTML = `Race around Moorooka <small>${fmtD(TOT)}</small>`; p1.className = "small"; p1.textContent = "Boxes on the road give power-ups: the further back you are, the better they get.";
       const legs = document.createElement("div"); legs.className = "legs";
-      for (const [em, b, sm] of [["🚗", "Drive", "to the giant possum house"], ["🐾", "Possum", `grab ${NEED} gum leaves`], ["✈️", "Fly", "through the rings home"]]) { const d = document.createElement("div"); d.innerHTML = `<span aria-hidden="true">${em}</span><b>${b}</b><small>${sm}</small>`; legs.append(d); }
+      for (const [em, b, sm] of [["🚗", "Drive", "to the giant possum house"], ["🐾", "Possum", `climb for ${NEED} gum leaves`], ["✈️", "Fly", "through the rings home"]]) { const d = document.createElement("div"); d.innerHTML = `<span aria-hidden="true">${em}</span><b>${b}</b><small>${sm}</small>`; legs.append(d); }
       const inv = document.createElement("div"), ib = document.createElement("button"), it = document.createElement("span"); inv.className = "inv"; ib.type = "button"; ib.textContent = "Invite someone";
       it.textContent = "They get a link to the start line"; inv.append(ib, it);
       ib.onclick = () => { invite(); ib.blur(); };
@@ -17981,7 +17989,7 @@ const handle = async (m, post) => {
       else if (t.kind === "door") { onFoot(false); if (T.car) T.car.wait = false; const p = PW.at(10); let ok = !!T.car?.raceSwap?.("possum", p.x, p.z, PW.head(22));
         // (no possum to be: on in a car instead, along the green line)
         if (!ok) ok = !!T.car?.grid?.(p.x, p.z, PW.head(22)); race.noPossum = T.car?.where?.()?.kind !== "possum"; say("🐾", 1000); T.snd?.pop?.(); [1568, 1760, 1568, 2093].forEach((f, i) => setTimeout(() => T.snd?.tone?.(f, f * 0.9, 0.06, 0.05, "square"), 140 + i * 70));
-        banner("🐾 You're the possum!", `Grab ${NEED} gum leaves on the way: the plane won't fly without them. Golden ones count 3`, 3800); parkPlane(); }
+        banner("🐾 You're the possum!", `Climb trees, roofs and street lights for ${NEED} gum leaves: the plane won't fly without them. Golden ones count 3`, 4200); parkPlane(); placeLeaves(); }
       else if (t.kind === "pend") { race.leg = 2; T.car?.raceOut?.(); onFoot(true); fanfare(); showRings(true);
         if (!parkPlane()) { const ok = T.car?.raceSwap?.("plane", PLN.x, PLN.z, PLH, ground(PLN.x, PLN.z) + 25); if (ok) { race.ti++; onFoot(false); } else race.noPlane = true; }
         banner("🏁 Possum part over!", race.free ? "Jump in the plane (Get in) and take off down the road" : "No plane on the ground: you're straight in the air", 3600); if (race.free) tell("Walk to the plane and tap Get in", true); }
@@ -18002,7 +18010,7 @@ const handle = async (m, post) => {
       else if (race.streak >= 3 && race.streak % 3 === 0) say("🍃", 700, `${race.streak + 1} in a row!`);
       if (had < NEED && race.leaves >= NEED) { setTimeout(() => { ding(); say("🍃", 1400, "That's enough leaves: on to the plane!"); }, 300); tell("Enough gum leaves: run for the plane", true); } };
     const aim = (x, z, now) => { const t = TG[race.ti]; if (!t || race.leg !== 1 || race.leaves >= NEED || t.kind !== "pend") return t;
-      let b = null, bd = Infinity; for (const q of LEAF) if (!q.got && !(q.gone > now)) { const d = Math.hypot(q.x - x, q.z - z); if (d < bd) { bd = d; b = q; } } return b ? { x: b.x, z: b.z, y: null, kind: "leaf", leg: 1, D: t.D } : t; };
+      let b = null, bd = Infinity; for (const q of LEAF) if (!q.got && !(q.gone > now)) { const d = Math.hypot(q.x - x, q.z - z); if (d < bd) { bd = d; b = q; } } return b ? { x: b.x, z: b.z, y: b.y + 1, r: 0, kind: "leaf", leg: 1, D: t.D } : t; };
     // ---- each frame: the countdown, the marker, boxes and leaves, picking things up; five times a second, the rest
     R.frame = force => { if (!race || dead) return; const now = performance.now();
       if (!big.hidden && now > bigT) big.hidden = true;
@@ -18020,7 +18028,7 @@ const handle = async (m, post) => {
           // to manual activation": it started while your thumb was still driving, and that took it straight back off you)
           if (race.item === "auto") R.useItem(); else { showItem(); tell(`${RACE_ITEMS[race.item][0]} ${RACE_ITEMS[race.item][1]}: ${RACE_ITEMS[race.item][2]}. ${touch() ? "Tap it to use it" : "Press X (or click it) to use it"}`, false); } break; }  // (the Autodrive cannon goes off by itself; the rest wait for you)
         // a gum leaf: within 1.9 m and at its height (jump for the high ones)
-        if (race.leg === 1) for (const q of LEAF) if (!q.got && !(q.gone > now) && Math.abs(q.x - x) < 1.9 && Math.abs(q.z - z) < 1.9 && y > q.g - 1 && (q.high ? y > q.g + 0.9 : y < q.g + 3.4)) { q.got = now; leafGot(q, now); }
+        if (race.leg === 1) for (const q of LEAF) if (!q.got && !(q.gone > now) && Math.hypot(q.x - x, q.z - z) < (q.kind === 1 || q.kind === 2 ? 2.6 : 2) && Math.abs(y - (q.y - 1)) < 1.9) { q.got = now; leafGot(q, now); }
         // a peel: within 1.8 m (not your own for the first 2 s)
         if (race.leg < 2) for (const [key, p] of race.peels) if (Math.abs(p.x - x) < 1.8 && Math.abs(p.z - z) < 1.8 && !(p.mine && now - p.at < 2000)) { race.peels.delete(key); send(["peeloff", race.id, key]);
           const ok = T.car?.raceFx?.("hit", 0); if (ok) { say("🍌", 700); tell(p.mine ? "You slipped on your own peel!" : `${nameOf(p.from)}'s banana peel got you!`, true); if (p.from) send(["hit", race.id, "peel", p.from, 1]); } } }
@@ -20663,6 +20671,7 @@ const handle = async (m, post) => {
       const P = planes.find(P => !P.takenBy && !P.heli && !P.gold && P !== plane) || planes.find(P => !P.takenBy && !P.heli && P !== plane); if (!P) return false;
       racePlane = P; P.x = x; P.z = z; P.h = h; P.air = false; P.v = 0; P.spin = 0; const [y, p, r] = lie(P, 2, 1.2); P.y = y; P.p = p; P.r = r; showPlane(P); return true; };
     C.raceParkOk = () => !!racePlane && !racePlane.takenBy;
+    C.raceSurf = (x, z) => surf(x, z);  // (what the possum would stand on there: where the race puts its gum leaves)
     C.raceOut = () => { const was = veh; if (veh) leave(true); if (was === "possum") possumHome(); };  // (out of the possum at the plane, standing where it was; it goes home, so Get in is for the plane)
     C.raceWarp = (x, z, h, y) => { if (veh === "car" && car) { car.x = x; car.z = z; car.h = car.dir = h; car.y = ground(x, z) + 0.05; car.v = Math.max(car.v, 15); return true; }
       if (veh === "possum" && pos) { pos.x = x; pos.z = z; pos.h = h; pos.y = surf(x, z); return true; } if (veh === "plane" && plane) { plane.x = x; plane.z = z; plane.h = h; if (y != null) plane.y = y; return true; } return false; };
