@@ -17627,9 +17627,9 @@ const handle = async (m, post) => {
     const NC = GA.length - 1; GA.push(pickS(SP + 200, 50), pickS(SP + 400, 50), L); const NG = GA.length - 1, GP = GA.map(s => at(s));
     const RINGS = []; { const s0 = GA[NC] + 110, s1 = SP - 70, n = Math.max(3, Math.round((s1 - s0) / 120));
       for (let i = 0; i < n; i++) { const s = s0 + (s1 - s0) * i / (n - 1), p = at(s); RINGS.push({ s, x: p.x, z: p.z, y: ground(p.x, p.z) + 36 + 9 * Math.sin(i * 1.9), h: headAt(s) }); } }
-    const TG = []; for (let k = 1; k <= NC; k++) TG.push({ s: GA[k], x: GP[k].x, z: GP[k].z, y: null, leg: 0 });
+    const TG = []; for (let k = 1; k <= NC; k++) TG.push({ s: GA[k], x: GP[k].x, z: GP[k].z, y: null, h: headAt(GA[k] >= L - 1 ? 0 : GA[k]), leg: 0 });
     for (const q of RINGS) TG.push({ s: q.s, x: q.x, z: q.z, y: q.y, h: q.h, leg: 1 });
-    for (let k = NC + 1; k <= NG; k++) if (GA[k] >= SP) TG.push({ s: GA[k], x: GP[k].x, z: GP[k].z, y: null, leg: 2 });
+    for (let k = NC + 1; k <= NG; k++) if (GA[k] >= SP) TG.push({ s: GA[k], x: GP[k].x, z: GP[k].z, y: null, h: headAt(GA[k] >= L - 1 ? 0 : GA[k]), leg: 2 });
     const NT = TG.length, LEG_ICON = ["🚗", "✈️", "🐾"];
     // the power-up boxes: rows of three across the road, every 230 m along the car's leg and once on the possum's
     const BOX = []; { const rows = []; for (let s = 170; s < GA[NC] - 80; s += 230) rows.push(s); rows.push(SP + 90, SP + 330);
@@ -17805,7 +17805,7 @@ const handle = async (m, post) => {
         if (T.car?.raceAuto?.(pts, 10000)) { say("🤖", 800); tell("Autodrive: the car's driving for 10 s, a quarter faster. Steer to take over", false); }
         else { T.car?.raceFx?.("turbo", 3500); say("🚀", 700); tell("No car to drive: a Turbo instead", false); } }
       else if (k === "warp") { const s = Math.min(race.m + 150, TG[race.ti].s - 1), p = at(s), ok = T.car?.raceWarp?.(p.x, p.z, headAt(s)); say("🌀", 700);
-        if (ok) { while (race.ti < NT - 1 && TG[race.ti].s < s + 5 && TG[race.ti].leg === race.leg) race.ti++; } send(["fx", race.id, "warp", ""]); }
+        if (ok) { while (race.ti < NT - 1 && TG[race.ti].s < s + 5 && TG[race.ti].leg === race.leg) race.ti++; race.pv = null; } send(["fx", race.id, "warp", ""]); }
       else if (k === "peel") { const w = where(), h = w?.heading ?? F.yaw, px = x - Math.sin(h) * 4, pz = z - Math.cos(h) * 4, key = Math.random().toString(36).slice(2, 7);
         race.peels.set(key, { x: px, z: pz, mine: true, at: performance.now() }); send(["peel", race.id, Math.round(px * 10) / 10, Math.round(pz * 10) / 10, key]); tell("Banana peel dropped behind you", false); }
       else if (k === "magpie") { const a = ahead(), t = a[a.length - 1] || rows.find(r => !r.you && !r.fin); if (t) { send(["fx", race.id, "magpie", t.id]); tell(`Your magpie's after ${t.name}`, false); } else tell("No one to swoop: you're on your own", false); }
@@ -17863,18 +17863,25 @@ const handle = async (m, post) => {
         if (race.leg !== 1) for (const [key, p] of race.peels) if (Math.abs(p.x - x) < 1.8 && Math.abs(p.z - z) < 1.8 && !(p.mine && now - p.at < 2000)) { race.peels.delete(key); send(["peeloff", race.id, key]);
           const ok = T.car?.raceFx?.("hit", 0); if (ok) { say("🍌", 700); tell(p.mine ? "You slipped on your own peel!" : `${nameOf(p.from)}'s banana peel got you!`, true); if (p.from) send(["hit", race.id, "peel", p.from, 1]); } } }
       if (!force && now - hudT < 200) return; hudT = now;
-      if (race.state === "go" && race.pending && now >= race.pending.at) { const P = race.pending; race.pending = null; race.leg = P.leg; itemBtn.hidden = !race.item;
+      if (race.state === "go" && race.pending && now >= race.pending.at) { const P = race.pending; race.pending = null; race.leg = P.leg; race.pv = null; itemBtn.hidden = !race.item;
         if (P.leg === 1) { const ok = T.car?.raceSwap?.("plane", x, z, P.h, ground(x, z) + 30); race.noPlane = !ok; if (T.car) T.car.wait = false; say("✈️", 1000);
           tell(ok ? "Into the plane! Fly through the rings" : "No plane free: carry on along the yellow line", true); }
         else { const p = at(SP), ok = T.car?.raceSwap?.("possum", p.x, p.z, headAt(SP)); race.noPossum = !ok; say("🐾", 1000); tell(ok ? "You're the possum! Run for the line" : "Carry on to the line", true); }
         send(["at", race.id, Math.round(race.m), 0, race.leg]); race.sentAt = now; }
       if (race.state === "go" && !race.pending) { const t = TG[race.ti], dh = Math.hypot(t.x - x, t.z - z), air = t.y != null && race.leg === 1 && !race.noPlane;
-        const hit = air ? dh < 16 && Math.abs(y - t.y) < 13 : dh < 26;
-        // a ring flown past and missed: it counts, with 2 s on your time
-        const past = air && dh > 20 && ((x - t.x) * Math.sin(t.h) + (z - t.z) * Math.cos(t.h)) > 30;
+        // through the gate, not just near it (Ash, 24 November 2026: "The checkpoints are a tiny bit too forgiving"). v is how far past the
+        // gate's line you are and u how far to the side of its middle. A gate counts when you're level with it, or have crossed its line
+        // since the last look (a fast car covers 9 m between looks), within 8 m of its middle (the flags stand 4.7 m out, the finish
+        // line's posts 8.6 m) or, for a ring, within 10.5 m of its middle all round (its rim is 8.7 m out). It used to be anywhere within
+        // 26 m of a gate, even 26 m short of it, and 16 m of a ring.
+        const fx = Math.sin(t.h), fz = Math.cos(t.h), v = (x - t.x) * fx + (z - t.z) * fz, u = (x - t.x) * fz - (z - t.z) * fx, pv = race.pv; race.pv = v;
+        const crossed = pv != null && pv < 0 && v >= 0, side = air ? Math.hypot(u, y - t.y) : Math.abs(u);
+        const hit = (Math.abs(v) < 3 || crossed) && side < (air ? 10.5 : t.s >= L - 1 ? 10 : 8);
+        // a ring flown past and missed: it counts, with 2 s on your time (said as soon as you cross its line outside it)
+        const past = air && !hit && dh < 150 && (crossed || v > 30);
         if (hit || past) { if (past && !hit) { race.pen += 2000; tell("Missed a ring: 2 s on your time", false); } else { if (air) T.car?.raceFx?.("turbo", 900);
             T.snd?.tone?.(1319, 1319, 0.18, 0.09, "sine"); setTimeout(() => T.snd?.tone?.(1760, 1760, 0.35, 0.08, "sine"), 110); }  // ding! (Ash, 23 November 2026: "If I go through a checkout successfully ding!")
-          race.ti++;
+          race.ti++; race.pv = null;
           if (race.ti >= NT) { race.fin = now - race.t0 + race.pen; race.state = "done"; document.body.classList.remove("bsracing"); race.m = L; itemBtn.hidden = true; send(["at", race.id, Math.round(L), Math.round(race.fin), race.leg]); race.sentAt = now;
             const pl = standings().findIndex(r => r.you) + 1, key = "an3d-race-best-" + Math.round(L); let best = 0; try { best = +localStorage.getItem(key) || 0; } catch {}
             race.best = best; race.pb = !best || race.fin < best; if (race.pb) try { localStorage.setItem(key, String(Math.round(race.fin))); } catch {}
