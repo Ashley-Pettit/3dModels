@@ -2332,6 +2332,10 @@ Ash: "Can you add a gps in the game to navigate to an address?"
   back toward the middle, using the same building check as the joins. Getting in or out of a car works the route out again, since
   driving keeps to one-way carriageways and walking doesn't. Logan's map doesn't say which roads are one-way, so there a divided road's
   two halves both count as two-way.
+- **The top on a phone** (Ash, 23 November 2026: "Lay out the top buttons a bit nicer", and "Move new into settings admin only"): under
+  1000 px wide, even rows 46 px apart, everything 38 px tall on the 16 px edges: settings, share, mode and Jump to; the speed beside
+  the street names, GPS and Flood; the upgrade badge and the red pointer (the doctor, a helicopter); then the GPS card as wide as the
+  rows. Ash's yellow New button is gone from the top: Settings has "See what's new", which opens Jump to at the New list.
 - **On a phone** (Ash, 23 November 2026: "Consider layout on iPhone"): under 1000 px wide the card (and the race card) sits below the
   upgrade badge and the New button instead of over them, and shows the address without its suburb so it fits.
 - **The card:** the next turn ("Turn left onto Beaudesert Road"), how far to it and how far to go, and an arrow that points the way
@@ -2346,7 +2350,11 @@ Ash: "Can you add a gps in the game to navigate to an address?"
   The speed chip says "Autodrive". The Drive stick (or any driving key, the handbrake or Boost) takes the wheel back, and the line
   stays to follow; the Look stick doesn't. × on the card stops the GPS and the car. Once you've taken the wheel, an **Autodrive** button shows
   on the card (Ash, 23 November 2026: "With autodrive, if I take over manual control, show a btn to resume autodrive"): a tap and
-  the car carries on along the line from where you are on it. Off the line by 35 m, it works the way out again
+  the car carries on along the line from where you are on it.
+- **Arriving** (Ash, 23 November 2026: "allow an extra 20 second allowance before ending the gps"): the card says "You've arrived at
+  ..." and counts down 20 seconds before the GPS clears; drive off more than 40 m in that time and it carries on showing the way.
+  At the end of Autodrive the car, once stopped, turns round on the spot to face the place (`C.faceTo`; "face my destination even if
+  it means rotating the car in an abnormal way"). The stick or a driving key calls the turn off. Off the line by 35 m, it works the way out again
   and carries on. In the tests: 771 m in 33 s and 2.3 km in 85 s in Moorooka, 951 m in 36 s in Inverloch, up to 118 km/h, never
   more than 2.4 m off the line once on it.
 - **Lag:** the network is built once, the first time the GPS is opened. Each frame only looks along the next 80 points of the route,
