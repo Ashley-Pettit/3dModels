@@ -8777,7 +8777,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=21", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=65", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=66", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -14528,9 +14528,14 @@ const handle = async (m, post) => {
     fences: [[1, [-256.27, -1003.27], [-242.32, -1000.91]], [1.6, [-242.32, -1000.91], [-182.84, -990.86]], [1.6, [-240.75, -983.01], [-185.24, -974.26]], [1.7, [-182.84, -990.86], [-185.24, -974.26]]],
     planters: [[-217, -980.65], [-214.26, -980.2], [-211.75, -979.92]], bed: [-255.52, -1001.86, 0.9],
     northFence: 4.5,  // Ash, 21 November 2026: "from the current house there is 4.5m before the fence"
+    balTrees: [[-234.75, -998.5]],  // the model's tree (a palm) that stood up through the balcony: hidden while the concept shows
     near: 300,        // drawn here within this many metres (the model's own house further off)
   };
   window.anDetailOff = id => id === "6-beaudesert" && !!BS.town?.bal6?.near;
+  // number 10's back stairs (the model's detailed house next door, near-6-1rp130916) ran down through the fence into number 6's yard, by
+  // the balcony (Ash, 23 November 2026: "Remove ... the stairs that go through the fence from the neighbours house"). The model leaves them
+  // off and closes the landing with a rail when this says no (moorooka-model.js ?v=66).
+  window.anDetailStairs = (id, which) => !(id === "near-6-1rp130916" && which === "back");
   function townBalcony6(T, m) {
     const THREE = BS.B.THREE, B = MOO_BAL6, V = THREE.Vector3;
     // ---- the frame: the survey's outline gives the house's centre, its depth (dB, to the back) and width (dS, to the south). Here, as in
@@ -14839,11 +14844,14 @@ const handle = async (m, post) => {
     // November 2026: "Remove the label for the button"); how it is, or the balcony. What it does is said once you've pressed it
     const btn = document.createElement("button"); btn.type = "button"; btn.className = "bs-bal6"; btn.hidden = true;
     const label = () => { btn.setAttribute("aria-label", P.mode === "bal" ? "Show number 6 as it is" : "Show the balcony concept"); btn.setAttribute("aria-pressed", String(P.mode === "bal")); };
-    P.set = mode => { P.mode = mode; label(); if (P.near) { show("now", mode === "now"); show("bal", mode === "bal"); } };
+    // the model's tree on the north side (a palm) stood up through the balcony and the hexagon's roof: it goes while the concept shows (Ash,
+    // 23 November 2026: "Remove the tree that goes through my balcony concept"), and is back for the house as it is
+    const trees = () => { T.hideTrees = P.mode === "bal" ? B.balTrees : []; if (T.admin?.apply) T.admin.apply(); else m.setRemoved?.({ cars: T.hideCars || [], trees: T.hideTrees, people: [] }); };
+    P.set = mode => { P.mode = mode; label(); trees(); if (P.near) { show("now", mode === "now"); show("bal", mode === "bal"); } };
     btn.addEventListener("click", e => { e.stopPropagation(); btn.blur(); P.set(P.mode === "bal" ? "now" : "bal"); try { localStorage.setItem("an3d-bal6", P.mode); } catch {}
       toast(P.mode === "bal" ? "The balcony concept: walk up the new stairs down the side" : "Number 6 as it is now", 2400); });
     ($("bsFly") || document.body).append(btn);
-    try { P.mode = localStorage.getItem("an3d-bal6") === "bal" ? "bal" : "now"; } catch {} label();
+    try { P.mode = localStorage.getItem("an3d-bal6") === "bal" ? "bal" : "now"; } catch {} label(); T.hideTrees = P.mode === "bal" ? B.balTrees : [];
     const PIN = toModel(BTN.x, BTN.z), PINY = y0 + BTN.y + 0.03;  // the button's middle
     let last = "";
     P.frame = () => { const F = BS.fly; if (!F || P.dead) return;
@@ -15683,7 +15691,7 @@ const handle = async (m, post) => {
       // (front fences: the app's own houses; the model's fences and street lights: the model, setMore, moorooka-model.js ?v=47)
       if (cfg.place === "moo") { const fr = L.flatMap(e => e.gone.fronts); T.liteGone = fr; T.housesLite?.set(fr); m.setMore?.({ fences: L.flatMap(e => e.gone.fences), lights: L.flatMap(e => e.gone.lights) }); }
       m.setGroundEdits([...L.flatMap(e => e.paint), ...(draft ? [draft] : [])]);
-      m.setRemoved({ cars: [...L.flatMap(e => e.gone.cars), ...(T.hideCars || [])], trees: L.flatMap(e => e.gone.trees), people: L.flatMap(e => e.gone.people) }); };
+      m.setRemoved({ cars: [...L.flatMap(e => e.gone.cars), ...(T.hideCars || [])], trees: [...L.flatMap(e => e.gone.trees), ...(T.hideTrees || [])], people: L.flatMap(e => e.gone.people) }); };  // (T.hideTrees: number 6's balcony concept)
     apply(); A.apply = apply;  // (also when the golden car takes a parked car's place: T.hideCars)
     // what has been published for everyone; anything of mine that is in it now comes off my own list
     fetch(cfg.assets + "edits.json", { cache: "no-cache" }).then(r => r.ok ? r.json() : null).then(j => { if (!j || T.dead) return; pub = tidy(j);
