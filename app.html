@@ -8409,7 +8409,10 @@ const handle = async (m, post) => {
     F.on.wheel = e => { const T = BS.town; if (!desk || !T?.on || !T.walk || e.ctrlKey) return; e.preventDefault(); F.wheelN++;
       const code = e.deltaY < 0 ? "KeyW" : "KeyS", other = code === "KeyW" ? "KeyS" : "KeyW";
       if (!F.held.has(other)) F.keys.delete(other); F.keys.add(code); clearTimeout(F.wheelT);
-      F.wheelT = setTimeout(() => { if (!F.held.has(code)) F.keys.delete(code); }, 300); };
+      // with simple (or mixed) controls the wheel sprints you along, as the lime cordial's sprint does (Ash, 23 November 2026: "On pc with
+      // simple controls if I use the scroll wheel I want it to auto sprint to move faster as if I was using shift")
+      F.wheelRun = !!(F.simple || F.mix);
+      F.wheelT = setTimeout(() => { if (!F.held.has(code)) F.keys.delete(code); F.wheelRun = false; }, 300); };
     // the mouse looks around on a computer (Ash, 15 November 2026: "On pc make the game feel more natural when walking. Mouse able to
     // control viewpoint"): walking or driving in a town, a click on the view hands the mouse to the view; Esc gives it back, and
     // M, P and L still open Settings, Share and Flood. Not with a map-editing tool in hand, and never on a phone
@@ -8566,7 +8569,7 @@ const handle = async (m, post) => {
     const F = BS.fly, k = F.keys, has = (...c) => c.some(x => k.has(x));
     if (F.drive) return F.drive(dt);  // driving a car in a town model (townCar): the car moves, and the view follows it
     // on foot, the gym makes you 10% quicker and Pandy's lime cordial lets you sprint half as fast again (Shift, or the Sprint button)
-    const legs = F.walk ? (F.fit ? 1.1 : 1) * (F.cordial && (F.sprint || has("ShiftLeft", "ShiftRight")) ? 1.5 : 1) * (F.drunk ? 0.8 : 1) * (F.giant ? 2 : 1) : 1;
+    const legs = F.walk ? (F.fit ? 1.1 : 1) * ((F.cordial && (F.sprint || has("ShiftLeft", "ShiftRight"))) || F.wheelRun ? 1.5 : 1) * (F.drunk ? 0.8 : 1) * (F.giant ? 2 : 1) : 1;
     const sp = (has("ShiftLeft", "ShiftRight") ? 34 : 11) * (F.speed ? F.speed() : 1) * Math.min(dt, 0.1) * (F.walk && has("ShiftLeft", "ShiftRight") ? 11 / 34 : 1) * legs;  // the whole-town model flies faster the higher you are
     const f = (has("KeyW", "ArrowUp") || (F.rmb && F.walk) ? 1 : 0) - (has("KeyS", "ArrowDown") ? 1 : 0) + F.stick.y;
     const r = (has("KeyD", "ArrowRight") ? 1 : 0) - (has("KeyA", "ArrowLeft") ? 1 : 0) + F.stick.x;
@@ -17608,16 +17611,17 @@ const handle = async (m, post) => {
       try { for (const q of MOO_FOOD.p || []) { if (!q.n || q.la == null) continue; const [x, z] = m.fromLatLon(q.la, q.lo); mooP.push({ name: q.n, what: (KIND[q.k] || "Food") + (q.c ? ", " + q.c : ""), addr: q.a || "", x, z, food: true }); } } catch {}
       return mooP; };
     // Where you could go, before you type (Ash, 23 November 2026: "On gps if I click it use a big model to show me suggested places I can
-    // travel to"): the box opens big with home (Ash), people to see, places to eat, shops and the map's own places, nearest first
+    // travel to"): the box opens big with home (Ash), places to eat, shops, the map's own places and people to see, nearest first
     const suggestions = () => { const [hx, hz] = here(), far = (x, z) => Math.hypot(x - hx, z - hz), dist = d => d < 1000 ? `${Math.max(10, Math.round(d / 10) * 10)} m` : `${(d / 1000).toFixed(1)} km`;
       const near = (list, n) => list.map(p => ({ ...p, d: far(p.x, p.z) })).sort((a, b) => a.d - b.d).slice(0, n).map(p => ({ text: p.text, sub: [dist(p.d), p.sub].filter(Boolean).join(" · "), x: p.x, z: p.z, label: p.label || p.text }));
       const out = [], group = (head, list) => { if (list.length) out.push({ head }, ...list); }, seen = new Set(), once = p => { const k = p.text.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; };
       if (cfg.place === "moo") {
         if (isAsh()) { seen.add("6 beaudesert road"); group("Home", [{ text: "6 Beaudesert Road", sub: dist(far(-262.4, -991.1)), x: -262.4, z: -991.1, label: "6 Beaudesert Road, Moorooka" }]); }
-        group("People to see", near(MOO_LOCALS.filter(q => q.draw !== false && q.name && q.x != null).map(q => ({ text: q.name, x: q.x, z: q.z })).filter(once), 6));
         const mp = mooPlaces(); group("Places to eat", near(mp.filter(p => p.food).map(p => ({ text: p.name, sub: p.what, x: p.x, z: p.z, label: p.addr ? `${p.name}, ${p.addr}` : p.name })).filter(once), 5));
         group("Shops", near(mp.filter(p => !p.food).map(p => ({ text: p.name, sub: p.what, x: p.x, z: p.z, label: p.addr ? `${p.name}, ${p.addr}` : p.name })).filter(once), 5)); }
       group(cfg.place === "moo" ? "On the map" : "Places on this map", near(G.places.filter(p => p.walk && p.name).map(p => ({ text: p.name[0].toUpperCase() + p.name.slice(1), sub: p.what || "", x: p.walk.x, z: p.walk.z })).filter(once), cfg.place === "moo" ? 6 : 12));
+      // the people last (Ash, 23 November 2026: "Move the people down in priority for things on the gps")
+      if (cfg.place === "moo") group("People to see", near(MOO_LOCALS.filter(q => q.draw !== false && q.name && q.x != null).map(q => ({ text: q.name, x: q.x, z: q.z })).filter(once), 6));
       return out; };
     // suggestions: places on this map first, then addresses
     const local = q => { const w = q.toLowerCase().trim(), st = w.replace(/^\d+[a-z]?\s+/, ""); if (!w) return [];

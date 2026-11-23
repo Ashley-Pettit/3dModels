@@ -2313,8 +2313,8 @@ Ash: "Can you add a gps in the game to navigate to an address?"
   Nominatim, which has few house numbers there. Places on the map and street names (the middle of the street) are matched on the
   device too, so a street still comes up when the finder has nothing.
 - **Places to go, before you type** (Ash, 23 November 2026: "On gps if I click it use a big model to show me suggested places I can
-  travel to"): the GPS box opens big with a list, nearest first with how far: in Moorooka, Home (6 Beaudesert Road, Ash only), People to
-  see (the locals you can talk to), Places to eat (`MOO_FOOD`), Shops (`MOO_FRONTS`) and On the map (Jump to's places); in Logan and
+  travel to"): the GPS box opens big with a list, nearest first with how far: in Moorooka, Home (6 Beaudesert Road, Ash only), Places to eat (`MOO_FOOD`), Shops (`MOO_FRONTS`), On the map (Jump to's places) and, last, People to see (the locals you can talk to;
+  Ash, 23 November 2026: "Move the people down in priority"); in Logan and
   Inverloch, the places on the map. Typing searches as before; clearing the box brings the list back.
 - **Local first** (Ash, 23 November 2026: "With the gps try to prioritise moorooka address and places rather than everything"): the
   address finder is asked only for addresses inside the map (`searchExtent`, the streets' bounds, or 4 km round you before they're
@@ -2811,4 +2811,11 @@ ready to race." In `townRace` (`app.html`):
 - Opening the link: once the town's ready, you're put in a standard car at the start line (a place on the grid behind the front row,
   `R.arrive`), told who invited you, and the race panel opens. The `race` and `from` bits come off the address so a reload doesn't do it
   again.
+
+## The scroll wheel sprints with simple controls (23 November 2026)
+
+Ash: "On pc with simple controls if I use the scroll wheel I want it to auto sprint to move faster as if I was using shift." With
+simple or mixed controls on a computer, each notch of the wheel while walking steps you along at sprint speed (1.5 times, as Shift
+does after Pandy's lime cordial; `F.wheelRun`, for the 0.3 s each notch holds W or S). Gamer controls are as before. Shift on its own
+still only sprints with the cordial.
 
