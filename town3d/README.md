@@ -2846,3 +2846,11 @@ frequently. With unstuck some users on phone are struggling to press it. Not sur
   tall, at least 112 px wide) and over the other buttons (`z-index` 6). `T.car.unTest()` shows it as if stuck, for tests.
 - Tested in headless Chrome: a time trial at desktop and phone sizes (gates, marker, card); on a phone with a thumb held on the drive
   stick, a tap on Unstick fires it and the stick holds.
+
+## Jump to: GPS and the race on top; Admin in Settings (23 November 2026)
+
+Ash: "Move the race to the top of jump as well as gps. Seperate the admin stuff out of jump and add to an admin spot in settings."
+Jump to now starts with **GPS** (opens the GPS box) and **Race around Moorooka**, then players in town, then the places. The Ash-only
+things are no longer in Jump to: Settings has **Admin (just you)** with the golden car, plane and helicopters (numbered when there are
+two) and **New to check** folded up (`T.adminJumps`, `adminSec`).
+
