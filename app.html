@@ -17600,11 +17600,13 @@ const handle = async (m, post) => {
     boxEl.querySelector(".x").onclick = () => G.close();
     ul.onclick = e => { const b = e.target.closest("button[data-i]"); if (b) pick(+b.dataset.i); };
     card.querySelector(".stop").onclick = () => { G.stop(); toast("GPS off.", 1500); };
-    // Resume Autodrive: shown once you've taken the wheel from it (Ash, 23 November 2026: "With autodrive, if I take over manual
-    // control, show a btn to resume autodrive"). The car carries on along the line from where you are on it
-    const goBtn = card.querySelector(".go"), goShow = () => { const on = !!(route?.dest?.was && !route.dest.auto && T.car?.in); if (goBtn.hidden === on) goBtn.hidden = !on; };
+    // Autodrive on the card: whenever you're driving yourself, in a car, on the way (Ash, 23 November 2026: "With autodrive, if I take over
+    // manual control, show a btn to resume autodrive", then "If I'm on manual for my drive. Still show the ability to autodrive"). The car
+    // carries on along the line from where you are on it. (Not once you've arrived)
+    const goBtn = card.querySelector(".go"), goShow = () => { const on = !!(route && !route.dest.auto && !route.arr && T.car?.in); if (goBtn.hidden === on) goBtn.hidden = !on;
+      const lb = route?.dest?.was ? "Resume Autodrive: the car drives you there again" : "Autodrive: the car drives you there"; if (on && goBtn.getAttribute("aria-label") !== lb) goBtn.setAttribute("aria-label", lb); };
     goBtn.onclick = e => { e.currentTarget.blur(); const R = route; if (!R || !T.car?.in) return;
-      if (T.car.drivePath?.(R.pts.slice(Math.max(0, R.i - 2) * 2), { hoon: true })) { R.dest.auto = true; R.t0 = performance.now(); toast("Autodrive's got it.", 1600); }
+      if (T.car.drivePath?.(R.pts.slice(Math.max(0, R.i - 2) * 2), { hoon: true })) { R.dest.auto = R.dest.was = true; R.t0 = performance.now(); toast("Autodrive's got it.", 1600); }
       else toast("Autodrive can't take over here. Drive onto the line and try again.", 3000); goShow(); };
     const pick = async i => { const s = items[i]; if (!s) return; say("Finding it…");
       try { let x = s.x, z = s.z;
@@ -17685,13 +17687,13 @@ const handle = async (m, post) => {
       for (let i = Math.max(0, R.i - 15); i < Math.min(n - 1, R.i + 80); i++) { const ax = R.pts[i * 2], az = R.pts[i * 2 + 1], dx = R.pts[i * 2 + 2] - ax, dz = R.pts[i * 2 + 3] - az, L2 = dx * dx + dz * dz || 1, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L2)), d = Math.hypot(x - ax - dx * t, z - az - dz * t);
         if (d < bd) { bd = d; bi = i; bt = t; } }
       R.i = bi; const along = R.at[bi] + (R.at[Math.min(n - 1, bi + 1)] - R.at[bi]) * bt, left = R.at[n - 1] - along, toDest = Math.hypot(R.dest.x - x, R.dest.z - z);
-      // there: it says so, and the line and card stay 20 seconds before the GPS clears (Ash, 23 November 2026: "My autodrive ended too
-      // early. I drove off myself in a different direction. This was good but allow an extra 20 second allowance before ending the
-      // gps"). Drive off more than 40 m in that time and it carries on showing the way there
+      // there: it says so, and the line and card stay 5 seconds before the GPS clears (Ash, 23 November 2026: first "allow an extra 20
+      // second allowance before ending the gps", then "If the gps finishes at its destination, finish it up in 5 seconds"). Drive off
+      // more than 40 m in that time and it carries on showing the way there
       const there = toDest < 15 || left < 12, to = String(R.dest.label).split(",")[0];  // (the address without its suburb, so it fits on a phone)
       if (there && !R.arr) { R.arr = now; toast(`You've arrived: ${R.dest.label}.`, 3200); if (R.dest.auto) { T.car?.autoStop?.(); T.car?.faceTo?.(R.dest.x, R.dest.z); } }
       if (R.arr) { if (!there && toDest > 40) R.arr = 0;
-        else { if (now - R.arr > 20000) { G.stop(); return; } cb.textContent = `You've arrived at ${to}`; cs.textContent = `The GPS clears in ${Math.ceil((20000 - (now - R.arr)) / 1000)} s`; goShow(); return; } }
+        else { if (now - R.arr > 5000) { G.stop(); return; } cb.textContent = `You've arrived at ${to}`; cs.textContent = `The GPS clears in ${Math.ceil((5000 - (now - R.arr)) / 1000)} s`; goShow(); return; } }
       if (R.dest.auto && now - R.t0 > 1500 && !T.car?.autoOn?.()) { R.dest.auto = false;  // you've taken the wheel (or got out): the line stays
         if (T.car?.in && !R.dest.toldGo) { R.dest.toldGo = true; toast("You've got the wheel. Tap Autodrive on the GPS to hand it back.", 3500); } }
       goShow();
