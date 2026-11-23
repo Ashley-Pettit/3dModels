@@ -2854,3 +2854,29 @@ Jump to now starts with **GPS** (opens the GPS box) and **Race around Moorooka**
 things are no longer in Jump to: Settings has **Admin (just you)** with the golden car, plane and helicopters (numbered when there are
 two) and **New to check** folded up (`T.adminJumps`, `adminSec`).
 
+## Memory: less of it, and a way to see it (23 November 2026, on a test branch)
+
+Ash: "Help me keep track of memory. Where is memory currently used estimate", then "Do Skip the weather scene ... do not commit to main,
+branch and let me test" and "Do the other updates in the test branch". Measured at iPhone size (JavaScript heap after loading):
+Moorooka 545 MB to 333 MB; Inverloch's graphics memory 287 MB to 213 MB.
+
+- **No weather scene behind Moorooka and Logan.** This site has no news or weather, so Inverloch's town centre (the weather's view of
+  the Rotary clock) isn't built when another town opens (`NO_NEWS && BS.exploreOnly !== "inv"` round its block in `bsBuild`). bsLite
+  used to hide it after, but its lists stayed in memory: about 50 MB.
+- **Moorooka's detailed houses on demand** (`moorooka-model.js?v=68`, patched in the bundle; ai-forge's `Z_` should get the same). Each
+  420 m block had its detailed houses built at load, about 180 MB, though only the blocks within 380 m of you are ever drawn (and only
+  then let go of by `anFreeCpu`). Now only the plain houses are built at load, plus the detailed ones near where you start; the next
+  block's are built when you're within 630 m of it, 24 houses a frame, and its plain houses stand in until they're ready.
+- **Inverloch's ground photo half size on phones** (`ground-2k.webp`, 2048 by 1760, picked by `anSmallGround` as Moorooka's and
+  Logan's are; `inverloch-model.js?v=23`, patched in the bundle): about 74 MB less on the graphics card.
+- **Settings > Admin shows the memory**: the JavaScript heap where the browser reports it (Chrome and Edge; iPhone Safari doesn't),
+  and the device's memory. No browser reports graphics memory.
+
+### Smoother first seconds (23 November 2026)
+
+Ash, on his iPhone with the beta: "The app Loads faster but stutters like crazy for the first 5 secs or so." Building the detailed
+houses ahead of you ran 24 houses a frame from the first frame, and each block's mesh was put together on the same frame as its
+last houses. Now (moorooka-model.js ?v=69, patched in the bundle) the blocks you start in are still built while the loading screen
+shows; the building ahead waits 3 s, takes at most 2.5 ms a frame, skips frames that already ran slow (it still runs every 8th),
+and puts a block's mesh together on a frame of its own. In a test walking north at 30 m/s, the frames over 8 ms of house building
+after loading went from 9 (up to 42 ms) to 1 (14 ms).
