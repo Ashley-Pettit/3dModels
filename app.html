@@ -1410,6 +1410,9 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 .bs-gps-box input::placeholder { color: rgba(255, 255, 255, 0.6); }
 .bs-gps-box .x { height: 42px; padding: 0 12px; border: 0; border-radius: 10px; background: rgba(255, 255, 255, 0.14); color: #fff; font: 700 0.86rem var(--ui); cursor: pointer; }
 .bs-gps-box ul { list-style: none; margin: 6px 0 0; padding: 0; max-height: 42vh; overflow: auto; }
+.bs-gps-box.big ul { max-height: min(62vh, calc(100vh - 200px)); }
+.bs-gps-box li.h { margin: 10px 10px 2px; font: 700 0.74rem/1.3 var(--ui); color: rgba(255, 255, 255, 0.62); }
+.bs-gps-box li.h:first-child { margin-top: 4px; }
 .bs-gps-box li button { display: block; width: 100%; min-height: 42px; padding: 6px 10px; border: 0; border-radius: 10px; background: none; color: #fff; font: 600 0.9rem/1.3 var(--ui); text-align: left; cursor: pointer; }
 .bs-gps-box li button:hover, .bs-gps-box li button:focus-visible { background: rgba(255, 255, 255, 0.1); }
 .bs-gps-box small { display: block; opacity: 0.7; font: 500 0.75rem/1.3 var(--ui); }
@@ -17565,7 +17568,9 @@ const handle = async (m, post) => {
     ($("bsFly") || box).append(boxEl, card);  // (over the town's own buttons, as the race's are)
     const say = t => { note.hidden = !t; note.textContent = t || ""; };
     let items = [];
-    const show = list => { items = list; ul.innerHTML = ""; for (const [i, s] of list.entries()) { const li = document.createElement("li"), b = document.createElement("button"); b.type = "button"; b.dataset.i = i;
+    const show = (list, big = false) => { items = list; ul.innerHTML = ""; boxEl.classList.toggle("big", big); for (const [i, s] of list.entries()) { const li = document.createElement("li");
+      if (s.head) { li.className = "h"; li.textContent = s.head; ul.append(li); continue; }
+      const b = document.createElement("button"); b.type = "button"; b.dataset.i = i;
       b.append(s.text); if (s.sub) { const sm = document.createElement("small"); sm.textContent = s.sub; b.append(sm); } li.append(b); ul.append(li); } };
     // Moorooka's own shops (the shopfronts in the model) and places to eat (MOO_FOOD), found by name or by what they are ("pizza"),
     // ahead of anything from the address finder (Ash, 23 November 2026: "With the gps try to prioritise moorooka address and places
@@ -17576,8 +17581,20 @@ const handle = async (m, post) => {
       try { for (const f of MOO_FRONTS) { const tot = f.shops.reduce((t, q) => t + (q.w || 0), 0) || 1; let at = 0;
         for (const q of f.shops) { const mid = (at + (q.w || 0) / 2) / tot; at += q.w || 0; if (!q.n || q.plain) continue;
           mooP.push({ name: nice(q.n), what: q.what || "", addr: f.addr || "", x: f.a[0] + (f.b[0] - f.a[0]) * mid + f.n[0] * 1.5, z: f.a[1] + (f.b[1] - f.a[1]) * mid + f.n[1] * 1.5 }); } } } catch {}
-      try { for (const q of MOO_FOOD.p || []) { if (!q.n || q.la == null) continue; const [x, z] = m.fromLatLon(q.la, q.lo); mooP.push({ name: q.n, what: (KIND[q.k] || "Food") + (q.c ? ", " + q.c : ""), addr: q.a || "", x, z }); } } catch {}
+      try { for (const q of MOO_FOOD.p || []) { if (!q.n || q.la == null) continue; const [x, z] = m.fromLatLon(q.la, q.lo); mooP.push({ name: q.n, what: (KIND[q.k] || "Food") + (q.c ? ", " + q.c : ""), addr: q.a || "", x, z, food: true }); } } catch {}
       return mooP; };
+    // Where you could go, before you type (Ash, 23 November 2026: "On gps if I click it use a big model to show me suggested places I can
+    // travel to"): the box opens big with home (Ash), people to see, places to eat, shops and the map's own places, nearest first
+    const suggestions = () => { const [hx, hz] = here(), far = (x, z) => Math.hypot(x - hx, z - hz), dist = d => d < 1000 ? `${Math.max(10, Math.round(d / 10) * 10)} m` : `${(d / 1000).toFixed(1)} km`;
+      const near = (list, n) => list.map(p => ({ ...p, d: far(p.x, p.z) })).sort((a, b) => a.d - b.d).slice(0, n).map(p => ({ text: p.text, sub: [dist(p.d), p.sub].filter(Boolean).join(" · "), x: p.x, z: p.z, label: p.label || p.text }));
+      const out = [], group = (head, list) => { if (list.length) out.push({ head }, ...list); }, seen = new Set(), once = p => { const k = p.text.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; };
+      if (cfg.place === "moo") {
+        if (isAsh()) { seen.add("6 beaudesert road"); group("Home", [{ text: "6 Beaudesert Road", sub: dist(far(-262.4, -991.1)), x: -262.4, z: -991.1, label: "6 Beaudesert Road, Moorooka" }]); }
+        group("People to see", near(MOO_LOCALS.filter(q => q.draw !== false && q.name && q.x != null).map(q => ({ text: q.name, x: q.x, z: q.z })).filter(once), 6));
+        const mp = mooPlaces(); group("Places to eat", near(mp.filter(p => p.food).map(p => ({ text: p.name, sub: p.what, x: p.x, z: p.z, label: p.addr ? `${p.name}, ${p.addr}` : p.name })).filter(once), 5));
+        group("Shops", near(mp.filter(p => !p.food).map(p => ({ text: p.name, sub: p.what, x: p.x, z: p.z, label: p.addr ? `${p.name}, ${p.addr}` : p.name })).filter(once), 5)); }
+      group(cfg.place === "moo" ? "On the map" : "Places on this map", near(G.places.filter(p => p.walk && p.name).map(p => ({ text: p.name[0].toUpperCase() + p.name.slice(1), sub: p.what || "", x: p.walk.x, z: p.walk.z })).filter(once), cfg.place === "moo" ? 6 : 12));
+      return out; };
     // suggestions: places on this map first, then addresses
     const local = q => { const w = q.toLowerCase().trim(), st = w.replace(/^\d+[a-z]?\s+/, ""); if (!w) return [];
       const pl = G.places.filter(p => p.walk && (p.name || "").toLowerCase().includes(w)).slice(0, 4).map(p => ({ text: p.name[0].toUpperCase() + p.name.slice(1), sub: p.what || "On this map", x: p.walk.x, z: p.walk.z }));
@@ -17599,8 +17616,8 @@ const handle = async (m, post) => {
           const j = await fetch(u, { signal: sig }).then(r => r.json()); more = j.map(s => ({ text: s.display_name.split(", ").slice(0, 3).join(", "), lat: +s.lat, lon: +s.lon })); } }
       catch (e) { if (sig.aborted) return; if (!loc.length) say("Couldn't look that up just now. Check you're online and try again."); }
       if (sig.aborted || dead) return; show(/^\d/.test(q) ? [...more, ...loc] : [...loc, ...more]);  /* a house number: the addresses first */ if (loc.length || more.length) say(""); else say("Nothing found here by that name. Try the street number and name."); };
-    inp.addEventListener("input", () => { clearTimeout(sugT); const q = inp.value.trim(); if (q.length < 3) { show(local(q)); say(""); return; } sugT = setTimeout(() => suggest(q), 300); });
-    inp.onkeydown = e => { e.stopPropagation(); if (e.key === "Escape") G.close(); else if (e.key === "Enter") { e.preventDefault(); if (items.length) pick(0); else if (inp.value.trim().length >= 3) suggest(inp.value.trim()); } };
+    inp.addEventListener("input", () => { clearTimeout(sugT); const q = inp.value.trim(); if (!q) { show(suggestions(), true); say(""); return; } if (q.length < 3) { show(local(q)); say(""); return; } sugT = setTimeout(() => suggest(q), 300); });
+    inp.onkeydown = e => { e.stopPropagation(); if (e.key === "Escape") G.close(); else if (e.key === "Enter") { e.preventDefault(); const k = items.findIndex(s => !s.head); if (k >= 0) pick(k); else if (inp.value.trim().length >= 3) suggest(inp.value.trim()); } };
     inp.onkeyup = e => e.stopPropagation();
     boxEl.querySelector(".x").onclick = () => G.close();
     ul.onclick = e => { const b = e.target.closest("button[data-i]"); if (b) pick(+b.dataset.i); };
@@ -17680,7 +17697,7 @@ const handle = async (m, post) => {
       if (dest.auto && T.car?.in && T.car.drivePath?.(lp, { hoon: true })) dest.was = true;
       if (dest.auto && dest.was && !dest.told) { dest.told = true;
         toast(matchMedia("(pointer: coarse)").matches ? "Autodrive: hold on! Touch the Drive stick to take the wheel back." : "Autodrive: hold on! Any driving key takes the wheel back.", 4000); } card.hidden = false; hudT = 0; document.getElementById("bsGpsBtn")?.setAttribute("aria-pressed", "true"); G.frame(true); };
-    G.open = () => { if (dead) return; boxEl.hidden = false; inp.value = ""; show([]); budget = 24;
+    G.open = () => { if (dead) return; boxEl.hidden = false; inp.value = ""; show(suggestions(), true); budget = 24;
       say(route ? `Going to ${route.dest.label}. Pick somewhere else, or Cancel.` : net ? "" : "GPS warming up. Type an address now: the way shows as soon as it's ready."); load().catch(() => {}); mark(); setTimeout(() => inp.focus(), 30); };
     G.close = () => { boxEl.hidden = true; ctl?.abort(); inp.blur(); };
     G.routePts = () => route && { pts: Array.from(route.pts), dest: route.dest };  // (for tests)
