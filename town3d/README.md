@@ -3035,3 +3035,22 @@ click start race immediately hide the menu", and "check the overall feel of the 
 - **Practise while you wait** (Ash: "Whilst waiting for players to join my race I want an option to be able to practice driving"): a
   button on the race panel puts you in a car on the line with the course drawn and keeps you hosting; "Start the race · 2 here" stays top
   left (the upgrade chip moves down a row for it) and brings the panel back. Cancel stops practising and hosting.
+
+### The race for racing each other: leaves you need, the Autodrive cannon, a tidier panel (24 November 2026)
+
+Ash: "Focus less on time trial and more on multiplayer. For example make the person have to get gum leaves as time off is not relevant
+for multiplayer"; "Polish this ui" (the race panel); "I want the autodrive to automatically kick in and lock my controls for 15 seconds
+whilst it boosts forward like the cannon in Mario kart. The plane rings are slightly too low and should not render until a player reaches
+the plane"; "Turn up car turning to 140".
+- **Gum leaves are needed, not time off:** the plane's gate won't let the possum through without 15 (a golden one counts 3 and gives a
+  burst). Short of them there, a buzz, "15 more gum leaves first", and the arrow and diamond on the nearest leaf left. A leaf you take is
+  gone for the other racers for 12 s ("leaf" message), and they hear about golden ones. The card counts "🍃 7/15", the standings show each
+  possum's leaves, and the results how many you grabbed.
+- **Autodrive cannon:** it goes off the moment you hit its box, drives the course for 15 s at 1.6 times the speed (up to 900 m), and
+  nothing you press stops it.
+- **Rings:** 300 m apart (were 200 m: "On the plane move the rings further apart"), 18 m, 24 m, then 24 to 34 m up (the finish ring
+  18 m), and drawn only once you reach the plane (their own part, shrunk to nothing till then).
+- **Car turning** 140% by default (was 135%).
+- **The race panel:** the three parts as three tiles, the length beside the title, your car, the racers with their handicap steppers (the
+  steps explained once, under them), Invite as a quieter outlined button, and Start the race big at the bottom, always in view (the panel
+  scrolls under it, and stops short of the version in the corner), with Practise first and Cancel under it.
