@@ -9771,8 +9771,12 @@ const handle = async (m, post) => {
     // Colebrook Corner's white weatherboard building on the corner of Colebrook Avenue, north of the Vanilla Lab's gap (Street View, April
     // 2024 and September 2026): two storeys with a stepped parapet, a corrugated verandah on white posts over the footpath, posters in the
     // shop windows under it, and small signs up on the parapet: COLEBROOK CORNER in navy and Kip McGrath in blue (Kip McGrath is 8a/49,
-    // Google Maps). Gold Saint Beauty is in the charcoal building, not here, and there's no tenants' board out the front
-    { kind: "verandah", addr: "49 Beaudesert Road (Colebrook Corner)", a: [-322.5, -820.3], b: [-326.5, -830.9], n: [0.9356, -0.3531], kerb: 3.24, across: 13.04, eave: 33.8, wall: "#f1efe9", shops: [{ w: 11.3, posters: true }] },
+    // Google Maps), and PaintRight on the ground floor (next). Gold Saint Beauty is in the charcoal building, not here, and there's no tenants' board out the front
+    // PaintRight, the paint shop on the ground floor of the corner building (Google Maps: PaintRight Moorooka, 35 Beaudesert Road, a paint
+    // store, from 7 am; its white sign is the one left of COLEBROOK CORNER on the parapet. Ash, 23 November 2026: "The paint shop on the
+    // corner is missing. The kip sign is there but it's a paint shop")
+    { kind: "verandah", addr: "35 Beaudesert Road (Colebrook Corner)", a: [-322.5, -820.3], b: [-326.5, -830.9], n: [0.9356, -0.3531], kerb: 3.24, across: 13.04, eave: 33.8, wall: "#f1efe9", shops: [{ n: "PaintRight", sub: "PAINT SHOP", w: 11.3, c: ["#ffffff", "#1f3b73"], posters: true, what: "Paint shop", jump: true }] },
+    { kind: "sign", addr: "35 Beaudesert Road (Colebrook Corner)", a: [-322.5, -820.3], b: [-326.5, -830.9], n: [0.9356, -0.3531], kerb: 3.24, across: 13.04, eave: 33.8, wall: "#f1efe9", sy: [6.5, 7.1], bx: 2.1, bw: 2.6, shops: [{ t: "PaintRight", w: 2.6, c: ["#ffffff", "#1f3b73"] }] },
     { kind: "sign", addr: "49 Beaudesert Road (Colebrook Corner)", a: [-322.5, -820.3], b: [-326.5, -830.9], n: [0.9356, -0.3531], kerb: 3.24, across: 13.04, eave: 33.8, wall: "#f1efe9", sy: [6.5, 7.1], bx: 5.4, bw: 2.6, windows: [4.0, 5.4, 3, "#2a3640"], shops: [{ t: "COLEBROOK CORNER", w: 2.6, c: ["#1f2d4a", "#ffffff"] }] },
     { kind: "sign", addr: "49 Beaudesert Road (Colebrook Corner)", a: [-322.5, -820.3], b: [-326.5, -830.9], n: [0.9356, -0.3531], kerb: 3.24, across: 13.04, eave: 33.8, wall: "#f1efe9", sy: [6.5, 7.1], bx: 8.8, bw: 2.6,
       shops: [{ n: "Kip McGrath", sub: "EDUCATION CENTRES", w: 2.6, c: ["#1b5fb4", "#ffffff"], what: "English and maths tutoring (8a/49)" }] },
