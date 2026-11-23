@@ -17833,8 +17833,8 @@ const handle = async (m, post) => {
       if (!big.hidden && now > bigT) big.hidden = true;
       if (race.state === "grid") { const left = race.t0 - now;
         if (!race.seated && race.tries < 4 && now - race.tryAt > 700) seat();
-        const n = left <= 3000 && left > 0 ? String(Math.ceil(left / 1000)) : ""; if (n && n !== lastN) { say(n, 1100); T.snd?.pop?.(); } lastN = n;
-        if (left <= 0) { race.state = "go"; if (T.car) T.car.wait = false; say("Go!", 1100); T.snd?.pop?.(); panel.hidden = true; showItem();
+        const n = left <= 3000 && left > 0 ? String(Math.ceil(left / 1000)) : ""; if (n && n !== lastN) { say(n, 1100); T.snd?.tone?.(660, 660, 0.16, 0.1, "square"); if (n === "3") panel.hidden = true; } lastN = n;  // (the car picker goes at 3, a beep each: Ash, 23 November 2026, "When the race starts and I see 3 2 1 hide the car options on 3 and play sounds")
+        if (left <= 0) { race.state = "go"; if (T.car) T.car.wait = false; say("Go!", 1100); T.snd?.tone?.(988, 988, 0.5, 0.11, "square"); panel.hidden = true; showItem();
           if (!race.seated) toast("Couldn't get you a car: hop in any car close by and follow the yellow line.", 4000); } }
       const [x, z, y] = here(); markAt(race.state === "done" ? null : TG[race.ti], x, z); boxesAt(x, z); newsTick(now);
       if (race.state === "go") {
@@ -19760,7 +19760,7 @@ const handle = async (m, post) => {
         snd.set(0.18 + 0.82 * bsClamp((a - G[g]) / (top - G[g]), 0, 1), Math.abs(thr) > 0.05 && !brake ? 0.35 + 0.65 * Math.abs(thr) : 0.08, a, boosting || teamOn, slide ? 1 : Math.min(1, Math.abs(wrap(car.h - car.dir)) * 2.5));
         showRing(boosting || charge < 0.999, boosting);
         o = car; D = (car.bus ? 15 : 7.5) + Math.min(5, a / 9); text = Math.round(a * 3.6) + " km/h" + autoText();
-      } else if (veh === "possum") { findCarTops(pos.x, pos.z); const P = pos, run = has("ShiftLeft", "ShiftRight") || !!F.hand, top = R.possumTop / 3.6 * (run ? 1 + R.possumBoost / 100 : 1) * (C.hcK || 1) * (C.turboTil > performance.now() ? 1.9 : 1) * (C.slowTil > performance.now() ? 0.5 : 1), jump = has("Space") || !!F.boost, drop = has("KeyC");  // (Boost: the button over Jump, or Shift)  // walking is 11 m/s: three times that, less a fifth (Ash, 15 November 2026: "speed down by 20%"); no boost, the button is Jump
+      } else if (veh === "possum") { findCarTops(pos.x, pos.z); const P = pos, run = !!P.gold && (has("ShiftLeft", "ShiftRight") || !!F.hand), top = R.possumTop / 3.6 * (run ? 1 + R.possumBoost / 100 : 1) * (C.hcK || 1) * (C.turboTil > performance.now() ? 1.9 : 1) * (C.slowTil > performance.now() ? 0.5 : 1), jump = has("Space") || !!F.boost, drop = has("KeyC");  // (Boost: the button over Jump, or Shift)  // walking is 11 m/s: three times that, less a fifth (Ash, 15 November 2026: "speed down by 20%"); no boost, the button is Jump
         P.t += dt;
         // riding on top of a car that moves (the traffic, or one of the app's own being driven): it goes where the car goes, turning
         // with it (Ash, 15 November 2026: "When the possum grips to a car plane or other vehicle, keep him attached if it moves")
@@ -20309,7 +20309,7 @@ const handle = async (m, post) => {
       C.in = true; camOff = null; off = [wrap(F.yaw - camYaw), bsClamp(F.pitch + 0.2, -1, 0.55)]; idle = 0; last = [F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch];
       if (veh === "drone" && R6()?.floorAt(dr.x, dr.z, dr.y) != null) off = [0, 0.12];  // the drone indoors: seen from behind it, the front door ahead (not the way you were looking out on the path)
       F.stick.x = F.stick.y = F.lookStick.x = F.lookStick.y = 0; F.vert = 0; F.boost = false; F.keys.clear(); F.drive = tick;
-      btn.textContent = veh === "drone" ? "Put the remote down" : veh === "possum" || veh === "pigeon" ? "Human" /* (Ash, 16 November 2026: "Make hop out say human") */ : veh === "ride" && ride?.local ? "Get off" : "Get out"; btn.hidden = false; handBtn.hidden = veh !== "car" && veh !== "possum" && veh !== "pigeon"; handBtn.textContent = veh === "possum" ? "Boost" : veh === "pigeon" ? "Dive" : "Handbrake"; handBtn.dataset.key = veh === "possum" ? "Shift" : veh === "pigeon" ? "C" : "Space"; flipBtn.hidden = !(veh === "car" && car?.gold); plantBtn.hidden = !(veh === "possum" && T.admin?.plant); gripBtn.hidden = true; cooBtn.hidden = veh !== "pigeon"; boostBtn.hidden = veh === "ride" || (veh === "plane" && !canBoost(plane));
+      btn.textContent = veh === "drone" ? "Put the remote down" : veh === "possum" || veh === "pigeon" ? "Human" /* (Ash, 16 November 2026: "Make hop out say human") */ : veh === "ride" && ride?.local ? "Get off" : "Get out"; btn.hidden = false; handBtn.hidden = veh !== "car" && (veh !== "possum" || !pos?.gold) && veh !== "pigeon";  // (no Boost for the plain possum: Ash, 23 November 2026, "Remove boost from the non golden possum") handBtn.textContent = veh === "possum" ? "Boost" : veh === "pigeon" ? "Dive" : "Handbrake"; handBtn.dataset.key = veh === "possum" ? "Shift" : veh === "pigeon" ? "C" : "Space"; flipBtn.hidden = !(veh === "car" && car?.gold); plantBtn.hidden = !(veh === "possum" && T.admin?.plant); gripBtn.hidden = true; cooBtn.hidden = veh !== "pigeon"; boostBtn.hidden = veh === "ride" || (veh === "plane" && !canBoost(plane));
       boostBtn.textContent = veh === "possum" ? "Jump" : veh === "pigeon" ? "Flap" : "Boost"; boostBtn.dataset.key = veh === "possum" || veh === "pigeon" ? "Space" : "Shift";
       if (veh === "ride") { if (RIDE_UP[ride.k] > 1) snd.door(); } else if (veh !== "possum" && veh !== "pigeon" && veh !== "drone") { snd.door(); snd.start(veh === "plane" && plane.heli ? "heli" : veh); } showKeys(veh === "plane" && plane.heli ? "heli" : veh === "ride" ? null : veh === "car" && car.gold ? "gold" : veh);
       // on a phone, a word about the sticks (on a desktop the list of keys has just come up, bottom left)
@@ -20622,7 +20622,7 @@ const handle = async (m, post) => {
     if (!box.hidden) { box.hidden = true; btn.setAttribute("aria-expanded", "false"); return; }
     let copied = false; try { await navigator.clipboard.writeText(url); copied = true; } catch {
       try { const ta = document.createElement("textarea"); ta.value = url; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;left:-9999px;top:0"; document.body.appendChild(ta); ta.select(); copied = document.execCommand("copy"); ta.remove(); } catch {} }
-    const e = encodeURIComponent, msg = `${text}: ${url}`, links = [["Text message", `sms:?&body=${e(msg)}`], ["Email", `mailto:?subject=${e(title)}&body=${e(msg)}`], ["WhatsApp", `https://wa.me/?text=${e(msg)}`], ["Facebook", `https://www.facebook.com/sharer/sharer.php?u=${e(url)}`]];
+    const e = encodeURIComponent, msg = `${text}: ${url}`, links = [/* ("Text message" taken out: Ash, 23 November 2026, "Share via txt msg doesn't work. If you can't make work on iOS remove"; More options has Messages) */["Email", `mailto:?subject=${e(title)}&body=${e(msg)}`], ["WhatsApp", `https://wa.me/?text=${e(msg)}`], ["Facebook", `https://www.facebook.com/sharer/sharer.php?u=${e(url)}`]];
     const head = document.createElement("p"); head.textContent = copied ? "Link copied. Or send it with:" : url;
     const kids = [head];
     if (navigator.share) { const b = document.createElement("button"); b.type = "button"; b.textContent = "More options…"; b.onclick = async () => { try { await navigator.share({ title, text, url }); } catch {} box.hidden = true; btn.setAttribute("aria-expanded", "false"); }; kids.push(b); }

@@ -2973,4 +2973,6 @@ detailed houses are dropped once you're 650 m past where they show, and built ag
   itself along the course for 10 s, a quarter faster, then hands back; steer to take over. Those near the back get them most (`RACE_ODDS`).
 - Turbo, Golden star, Autodrive and Shortcut go off as soon as you pick them up; the magpie, the bin chicken, the storm cloud and the peel
   wait for you to use them ("Nothing aggressive should be automatic").
+- The countdown beeps for 3, 2, 1 and a higher one for Go; the car picker goes at 3. The plain possum has no Boost (the golden one keeps
+  it). Share no longer offers "Text message" (it didn't work on Ash's iPhone; More options has Messages).
 
