@@ -2956,3 +2956,9 @@ turns", "Move the time trial thing to smaller and to the right of launch control
   screen from the middle. Car: left button go, right brake and reverse. Plane: left power, right slow down, mouse above or below the
   middle climbs or dives (even with no button down). Possum: left runs, right jumps.
 
+### Houses dropped again far away (23 November 2026)
+
+Ash, flying the plane in the race: "Browser reclaimed graphics" (the browser took back the graphics memory). The detailed houses built as
+you near each block stayed built, so flying across Moorooka built them all again (about 180 MB). Now (moorooka-model.js ?v=70) a block's
+detailed houses are dropped once you're 650 m past where they show, and built again if you come back.
+
