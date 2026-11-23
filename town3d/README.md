@@ -2872,3 +2872,11 @@ Moorooka 545 MB to 333 MB; Inverloch's graphics memory 287 MB to 213 MB.
 - **Settings > Admin shows the memory**: the JavaScript heap where the browser reports it (Chrome and Edge; iPhone Safari doesn't),
   and the device's memory. No browser reports graphics memory.
 
+### Smoother first seconds (23 November 2026)
+
+Ash, on his iPhone with the beta: "The app Loads faster but stutters like crazy for the first 5 secs or so." Building the detailed
+houses ahead of you ran 24 houses a frame from the first frame, and each block's mesh was put together on the same frame as its
+last houses. Now (moorooka-model.js ?v=69, patched in the bundle) the blocks you start in are still built while the loading screen
+shows; the building ahead waits 3 s, takes at most 2.5 ms a frame, skips frames that already ran slow (it still runs every 8th),
+and puts a block's mesh together on a frame of its own. In a test walking north at 30 m/s, the frames over 8 ms of house building
+after loading went from 9 (up to 42 ms) to 1 (14 ms).
