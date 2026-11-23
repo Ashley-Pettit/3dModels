@@ -2754,3 +2754,13 @@ Ash: "Remove the tree that goes through my balcony concept and the stairs that g
   back landing with a rail (`moorooka-model.js` and `-am.js`, `?v=66`, in the detailed house builder `vu`). When the model is rebuilt
   from ai-forge, make the same change in its detailed-house code.
 - Nothing more to download or draw.
+
+## GPS: Autodrive when you're driving yourself, and clearing 5 s after arriving (23 November 2026)
+
+- Ash: "If I'm on manual for my drive. Still show the ability to autodrive". The Autodrive button on the GPS card now shows whenever
+  you're in a car driving yourself along a route, not only after taking the wheel back from Autodrive (it was hidden on a "You drive"
+  route). Its label says "Autodrive" or, if Autodrive had it before, "Resume Autodrive". Hidden once you've arrived.
+- Ash: "If the gps finishes at its destination, finish it up in 5 seconds". The card says you've arrived and clears after 5 s (it was
+  20 s). Driving more than 40 m away in that time still carries on showing the way.
+- Tested in headless Chrome: in a car on a "You drive" route the button shows and hands over to Autodrive; arriving clears the GPS
+  after 4.9 s.
