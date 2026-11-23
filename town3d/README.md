@@ -2312,6 +2312,10 @@ Ash: "Can you add a gps in the game to navigate to an address?"
   the Queensland Government's address finder (`QldLocator` suggest, then `findAddressCandidates`); Inverloch uses OpenStreetMap's
   Nominatim, which has few house numbers there. Places on the map and street names (the middle of the street) are matched on the
   device too, so a street still comes up when the finder has nothing.
+- **Places to go, before you type** (Ash, 23 November 2026: "On gps if I click it use a big model to show me suggested places I can
+  travel to"): the GPS box opens big with a list, nearest first with how far: in Moorooka, Home (6 Beaudesert Road, Ash only), People to
+  see (the locals you can talk to), Places to eat (`MOO_FOOD`), Shops (`MOO_FRONTS`) and On the map (Jump to's places); in Logan and
+  Inverloch, the places on the map. Typing searches as before; clearing the box brings the list back.
 - **Local first** (Ash, 23 November 2026: "With the gps try to prioritise moorooka address and places rather than everything"): the
   address finder is asked only for addresses inside the map (`searchExtent`, the streets' bounds, or 4 km round you before they're
   ready), so "12 Mayfield" no longer offers Nambour. In Moorooka the suggestions also take in the shopfronts in the model
