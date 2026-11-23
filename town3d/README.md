@@ -2942,6 +2942,20 @@ turns", "Move the time trial thing to smaller and to the right of launch control
 - The card is smaller and sits right of the upgrade chip on a phone; the way to go is a big arrow tilted into the view with the
   distance under it (and climb or dive for the rings).
 
+### Race tweaks and mouse-only riding (23 November 2026)
+
+- The arrow is a plain arrow with a shaft, tilted less. The card's power-up button sits by Boost on a computer, with X on it.
+- Mid-race you can't get out, Jump, use the GPS or Explore mode (`body.bsracing`; `T.race.locked()`); × on the card leaves the race.
+- Only the host starts it: whoever has the race panel open says so every 2 s ("host"); anyone else, or anyone who came by an invite,
+  sees who's hosting and picks a car while they wait. Two at once: the lower id hosts.
+- The end of each leg says so ("Car leg done! Next: the plane ..."), and the change of ride comes 1.4 s later, the car held still.
+- Gates: a white flag pole each side with a yellow pennant, and yellow chevrons on the road; no bar across. A ding at each one.
+- Handicap turning: 1% a step (was 2%). The upgrade chip goes down a row mid-race on a phone. The possum turns 20% slower; the pigeon
+  dives 30% faster.
+- Google Maps controls on a computer, mouse only (`F.mouseRide`): the car, the plane and the possum steer by where the mouse is across the
+  screen from the middle. Car: left button go, right brake and reverse. Plane: left power, right slow down, mouse above or below the
+  middle climbs or dives (even with no button down). Possum: left runs, right jumps.
+
 ### Houses dropped again far away (23 November 2026)
 
 Ash, flying the plane in the race: "Browser reclaimed graphics" (the browser took back the graphics memory). The detailed houses built as
