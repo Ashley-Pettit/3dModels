@@ -17559,9 +17559,14 @@ const handle = async (m, post) => {
   // Mayfield). A yellow line marks the way, a checkpoint every 60 m or so keeps it honest, each one a striped gate over the road with
   // a yellow band across it, the next one with a big yellow diamond over it, and each player's progress goes round the room once a
   // second for the places.
+  // Since 23 November 2026 (second version; Ash: "I want the race to start down Beaudesert rd from the shops past 6 Beaudesert Rd, then
+  // turn right, then turn around those streets. The start will be easy and straight") it's 2.8 km: the line on Beaudesert Road's
+  // northbound carriageway by the shops, straight up Beaudesert Road past number 6 to Ipswich Road, right along Ipswich Road and
+  // Longueval Street, down Dickebusch and Mathilda Streets, across by Wharton Street and Vendale Avenue to Weir Street, back west along
+  // Goodwin Terrace, Giardini Lane and Wall Street, and round by Mayfield Road to the line (the lap just above is the one before).
   // The lap is the town's own street lines (one-way carriageways the way they run), worked out ahead of time (tools/race/course.py),
   // so nothing is fetched or worked out mid-game: x, z in decimetres.
-  const MOO_RACE = [-640,-1166,-677,-918,-774,-739,-1252,-33,-1358,149,-1425,243,-1603,436,-2252,1003,-482,1312,-724,2749,262,2924,1067,2998,1298,2569,1367,1637,1533,649,1965,707,2368,-1472,1371,-1648,868,-1737,1013,-2579,979,-2591,946,-2621,927,-2661,927,-2706,946,-2745,979,-2775,1021,-2789,1051,-2788,1190,-3523,1186,-3575,1149,-3579,1116,-3598,1103,-3612,1089,-3645,1089,-3683,1103,-3716,1116,-3731,1131,-3742,1162,-3752,1204,-3749,1237,-3731,1258,-3701,1265,-3683,1265,-3650,3452,-3292,3535,-3534,3452,-3292,3298,-2450,3342,-2435,3380,-2401,3401,-2353,3404,-2328,3399,-2296,3380,-2255,3342,-2220,3292,-2205,3255,-2207,3217,-2220,3179,-2255,3158,-2302,3156,-2340,1137,-2667,1130,-2640,1118,-2621,1086,-2591,1043,-2578,1013,-2579,979,-2591,946,-2621,927,-2661,927,-2706,237,-2854,27,-2913,-235,-3021,-502,-3250,-914,-2815,-624,-2369,-692,-2019,-829,-1992,-921,-1948,-713,-1542,-655,-1347];
+  const MOO_RACE = [-1704,-2963,-1795,-3147,-1868,-3371,-1932,-3620,-2095,-4420,-2256,-5378,-2444,-6398,-2619,-6834,-3022,-7823,-3143,-8151,-3165,-8271,-3168,-8344,-3150,-8579,-2857,-10179,-2857,-10289,-2874,-10385,-2910,-10524,-2919,-10598,-2874,-10727,-2367,-11363,-1887,-12020,-1787,-11891,-1722,-11814,-495,-11572,-294,-11533,632,-11372,1187,-11282,1006,-10209,828,-9141,743,-8607,710,-8235,629,-7763,-340,-7710,-331,-7404,-385,-6823,-376,-6618,-348,-6572,-323,-6584,-298,-6588,-250,-6584,-228,-6574,-192,-6542,-180,-6521,-172,-6498,-172,-6449,-102,-6434,121,-6308,812,-5797,829,-5548,1162,-3752,1204,-3749,1237,-3731,1258,-3701,1265,-3683,1265,-3650,1258,-3627,1237,-3598,1222,-3586,1186,-3575,1190,-3523,1051,-2788,1086,-2775,1118,-2745,1137,-2706,1137,-2667,1130,-2640,1118,-2621,1086,-2591,1043,-2578,1013,-2579,979,-2591,946,-2621,927,-2661,927,-2706,237,-2854,27,-2913,-235,-3021,-502,-3250,-914,-2815,-624,-2369,-692,-2019,-829,-1992,-921,-1948,-1038,-1910,-1187,-2141];
   // ---- The race, since 23 November 2026, in three legs (Ash: "Make the car part about 50% shorter. After completing the car part add in
   // plane and raccoon sections"; the town's climbing animal is the possum): the car to halfway round the lap, then a plane through rings
   // in the air over the rest of the way, then the last 280 m as the possum to the line. Before the start each player picks one of four
@@ -17575,14 +17580,17 @@ const handle = async (m, post) => {
   const RACE_CARS = [["turbo", "Rocket", "🚀", "Turbo: a quarter more top speed"], ["launch", "Launcher", "⚡", "Launch control: off the mark 2.6 times as fast"],
     ["nitro", "Nitro", "🔥", "Bigger nitro tank: boost lasts 3 times as long"], ["grip", "Grip", "🛣️", "Sports tyres: much sharper turns"]];
   // the power-ups: [emoji, name, what it does]. No weapons: birds, weather and a banana peel
-  const RACE_ITEMS = { turbo: ["🚀", "Turbo", "A huge burst of speed for 3.5 s"], star: ["⭐", "Golden star", "7 s of top speed, and nothing can touch you"],
+  const RACE_ITEMS = { turbo: ["🚀", "Turbo", "A huge burst of speed for 3.5 s"], star: ["⭐", "Golden star", "7 s of 80% more speed and 40% sharper steering, and nothing can touch you"],
+    auto: ["🤖", "Autodrive", "The car drives itself along the course for 10 s, a quarter faster"],
     magpie: ["🐦", "Swooping magpie", "Swoops the racer just ahead: they spin out"], ibis: ["🪿", "Bin chicken", "Flies to whoever's in first and stops them dead"],
     storm: ["⛈️", "Storm cloud", "Rain on everyone ahead of you: they slow right down for 5 s"], peel: ["🍌", "Banana peel", "Dropped behind you: whoever drives over it spins"],
     warp: ["🌀", "Shortcut", "Jumps you 150 m further round the course"] };
   // what a box gives: first place gets the weak ones, last place the best (two racers: first and last; on your own: the middle)
+  // (much stronger for those behind: Ash, 23 November 2026, "I want players behind to get really strong upgrades to catch up, like a star
+  // for 80% more speed and 40% handling, autodrive for 10 secs with 25% speed boost")
   const RACE_ODDS = [[["peel", 40], ["turbo", 35], ["magpie", 25]],
-    [["turbo", 30], ["magpie", 25], ["star", 15], ["storm", 15], ["peel", 15]],
-    [["star", 28], ["ibis", 20], ["storm", 18], ["warp", 22], ["turbo", 12]]];
+    [["turbo", 25], ["magpie", 20], ["star", 20], ["storm", 15], ["auto", 10], ["peel", 10]],
+    [["star", 30], ["auto", 25], ["ibis", 15], ["storm", 15], ["warp", 15]]];
   const raceCarPick = () => { try { const v = localStorage.getItem("an3d-race-car"); return RACE_CARS.some(c => c[0] === v) ? v : "turbo"; } catch { return "turbo"; } };
   function townRace(T, m, F, ground, box) {
     const R = { frame() {}, dispose() {}, got() {}, open() {}, active: () => false, useItem: () => false };
@@ -17776,7 +17784,10 @@ const handle = async (m, post) => {
     R.useItem = () => { if (!race || race.state !== "go" || !race.item) return false; const k = race.item, nm = RACE_ITEMS[k][1]; race.item = null; showItem();
       const rows = standings(), [x, z] = here();
       if (k === "turbo") { T.car?.raceFx?.("turbo", 3500); say("🚀", 700); }
-      else if (k === "star") { T.car?.raceFx?.("star", 7000); say("⭐", 800); tell("Golden star: nothing can touch you for 7 s", false); send(["fx", race.id, "star", ""]); }
+      else if (k === "star") { T.car?.raceFx?.("star", 7000); say("⭐", 800); tell("Golden star: 80% faster, sharper steering, and nothing can touch you for 7 s", false); send(["fx", race.id, "star", ""]); }
+      else if (k === "auto") { const s0 = race.m, s1 = Math.min(s0 + 440, race.leg === 0 ? GA[NC] - 4 : L - 2), pts = []; for (let s = s0 + 4; s <= s1; s += 4) { const p = at(s); pts.push(p.x, p.z); }
+        if (T.car?.raceAuto?.(pts, 10000)) { say("🤖", 800); tell("Autodrive: the car's driving for 10 s, a quarter faster. Steer to take over", false); }
+        else { T.car?.raceFx?.("turbo", 3500); say("🚀", 700); tell("No car to drive: a Turbo instead", false); } }
       else if (k === "warp") { const s = Math.min(race.m + 150, TG[race.ti].s - 1), p = at(s), ok = T.car?.raceWarp?.(p.x, p.z, headAt(s)); say("🌀", 700);
         if (ok) { while (race.ti < NT - 1 && TG[race.ti].s < s + 5 && TG[race.ti].leg === race.leg) race.ti++; } send(["fx", race.id, "warp", ""]); }
       else if (k === "peel") { const w = where(), h = w?.heading ?? F.yaw, px = x - Math.sin(h) * 4, pz = z - Math.cos(h) * 4, key = Math.random().toString(36).slice(2, 7);
@@ -17822,13 +17833,16 @@ const handle = async (m, post) => {
       if (!big.hidden && now > bigT) big.hidden = true;
       if (race.state === "grid") { const left = race.t0 - now;
         if (!race.seated && race.tries < 4 && now - race.tryAt > 700) seat();
-        const n = left <= 3000 && left > 0 ? String(Math.ceil(left / 1000)) : ""; if (n && n !== lastN) { say(n, 1100); T.snd?.pop?.(); } lastN = n;
-        if (left <= 0) { race.state = "go"; if (T.car) T.car.wait = false; say("Go!", 1100); T.snd?.pop?.(); panel.hidden = true; showItem();
+        const n = left <= 3000 && left > 0 ? String(Math.ceil(left / 1000)) : ""; if (n && n !== lastN) { say(n, 1100); T.snd?.tone?.(660, 660, 0.16, 0.1, "square"); if (n === "3") panel.hidden = true; } lastN = n;  // (the car picker goes at 3, a beep each: Ash, 23 November 2026, "When the race starts and I see 3 2 1 hide the car options on 3 and play sounds")
+        if (left <= 0) { race.state = "go"; if (T.car) T.car.wait = false; say("Go!", 1100); T.snd?.tone?.(988, 988, 0.5, 0.11, "square"); panel.hidden = true; showItem();
           if (!race.seated) toast("Couldn't get you a car: hop in any car close by and follow the yellow line.", 4000); } }
       const [x, z, y] = here(); markAt(race.state === "done" ? null : TG[race.ti], x, z); boxesAt(x, z); newsTick(now);
       if (race.state === "go") {
         // a box: within 2.6 m, if your hands are empty (they come back after 6 s)
-        if (!race.item && race.leg !== 1) for (const b of BOX) if (b.back < now && Math.abs(b.x - x) < 2.6 && Math.abs(b.z - z) < 2.6) { b.back = now + 6000; race.item = rollItem(); showItem(); T.snd?.pop?.(); tell(`${RACE_ITEMS[race.item][0]} ${RACE_ITEMS[race.item][1]}: ${RACE_ITEMS[race.item][2]}. ${matchMedia("(pointer: coarse)").matches ? "Tap it to use it" : "Press X (or click it) to use it"}`, false); break; }
+        if (!race.item && race.leg !== 1) for (const b of BOX) if (b.back < now && Math.abs(b.x - x) < 2.6 && Math.abs(b.z - z) < 2.6) { b.back = now + 6000; race.item = rollItem(); T.snd?.pop?.();
+          // the ones that only help you go off straight away; the ones aimed at someone wait for you (Ash, 23 November 2026: "I want where
+          // appropriate these to kick in automatically when I pick them up. Nothing aggressive should be automatic")
+          if (/^(turbo|star|auto|warp)$/.test(race.item)) { R.useItem(); } else { showItem(); tell(`${RACE_ITEMS[race.item][0]} ${RACE_ITEMS[race.item][1]}: ${RACE_ITEMS[race.item][2]}. ${matchMedia("(pointer: coarse)").matches ? "Tap it to use it" : "Press X (or click it) to use it"}`, false); }break; }
         // a peel: within 1.8 m of the car (not your own for the first 2 s)
         if (race.leg !== 1) for (const [key, p] of race.peels) if (Math.abs(p.x - x) < 1.8 && Math.abs(p.z - z) < 1.8 && !(p.mine && now - p.at < 2000)) { race.peels.delete(key); send(["peeloff", race.id, key]);
           const ok = T.car?.raceFx?.("hit", 0); if (ok) { say("🍌", 700); tell(p.mine ? "You slipped on your own peel!" : `${nameOf(p.from)}'s banana peel got you!`, true); if (p.from) send(["hit", race.id, "peel", p.from, 1]); } } }
@@ -19692,7 +19706,7 @@ const handle = async (m, post) => {
         if ((xNew || F.flip) && car.gold && !car.flip) { F.flip = false; car.flip = { t: 0, h0: car.h, d0: car.dir, way: str < -0.1 ? -1 : 1 }; snd.thud?.(0.3); }
         const gc = car.gold, bSecs = gc ? R.goldBoostSecs : R.boostSecs, bBack = gc ? R.goldBoostBack : R.boostBack, sTurn = gc ? R.goldSlideTurn : R.slideTurn, sSlow = gc ? R.goldSlideSlow : R.slideSlow;
         if (boosting) { charge = Math.max(0, charge - dt / bSecs); if (!charge) spent = true; } else { charge = Math.min(1, charge + dt / bBack); if (charge >= 0.2) spent = false; }
-        const K = (car.gold ? GOLD : car.bus ? 0.7 : 1) * (C.spdK || 1) * (C.slowTil > performance.now() ? 0.55 : 1), vboost = VBOOST * K, SHAPE = car.bus ? BUS : CAR;  // (spdK, slowTil: the race's car, handicap and storm cloud)
+        const K = (car.gold ? GOLD : car.bus ? 0.7 : 1) * (C.spdK || 1) * (C.slowTil > performance.now() ? 0.55 : 1) * (C.starTil > performance.now() ? 1.8 : 1) * (C.autoTil > performance.now() && auto ? 1.25 : 1), vboost = VBOOST * K, SHAPE = car.bus ? BUS : CAR;  // (spdK, slowTil: the race's car, handicap and storm cloud)
         if (C.starTil > performance.now() && Math.random() < dt * 18) fxSpray(car, true);  // a golden star: sparkling
         // a passenger's power-up: 2 km/h more, and half a boost's worth on top, for 3 seconds (Ash, 16 November 2026)
         const tk = car.teamK || 1, vteam = VMAX * K + tk * (R.teamBoostExtra / 3.6 + R.teamBoostShare / 100 * (vboost - VMAX * K)), vmax = teamOn ? vteam : VMAX * K;
@@ -19735,7 +19749,7 @@ const handle = async (m, post) => {
             if (inside(x, z) && fits(SHAPE, x, z, h)) { car.x = x; car.z = z; } car.h = h; car.dir = Fp.d0;
             if (f >= 1) { car.h = wrap(Fp.h0 + Math.PI); car.dir = wrap(Fp.d0 + Math.PI); car.hop = 0; car.flip = null; snd.thud(0.5); }
             continue; }
-          const h = car.h - (slide ? str * sTurn * Math.PI / 180 * Math.sign(car.v) : (car.v / (car.bus ? 6.4 : 2.6)) * Math.tan(car.steer) * (gc ? R.goldTurn : R.carTurn) / 100) * st;
+          const h = car.h - (slide ? str * sTurn * Math.PI / 180 * Math.sign(car.v) : (car.v / (car.bus ? 6.4 : 2.6)) * Math.tan(car.steer) * (gc ? R.goldTurn : R.carTurn) / 100 * (C.starTil > performance.now() ? 1.4 : 1)) * st;
           const d = car.dir + wrap(h - car.dir) * Math.min(1, st * (slide ? 1.5 : 10));  // the way it travels comes round to the way it points: slowly while it slides
           const x = car.x + Math.sin(d) * car.v * st, z = car.z + Math.cos(d) * car.v * st;
           if (inside(x, z) && (fits(SHAPE, x, z, h) || !fits(SHAPE, car.x, car.z, car.h))) { car.x = x; car.z = z; car.h = h; car.dir = d; }  // (a car parked inside a building's outline can still drive out)
@@ -19746,7 +19760,7 @@ const handle = async (m, post) => {
         snd.set(0.18 + 0.82 * bsClamp((a - G[g]) / (top - G[g]), 0, 1), Math.abs(thr) > 0.05 && !brake ? 0.35 + 0.65 * Math.abs(thr) : 0.08, a, boosting || teamOn, slide ? 1 : Math.min(1, Math.abs(wrap(car.h - car.dir)) * 2.5));
         showRing(boosting || charge < 0.999, boosting);
         o = car; D = (car.bus ? 15 : 7.5) + Math.min(5, a / 9); text = Math.round(a * 3.6) + " km/h" + autoText();
-      } else if (veh === "possum") { findCarTops(pos.x, pos.z); const P = pos, run = has("ShiftLeft", "ShiftRight") || !!F.hand, top = R.possumTop / 3.6 * (run ? 1 + R.possumBoost / 100 : 1) * (C.hcK || 1) * (C.turboTil > performance.now() ? 1.9 : 1) * (C.slowTil > performance.now() ? 0.5 : 1), jump = has("Space") || !!F.boost, drop = has("KeyC");  // (Boost: the button over Jump, or Shift)  // walking is 11 m/s: three times that, less a fifth (Ash, 15 November 2026: "speed down by 20%"); no boost, the button is Jump
+      } else if (veh === "possum") { findCarTops(pos.x, pos.z); const P = pos, run = !!P.gold && (has("ShiftLeft", "ShiftRight") || !!F.hand), top = R.possumTop / 3.6 * (run ? 1 + R.possumBoost / 100 : 1) * (C.hcK || 1) * (C.turboTil > performance.now() ? 1.9 : 1) * (C.slowTil > performance.now() ? 0.5 : 1), jump = has("Space") || !!F.boost, drop = has("KeyC");  // (Boost: the button over Jump, or Shift)  // walking is 11 m/s: three times that, less a fifth (Ash, 15 November 2026: "speed down by 20%"); no boost, the button is Jump
         P.t += dt;
         // riding on top of a car that moves (the traffic, or one of the app's own being driven): it goes where the car goes, turning
         // with it (Ash, 15 November 2026: "When the possum grips to a car plane or other vehicle, keep him attached if it moves")
@@ -19939,7 +19953,7 @@ const handle = async (m, post) => {
         if ((gripLook -= dt) <= 0) { gripLook = 0.25; const pw = !game && P.gold && P.air && GOLD_POWERS[P.power], pp = game && P.air, sh = P.mode === "ground" || !!pw || pp, tx = pp ? "\ud83d\udca9 Poop" : pw ? `\u2728 ${pw[0]}` : "Make a nest"; if (gripBtn.hidden === sh) gripBtn.hidden = !sh; if (gripBtn.textContent !== tx) gripBtn.textContent = tx; gripBtn.classList.toggle("on", !!pw || pp); }
         const up = P.y - ground(P.x, P.z);
         o = P; D = P.air ? 4.5 + Math.min(4, P.v / 6) : 2.6; text = (game ? `\ud83d\udca9 ${game.hits}/${POOP_GOAL} \u00b7 ${Math.floor(Math.max(0, game.t) / 60)}:${String(Math.ceil(Math.max(0, game.t)) % 60).padStart(2, "0")} \u00b7 ` : "") + Math.round(Math.abs(P.v) * 3.6) + " km/h" + (up > 1.5 ? " \u00b7 " + Math.round(up) + " m up" : "");
-      } else { const P = plane, K = P.k, jet = boost && canBoost(P), top = ((jet ? JET : CRUISE) + (P.teamTil > performance.now() ? (P.teamK || 1) * (R.teamBoostExtra / 3.6 + R.teamBoostShare / 100 * (JET - CRUISE)) : 0)) * K * (C.hcK || 1) * (C.slowTil > performance.now() ? 0.6 : 1);  // (only the golden plane has a boost; a passenger's power-up: 2 km/h and half a boost more)
+      } else { const P = plane, K = P.k, jet = boost && canBoost(P), top = ((jet ? JET : CRUISE) + (P.teamTil > performance.now() ? (P.teamK || 1) * (R.teamBoostExtra / 3.6 + R.teamBoostShare / 100 * (JET - CRUISE)) : 0)) * K * (C.hcK || 1) * (C.slowTil > performance.now() ? 0.6 : 1) * (C.starTil > performance.now() ? 1.8 : 1);  // (only the golden plane has a boost; a passenger's power-up: 2 km/h and half a boost more)
         if (planeGold(P) && Math.random() < dt * 17) { const sd = Math.random() < 0.5 ? -1 : 1, rl = P.roll || 0; gAdd(P.x + Math.cos(P.h) * 3.5 * sd * Math.cos(rl), P.y + 1 + 3.5 * sd * Math.sin(rl), P.z - Math.sin(P.h) * 3.5 * sd * Math.cos(rl), (Math.random() - 0.5) * 2, Math.random(), (Math.random() - 0.5) * 2, 1.1); }  // golden: glitter off the wingtips
         if (P.trick) { P.trick.t += dt; const n2 = P.trick.turns || 1, f = Math.min(1, P.trick.t / (1.2 * n2)); P.roll = Math.PI * 2 * n2 * f * f * (3 - 2 * f); if (f >= 1) { P.trick = null; P.roll = 0; } }  // a passenger's spin: a roll right round
         // the nose: the down arrow lifts it and the up arrow lowers it, as pulling back and pushing on a plane's stick does
@@ -20295,7 +20309,7 @@ const handle = async (m, post) => {
       C.in = true; camOff = null; off = [wrap(F.yaw - camYaw), bsClamp(F.pitch + 0.2, -1, 0.55)]; idle = 0; last = [F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch];
       if (veh === "drone" && R6()?.floorAt(dr.x, dr.z, dr.y) != null) off = [0, 0.12];  // the drone indoors: seen from behind it, the front door ahead (not the way you were looking out on the path)
       F.stick.x = F.stick.y = F.lookStick.x = F.lookStick.y = 0; F.vert = 0; F.boost = false; F.keys.clear(); F.drive = tick;
-      btn.textContent = veh === "drone" ? "Put the remote down" : veh === "possum" || veh === "pigeon" ? "Human" /* (Ash, 16 November 2026: "Make hop out say human") */ : veh === "ride" && ride?.local ? "Get off" : "Get out"; btn.hidden = false; handBtn.hidden = veh !== "car" && veh !== "possum" && veh !== "pigeon"; handBtn.textContent = veh === "possum" ? "Boost" : veh === "pigeon" ? "Dive" : "Handbrake"; handBtn.dataset.key = veh === "possum" ? "Shift" : veh === "pigeon" ? "C" : "Space"; flipBtn.hidden = !(veh === "car" && car?.gold); plantBtn.hidden = !(veh === "possum" && T.admin?.plant); gripBtn.hidden = true; cooBtn.hidden = veh !== "pigeon"; boostBtn.hidden = veh === "ride" || (veh === "plane" && !canBoost(plane));
+      btn.textContent = veh === "drone" ? "Put the remote down" : veh === "possum" || veh === "pigeon" ? "Human" /* (Ash, 16 November 2026: "Make hop out say human") */ : veh === "ride" && ride?.local ? "Get off" : "Get out"; btn.hidden = false; handBtn.hidden = veh !== "car" && (veh !== "possum" || !pos?.gold) && veh !== "pigeon";  // (no Boost for the plain possum: Ash, 23 November 2026, "Remove boost from the non golden possum") handBtn.textContent = veh === "possum" ? "Boost" : veh === "pigeon" ? "Dive" : "Handbrake"; handBtn.dataset.key = veh === "possum" ? "Shift" : veh === "pigeon" ? "C" : "Space"; flipBtn.hidden = !(veh === "car" && car?.gold); plantBtn.hidden = !(veh === "possum" && T.admin?.plant); gripBtn.hidden = true; cooBtn.hidden = veh !== "pigeon"; boostBtn.hidden = veh === "ride" || (veh === "plane" && !canBoost(plane));
       boostBtn.textContent = veh === "possum" ? "Jump" : veh === "pigeon" ? "Flap" : "Boost"; boostBtn.dataset.key = veh === "possum" || veh === "pigeon" ? "Space" : "Shift";
       if (veh === "ride") { if (RIDE_UP[ride.k] > 1) snd.door(); } else if (veh !== "possum" && veh !== "pigeon" && veh !== "drone") { snd.door(); snd.start(veh === "plane" && plane.heli ? "heli" : veh); } showKeys(veh === "plane" && plane.heli ? "heli" : veh === "ride" ? null : veh === "car" && car.gold ? "gold" : veh);
       // on a phone, a word about the sticks (on a desktop the list of keys has just come up, bottom left)
@@ -20436,17 +20450,19 @@ const handle = async (m, post) => {
     C.reread = () => { Object.assign(R, townPerkRide(rideSettings())); if (BS.raceRide && C.spdK) R.carAccel /= C.spdK; };
     // ---- for the race (townRace): its car and handicap, the power-ups, and changing to the plane and the possum on the way round
     C.raceRide = RR => { BS.raceRide = RR || null; const own = townPerks().car === "turbo" ? PERK_X.turbo : 1, k = RR ? bsClamp(+RR.hc || 0, 0, 8) : 0;
-      C.spdK = RR ? (RR.car === "turbo" ? PERK_X.turbo : 1) * (1 - 0.05 * k) / own : 1; C.hcK = 1 - 0.05 * k; C.starTil = C.turboTil = C.slowTil = 0; C.reread(); };
+      C.spdK = RR ? (RR.car === "turbo" ? PERK_X.turbo : 1) * (1 - 0.05 * k) / own : 1; C.hcK = 1 - 0.05 * k; C.starTil = C.turboTil = C.slowTil = C.autoTil = 0; C.reread(); };
     C.racePrep = () => { try { if (T.cfg?.place === "moo") { loadRoofs(); loadTrees(); } if (pos && !possumMesh) wake(); } catch {} };  // (on the grid: nothing heavy mid-race)
     C.raceFx = (kind, ms) => { const now = performance.now();
       if (kind === "turbo" || kind === "star") { if (kind === "star") C.starTil = now + ms; C.turboTil = now + ms;
-        if (veh === "car" && car) { car.teamTil = now + ms; car.teamK = kind === "star" ? 2.4 : 3; } else if (veh === "plane" && plane) { plane.teamTil = now + ms; plane.teamK = 3; } return true; }
+        if (kind === "turbo") { if (veh === "car" && car) { car.teamTil = now + ms; car.teamK = 3; } else if (veh === "plane" && plane) { plane.teamTil = now + ms; plane.teamK = 3; } } return true; }
       if (C.starTil > now) return false;  // a golden star: nothing touches you
       if (kind === "slow") { C.slowTil = now + ms; if (veh === "plane" && plane) plane.v *= 0.7; return true; }
       if (veh === "car" && car) { car.v *= 0.15; car.teamTil = 0; if (!car.trick) car.trick = { t: 0, len: 1.1, high: 0.8, spin: true, hit: true }; }
       else if (veh === "plane" && plane) { plane.v = Math.max(18, plane.v * 0.4); plane.r = 1.1; }
       else if (veh === "possum" && pos) { pos.v = 0; C.slowTil = now + 1500; }
       return true; };
+    C.raceAuto = (pts, ms) => { if (!C.drivePath(pts, { hoon: true })) return false; const now = performance.now(); C.autoTil = now + ms;
+      setTimeout(() => { if (auto && !auto.done) autoEnd(); }, ms); return true; };  // (the race's Autodrive: 10 s along the course, a quarter faster; then it's yours again)
     C.raceWarp = (x, z, h, y) => { if (veh === "car" && car) { car.x = x; car.z = z; car.h = car.dir = h; car.y = ground(x, z) + 0.05; car.v = Math.max(car.v, 15); return true; }
       if (veh === "possum" && pos) { pos.x = x; pos.z = z; pos.h = h; pos.y = surf(x, z); return true; } if (veh === "plane" && plane) { plane.x = x; plane.z = z; plane.h = h; if (y != null) plane.y = y; return true; } return false; };
     C.raceSwap = (kind, x, z, h, y) => { try {
@@ -20606,7 +20622,7 @@ const handle = async (m, post) => {
     if (!box.hidden) { box.hidden = true; btn.setAttribute("aria-expanded", "false"); return; }
     let copied = false; try { await navigator.clipboard.writeText(url); copied = true; } catch {
       try { const ta = document.createElement("textarea"); ta.value = url; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;left:-9999px;top:0"; document.body.appendChild(ta); ta.select(); copied = document.execCommand("copy"); ta.remove(); } catch {} }
-    const e = encodeURIComponent, msg = `${text}: ${url}`, links = [["Text message", `sms:?&body=${e(msg)}`], ["Email", `mailto:?subject=${e(title)}&body=${e(msg)}`], ["WhatsApp", `https://wa.me/?text=${e(msg)}`], ["Facebook", `https://www.facebook.com/sharer/sharer.php?u=${e(url)}`]];
+    const e = encodeURIComponent, msg = `${text}: ${url}`, links = [/* ("Text message" taken out: Ash, 23 November 2026, "Share via txt msg doesn't work. If you can't make work on iOS remove"; More options has Messages) */["Email", `mailto:?subject=${e(title)}&body=${e(msg)}`], ["WhatsApp", `https://wa.me/?text=${e(msg)}`], ["Facebook", `https://www.facebook.com/sharer/sharer.php?u=${e(url)}`]];
     const head = document.createElement("p"); head.textContent = copied ? "Link copied. Or send it with:" : url;
     const kids = [head];
     if (navigator.share) { const b = document.createElement("button"); b.type = "button"; b.textContent = "More options…"; b.onclick = async () => { try { await navigator.share({ title, text, url }); } catch {} box.hidden = true; btn.setAttribute("aria-expanded", "false"); }; kids.push(b); }

@@ -2962,3 +2962,17 @@ Ash, flying the plane in the race: "Browser reclaimed graphics" (the browser too
 you near each block stayed built, so flying across Moorooka built them all again (about 180 MB). Now (moorooka-model.js ?v=70) a block's
 detailed houses are dropped once you're 650 m past where they show, and built again if you come back.
 
+### A new lap, and stronger help for those behind (23 November 2026)
+
+- The lap (`MOO_RACE`, tools/race/course.py): 2.8 km from the line on Beaudesert Road's northbound carriageway by the shops, straight up
+  Beaudesert Road past number 6 to Ipswich Road, right along Ipswich Road and Longueval Street, down Dickebusch and Mathilda Streets,
+  across to Weir Street by Wharton Street and Vendale Avenue, back along Goodwin Terrace, Giardini Lane and Wall Street, and round by
+  Mayfield Road to the line (Ash: "start down Beaudesert rd from the shops past 6 Beaudesert Rd, then turn right, then turn around those
+  streets. The start will be easy and straight"). The car's leg is the straight run north and the first of the back streets.
+- Golden star: 80% more speed and 40% sharper steering for 7 s (car and plane), nothing can touch you. Autodrive (new): the car drives
+  itself along the course for 10 s, a quarter faster, then hands back; steer to take over. Those near the back get them most (`RACE_ODDS`).
+- Turbo, Golden star, Autodrive and Shortcut go off as soon as you pick them up; the magpie, the bin chicken, the storm cloud and the peel
+  wait for you to use them ("Nothing aggressive should be automatic").
+- The countdown beeps for 3, 2, 1 and a higher one for Go; the car picker goes at 3. The plain possum has no Boost (the golden one keeps
+  it). Share no longer offers "Text message" (it didn't work on Ash's iPhone; More options has Messages).
+
