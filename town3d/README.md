@@ -2854,3 +2854,26 @@ Jump to now starts with **GPS** (opens the GPS box) and **Race around Moorooka**
 things are no longer in Jump to: Settings has **Admin (just you)** with the golden car, plane and helicopters (numbered when there are
 two) and **New to check** folded up (`T.adminJumps`, `adminSec`).
 
+
+## The Vanilla Lab redone as the dessert trailer it is (23 November 2026)
+
+Ash: "Redo the vanilla lab in moorooka. This isn't accurate. Use satitile to make lowish res thing here but true to the area. Use images
+to display mockup of real businesses."
+
+- **What it really is.** Not a cafe in the charcoal building: a dessert trailer at 49 Beaudesert Road, open Tuesday to Sunday from
+  6:30 pm till about midnight (its Facebook and TikTok posts, January 2026: Greek doughnuts, churros, soft serve, sundaes, Dubai cups;
+  "a cute spot that you can sit"). Its colours from its posts: vanilla, chocolate brown and mint, desserts in pink gingham boats.
+- **Where.** 49 Beaudesert Road (lot 1 RP164281, the Queensland address register) is both buildings south of Wharton Street: the
+  charcoal one and Colebrook Corner, with a 5 m gap between them (the 2021 sale photos on Domain show the two freestanding buildings).
+  The Esri satellite (Vantor, 17 November 2025, newer than the Queensland 2022 photo the ground is drawn from) has a trailer-sized brown
+  shape in that gap, a timber deck at its footpath end, and the yard behind paved with cars on it.
+- **The model** (`MOO_FRONTS`, new kind `truck`, a and b across the gap at the footpath): a vanilla trailer side on to the street with
+  a chocolate skirt and mint trim, its hatch open under a propped-up flap (the picture through it: the menu, the soft serve machine,
+  doughnuts in gingham, someone serving), its name on a board on the roof and across the back, a timber deck with two picnic tables
+  and pot plants, festoon lights across between the walls, an A-frame menu on the footpath, and the yard behind paved over the old
+  lawn. Four small pictures and one piece of lights; the hatch, name and lights are lit, as it trades at night.
+- The charcoal building keeps its front but loses the Vanilla Lab's sign (no names: its tenants aren't known well enough), its note
+  says two storeys, not three; Colebrook Corner's tenant board moved onto its own front, out of the gap; Food in the area lists the
+  Vanilla Lab as ice cream (dessert trailer) with its hours, eat in and takeaway.
+- **Not known:** which way its hatch faces and its exact colours: no photo of the trailer itself was found (Street View predates it).
+  A photo from Ash would settle both.
