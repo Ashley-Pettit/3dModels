@@ -3023,8 +3023,15 @@ click start race immediately hide the menu", and "check the overall feel of the 
 - **The plane** is parked facing back west at the end of the possum's run. Out of the possum by itself, you walk to it and get in, then
   take off straight down Mayfield Road. The plane's way (`RACE_PLANE`, then the lap backwards from Weir Street to the line) is smoothed
   so its corners are curves. Rings: the first 320 m along (13 m up), then about every 200 m, 19 to 29 m up, and a big chequered ring
-  over the line to finish. A ring through: a tick, "Ring 3 of 13" and a ding; missed: a cross, a low buzz and 2 s on.
+  over the line to finish. A ring through: a tick, "Ring 3 of 12" and a ding. Missed (across its line outside it): a cross, a low buzz
+  and "Turn back"; it doesn't count until you go back through it, either way (Ash: "If I miss a ring the player should have to go back
+  and get it rather than plus 2 seconds"). Gates the same.
 - Every target has `D`, how far along the whole race it is (5.8 km), and progress, standings and "to go" count the same way. Best times
   are kept under the new length.
 - Start hides the panel at once; the car picker shows only for racers someone else started it for.
 - Boxes are a part per row of three (one draw call a row): hit one and that row is gone for you for 6 s. Leaves are a part each.
+- The race's Autodrive can't be taken back: it drives its 10 s whatever you do (Ash: "Autodrive on race disable hard steer to take
+  control").
+- **Practise while you wait** (Ash: "Whilst waiting for players to join my race I want an option to be able to practice driving"): a
+  button on the race panel puts you in a car on the line with the course drawn and keeps you hosting; "Start the race · 2 here" stays top
+  left (the upgrade chip moves down a row for it) and brings the panel back. Cancel stops practising and hosting.
