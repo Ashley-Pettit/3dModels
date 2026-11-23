@@ -8352,7 +8352,10 @@ const handle = async (m, post) => {
           if (F.mouseCar?.() && (e.button === 0 || e.button === 2)) { const D = F.drag; D.car = true; clearTimeout(F.mdT); F.mdT = setTimeout(() => { if (F.drag === D) mdGo(D); }, 180); }
           return; }
         try { canvas.setPointerCapture(e.pointerId); } catch {}
-        F.touches.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, move: e.clientX < innerWidth / 2 }); tip.classList.add("dim"); },
+        // a finger on the view's left half moves you, unless you're already holding the move stick: then it looks round like one on the
+        // right half (Ash, 23 November 2026, on his iPhone: "I use right hand to drag right - only works intermittently". A drag to the
+        // right often starts left of the middle, and was taken as a second move finger and ignored)
+        F.touches.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, move: e.clientX < innerWidth / 2 && !F.joys?.some(j => j.move && j.held()) }); tip.classList.add("dim"); },
       pointermove: e => {
         if (e.pointerType === "mouse") { const D = F.drag;
           if (D?.car) { D.x = e.clientX; D.y = e.clientY; if (!D.on && Math.hypot(D.x - D.sx, D.y - D.sy) > 6) mdGo(D); if (D.on) mdSteer(D); return; }  // (driving with the mouse: no looking round)
