@@ -17025,9 +17025,9 @@ const handle = async (m, post) => {
   // sorts of settings when in as an admin"). Each is [default, name, unit, least, most]. What he sets is kept on that device
   // ("an3d-rides", shared by every town) and is read when a model opens.
   // (cars 20% faster and turning 25% quicker by default: Ash, 16 November 2026, "Car goes 20% faster naturally", "Set the cars turn to
-  // 25% faster")
+  // 25% faster"; car turning up to 135%: Ash, 23 November 2026, "Car turning to 135 default")
   const RIDE_DEF = { carTop: [120, "Car top speed", "km/h", 20, 500], carAccel: [5, "Car acceleration", "m/s\u00b2", 1, 40], carBoostTop: [210, "Car top speed on boost", "km/h", 40, 900],
-    boostSecs: [4, "Boost lasts", "seconds", 1, 60], boostBack: [10, "Boost refills in", "seconds", 1, 120], carTurn: [125, "Car turning", "%", 20, 400], slideTurn: [155, "Handbrake spin", "degrees a second", 20, 720], slideSlow: [8, "Handbrake slows the car by", "km/h a second", 0, 100],
+    boostSecs: [4, "Boost lasts", "seconds", 1, 60], boostBack: [10, "Boost refills in", "seconds", 1, 120], carTurn: [135, "Car turning", "%", 20, 400], slideTurn: [155, "Handbrake spin", "degrees a second", 20, 720], slideSlow: [8, "Handbrake slows the car by", "km/h a second", 0, 100],
     planeTop: [223, "Plane top speed", "km/h", 120, 1500], planeBoostTop: [540, "Plane top speed on boost", "km/h", 150, 3000], planeAccel: [9, "Plane acceleration", "m/s\u00b2", 2, 80], planeLift: [94, "Plane take-off speed", "km/h", 30, 300],
     gold: [20, "Golden car and plane are better by", "%", 0, 400],
     goldTurn: [125, "Golden car turning", "%", 20, 400], goldSlideTurn: [240, "Golden car handbrake spin", "degrees a second", 20, 1440], goldSlideSlow: [5, "Golden car handbrake slows it by", "km/h a second", 0, 100],
