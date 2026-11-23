@@ -2916,3 +2916,29 @@ Gold Saint Beauty, Cleo and Kooperativ Hair were wrongly on the white building, 
 buildings are raised to two storeys (MOO_STYLE eave). Not done: the verandah wrapping round onto Colebrook Avenue, the small white sign
 left of COLEBROOK CORNER (unreadable), and Kooperativ Hair (on Google Maps at 49 but no sign seen).
 
+### The race in three legs, with power-ups (23 November 2026)
+
+Ash: "Make the car part about 50% shorter. After completing the car part add in plane and raccoon sections", "power ups on the road that
+interact with other players like a red shell or star, the losing player should get better power ups", "Add lots of player interactions
+that aren't annoying but tell me about how my opponents are going", "At the start I want players be able to choose 4 car types", "I want
+to be able to handicap players ... 5% ... 7% ... 2% per factor. Up to 8 factors", and "There's a few too many checkpoints now make them
+about 1/3 as many, make them a bit less ugly and make the arrow towards them a bit more obvious. Dont put checkpoints right next to
+turns", "Move the time trial thing to smaller and to the right of launch control".
+
+- Legs (`townRace`): the car to about halfway (gates about every 180 m, each moved to the straightest road within 60 m), then the plane
+  through 8 rings 27 to 45 m up over the rest of the lap (a missed ring counts with 2 s added; each ring hit gives a short boost), then
+  the last 280 m as the possum to the line. The changes of ride are `T.car.raceSwap("plane"|"possum", ...)`; the roofs, trees and possum
+  load on the grid (`racePrep`), not mid-race. The sky rings quest doesn't start mid-race.
+- Cars: Rocket (Turbo), Launcher (Launch control), Nitro (Bigger nitro tank), Grip (Sports tyres), picked in the start panel or on the
+  grid, for the race only (`BS.raceRide` stands in for the mechanic's upgrade in `townPerkRide`; top speed through `T.car.spdK`).
+- Handicaps: set by whoever starts it, sent in the "go" message; each step 5% off top speed (car, plane, possum), 7% off acceleration,
+  2% off turning.
+- Power-ups: rows of three coloured boxes every 230 m on the car's leg and one on the possum's. What you get depends on your place
+  (`RACE_ODDS`): Turbo, Golden star, Swooping magpie (the racer just ahead spins out), Bin chicken (whoever's first), Storm cloud
+  (everyone ahead slowed 5 s), Banana peel, Shortcut (150 m on). Use with the round button over Boost, or X. Messages: "fx", "hit",
+  "peel", "peeloff"; "at" now carries the leg.
+- News under the card, one line at a time: places changing, the gap to the nearest racer every 22 s, the others' legs, power-ups, who's
+  near the line, who finished.
+- The card is smaller and sits right of the upgrade chip on a phone; the way to go is a big arrow tilted into the view with the
+  distance under it (and climb or dive for the rings).
+
