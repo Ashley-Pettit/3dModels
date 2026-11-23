@@ -2796,3 +2796,15 @@ me to also read mail at my letterbox at 6 Beaudesert." In `app.html` (`townMail`
 - A letter that comes in while you play says who it's from and where it's waiting, and stays unread (so the mark shows) until you
   open it at the post office or the letterbox. Before, it showed the letter in a toast and marked it read.
 
+## Race invites (23 November 2026)
+
+Ash: "If I click race first show a thing where I can invite someone to join the race. If I share with this link I want them to spawn
+ready to race." In `townRace` (`app.html`):
+
+- The race panel (Jump to > Race around Moorooka) has **Invite someone to race** above Start: a phone's share sheet, or the link copied,
+  `.../moorooka/explore/?race=1&from=<your name>`. The line about who's here updates every 1.5 s while the panel's open, so you can
+  see them arrive before you press Start (Start takes everyone here onto the grid, as before).
+- Opening the link: once the town's ready, you're put in a standard car at the start line (a place on the grid behind the front row,
+  `R.arrive`), told who invited you, and the race panel opens. The `race` and `from` bits come off the address so a reload doesn't do it
+  again.
+
