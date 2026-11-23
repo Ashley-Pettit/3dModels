@@ -2380,6 +2380,12 @@ Now, in `app.html` (all three towns):
   `townCar` (the app's own cars, the traffic, and the model's parked cars). You arrive seen from behind the car.
 - **A click on the road while you're in a car and it drives there** (`C.clickDrive`, `C.driveTo`). A blue ring and pin mark the spot.
   From the map view, with your car waiting (F), a click anywhere sends it there. Where on the ground a click lands: `townClickAt`.
+- **Driving with only the mouse** (Ash, 23 November 2026: "If on Google map controls. I want a person on desktop to be able to control a
+  car using only the mouse"): in a car, Google Maps style, on a computer, **hold the left button** to drive and move the mouse left or
+  right of where you pressed to steer (full lock at 160 px); **hold the right button** to brake, then reverse. It works the stick
+  (`F.stick`), so it takes the wheel back from Drive for me and Autodrive like the stick does. A hold starts after 0.18 s or 6 px of
+  movement, so a quick click still drives you to the spot. While driving this way the mouse doesn't look round (the view follows the
+  car). Mouse events only (`F.mouseCar`, `mdGo`, `mdSteer`); touch is unchanged.
 - **Drive for me (G)**: the car sets off along the street it is on and follows it; G again stops it. **< and >** ask for the next left
   and the next right. Three buttons under Get out carry the same keys with Google Maps controls (the mouse is free to click them
   there); with the gamer's controls the keys work too and are listed bottom left. G was free in a car (it is the possum's Plant only
