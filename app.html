@@ -1672,6 +1672,10 @@ body.bsme .bs-height, body.bstown.bsme .bs-height { left: 16px; top: calc(62px +
 .bs-me-head h2 { margin: 0; font: 750 1rem/1.2 var(--ui); }
 .bs-me-x { width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.12); color: inherit; font: 600 1.1rem/1 var(--ui); cursor: pointer; }
 .bs-me-sec { display: grid; gap: 8px; }
+.bs-me-new summary { min-height: 40px; display: flex; align-items: center; padding: 0 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.12); color: #fff; font: 700 0.84rem/1.2 var(--ui); cursor: pointer; }
+.bs-me-new[open] summary { margin-bottom: 6px; }
+.bs-me-newi { display: block; width: 100%; text-align: left; margin: 0 0 4px; padding: 8px 12px; border: 0; border-radius: 10px; background: rgba(255, 255, 255, 0.07); color: #fff; font: 650 0.8rem/1.25 var(--ui); cursor: pointer; }
+.bs-me-newi small { display: block; margin-top: 2px; font-weight: 500; opacity: 0.72; }
 .bs-me-lbl { font: 650 0.74rem/1.2 var(--ui); color: rgba(255, 255, 255, 0.7); }
 .bs-me input { width: 100%; box-sizing: border-box; height: 40px; padding: 0 12px; border: 0; border-radius: 10px; background: #fff; color: #1b1830; font: 600 16px var(--ui); }
 .bs-me-tops { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
@@ -9144,26 +9148,18 @@ const handle = async (m, post) => {
         // other players in town, nearest first, at the top of the list each time it opens (Ash, 15 November 2026: "In go to I want a
         // thing that goes to another player near me"); one takes you to stand 6 m in front of them, looking at them
         const players = () => { list.querySelectorAll(".bs-town-players").forEach(el => el.remove());
-          // the golden car, plane and helicopter together under "Just for you" (Ash only; Ash, 15 November 2026: "Merge the golden
-          // teleports in the just for you"), each where it is now
-          const golds = isAsh() ? goldOnes() : [];
-          const goldEls = golds.length ? [(() => { const h = document.createElement("p"); h.className = "bs-town-group bs-town-players"; h.setAttribute("role", "presentation"); h.textContent = "Just for you"; return h; })(),
-            ...golds.map((g, i) => { const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "menuitem"); b.className = "bs-town-players"; b.dataset.townGold = i;
-              const sm = document.createElement("small"); sm.textContent = g.what; b.append(g.name, sm); return b; })] : [];
-          // the race around Moorooka, under the GPS (townRace)
-          if (T.race) { const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "menuitem"); b.className = "bs-town-players bs-town-gpsitem"; b.dataset.townRace = "1";
-            const sm = document.createElement("small"); sm.textContent = T.race.active() ? "In a race now" : "Everyone here, standard cars, one lap"; b.append("Race around Moorooka", sm); list.prepend(b); }
-          list.append(...goldEls);  // at the bottom of the list (Ash, 15 November 2026: "move just for you to the bottom")
-          const news = isAsh() && cfg.place === "moo" ? MOO_NEW : [];  // New: at the top, Ash only
-          if (news.length) { const h = document.createElement("p"); h.className = "bs-town-group bs-town-players bs-town-newhead"; h.setAttribute("role", "presentation"); h.textContent = "New to check";
-            list.prepend(h, ...news.map((q, i) => { const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "menuitem"); b.className = "bs-town-players"; b.dataset.townNew = i;
-              const sm = document.createElement("small"); sm.textContent = q[1]; b.append(q[0], sm); return b; })); }
-          const who = T.peers?.list?.() || []; if (!who.length) return;
+          const item = (data, name, what) => { const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "menuitem"); b.className = "bs-town-players bs-town-gpsitem"; Object.assign(b.dataset, data);
+            const sm = document.createElement("small"); sm.textContent = what; b.append(name, sm); return b; };
+          // the GPS and the race first, at the very top (Ash, 23 November 2026: "Move the race to the top of jump as well as gps"); the
+          // admin things (New to check, the golden rides) are in Settings, under Admin (Ash: "Seperate the admin stuff out of jump")
+          const top = [...(T.gps ? [item({ townGps: "1" }, "GPS", "Type an address, or pick a place to go")] : []),
+            ...(T.race ? [item({ townRace: "1" }, "Race around Moorooka", T.race.active() ? "In a race now" : "Everyone here, standard cars, one lap")] : [])];
+          const who = T.peers?.list?.() || []; if (!who.length) { list.prepend(...top); return; }
           const near = who.map(q => ({ ...q, d: Math.hypot(q.x - F.pos.x, q.z - F.pos.z) })).sort((a, b) => a.d - b.d);
           const head = document.createElement("p"); head.className = "bs-town-group bs-town-players"; head.setAttribute("role", "presentation"); head.textContent = "Players in town";
           const btns = near.map(q => { const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "menuitem"); b.className = "bs-town-players"; b.dataset.townPlayer = q.id;
             const sm = document.createElement("small"); sm.textContent = (q.high ? "Flying, " : "") + (q.d < 1000 ? `${Math.round(q.d)} m away` : `${(q.d / 1000).toFixed(1)} km away`); b.append(q.name, sm); return b; });
-          list.prepend(head, ...btns); };
+          list.prepend(...top, head, ...btns); };
         const goldOnes = () => { const C = T.car, out = []; if (!C) return out;
           if (C.gold?.gold) out.push({ name: "The golden car", what: "A fifth faster than the others", G: C.gold, k: "car" });
           for (const P of C.planes || []) if (P.gold) out.push(P.heli ? { name: "The golden helicopter", what: "40% faster. Somewhere different each visit", G: P, k: "heli" } : { name: "The golden plane", what: "Faster, and the only plane with a boost", G: P, k: "plane" });
@@ -9189,9 +9185,12 @@ const handle = async (m, post) => {
         // New is in Settings now, for Ash only (Ash, 23 November 2026: "Move new into settings admin only"): its button there opens
         // Jump to at the New list. The yellow button up top stays hidden
         clearInterval(BS.newT); const newBtn = $("bsTownNew"); if (newBtn) newBtn.hidden = true;
-        T.showNew = () => { openList(true); const h = list.querySelector(".bs-town-newhead"); if (h) { list.scrollTop = 0; h.nextElementSibling?.focus({ preventScroll: true }); } };
+        // Settings' Admin section (Ash only): the golden rides, and New to check
+        T.adminJumps = () => ({ gold: goldOnes().map((g, i, all) => { const k = all.slice(0, i).filter(o => o.name === g.name).length; return { name: k ? `${g.name} (${k + 1})` : g.name, what: g.what, run: () => toGold(i) }; }),
+          news: cfg.place === "moo" ? MOO_NEW.map(q => ({ name: q[0], what: q[1], run: () => { T.tween = null; if (!T.walk) setMode(true); F.pos.set(q[2], ground(q[2], q[3]) + F.eye, q[3]); F.yaw = q[4]; F.pitch = q[5]; } })) : [] });
         list.onclick = e => { if (e.target.closest("[data-town-fly]")) { openList(false); flyTo(); jump.focus({ preventScroll: true }); return; }
           if (e.target.closest("[data-town-race]")) { openList(false); T.race?.open(); return; }
+          if (e.target.closest("[data-town-gps]")) { openList(false); T.gps?.open(); return; }
           const nw = e.target.closest("[data-town-new]"); if (nw) { const q = MOO_NEW[+nw.dataset.townNew]; openList(false); if (q) { T.tween = null; if (!T.walk) setMode(true);
             F.pos.set(q[2], ground(q[2], q[3]) + F.eye, q[3]); F.yaw = q[4]; F.pitch = q[5]; } return; }
           const gd = e.target.closest("[data-town-gold]"); if (gd) { openList(false); toGold(+gd.dataset.townGold); jump.focus({ preventScroll: true }); return; }
@@ -16764,8 +16763,13 @@ const handle = async (m, post) => {
       let sug = null; if (isAsh() && T.admin?.plans) { const n = T.admin.plans.count(); sug = el("div", "bs-me-sec"); sug.append(el("span", "bs-me-lbl", "Suggested map changes (just you)"));
         const b = el("button", "bs-me-go", n ? `Review ${n} suggestion${n === 1 ? "" : "s"}` : "Check for suggestions"); b.type = "button"; b.onclick = () => { meClose(); T.admin.plans.open(); };
         sug.append(b, el("p", "", n ? "Shows each one on the map where it is, then Approve puts it in everyone's app, or Deny drops it." : "None waiting from construction workers.")); }
-      meBox.append(head, you, st, as, sw, here, tm, app, ...(sug ? [sug] : []), ...(isAsh() && T.cfg?.place === "moo" && MOO_NEW.length && T.showNew ? [(() => { const sec = el("div", "bs-me-sec"), b = el("button", "bs-me-go", `See what's new (${MOO_NEW.length})`);
-        sec.append(el("span", "bs-me-lbl", "What's new (just you)")); b.type = "button"; b.onclick = () => { meClose(); T.showNew(); }; sec.append(b); return sec; })()] : []), ...(isAsh() ? exAshSecs(meDraw) : []), towns, ...(keysB ? [keysB] : []), tut, ...(wv ? [wv] : []), hi, priv, ver); };  // no Exit explore (Ash, 15 November 2026: "Remove exit explore"); Esc, or the browser's back, still leaves
+      // Admin (Ash only; Ash, 23 November 2026: "Seperate the admin stuff out of jump and add to an admin spot in settings"): the golden
+      // rides, then New to check folded up
+      const adminSec = () => { const sec = el("div", "bs-me-sec bs-me-admin"), A = T.adminJumps(), btn = (q, cls) => { const b = el("button", cls, q.name); b.type = "button"; b.title = q.what; b.onclick = () => { meClose(); q.run(); }; return b; };
+        sec.append(el("span", "bs-me-lbl", "Admin (just you)")); for (const g of A.gold) sec.append(btn(g, "bs-me-go"));
+        if (A.news.length) { const d = el("details", "bs-me-new"); d.append(el("summary", "", `New to check (${A.news.length})`)); for (const q of A.news) { const b = btn(q, "bs-me-newi"); b.append(el("small", "", q.what)); d.append(b); } sec.append(d); }
+        return sec; };
+      meBox.append(head, you, st, as, sw, here, tm, app, ...(sug ? [sug] : []), ...(isAsh() && T.adminJumps ? [adminSec()] : []), ...(isAsh() ? exAshSecs(meDraw) : []), towns, ...(keysB ? [keysB] : []), tut, ...(wv ? [wv] : []), hi, priv, ver); };  // no Exit explore (Ash, 15 November 2026: "Remove exit explore"); Esc, or the browser's back, still leaves
     // closes with its \u00d7, the gear again, or a tap anywhere else
     const meOut = e => { if (!meBox.hidden && !meBox.contains(e.target) && !meBtn.contains(e.target)) meClose(); }; document.addEventListener("pointerdown", meOut, true);
     document.body.classList.add("bsme"); meBtn.hidden = false; meBtn.onclick = () => { meBox.hidden = !meBox.hidden; meBtn.setAttribute("aria-expanded", String(!meBox.hidden)); if (!meBox.hidden) meDraw(); meBtn.blur(); };
