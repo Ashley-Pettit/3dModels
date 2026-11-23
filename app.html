@@ -1376,6 +1376,7 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 .bs-keys[hidden] { display: none; }
 /* another player's name, over them (townPeers) */
 .bs-peer { position: absolute; left: 0; top: 0; z-index: 1; padding: 3px 10px; border-radius: 999px; background: rgba(20, 22, 34, 0.82); color: #fff; font: 700 0.8rem/1.4 var(--ui); white-space: nowrap; pointer-events: none; will-change: transform; }
+.bs-peer.bs-tap { pointer-events: auto; cursor: pointer; padding: 8px 14px; font-size: 0.86rem; background: rgba(20, 22, 34, 0.9); box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85); }  /* a label you tap to open (the letterbox) */
 .bs-peer.bs-player { box-shadow: 0 0 0 2px #ffd166; }  /* real players only, not the town's people (Ash, 16 November 2026) */
 /* a player off the side of the screen or behind you: their name pinned to that edge, pointing their way, with how far (Ash, 16
    November 2026: "Make the players a bit easier to locate") */
@@ -17240,7 +17241,8 @@ const handle = async (m, post) => {
     { id: "post", name: "Postie", kind: "person", top: "#d71920", x: -206.3, z: -323.3, yaw: 1.705 },
     // number 6's letterbox pier, on the footpath in front of it: Ash reads his letters here too (Ash, 23 November 2026: "Allow me to also
     // read mail at my letterbox at 6 Beaudesert"). Nobody stands there: walk up to it
-    { id: "letterbox", name: "Your letterbox", x: -262.4, z: -991.1, draw: false, r: 2.3 },
+    // (opened by a tap on its label, never by walking past: Ash, 23 November 2026, "I only want the letterbox to come up if I tap on it")
+    { id: "letterbox", name: "\ud83d\udcec Your letterbox", x: -262.4, z: -991.1, draw: false, tap: true },
     // locals who pass on what they've heard, a different thing each time (Ash, 16 November 2026: "add some vendors that give information
     // like I heard of a love potion, I heard are helicopter around here (they don't know where) or similar, can you catch a possum for
     // me; I last saw it on kingwell street. I heard the chips from big boss are the best ever, that mechanic in town did some amazing
@@ -18102,6 +18104,9 @@ const handle = async (m, post) => {
     const V2S = new THREE.Vector3();
     const folk = MOO_LOCALS.map(q => ({ ...q, look: q.yaw || 0, shown: false, parts: null, tag: Object.assign(document.createElement("div"), { className: "bs-peer bs-mayor", textContent: q.name, hidden: true }), near: false }));
     T.folk = () => folk;  // (the pigeon's game aims at them)
+    // a spot opened only by a tap on its label (the letterbox): a click, so the sticks are never touched
+    for (const q of folk) if (q.tap) { q.tag.classList.add("bs-tap"); q.tag.setAttribute("role", "button"); q.tag.tabIndex = 0;
+      q.tag.onclick = e => { e.stopPropagation(); const d = Math.hypot(BS.fly.pos.x - q.x, BS.fly.pos.z - q.z); if (d > 25) return toast("Walk up closer to open your letterbox.", 2200); q.near = true; talk(q); }; }
     // (the little name tags on businesses further off, with their yellow mark, are gone: Ash, 20 November 2026, "Let's drop the
     // business indicator with the yellow square")
     folk.forEach(q => { q.dot = Object.assign(document.createElement("div"), { className: "bs-news", hidden: true, title: "Has news for you" }); box.append(q.tag, q.dot); });
@@ -18341,7 +18346,9 @@ const handle = async (m, post) => {
               M.compose(V.set(q.x, g(q.x, q.z), q.z), Q.setFromEuler(E.set(0, q.look, 0, "YXZ")), q.scale ? V2S.set(q.scale, q.scale, q.scale) : ONE); q.parts.setMatrix(0, M.elements.slice());
               q.parts.setMatrix(1, M.clone().multiply(S[0]).multiply(new THREE.Matrix4().makeRotationZ(-0.06)).multiply(new THREE.Matrix4().makeRotationX(toss ?? sw)).elements); q.parts.setMatrix(2, M.clone().multiply(S[1]).multiply(new THREE.Matrix4().makeRotationZ(0.06)).multiply(new THREE.Matrix4().makeRotationX(-sw)).elements); } } }
         // their name over their head while you're near enough to read it (Pandy's is townHome6's)
-        if (q.id !== "pandy" && (q.id !== "letterbox" || isAsh())) { const s = d < 60 && up < 120 ? onScreen(q.x, g(q.x, q.z) + 2.15, q.z) : null; q.tag.hidden = !s; if (s) q.tag.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; }
+        if (q.id !== "pandy" && (q.id !== "letterbox" || isAsh())) { let s = d < 60 && up < 120 ? onScreen(q.x, g(q.x, q.z) + 2.15, q.z) : null;
+          if (s && q.tap && s[1] > innerHeight - 190) s = null;  // (a label you tap never sits down among the sticks, where a thumb on a stick could catch it)
+          q.tag.hidden = !s; if (s) q.tag.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; }
         // the green mark: they've news for you
         // (and Flick, near her, when she's pigeon food for you: Ash, 21 November 2026, "make flick have a little green icon if near her and
         // she's offering a pigeon upgrade")
@@ -18350,7 +18357,7 @@ const handle = async (m, post) => {
         { const ml = (q.id === "post" || (q.id === "letterbox" && isAsh())) && !q.news && !!T.mail?.unread?.(); if (q.dot.classList.contains("mail") !== ml) q.dot.classList.toggle("mail", ml);
           const s = (q.news || (q.id === "flick" && d < 60 && flickOffers()) || ml) && d < 220 && up < 150 ? onScreen(q.x, g(q.x, q.z) + (d < 60 && q.id !== "pandy" ? 3.1 : 2.4), q.z) : null; if (q.dot.hidden === !!s) q.dot.hidden = !s; if (s) q.dot.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; }
         // walk up (or drive up to the mechanic, or run up as the possum to the vet) and they talk to you, once a visit
-        const r = me.k === "walk" ? (q.r || 3.4) : me.k === "possum" ? q.possum : /pigeon$/.test(me.k) ? q.pigeon : /^(car|gold|bus)$/.test(me.k) ? q.car : 0;
+        const r = q.tap ? 0 : me.k === "walk" ? (q.r || 3.4) : me.k === "possum" ? q.possum : /pigeon$/.test(me.k) ? q.pigeon : /^(car|gold|bus)$/.test(me.k) ? q.car : 0;
         if (r && d < r) { if (!q.near && !q.done && !open) { q.near = true; talk(q); } }
         // (step back a metre and a half and they'll talk again, not eight: Ash, 18 November 2026, "When I leave a vendor and try and come
         // back, show the chat a bit faster or lower radius". The card still only shuts once you're well away)
