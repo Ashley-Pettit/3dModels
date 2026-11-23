@@ -1447,7 +1447,21 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 .bs-race .arr { flex: none; width: 26px; height: 26px; transition: transform 0.25s; }
 .bs-race button { flex: none; width: 32px; height: 32px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.16); color: #fff; font: 700 1.05rem var(--ui); cursor: pointer; }
 .bs-race-n { pointer-events: none; position: absolute; z-index: 5; left: 50%; top: 36%; transform: translate(-50%, -50%); font: 900 clamp(64px, 18vw, 128px)/1 var(--ui); color: #ffc93c; text-shadow: 0 4px 18px rgba(0, 0, 0, 0.55); }
-.bs-race-ask { pointer-events: auto; position: absolute; z-index: 6; left: 50%; top: calc(62px + env(safe-area-inset-top)); transform: translateX(-50%); width: min(400px, calc(100% - 32px)); box-sizing: border-box; padding: 14px; border-radius: 16px; background: rgba(22, 24, 34, 0.96); color: #fff; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
+.bs-race-ask { pointer-events: auto; position: absolute; z-index: 6; left: 50%; top: calc(62px + env(safe-area-inset-top)); transform: translateX(-50%); width: min(400px, calc(100% - 32px)); box-sizing: border-box; padding: 16px 16px 0; border-radius: 18px; background: rgb(22, 24, 34); color: #fff; box-shadow: 0 10px 32px rgba(0, 0, 0, 0.5);
+  max-height: calc(100% - 118px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.bs-race-ask > :last-child { margin-bottom: 16px; }  /* (and room for the version, bottom right, under it) */
+.bs-race-ask h3 small { float: right; font: 700 0.8rem/1.6 var(--ui); opacity: 0.65; }
+/* the three parts, as three tiles (Ash, 24 November 2026: "Polish this ui") */
+.bs-race-ask .legs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0 8px; }
+.bs-race-ask .legs > div { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1px; padding: 9px 4px 8px; border-radius: 12px; background: rgba(255, 255, 255, 0.07); }
+.bs-race-ask .legs span { font-size: 1.35rem; line-height: 1.2; } .bs-race-ask .legs b { font: 800 0.84rem/1.2 var(--ui); } .bs-race-ask .legs small { font: 500 0.7rem/1.25 var(--ui); opacity: 0.72; }
+.bs-race-ask .hch { display: flex; justify-content: space-between; } .bs-race-ask .hch span:last-child { font-weight: 600; opacity: 0.7; }
+.bs-race-ask .inv { display: flex; align-items: center; gap: 10px; margin: 2px 0 12px; } .bs-race-ask .inv span { font: 500 0.76rem/1.3 var(--ui); opacity: 0.7; }
+.bs-race-ask .inv button { flex: none; min-height: 40px; padding: 0 14px; border: 1.5px solid rgba(255, 255, 255, 0.35); border-radius: 12px; background: transparent; color: #fff; font: 800 0.86rem var(--ui); cursor: pointer; }
+/* Start stays in view at the bottom while the rest scrolls */
+.bs-race-ask .foot { position: sticky; bottom: 0; margin: 0 -16px; padding: 10px 16px 14px; background: rgb(22, 24, 34); box-shadow: 0 -10px 14px rgb(22, 24, 34); display: grid; gap: 8px; }
+.bs-race-ask .foot .go { min-height: 50px; font-size: 1rem; }
+.bs-race-ask .foot .row:last-child button { min-height: 40px; background: transparent; border: 1.5px solid rgba(255, 255, 255, 0.22); font-size: 0.86rem; }
 .bs-race-ask h3 { margin: 0 0 6px; font: 800 1.05rem/1.25 var(--ui); }
 .bs-race-ask p { margin: 0 0 8px; font: 500 0.86rem/1.45 var(--ui); opacity: 0.92; }
 .bs-race-ask ol { margin: 0 0 10px; padding-left: 1.4em; max-height: 40vh; overflow: auto; font: 700 0.9rem/1.7 var(--ui); font-variant-numeric: tabular-nums; }
@@ -1455,7 +1469,7 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 .bs-race-ask .row { display: flex; gap: 8px; }
 .bs-race-ask .row button { flex: 1; min-height: 44px; border: 0; border-radius: 12px; background: rgba(255, 255, 255, 0.14); color: #fff; font: 800 0.92rem var(--ui); cursor: pointer; }
 .bs-race-ask .row .go { background: #ffc93c; color: #1b1830; }
-.bs-race-ask .row.inv { margin-bottom: 4px; } .bs-race-ask .row.inv button { background: #2f6fe0; }
+
 .bs-race-ask p.small { font-size: 0.78rem; opacity: 0.78; margin-bottom: 10px; }
 .bs-race span.std { font-weight: 700; opacity: 0.85; } .bs-race span.std[hidden] { display: none; }
 .bs-race span.news { color: #ffe08a; font-weight: 700; min-height: 0; } .bs-race span.news:empty { display: none; } .bs-race span.news.hi { color: #ffc93c; }
@@ -17122,9 +17136,9 @@ const handle = async (m, post) => {
   // sorts of settings when in as an admin"). Each is [default, name, unit, least, most]. What he sets is kept on that device
   // ("an3d-rides", shared by every town) and is read when a model opens.
   // (cars 20% faster and turning 25% quicker by default: Ash, 16 November 2026, "Car goes 20% faster naturally", "Set the cars turn to
-  // 25% faster"; car turning up to 135%: Ash, 23 November 2026, "Car turning to 135 default")
+  // 25% faster"; car turning up to 135%: Ash, 23 November 2026, "Car turning to 135 default"; then 140%: 24 November 2026, "Turn up car turning to 140")
   const RIDE_DEF = { carTop: [120, "Car top speed", "km/h", 20, 500], carAccel: [5, "Car acceleration", "m/s\u00b2", 1, 40], carBoostTop: [210, "Car top speed on boost", "km/h", 40, 900],
-    boostSecs: [4, "Boost lasts", "seconds", 1, 60], boostBack: [10, "Boost refills in", "seconds", 1, 120], carTurn: [135, "Car turning", "%", 20, 400], slideTurn: [155, "Handbrake spin", "degrees a second", 20, 720], slideSlow: [8, "Handbrake slows the car by", "km/h a second", 0, 100],
+    boostSecs: [4, "Boost lasts", "seconds", 1, 60], boostBack: [10, "Boost refills in", "seconds", 1, 120], carTurn: [140, "Car turning", "%", 20, 400], slideTurn: [155, "Handbrake spin", "degrees a second", 20, 720], slideSlow: [8, "Handbrake slows the car by", "km/h a second", 0, 100],
     planeTop: [223, "Plane top speed", "km/h", 120, 1500], planeBoostTop: [540, "Plane top speed on boost", "km/h", 150, 3000], planeAccel: [9, "Plane acceleration", "m/s\u00b2", 2, 80], planeLift: [94, "Plane take-off speed", "km/h", 30, 300],
     gold: [20, "Golden car and plane are better by", "%", 0, 400],
     goldTurn: [125, "Golden car turning", "%", 20, 400], goldSlideTurn: [240, "Golden car handbrake spin", "degrees a second", 20, 1440], goldSlideSlow: [5, "Golden car handbrake slows it by", "km/h a second", 0, 100],
@@ -17603,7 +17617,7 @@ const handle = async (m, post) => {
     ["nitro", "Nitro", "🔥", "Bigger nitro tank: boost lasts 3 times as long"], ["grip", "Grip", "🛣️", "Sports tyres: much sharper turns"]];
   // the power-ups: [emoji, name, what it does]. No weapons: birds, weather and a banana peel
   const RACE_ITEMS = { turbo: ["🚀", "Turbo", "A huge burst of speed for 3.5 s"], star: ["⭐", "Golden star", "7 s of 80% more speed and 40% sharper steering, and nothing can touch you"],
-    auto: ["🤖", "Autodrive", "The car drives itself along the course for 10 s, a quarter faster"],
+    auto: ["🤖", "Autodrive cannon", "Your car blasts itself along the course for 15 s, 60% faster"],
     magpie: ["🐦", "Swooping magpie", "Swoops the racer just ahead: they spin out"], ibis: ["🪿", "Bin chicken", "Flies to whoever's in first and stops them dead"],
     storm: ["⛈️", "Storm cloud", "Rain on everyone ahead of you: they slow right down for 5 s"], peel: ["🍌", "Banana peel", "Dropped behind you: whoever drives over it spins"],
     warp: ["🌀", "Shortcut", "Jumps you 150 m further round the course"] };
@@ -17677,10 +17691,12 @@ const handle = async (m, post) => {
     { const end = PW.len - 8, n = Math.max(6, Math.round(end / 75)); for (let k = 1; k <= n; k++) { const d = k === n ? end : pickS(end * k / n, 18, PW.turn), p = PW.at(d); TG.push({ D: PD + d, x: p.x, z: p.z, y: null, h: PW.head(d), leg: 1, kind: k === n ? "pend" : "gate", w: 5 }); } }
     const AD = PD + PW.len + 8;  // (and the walk to the plane 8 m)
     TG.push({ D: AD, x: PLN.x, z: PLN.z, y: null, h: PLH, leg: 2, kind: "board" });
-    // the rings: the first 320 m along (you're off the ground and climbing, straight down Mayfield Road), then one about every 200 m, low
-    // over the houses (13, 19, then 19 to 29 m up); the last a big chequered one over the line
-    const RINGS = []; { let i = 0; for (let d = 320; d < AW.len - 150; d += 200, i++) { const p = AW.at(d); RINGS.push({ d, x: p.x, z: p.z, y: ground(p.x, p.z) + (i === 0 ? 13 : i === 1 ? 19 : 24 + 5 * Math.sin(i * 1.7)), h: AW.head(d), r: 8.7 }); }
-      const p = AW.at(AW.len); RINGS.push({ d: AW.len, x: p.x, z: p.z, y: ground(p.x, p.z) + 15, h: AW.head(AW.len - 3), r: 13, fin: true }); }
+    // the rings: the first 320 m along (you're off the ground and climbing, straight down Mayfield Road), then one every 300 m (200 m till
+    // Ash, 24 November 2026: "On the plane move the rings further apart"), low
+    // over the houses (18, 24, then 24 to 34 m up: a little higher, Ash, 24 November 2026, "The plane rings are slightly too low"); the last
+    // a big chequered one over the line
+    const RINGS = []; { let i = 0; for (let d = 320; d < AW.len - 200; d += 300, i++) { const p = AW.at(d); RINGS.push({ d, x: p.x, z: p.z, y: ground(p.x, p.z) + (i === 0 ? 18 : i === 1 ? 24 : 29 + 5 * Math.sin(i * 1.7)), h: AW.head(d), r: 8.7 }); }
+      const p = AW.at(AW.len); RINGS.push({ d: AW.len, x: p.x, z: p.z, y: ground(p.x, p.z) + 18, h: AW.head(AW.len - 3), r: 13, fin: true }); }
     for (const q of RINGS) TG.push({ D: AD + q.d, x: q.x, z: q.z, y: q.y, h: q.h, leg: 2, kind: q.fin ? "finish" : "ring", r: q.r });
     const NT = TG.length, TOT = TG[NT - 1].D, NR = RINGS.length, FR = TG.findIndex(t => t.leg === 2 && t.y != null), LEG_ICON = ["🚗", "🐾", "✈️"];
     // the power-up boxes: rows of three across the road, every 230 m along the car's way and twice on the possum's straight. Hit one and
@@ -17689,14 +17705,17 @@ const handle = async (m, post) => {
     for (let s = 170; s < sH - 120; s += 230) rowAt(at(s), headAt(s), 0);
     for (const d of [70, 210]) rowAt(PW.at(d), PW.head(d), 1);
     // the gum leaves (the possum's game, once its straight is done): a bunch every 20 m, weaving from side to side; every fifth one up high
-    // (jump for it), every seventh golden. Half a second off your time each, two for a golden one, and a burst of speed
-    const LEAF = []; { let k = 0; for (let d = 330; d < PW.len - 24; d += 20, k++) { const p = PW.at(d), h = PW.head(d), u = 3 * Math.sin(k * 1.3), x = p.x + Math.cos(h) * u, z = p.z - Math.sin(h) * u, g = ground(x, z), high = k % 5 === 4;
+    // (jump for it), every seventh golden. You need 15 to fly (a golden one counts 3, and gives a burst of speed): the plane won't take you
+    // without them. Taking one takes it from the others too, for 12 s (Ash, 24 November 2026: "Focus less on time trial and more on
+    // multiplayer. For example make the person have to get gum leaves as time off is not relevant for multiplayer")
+    const NEED = 15, LEAF = []; { let k = 0; for (let d = 330; d < PW.len - 24; d += 20, k++) { const p = PW.at(d), h = PW.head(d), u = 3 * Math.sin(k * 1.3), x = p.x + Math.cos(h) * u, z = p.z - Math.sin(h) * u, g = ground(x, z), high = k % 5 === 4;
       LEAF.push({ x, z, g, y: g + (high ? 2.9 : 0.75), high, gold: k % 7 === 6, got: 0 }); } }
     // the grid: two by two behind the line, 7 m between rows, either side of the carriageway's middle
     const slot = i => { const row = i >> 1, side = i & 1 ? -1 : 1, s = L - 10 - row * 7, p = at(s), h = headAt(s); return { x: p.x + Math.cos(h) * 1.7 * side, z: p.z - Math.sin(h) * 1.7 * side, h }; };
     // ---- what's drawn: the yellow line (the car's way) and the green one (the possum's), the chequered line and banner, the gates, the
     // giant possum house (a big possum on its roof), the rings, the boxes and the leaves
-    let parts = null, mark = null, boxes = null, leaves = null, puss = null; const clear = () => { for (const q of [parts, mark, boxes, leaves, puss]) try { q?.remove(); } catch {} parts = mark = boxes = leaves = puss = null; };
+    let parts = null, mark = null, boxes = null, leaves = null, puss = null, ringsP = null; const clear = () => { for (const q of [parts, mark, boxes, leaves, puss, ringsP]) try { q?.remove(); } catch {} parts = mark = boxes = leaves = puss = ringsP = null; };
+    const showRings = on => { try { ringsP?.setMatrix?.(0, (on ? new BS.B.THREE.Matrix4() : new BS.B.THREE.Matrix4().makeScale(1e-4, 1e-4, 1e-4)).elements.slice()); } catch {} };
     const draw = () => { clear(); for (const q of [...BOX, ...LEAF]) q.shown = undefined; const pos = [], nor = [], col = [], Y = lin("#ffc93c"), K = lin("#18181f"), W = lin("#f2f2f2"), G = lin("#9aa0a8"), GR = lin("#58b947");
       const quad = (a, b, c, d, k) => { for (const q of [a, b, c, a, c, d]) { pos.push(q[0], q[1], q[2]); nor.push(0, 1, 0); col.push(k[0], k[1], k[2]); } };
       // a lit face (the house): its own normal, turned to face away from the middle of the house
@@ -17720,10 +17739,6 @@ const handle = async (m, post) => {
           for (let f = 0; f < 4; f++) { const [a0, b0] = cs[f], [a1, b1] = cs[(f + 1) % 4]; quad(P(u0 + a0, b0, 0), P(u0 + a1, b1, 0), P(u0 + a1, b1, 3.6 * sm), P(u0 + a0, b0, 3.6 * sm), W); }
           const tip = P(u0 - sd * 1.5 * sm, 0, 3.0 * sm), top = P(u0, 0, 3.55 * sm), bot = P(u0, 0, 2.45 * sm); quad(top, tip, tip, bot, Y); }  // (the pennant: a triangle, both faces drawn)
         for (const v0 of [-1.8, 0, 1.8]) for (const sd of [-1, 1]) quad(P(sd * 1.5 * sm, (v0 - 0.6) * sm), P(0, (v0 + 0.4) * sm), P(0, (v0 - 0.1) * sm), P(sd * 1.5 * sm, (v0 - 1.1) * sm), t.leg === 1 ? GR : Y); }
-      // the rings: striped yellow and black, square to the way the plane flies; the last one bigger and chequered, over the line
-      for (const q of RINGS) { const ux = Math.cos(q.h), uz = -Math.sin(q.h), r1 = q.r, r0 = q.r - 1.4, nS = q.fin ? 24 : 16;
-        const P = (r, a) => [q.x + ux * Math.cos(a) * r, q.y + Math.sin(a) * r, q.z + uz * Math.cos(a) * r];
-        for (let i = 0; i < nS; i++) { const a0 = i / nS * Math.PI * 2, a1 = (i + 1) / nS * Math.PI * 2; if (q.fin) { const rm = (r0 + r1) / 2; quad(P(r0, a0), P(rm, a0), P(rm, a1), P(r0, a1), i % 2 ? K : W); quad(P(rm, a0), P(r1, a0), P(r1, a1), P(rm, a1), i % 2 ? W : K); } else quad(P(r0, a0), P(r1, a0), P(r1, a1), P(r0, a1), i % 2 ? K : Y); } }
       // the giant possum house: cream weatherboard walls, a red roof, a green band under the eaves, two big windows and a tall door with a
       // warm light inside. Low and blocky on purpose. A path leads from the road to the door
       { const gd = ground(DOOR.x, DOOR.z), P3 = (u, v, y) => [DOOR.x + lx * u + fx0 * v, gd + y, DOOR.z + lz * u + fz0 * v], o = P3(9, 0, 5);
@@ -17739,6 +17754,12 @@ const handle = async (m, post) => {
         for (const vc of [-8, 8]) { fr(-0.05, vc - 2.4, vc + 2.4, 3.2, 7.4, TRIM); fr(-0.1, vc - 2, vc + 2, 3.6, 7, GLASS); fr(-0.14, vc - 0.15, vc + 0.15, 3.6, 7, TRIM); fr(-0.14, vc - 2, vc + 2, 5.15, 5.45, TRIM); }
         for (let u = -0.3; u > -9.6; u -= 1.2) { const a = P3(u, -1.4, 0), b = P3(u, 1.4, 0), c = P3(u - 1, 1.4, 0), d = P3(u - 1, -1.4, 0); for (const q of [a, b, c, d]) q[1] = ground(q[0], q[2]) + 0.14; quad(a, b, c, d, PATH); } }
       parts = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.6, doubleSide: true, matrix: new BS.B.THREE.Matrix4().elements }]);
+      pos.length = nor.length = col.length = 0;
+      // the rings: striped yellow and black, square to the way the plane flies; the last one bigger and chequered, over the line
+      for (const q of RINGS) { const ux = Math.cos(q.h), uz = -Math.sin(q.h), r1 = q.r, r0 = q.r - 1.4, nS = q.fin ? 24 : 16;
+        const P = (r, a) => [q.x + ux * Math.cos(a) * r, q.y + Math.sin(a) * r, q.z + uz * Math.cos(a) * r];
+        for (let i = 0; i < nS; i++) { const a0 = i / nS * Math.PI * 2, a1 = (i + 1) / nS * Math.PI * 2; if (q.fin) { const rm = (r0 + r1) / 2; quad(P(r0, a0), P(rm, a0), P(rm, a1), P(r0, a1), i % 2 ? K : W); quad(P(rm, a0), P(r1, a0), P(r1, a1), P(rm, a1), i % 2 ? W : K); } else quad(P(r0, a0), P(r1, a0), P(r1, a1), P(r0, a1), i % 2 ? K : Y); } }
+      ringsP = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.6, doubleSide: true, matrix: new BS.B.THREE.Matrix4().makeScale(1e-4, 1e-4, 1e-4).elements }]);
       // a big possum on the ridge, looking down at the road
       try { const T3 = BS.B.THREE, Mx = new T3.Matrix4().compose(new T3.Vector3(DOOR.x + lx * 9 + fx0 * 7, ground(DOOR.x, DOOR.z) + 17.2, DOOR.z + lz * 9 + fz0 * 7), new T3.Quaternion().setFromEuler(new T3.Euler(0, Math.atan2(-lx, -lz), 0, "YXZ")), new T3.Vector3(7, 7, 7));
         puss = m.addParts(townPlaneParts(undefined, "possum").map((q, i) => ({ ...q, matrix: (i === 1 ? Mx.clone().multiply(new T3.Matrix4().makeTranslation(0, 0, -0.27)) : Mx).elements.slice() }))); } catch {}
@@ -17767,7 +17788,7 @@ const handle = async (m, post) => {
     const boxesAt = (x, z) => { const tm = performance.now() / 1000, now = performance.now();
       if (boxes?.setMatrix) BOX.forEach((r, i) => { const b = r.b[1], near = Math.abs(b.x - x) + Math.abs(b.z - z) < 260, up = r.back < now; if (!near && r.shown === up) return; r.shown = up;
         MQ.setFromAxisAngle(MY, r.h); MM.compose(MV.set(b.x, b.y + Math.sin(tm * 2.2 + i) * 0.18, b.z), MQ, MS.setScalar(up ? 1 : 1e-4)); boxes.setMatrix(i, MM.elements.slice()); });
-      if (leaves?.setMatrix) LEAF.forEach((q, i) => { const near = Math.abs(q.x - x) + Math.abs(q.z - z) < 200, up = !q.got; if (!near && q.shown === up) return; q.shown = up;
+      if (leaves?.setMatrix) LEAF.forEach((q, i) => { const near = Math.abs(q.x - x) + Math.abs(q.z - z) < 200, up = !q.got && !(q.gone > now); if (!near && q.shown === up) return; q.shown = up;
         MQ.setFromAxisAngle(MY, tm * 1.3 + i); MM.compose(MV.set(q.x, q.y + Math.sin(tm * 2.6 + i) * 0.15, q.z), MQ, MS.setScalar(up ? (q.gold ? 2.2 : 1.7) : 1e-4)); leaves.setMatrix(i, MM.elements.slice()); }); };
     // ---- what's on the screen: the card (place, time, the way, the others, a line of news), the item button, the countdown, the panel
     const card = document.createElement("div"); card.className = "bs-race"; card.hidden = true; card.setAttribute("role", "status");
@@ -17810,13 +17831,13 @@ const handle = async (m, post) => {
         sm.textContent = r.fin ? fmtT(r.fin) : `still racing, ${fmtD(TOT - r.m)} to go`; li.append(sm); ol.append(li); });
       const h = document.createElement("h3"); h.textContent = rows.every(r => r.fin) ? "Results" : "Results so far";
       let pbEl = null; if (race?.fin) { const pb = pbEl = document.createElement("p"); pb.className = "small"; pb.textContent = race.pb ? (race.best ? `A new personal best! (It was ${fmtT(race.best)})` : "Your first time on this course: that's your best to beat.") : `Your best on this course: ${fmtT(race.best)}`; }
-      let lfEl = null; if (race?.fin) { lfEl = document.createElement("p"); lfEl.className = "small"; lfEl.textContent = `🍃 ${race.leaves} of ${LEAF.length} gum leaves: ${(race.bonus / 1000).toFixed(1)} s off`; }
+      let lfEl = null; if (race?.fin) { lfEl = document.createElement("p"); lfEl.className = "small"; lfEl.textContent = `🍃 You grabbed ${race.leaves} gum leaves (${NEED} needed)`; }
       const row = document.createElement("div"); row.className = "row"; const x = document.createElement("button"); x.type = "button"; x.textContent = "Close"; x.onclick = end;
       if (rows.every(r => r.fin)) { const again = document.createElement("button"); again.type = "button"; again.className = "go"; again.textContent = "Race again"; again.onclick = () => { end(); R.open(); }; row.append(again); }
       row.append(x); panel.replaceChildren(...[h, pbEl, lfEl, ol, row].filter(Boolean)); panel.hidden = false; };
     // ---- picking a car: four buttons, the pick kept on this device; mid-countdown it changes the car you're sitting in
     const picker = () => { const wrap = document.createElement("div"), lab = document.createElement("p"), row = document.createElement("div"), info = document.createElement("p");
-      wrap.className = "cars"; lab.className = "small lab"; lab.textContent = "Pick your car for this race:"; row.className = "pick"; info.className = "small";
+      wrap.className = "cars"; lab.className = "small lab"; lab.textContent = "Your car"; row.className = "pick"; info.className = "small";
       const show = () => { const v = raceCarPick(); row.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.car === v ? "true" : "false")); info.textContent = RACE_CARS.find(c => c[0] === v)[3]; };
       for (const [id, nm, em] of RACE_CARS) { const b = document.createElement("button"); b.type = "button"; b.dataset.car = id; b.innerHTML = `<span aria-hidden="true">${em}</span>${nm}`;
         b.onclick = () => { try { localStorage.setItem("an3d-race-car", id); } catch {} show(); if (race && race.state === "grid") { race.car = id; T.car?.raceRide?.({ car: id, hc: race.hc }); } }; row.append(b); }
@@ -17824,12 +17845,13 @@ const handle = async (m, post) => {
     // ---- handicaps (whoever starts the race sets them): 0 to 8 for each player
     const HC = new Map();
     const hcRows = ids => { const wrap = document.createElement("div"); wrap.className = "hc";
-      const lab = document.createElement("p"); lab.className = "small lab"; lab.textContent = "Handicaps (each step: 5% less top speed, 7% less acceleration, 1% less turning):"; wrap.append(lab);
+      const lab = document.createElement("p"); lab.className = "small lab hch"; lab.innerHTML = `<span>Racers · ${ids.length === 1 ? "just you" : `${ids.length} here`}</span><span>Handicap</span>`; wrap.append(lab);
       for (const id of ids) { const r = document.createElement("div"), nm = document.createElement("span"), mi = document.createElement("button"), n = document.createElement("b"), pl = document.createElement("button");
         r.className = "hcr"; nm.textContent = id === me() ? "You" : T.peers?.nameOf?.(id) || "A player"; mi.type = pl.type = "button"; mi.textContent = "−"; pl.textContent = "+";
         mi.setAttribute("aria-label", `Less handicap for ${nm.textContent}`); pl.setAttribute("aria-label", `More handicap for ${nm.textContent}`);
         const show = () => { n.textContent = String(HC.get(id) || 0); }; mi.onclick = () => { HC.set(id, Math.max(0, (HC.get(id) || 0) - 1)); show(); }; pl.onclick = () => { HC.set(id, Math.min(8, (HC.get(id) || 0) + 1)); show(); };
         show(); r.append(nm, mi, n, pl); wrap.append(r); }
+      const note = document.createElement("p"); note.className = "small"; note.textContent = "Each handicap step: 5% less top speed, 7% less acceleration and 1% less turning."; wrap.append(note);
       return wrap; };
     // ---- starting one: from Jump to, a word on what happens, your car, the handicaps, then Start
     // ---- the host: whoever opens the race panel first says so every 2 s while it's open; anyone else (or anyone who came by an
@@ -17843,26 +17865,29 @@ const handle = async (m, post) => {
     R.open = () => { if (dead) return; if (race) { if (race.state === "done") results(); return; }
       const w = waiting(); if (w) return waitPanel(w);
       const h = document.createElement("h3"), p1 = document.createElement("p"), p2 = document.createElement("p"), row = document.createElement("div");
-      h.textContent = "Race around Moorooka"; p1.textContent = `${fmtD(TOT)} in three parts. 🚗 Drive through the yellow gates to the giant possum house. 🐾 Hop out, run in its door and race on as the possum along the green line, grabbing gum leaves for time off. ✈️ Jump in the parked plane, take off and fly low through the rings back to the line. Hit the coloured boxes for power-ups: the further back you are, the better they get.`;
-      const inv = document.createElement("div"), ib = document.createElement("button"), it = document.createElement("p"); inv.className = "row inv"; ib.type = "button"; ib.textContent = "Invite someone to race"; inv.append(ib);
-      it.className = "small"; it.textContent = "They get a link: it puts them in a car at the start line, ready. Start when they're here.";
+      h.innerHTML = `Race around Moorooka <small>${fmtD(TOT)}</small>`; p1.className = "small"; p1.textContent = "Boxes on the road give power-ups: the further back you are, the better they get.";
+      const legs = document.createElement("div"); legs.className = "legs";
+      for (const [em, b, sm] of [["🚗", "Drive", "to the giant possum house"], ["🐾", "Possum", `grab ${NEED} gum leaves`], ["✈️", "Fly", "through the rings home"]]) { const d = document.createElement("div"); d.innerHTML = `<span aria-hidden="true">${em}</span><b>${b}</b><small>${sm}</small>`; legs.append(d); }
+      const inv = document.createElement("div"), ib = document.createElement("button"), it = document.createElement("span"); inv.className = "inv"; ib.type = "button"; ib.textContent = "Invite someone";
+      it.textContent = "They get a link to the start line"; inv.append(ib, it);
       ib.onclick = () => { invite(); ib.blur(); };
       const hcBox = document.createElement("div"); let shownIds = "";
       const others = () => { const ids = [me(), ...(T.peers?.ids?.() || [])].filter((v, i, a) => a.indexOf(v) === i), k = ids.length - 1;
-        p2.textContent = k ? `You and the ${k === 1 ? "other player" : `${k} other players`} here go to the start line, each in the car they pick.` : "No one else is here yet: invite someone, or race the clock on your own.";
+        p2.textContent = k ? "" : "No one else is here yet: invite someone, or practise till they come."; p2.hidden = !!k;
         pracBtn.textContent = `🏁 Start the race · ${k ? `${k + 1} here` : "just you"}`;
         const key = ids.join(","); if (key !== shownIds) { shownIds = key; hcBox.replaceChildren(hcRows(ids)); } };
       const host = () => send(["host", "", String(playerName() || "").slice(0, 16)]); host();
       others(); clearInterval(R.liveT); R.liveT = setInterval(() => { const mine = prac || (!panel.hidden && !!panel.querySelector(".go")); if (!mine || dead || race) { clearInterval(R.liveT); if (!race) send(["unhost", ""]); } else { others(); host(); } }, 2000);
-      row.className = "row"; const go = document.createElement("button"), x = document.createElement("button"); go.type = x.type = "button"; go.className = "go"; go.textContent = "Start the race"; x.textContent = "Cancel";
+      row.className = "row"; const go = document.createElement("button"), x = document.createElement("button"); go.type = x.type = "button"; go.className = "go"; go.textContent = "Start the race"; x.textContent = "Cancel"; p2.className = "small";
       x.onclick = () => { panel.hidden = true; pracEnd(); };
       // practise: in a car on the line, the course drawn, the panel away; the button on screen brings it back
-      const pr = document.createElement("button"); pr.type = "button"; pr.textContent = prac ? "Keep practising" : "Practise while you wait";
+      const pr = document.createElement("button"); pr.type = "button"; pr.textContent = prac ? "Keep practising" : "Practise first";
       pr.onclick = () => { panel.hidden = true; if (!prac) { prac = true; const g = slot(0); T.toStart?.(g.x, g.z, g.h); draw(); boxesAt(1e9, 1e9); if (mark?.setMatrix) mark.setMatrix(0, MM.makeScale(1e-4, 1e-4, 1e-4).elements.slice()); toast("Practise run: follow the yellow line. Tap Start the race at the top when everyone's here.", 4500); } pracBtn.hidden = false; };
       go.onclick = () => { panel.hidden = true; pracEnd(); const ids = [me(), ...(T.peers?.ids?.() || [])].filter((v, i, a) => a.indexOf(v) === i).sort(), rid = Math.random().toString(36).slice(2, 8), wait = ids.length > 1 ? 10000 : 6000;
         const hc = {}; for (const id of ids) if (HC.get(id)) hc[id] = HC.get(id);
         send(["go", rid, wait, ids, playerName(), hc]); begin(rid, ids, wait, null, hc); };
-      row.append(go, pr, x); panel.replaceChildren(h, p1, picker(), p2, hcBox, inv, it, row); panel.hidden = false; setTimeout(() => go.focus(), 30); };
+      const foot = document.createElement("div"), sub = document.createElement("div"); foot.className = "foot"; sub.className = "row"; row.append(go); sub.append(pr, x); foot.append(row, sub);
+      panel.replaceChildren(h, legs, p1, picker(), hcBox, p2, inv, foot); panel.hidden = false; setTimeout(() => go.focus(), 30); };
     // the invite: shared (a phone's share sheet) or copied
     const invite = async () => { const u = new URL(location.href); u.search = ""; u.hash = ""; u.searchParams.set("race", "1"); const nm = String(playerName() || "").trim().slice(0, 16); if (nm) u.searchParams.set("from", nm);
       const url = u.href, text = `${nm || "I"} ${nm ? "wants" : "want"} to race you around Moorooka! Open this and you'll be at the start line in a car, ready to go.`;
@@ -17877,7 +17902,7 @@ const handle = async (m, post) => {
       const i = ids.indexOf(me()); if (i < 0) return;
       end(); T.gps?.stop?.(); const now = performance.now(), myHc = Math.max(0, Math.min(8, Math.round(+(hc && hc[me()]) || 0)));
       race = { id: rid, i, t0: now + wait, state: "grid", ti: 0, leg: 0, m: 0, fin: 0, pen: 0, others: new Map, seated: false, tries: 0, tryAt: 0, sentAt: 0, car: raceCarPick(), hc: myHc, item: null, place: 0, placeAt: 0, gapAt: now + 25000, rolled: 0, peels: new Map, noPlane: false, noPossum: false, free: false, bonus: 0, leaves: 0, streak: 0, leafAt: 0 };
-      for (const q of LEAF) q.got = 0; for (const r of BOX) r.back = 0;
+      for (const q of LEAF) { q.got = 0; q.gone = 0; } for (const r of BOX) r.back = 0;
       ids.forEach(id => { if (id !== me()) race.others.set(id, { name: T.peers?.nameOf?.(id) || "A player", m: 0, fin: 0, last: 0, leg: 0, hc: Math.max(0, Math.min(8, Math.round(+(hc && hc[id]) || 0))) }); });
       race.names = $("bsNamesBtn")?.getAttribute("aria-pressed") === "true"; if (race.names) T.streets?.set?.(false);  // (street names off mid-race, back after)
       draw(); card.hidden = false; document.body.classList.add("bsracing"); if (T.car) T.car.wait = true; seat(); T.car?.raceRide?.({ car: race.car, hc: myHc }); T.car?.racePrep?.();
@@ -17897,8 +17922,8 @@ const handle = async (m, post) => {
       const rows = standings(), [x, z] = here();
       if (k === "turbo") { T.car?.raceFx?.("turbo", 3500); say("🚀", 700); }
       else if (k === "star") { T.car?.raceFx?.("star", 7000); say("⭐", 800); tell("Golden star: 80% faster, sharper steering, and nothing can touch you for 7 s", false); send(["fx", race.id, "star", ""]); }
-      else if (k === "auto") { const s0 = race.m, s1 = race.leg === 0 ? Math.min(s0 + 440, sH - 4) : 0, pts = []; for (let s = s0 + 4; s <= s1; s += 4) { const p = at(s); pts.push(p.x, p.z); }
-        if (T.car?.raceAuto?.(pts, 10000)) { say("🤖", 800); tell("Autodrive: the car drives itself for 10 s, a quarter faster", false); }
+      else if (k === "auto") { const s0 = race.m, s1 = race.leg === 0 ? Math.min(s0 + 900, sH - 4) : 0, pts = []; for (let s = s0 + 4; s <= s1; s += 4) { const p = at(s); pts.push(p.x, p.z); }
+        if (T.car?.raceAuto?.(pts, 15000)) { say("🤖", 1200, "Autodrive cannon: hands off!"); T.snd?.tone?.(110, 440, 0.6, 0.12, "sawtooth"); tell("Autodrive cannon: 15 s of the car blasting itself along the course", true); }
         else { T.car?.raceFx?.("turbo", 3500); say("🚀", 700); tell("No car to drive: a Turbo instead", false); } }
       else if (k === "warp") { const t = TG[race.ti]; let ok = false;  // (150 m on along your line, not past the house, the plane or a ring)
         if (race.leg === 0) { const s = Math.min(race.m + 150, t.D - 1), p = at(s); ok = !!T.car?.raceWarp?.(p.x, p.z, headAt(s)); if (ok) race.m = s; }
@@ -17925,11 +17950,12 @@ const handle = async (m, post) => {
       if (k === "go") { const ids = Array.isArray(raw[3]) ? raw[3].filter(v => typeof v === "string").slice(0, 32) : [], wait = Math.max(3000, Math.min(15000, +raw[2] || 0));
         hostSeen = null; invitedBy = ""; begin(String(rid), ids, wait, esc(raw[4] || T.peers?.nameOf?.(id) || "A player"), raw[5] && typeof raw[5] === "object" ? raw[5] : null); return; }
       if (!race || String(rid) !== race.id) return; const o = race.others.get(id); if (!o) return; o.last = performance.now(); o.name = T.peers?.nameOf?.(id) || o.name;
-      if (k === "at") { const m0 = o.m, leg0 = o.leg, fin0 = o.fin; o.m = Math.max(0, Math.min(TOT, +raw[2] || 0)); o.fin = Math.max(0, +raw[3] || 0); o.leg = Math.max(0, Math.min(2, +raw[4] || 0));
+      if (k === "at") { const m0 = o.m, leg0 = o.leg, fin0 = o.fin; o.m = Math.max(0, Math.min(TOT, +raw[2] || 0)); o.fin = Math.max(0, +raw[3] || 0); o.leg = Math.max(0, Math.min(2, +raw[4] || 0)); o.leaves = Math.max(0, Math.min(99, Math.round(+raw[5] || 0)));
         if (o.fin && !fin0) { const pl = standings().findIndex(r => r.id === id) + 1; tell(`${o.name} finished ${ord(pl)} in ${fmtT(o.fin)}`, true); }
         else if (o.leg !== leg0) tell(o.leg === 1 ? `${o.name} is at the possum house` : `${o.name} is at the plane`, false);
         else if (!o.fin && TOT - o.m < 300 && TOT - m0 >= 300) tell(`${o.name} is ${fmtD(TOT - o.m)} from the line!`, true);
         if (race.state === "done" && !panel.hidden) results(); }
+      else if (k === "leaf") { const q = LEAF[Math.round(+raw[2])]; if (q && !q.got) { q.gone = performance.now() + 12000; if (q.gold) tell(`${o.name} grabbed a golden leaf!`, false); } }  // (theirs now: gone for you for 12 s)
       else if (k === "out") { race.others.delete(id); tell(`${o.name} left the race`, false); if (race.state === "done" && !panel.hidden) results(); }
       else if (k === "fx") { const kind = String(raw[2] || ""), target = String(raw[3] || "");
         if (target && target === me()) struck(kind, id);
@@ -17955,8 +17981,8 @@ const handle = async (m, post) => {
       else if (t.kind === "door") { onFoot(false); if (T.car) T.car.wait = false; const p = PW.at(10); let ok = !!T.car?.raceSwap?.("possum", p.x, p.z, PW.head(22));
         // (no possum to be: on in a car instead, along the green line)
         if (!ok) ok = !!T.car?.grid?.(p.x, p.z, PW.head(22)); race.noPossum = T.car?.where?.()?.kind !== "possum"; say("🐾", 1000); T.snd?.pop?.(); [1568, 1760, 1568, 2093].forEach((f, i) => setTimeout(() => T.snd?.tone?.(f, f * 0.9, 0.06, 0.05, "square"), 140 + i * 70));
-        banner("🐾 You're the possum!", "Straight down the road, then grab the gum leaves: half a second off your time each, two for a golden one", 3600); parkPlane(); }
-      else if (t.kind === "pend") { race.leg = 2; T.car?.raceOut?.(); onFoot(true); fanfare();
+        banner("🐾 You're the possum!", `Grab ${NEED} gum leaves on the way: the plane won't fly without them. Golden ones count 3`, 3800); parkPlane(); }
+      else if (t.kind === "pend") { race.leg = 2; T.car?.raceOut?.(); onFoot(true); fanfare(); showRings(true);
         if (!parkPlane()) { const ok = T.car?.raceSwap?.("plane", PLN.x, PLN.z, PLH, ground(PLN.x, PLN.z) + 25); if (ok) { race.ti++; onFoot(false); } else race.noPlane = true; }
         banner("🏁 Possum part over!", race.free ? "Jump in the plane (Get in) and take off down the road" : "No plane on the ground: you're straight in the air", 3600); if (race.free) tell("Walk to the plane and tap Get in", true); }
       else if (t.kind === "board") { onFoot(false); say("✈️", 1000); tell(touch() ? "Push the left stick up: speed down the road, lift off, and stay low through the rings" : "Hold W to speed down the road and lift off, then stay low through the rings", true); }
@@ -17964,16 +17990,19 @@ const handle = async (m, post) => {
       else if (nx.kind === "pend") tell("Last gate: the plane's just ahead", false);
       else if (nx.kind === "finish") tell("Through the big ring over the line to finish!", true); };
     const touch = () => matchMedia("(pointer: coarse)").matches;
-    const finish = now => { race.fin = Math.max(1000, now - race.t0 + race.pen - race.bonus); race.state = "done"; race.free = false; document.body.classList.remove("bsracing", "bsraceout"); race.m = TOT; itemBtn.hidden = true;
-      send(["at", race.id, Math.round(TOT), Math.round(race.fin), race.leg]); race.sentAt = now;
+    const finish = now => { race.fin = Math.max(1000, now - race.t0 + race.pen); race.state = "done"; race.free = false; document.body.classList.remove("bsracing", "bsraceout"); race.m = TOT; itemBtn.hidden = true;
+      send(["at", race.id, Math.round(TOT), Math.round(race.fin), race.leg, race.leaves]); race.sentAt = now;
       const pl = standings().findIndex(r => r.you) + 1, key = "an3d-race-best-" + Math.round(TOT); let best = 0; try { best = +localStorage.getItem(key) || 0; } catch {}
       race.best = best; race.pb = !best || race.fin < best; if (race.pb) try { localStorage.setItem(key, String(Math.round(race.fin))); } catch {}
       banner(race.others.size ? `🏁 ${ord(pl)} place!` : "🏁 Finished!", `${fmtT(race.fin)}${race.pb ? (best ? " · a new personal best!" : " · your first time on this course") : ` · your best is ${fmtT(best)}`}`, 3600); fanfare(true); results(); };
-    // a gum leaf: half a second off (two for a golden one, and a burst of speed); quick ones in a row chime higher and higher
-    const leafGot = (q, now) => { race.leaves++; race.streak = now - race.leafAt < 2600 ? race.streak + 1 : 0; race.leafAt = now; race.bonus += q.gold ? 2000 : 500;
+    // a gum leaf: one towards the 15 you need (three for a golden one, and a burst of speed); quick ones in a row chime higher and higher
+    const leafGot = (q, now) => { const had = race.leaves; race.leaves += q.gold ? 3 : 1; race.streak = now - race.leafAt < 2600 ? race.streak + 1 : 0; race.leafAt = now; send(["leaf", race.id, LEAF.indexOf(q)]);
       const f = 784 * Math.pow(2, Math.min(race.streak, 12) / 12); T.snd?.tone?.(f, f * 1.5, 0.12, 0.08, "triangle");
-      if (q.gold) { setTimeout(() => T.snd?.tone?.(f * 2, f * 2, 0.25, 0.08, "sine"), 90); T.car?.raceFx?.("turbo", 1200); say("🌟", 800, "Golden leaf: 2 s off"); }
-      else if (race.streak >= 3 && race.streak % 3 === 0) say("🍃", 700, `${race.streak + 1} in a row!`); };
+      if (q.gold) { setTimeout(() => T.snd?.tone?.(f * 2, f * 2, 0.25, 0.08, "sine"), 90); T.car?.raceFx?.("turbo", 1200); say("🌟", 800, "Golden leaf: counts 3"); }
+      else if (race.streak >= 3 && race.streak % 3 === 0) say("🍃", 700, `${race.streak + 1} in a row!`);
+      if (had < NEED && race.leaves >= NEED) { setTimeout(() => { ding(); say("🍃", 1400, "That's enough leaves: on to the plane!"); }, 300); tell("Enough gum leaves: run for the plane", true); } };
+    const aim = (x, z, now) => { const t = TG[race.ti]; if (!t || race.leg !== 1 || race.leaves >= NEED || t.kind !== "pend") return t;
+      let b = null, bd = Infinity; for (const q of LEAF) if (!q.got && !(q.gone > now)) { const d = Math.hypot(q.x - x, q.z - z); if (d < bd) { bd = d; b = q; } } return b ? { x: b.x, z: b.z, y: null, kind: "leaf", leg: 1, D: t.D } : t; };
     // ---- each frame: the countdown, the marker, boxes and leaves, picking things up; five times a second, the rest
     R.frame = force => { if (!race || dead) return; const now = performance.now();
       if (!big.hidden && now > bigT) big.hidden = true;
@@ -17983,15 +18012,15 @@ const handle = async (m, post) => {
         if (left <= 0) { race.state = "go"; if (T.car) T.car.wait = false; say("Go!", 1100); T.snd?.tone?.(988, 988, 0.5, 0.11, "square"); panel.hidden = true; showItem();
           if (!race.seated) toast("Couldn't get you a car: hop in any car close by and follow the yellow line.", 4000); } }
       const [x, z, y] = here(), kind = T.car?.in ? where()?.kind || "ride" : "foot";
-      markAt(race.state === "done" ? null : TG[race.ti], x, z); boxesAt(x, z); newsTick(now);
+      markAt(race.state === "done" ? null : aim(x, z, now), x, z); boxesAt(x, z); newsTick(now);
       if (race.state === "go" && !race.free) {
         // a box: within 2.6 m, if your hands are empty (the car, or the possum on its straight)
         if (!race.item && race.leg < 2) for (const r of BOX) if (r.leg === race.leg && r.back < now && r.b.some(b => Math.abs(b.x - x) < 2.6 && Math.abs(b.z - z) < 2.6)) { r.back = now + 6000; race.item = rollItem(); T.snd?.pop?.();
           // every one waits for you to use it (Ash, 24 November 2026: "The autodrive didn't seem to work, with the extreme boost move back
           // to manual activation": it started while your thumb was still driving, and that took it straight back off you)
-          showItem(); tell(`${RACE_ITEMS[race.item][0]} ${RACE_ITEMS[race.item][1]}: ${RACE_ITEMS[race.item][2]}. ${touch() ? "Tap it to use it" : "Press X (or click it) to use it"}`, false); break; }
+          if (race.item === "auto") R.useItem(); else { showItem(); tell(`${RACE_ITEMS[race.item][0]} ${RACE_ITEMS[race.item][1]}: ${RACE_ITEMS[race.item][2]}. ${touch() ? "Tap it to use it" : "Press X (or click it) to use it"}`, false); } break; }  // (the Autodrive cannon goes off by itself; the rest wait for you)
         // a gum leaf: within 1.9 m and at its height (jump for the high ones)
-        if (race.leg === 1) for (const q of LEAF) if (!q.got && Math.abs(q.x - x) < 1.9 && Math.abs(q.z - z) < 1.9 && y > q.g - 1 && (q.high ? y > q.g + 0.9 : y < q.g + 3.4)) { q.got = now; leafGot(q, now); }
+        if (race.leg === 1) for (const q of LEAF) if (!q.got && !(q.gone > now) && Math.abs(q.x - x) < 1.9 && Math.abs(q.z - z) < 1.9 && y > q.g - 1 && (q.high ? y > q.g + 0.9 : y < q.g + 3.4)) { q.got = now; leafGot(q, now); }
         // a peel: within 1.8 m (not your own for the first 2 s)
         if (race.leg < 2) for (const [key, p] of race.peels) if (Math.abs(p.x - x) < 1.8 && Math.abs(p.z - z) < 1.8 && !(p.mine && now - p.at < 2000)) { race.peels.delete(key); send(["peeloff", race.id, key]);
           const ok = T.car?.raceFx?.("hit", 0); if (ok) { say("🍌", 700); tell(p.mine ? "You slipped on your own peel!" : `${nameOf(p.from)}'s banana peel got you!`, true); if (p.from) send(["hit", race.id, "peel", p.from, 1]); } } }
@@ -18010,16 +18039,17 @@ const handle = async (m, post) => {
           // (crossed either way: having missed one, you can come back through it from the far side)
           const crossed = pv != null && (pv < 0) !== (v < 0), side = air ? Math.hypot(u, y - t.y) : Math.abs(u);
           hit = !race.free && (Math.abs(v) < 3 || crossed) && side < (air ? t.r + 1.8 : t.w || 8);
+          if (hit && t.kind === "pend" && race.leaves < NEED) { hit = false; race.short = true; if (now - (race.missAt || 0) > 2500) { race.missAt = now; T.snd?.tone?.(196, 147, 0.4, 0.1, "sawtooth"); say("🍃", 1300, `${NEED - race.leaves} more gum leaves first`); tell(`You need ${NEED} gum leaves to fly: ${NEED - race.leaves} more. The arrow shows the nearest`, true); } }
           // missed: across its line outside it. It doesn't count: turn back and go through it (said once, with a low buzz)
-          if (!hit && crossed && dh < (air ? 150 : 40) && now - (race.missAt || 0) > 1500) { race.missAt = now; race.missed = race.ti; T.snd?.tone?.(196, 147, 0.4, 0.1, "sawtooth");
+          if (!hit && crossed && !race.short && dh < (air ? 150 : 40) && now - (race.missAt || 0) > 1500) { race.missAt = now; race.missed = race.ti; T.snd?.tone?.(196, 147, 0.4, 0.1, "sawtooth");
             const nm = t.kind === "finish" ? "the finish ring" : t.y != null ? `ring ${ringNo(race.ti)}` : "the gate"; say("✗", 1100, `Missed ${nm}: turn back`); tell(`Missed ${nm}: turn back and go through it`, true); } }
-        if (hit) { const i0 = race.ti; race.ti++; race.pv = null; race.missed = -1;
+        if (hit) { const i0 = race.ti; race.ti++; race.pv = null; race.missed = -1; race.short = false;
           if (t.kind === "ring" || t.kind === "finish") { T.car?.raceFx?.("turbo", 900); ding(); if (t.kind === "ring") say("✓", 700, `Ring ${ringNo(i0)} of ${NR}`); }
           else if (t.kind === "gate") ding();
           if (race.ti >= NT) finish(now); else stage(t, now); }
         if (race.state === "go") { const t2 = TG[race.ti], prev = race.ti ? TG[race.ti - 1].D : 0; race.m = Math.max(prev, Math.min(t2.D, t2.D - Math.hypot(t2.x - x, t2.z - z))); } }
       // where you are, to the others, once a second (and for half a minute after you finish, so it gets there)
-      if (race.state !== "grid" && now - race.sentAt > 1000 && (race.state === "go" || now - race.t0 - race.fin < 30000)) { race.sentAt = now; send(["at", race.id, Math.round(race.m), Math.round(race.fin), race.leg]); }
+      if (race.state !== "grid" && now - race.sentAt > 1000 && (race.state === "go" || now - race.t0 - race.fin < 30000)) { race.sentAt = now; send(["at", race.id, Math.round(race.m), Math.round(race.fin), race.leg, race.leaves]); }
       // anyone who never says where they are (an older copy of the app, or gone) is dropped after 20 s
       if (now > race.t0 + 20000) for (const [id, o] of race.others) if (!o.fin && now - (o.last || race.t0) > 20000) { race.others.delete(id); tell(`${o.name} dropped out`, false); }
       const rows = standings(), n = rows.length, pl = rows.findIndex(r => r.you) + 1;
@@ -18030,17 +18060,17 @@ const handle = async (m, post) => {
           if (o) { const d = Math.abs(o.m - race.m); tell(o === a ? `${o.name} is ${fmtD(d)} ahead${o.leg !== race.leg ? `, ${o.leg === 1 ? "the possum" : o.leg === 2 ? "flying" : "still driving"}` : ""}` : `You're ${fmtD(d)} ahead of ${o.name}`, false); } } }
       // the card: where you are, the others in a line, and the news
       if (race.state === "grid") { cb.textContent = "On the grid"; cs.textContent = `${n > 1 ? `${n} racing` : "Time trial"} · starts in ${Math.max(0, Math.ceil((race.t0 - now) / 1000))} s${race.hc ? ` · handicap ${race.hc}` : ""}`; }
-      else if (race.state === "go") { const t = TG[race.ti], gate = t.kind !== "door" && t.kind !== "board", off = gate && Math.hypot(t.x - x, t.z - z) > t.D - (race.ti ? TG[race.ti - 1].D : 0) + 80, tm = fmtT(now - race.t0 + race.pen - race.bonus);
+      else if (race.state === "go") { const t = TG[race.ti], gate = t.kind !== "door" && t.kind !== "board", off = gate && Math.hypot(t.x - x, t.z - z) > t.D - (race.ti ? TG[race.ti - 1].D : 0) + 80, tm = fmtT(now - race.t0 + race.pen);
         cb.textContent = `${[0, 1, 2].map(i => i < race.leg ? "✅" : LEG_ICON[i]).join("")} ${n > 1 ? `${ord(pl)} of ${n}` : "Time trial"}`;
         cs.textContent = race.missed === race.ti ? (t.kind === "finish" ? "Turn back: through the finish ring" : t.y != null ? `Turn back: through ring ${ringNo(race.ti)}` : "Turn back: through the gate")
           : t.kind === "door" ? (kind === "foot" ? `Run in the door · ${tm}` : `Tap Get out · ${tm}`)
           : t.kind === "board" ? (kind === "foot" ? `Get in the plane · ${tm}` : `Get out, then in the plane`)
           : off ? (race.leg === 2 ? "Back to the rings: follow the diamond" : race.leg === 1 ? "Missed a gate: back to the green line" : "Missed a checkpoint: back to the yellow line")
-          : race.leg === 2 ? `${tm} · ring ${Math.max(1, Math.min(NR, ringNo(race.ti)))} of ${NR}` : race.leg === 1 ? `🍃 ${race.leaves} · ${tm} · ${fmtD(TOT - race.m)}` : `${tm} · ${fmtD(TOT - race.m)} to go`; }
+          : race.leg === 2 ? `${tm} · ring ${Math.max(1, Math.min(NR, ringNo(race.ti)))} of ${NR}` : race.leg === 1 ? (race.leaves < NEED && t.kind === "pend" ? `🍃 ${race.leaves}/${NEED} · more leaves!` : `🍃 ${Math.min(race.leaves, NEED)}/${NEED} · ${tm} · ${fmtD(TOT - race.m)}`) : `${tm} · ${fmtD(TOT - race.m)} to go`; }
       else { cb.textContent = n > 1 ? `Finished ${ord(pl)} of ${n}` : "Finished!"; cs.textContent = `${fmtT(race.fin)} · tap × to close`; }
-      std.textContent = n > 1 ? rows.slice(0, 4).map((r, i) => `${i + 1} ${r.you ? "You" : r.name} ${r.fin ? "🏁" : LEG_ICON[r.leg || 0]}`).join("  ·  ") : ""; std.hidden = n < 2;
+      std.textContent = n > 1 ? rows.slice(0, 4).map((r, i) => `${i + 1} ${r.you ? "You" : r.name} ${r.fin ? "🏁" : LEG_ICON[r.leg || 0]}${!r.fin && r.leg === 1 ? ` ${Math.min(NEED, r.you ? race.leaves : r.leaves || 0)}🍃` : ""}`).join("  ·  ") : ""; std.hidden = n < 2;
       // the arrow: towards the next target, turned to how you're facing
-      const t = TG[Math.min(race.ti, NT - 1)], want = Math.atan2(-(t.x - x), -(t.z - z)), rel = Math.atan2(Math.sin(want - F.yaw), Math.cos(want - F.yaw));
+      const t = race.state === "go" ? aim(x, z, now) : TG[NT - 1], want = Math.atan2(-(t.x - x), -(t.z - z)), rel = Math.atan2(Math.sin(want - F.yaw), Math.cos(want - F.yaw));
       arr.style.transform = `rotate(${(-rel * 180 / Math.PI).toFixed(0)}deg)`;
       dir.hidden = race.state !== "go"; if (!dir.hidden) { dirArr.style.transform = `rotate(${(-rel * 180 / Math.PI).toFixed(0)}deg)`; const dy = t.y != null && kind === "plane" ? t.y - y : 0, dist = Math.hypot(t.x - x, t.z - z), el = Math.atan2(dy, Math.max(8, dist)) * 180 / Math.PI;
         // (the arrow shows how far up or down it is too: it stands up and rises on the screen for a ring above you, lies down and drops for one
@@ -19867,7 +19897,7 @@ const handle = async (m, post) => {
         if ((xNew || F.flip) && car.gold && !car.flip) { F.flip = false; car.flip = { t: 0, h0: car.h, d0: car.dir, way: str < -0.1 ? -1 : 1 }; snd.thud?.(0.3); }
         const gc = car.gold, bSecs = gc ? R.goldBoostSecs : R.boostSecs, bBack = gc ? R.goldBoostBack : R.boostBack, sTurn = gc ? R.goldSlideTurn : R.slideTurn, sSlow = gc ? R.goldSlideSlow : R.slideSlow;
         if (boosting) { charge = Math.max(0, charge - dt / bSecs); if (!charge) spent = true; } else { charge = Math.min(1, charge + dt / bBack); if (charge >= 0.2) spent = false; }
-        const K = (car.gold ? GOLD : car.bus ? 0.7 : 1) * (C.spdK || 1) * (C.slowTil > performance.now() ? 0.55 : 1) * (C.starTil > performance.now() ? 1.8 : 1) * (C.autoTil > performance.now() && auto ? 1.25 : 1), vboost = VBOOST * K, SHAPE = car.bus ? BUS : CAR;  // (spdK, slowTil: the race's car, handicap and storm cloud)
+        const K = (car.gold ? GOLD : car.bus ? 0.7 : 1) * (C.spdK || 1) * (C.slowTil > performance.now() ? 0.55 : 1) * (C.starTil > performance.now() ? 1.8 : 1) * (C.autoTil > performance.now() && auto ? 1.6 : 1), vboost = VBOOST * K, SHAPE = car.bus ? BUS : CAR;  // (spdK, slowTil: the race's car, handicap and storm cloud)
         if (C.starTil > performance.now() && Math.random() < dt * 18) fxSpray(car, true);  // a golden star: sparkling
         // a passenger's power-up: 2 km/h more, and half a boost's worth on top, for 3 seconds (Ash, 16 November 2026)
         const tk = car.teamK || 1, vteam = VMAX * K + tk * (R.teamBoostExtra / 3.6 + R.teamBoostShare / 100 * (vboost - VMAX * K)), vmax = teamOn ? vteam : VMAX * K;
@@ -20409,7 +20439,7 @@ const handle = async (m, post) => {
       const [ax, az] = pt(10 * big), [bx, bz] = pt(24 * big), bend = rem > 12 ? Math.abs(wrap(Math.atan2(bx - ax, bz - az) - car.h)) : 0;
       let vt = Math.max(4.2, AUTO_V / (1 + 2.2 * bend)) / (car.bus ? 1.3 : 1), hoonB = false, hoonH = false;
       if (H) { // flat out, but slow enough at each corner coming to get round it: looked for up to 90 m ahead, braking at HOON_A
-        const top = VMAX * (car.gold ? GOLD : 1); vt = top; let worst = 0;
+        const top = VMAX * (car.gold ? GOLD : 1) * (C.autoTil > performance.now() ? 1.6 * (C.spdK || 1) : 1); vt = top; let worst = 0;  /* (the race's Autodrive cannon: aiming for its 60% more) */
         for (const d of [8, 20, 34, 50, 70, 90]) { if (d > rem - 6) break; const [px, pz] = pt(d), [qx, qz] = pt(d + 12), b = Math.abs(wrap(Math.atan2(qx - px, qz - pz) - car.h)); if (d <= 20) worst = Math.max(worst, b);
           vt = Math.min(vt, Math.sqrt((Math.max(6.5, top / (1 + 2.6 * b))) ** 2 + 2 * HOON_A * Math.max(0, d - 6))); }
         vt = Math.min(vt, Math.sqrt(2 * HOON_A * Math.max(0, rem - 3)) + 1.2); if (Math.abs(e) > 0.8) vt = Math.min(vt, 6.5);
