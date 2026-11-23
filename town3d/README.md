@@ -2338,7 +2338,9 @@ Ash: "Can you add a gps in the game to navigate to an address?"
   flat out to the car's own top speed, Boost down clear straights, braking late and hard (8.5 m/s every second) for each corner it
   sees up to 90 m ahead, a third of a second of handbrake to swing round sharp corners taken quick, and a skid to a stop at the end.
   The speed chip says "Autodrive". The Drive stick (or any driving key, the handbrake or Boost) takes the wheel back, and the line
-  stays to follow; the Look stick doesn't. × on the card stops the GPS and the car. Off the line by 35 m, it works the way out again
+  stays to follow; the Look stick doesn't. × on the card stops the GPS and the car. Once you've taken the wheel, an **Autodrive** button shows
+  on the card (Ash, 23 November 2026: "With autodrive, if I take over manual control, show a btn to resume autodrive"): a tap and
+  the car carries on along the line from where you are on it. Off the line by 35 m, it works the way out again
   and carries on. In the tests: 771 m in 33 s and 2.3 km in 85 s in Moorooka, 951 m in 36 s in Inverloch, up to 118 km/h, never
   more than 2.4 m off the line once on it.
 - **Lag:** the network is built once, the first time the GPS is opened. Each frame only looks along the next 80 points of the route,
