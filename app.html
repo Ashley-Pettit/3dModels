@@ -1448,6 +1448,8 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 .bs-race-ask .row { display: flex; gap: 8px; }
 .bs-race-ask .row button { flex: 1; min-height: 44px; border: 0; border-radius: 12px; background: rgba(255, 255, 255, 0.14); color: #fff; font: 800 0.92rem var(--ui); cursor: pointer; }
 .bs-race-ask .row .go { background: #ffc93c; color: #1b1830; }
+.bs-race-ask .row.inv { margin-bottom: 4px; } .bs-race-ask .row.inv button { background: #2f6fe0; }
+.bs-race-ask p.small { font-size: 0.78rem; opacity: 0.78; margin-bottom: 10px; }
 /* who is riding with you (or holding on), while you drive or fly: a card under the top buttons and their names over your car or plane */
 .bs-ridecard { pointer-events: none; position: absolute; z-index: 5; left: 50%; top: calc(62px + env(safe-area-inset-top)); transform: translateX(-50%); max-width: calc(100% - 32px); box-sizing: border-box; padding: 8px 14px 8px 34px; border-radius: 999px; background: #ffd166; color: #1b1830; font: 700 0.86rem/1.2 var(--ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); }
 .bs-ridecard::before { content: ""; position: absolute; left: 12px; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; background: #1b1830; box-shadow: 0 0 0 3px rgba(27, 24, 48, 0.25); }
@@ -9275,6 +9277,9 @@ const handle = async (m, post) => {
         { const gb = $("bsGpsBtn"); if (gb && T.gps) { gb.hidden = false; gb.onclick = () => { if (!list.hidden) openList(false); T.gps?.open(); gb.blur(); }; } }
         setTimeout(() => T.gps?.warm?.(), 6000);  // its streets made ready in the background, once the town has settled
         if (cfg.place === "moo" && !OFF.has("race")) try { T.race = townRace(T, m, F, ground, box); } catch (e) { console.warn("Town model: the race couldn't start", e); }
+        // opened from a race invite (?race=1&from=Ash): to the start line, ready (once: the link's bits are taken off the address)
+        try { const qs = new URLSearchParams(location.search); if (qs.has("race")) { const from = (qs.get("from") || "").replace(/[<>]/g, "").slice(0, 16); qs.delete("race"); qs.delete("from");
+          history.replaceState(history.state, "", location.pathname + (qs.toString() ? "?" + qs : "") + location.hash); if (T.race?.arrive) setTimeout(() => T.race?.arrive?.(from), 3500); } } catch {}
         if (!OFF.has("mail")) try { T.mail = townMail(T); } catch (e) { console.warn("Town model: the post couldn't start", e); }
         if (!OFF.has("animal")) try { T.critter = townCritter(T, m, ground, cfg.place); } catch (e) { console.warn("Town model: the animal couldn't start", e); }
         F.hot = { f: () => toMode(!T.walk),
@@ -17390,11 +17395,28 @@ const handle = async (m, post) => {
       const n = (T.peers?.ids?.() || []).length, h = document.createElement("h3"), p1 = document.createElement("p"), p2 = document.createElement("p"), row = document.createElement("div");
       h.textContent = "Race around Moorooka"; p1.textContent = `One lap, ${fmtD(L)}: down Beaudesert Road, along Evans Road, up Tarragindi Road and back along Mayfield Road. Follow the yellow line.`;
       p2.textContent = n ? `You and the ${n === 1 ? "other player" : `${n} other players`} here go to the start line in standard cars, each with their own upgrades.` : "No one else is here right now, so it's a time trial: you against the clock, in a standard car with your upgrades.";
+      // invite someone first (Ash, 23 November 2026: "If I click race first show a thing where I can invite someone to join the race. If
+      // I share with this link I want them to spawn ready to race"): the link opens Moorooka with ?race=1, and they arrive in a car at
+      // the start line. The line about who's here keeps up as they arrive; Start takes everyone here onto the grid
+      const inv = document.createElement("div"), ib = document.createElement("button"), it = document.createElement("p"); inv.className = "row inv"; ib.type = "button"; ib.textContent = "Invite someone to race"; inv.append(ib);
+      it.className = "small"; it.textContent = "They get a link: it puts them in a car at the start line, ready. Start when they're here.";
+      ib.onclick = () => { invite(); ib.blur(); };
+      const others = () => { const k = (T.peers?.ids?.() || []).length; p2.textContent = k ? `You and the ${k === 1 ? "other player" : `${k} other players`} here go to the start line in standard cars, each with their own upgrades.` : "No one else is here yet: invite someone, or race the clock on your own. Standard car, your upgrades."; };
+      others(); clearInterval(R.liveT); R.liveT = setInterval(() => { if (panel.hidden || dead) clearInterval(R.liveT); else others(); }, 1500);
       row.className = "row"; const go = document.createElement("button"), x = document.createElement("button"); go.type = x.type = "button"; go.className = "go"; go.textContent = "Start the race"; x.textContent = "Cancel";
       x.onclick = () => { panel.hidden = true; };
       go.onclick = () => { panel.hidden = true; const ids = [me(), ...(T.peers?.ids?.() || [])].filter((v, i, a) => a.indexOf(v) === i).sort(), rid = Math.random().toString(36).slice(2, 8), wait = ids.length > 1 ? 9000 : 6000;
         send(["go", rid, wait, ids, playerName()]); begin(rid, ids, wait, null); };
-      row.append(go, x); panel.replaceChildren(h, p1, p2, row); panel.hidden = false; setTimeout(() => go.focus(), 30); };
+      row.append(go, x); panel.replaceChildren(h, p1, p2, inv, it, row); panel.hidden = false; setTimeout(() => go.focus(), 30); };
+    // the invite: shared (a phone's share sheet) or copied
+    const invite = async () => { const u = new URL(location.href); u.search = ""; u.hash = ""; u.searchParams.set("race", "1"); const nm = String(playerName() || "").trim().slice(0, 16); if (nm) u.searchParams.set("from", nm);
+      const url = u.href, text = `${nm || "I"} ${nm ? "wants" : "want"} to race you around Moorooka! Open this and you'll be at the start line in a car, ready to go.`;
+      if (navigator.share) { try { await navigator.share({ title: "Race around Moorooka", text, url }); return; } catch (e) { if (e?.name === "AbortError") return; } }
+      try { await navigator.clipboard.writeText(`${text} ${url}`); toast("Invite link copied. Paste it to them.", 2800); } catch { toast(`Send them this link: ${url}`, 8000); } };
+    // arriving by an invite: in a standard car at the start line (a place on the grid, not the front row), the race panel open
+    R.arrive = from => { if (dead || race) return; const g = slot(2 + Math.floor(Math.random() * 6)); T.toStart?.(g.x, g.z, g.h);
+      toast(from ? `You're at the start line, ready to race ${from}. The countdown starts when someone presses Start.` : "You're at the start line, ready to race. The countdown starts when someone presses Start.", 5000);
+      setTimeout(() => { if (!dead && !race) R.open(); }, 1200); };
     // ---- on the grid: your place, a car on it, held still until Go
     const begin = (rid, ids, wait, from) => { if (dead || (race && race.state !== "done")) return;
       const i = ids.indexOf(me()); if (i < 0) return;
