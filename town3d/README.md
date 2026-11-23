@@ -3054,3 +3054,14 @@ the plane"; "Turn up car turning to 140".
 - **The race panel:** the three parts as three tiles, the length beside the title, your car, the racers with their handicap steppers (the
   steps explained once, under them), Invite as a quieter outlined button, and Start the race big at the bottom, always in view (the panel
   scrolls under it, and stops short of the version in the corner), with Practise first and Cancel under it.
+
+### Gum leaves up high (24 November 2026)
+
+Ash: "I want the gum leaves to be more obvious and at the tops of trees houses and light poles and occasionally on the ground."
+- 25 leaves along the possum's way after its straight (`RACE_LEAVES`, from `tools/race/legs.py`): on Kingwell Street's five street lights
+  (the ones the possum climbs), then by turns on the middle of a house's roof (houses of 40 to 400 m2 within 28 m of the way), up a tree of
+  4 m or more within 16 m, and now and then on the ground beside the way: 8 roofs, 8 trees, 5 lights, 4 on the ground. None within 12 m
+  of another. Every sixth one up high is golden.
+- Each sits a metre over what the possum stands on there (`C.raceSurf`, the possum's own `surf`, worked out when you become the possum,
+  once the roofs and trees are in). You pick one up standing within 2 m of it on what it's on (2.6 m on a roof or a tree).
+- Bigger (2.5 times; golden 3.1), with a column of little diamonds rising 6 m over each so it shows from down the street.
