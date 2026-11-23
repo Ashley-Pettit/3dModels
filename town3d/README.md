@@ -2741,3 +2741,16 @@ coffee, juice" noted on 19 November isn't in any of the newer photos, so the fro
 - **Lag:** about 1,500 more triangles in the one coloured piece, and six small pictures (the shop and its neon at 64 px a metre, about
   300 x 174 each; the soffit, the two signs and the OPEN sign smaller), about 0.6 MB on the graphics card and six more draw calls, close
   to where there was one. Nothing to download.
+
+## Number 6's balcony: the palm and number 10's stairs (23 November 2026)
+
+Ash: "Remove the tree that goes through my balcony concept and the stairs that go through the fence from the neighbours house".
+
+- **The palm** (one of the model's trees, at -234.75, -998.5 on number 6's north side) stood up through the balcony and the hexagon's
+  roof. It is hidden while the balcony concept shows and back for the house as it is (`MOO_BAL6.balTrees`, `T.hideTrees`, added to the
+  trees `setRemoved` is given).
+- **Number 10's back stairs** (the model's detailed house next door, `near-6-1rp130916`) ran down through the paling fence into number
+  6's yard. A new hook, `window.anDetailStairs(id, "back")`, lets the app say no; the model then leaves the stairs off and closes the
+  back landing with a rail (`moorooka-model.js` and `-am.js`, `?v=66`, in the detailed house builder `vu`). When the model is rebuilt
+  from ai-forge, make the same change in its detailed-house code.
+- Nothing more to download or draw.
