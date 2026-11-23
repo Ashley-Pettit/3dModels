@@ -1376,7 +1376,8 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 .bs-keys[hidden] { display: none; }
 /* another player's name, over them (townPeers) */
 .bs-peer { position: absolute; left: 0; top: 0; z-index: 1; padding: 3px 10px; border-radius: 999px; background: rgba(20, 22, 34, 0.82); color: #fff; font: 700 0.8rem/1.4 var(--ui); white-space: nowrap; pointer-events: none; will-change: transform; }
-.bs-peer.bs-tap { pointer-events: auto; cursor: pointer; padding: 8px 14px; font-size: 0.86rem; background: rgba(20, 22, 34, 0.9); box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85); }  /* a label you tap to open (the letterbox) */
+.bs-peer.bs-tap { pointer-events: auto; cursor: pointer; width: 28px; height: 28px; padding: 0; display: grid; place-items: center; font-size: 15px; line-height: 1; background: rgba(20, 22, 34, 0.78); box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.7); }  /* a small icon you tap to open (the letterbox; Ash, 23 November 2026: "Make your letterbox way smaller") */
+.bs-peer.bs-tap[hidden] { display: none; }
 .bs-peer.bs-player { box-shadow: 0 0 0 2px #ffd166; }  /* real players only, not the town's people (Ash, 16 November 2026) */
 /* a player off the side of the screen or behind you: their name pinned to that edge, pointing their way, with how far (Ash, 16
    November 2026: "Make the players a bit easier to locate") */
@@ -18122,7 +18123,7 @@ const handle = async (m, post) => {
     const folk = MOO_LOCALS.map(q => ({ ...q, look: q.yaw || 0, shown: false, parts: null, tag: Object.assign(document.createElement("div"), { className: "bs-peer bs-mayor", textContent: q.name, hidden: true }), near: false }));
     T.folk = () => folk;  // (the pigeon's game aims at them)
     // a spot opened only by a tap on its label (the letterbox): a click, so the sticks are never touched
-    for (const q of folk) if (q.tap) { q.tag.classList.add("bs-tap"); q.tag.setAttribute("role", "button"); q.tag.tabIndex = 0;
+    for (const q of folk) if (q.tap) { q.tag.classList.add("bs-tap"); q.tag.setAttribute("role", "button"); q.tag.tabIndex = 0; q.tag.setAttribute("aria-label", q.name.replace(/^\S+\s/, "")); q.tag.title = q.tag.getAttribute("aria-label"); q.tag.textContent = q.name.split(" ")[0];
       q.tag.onclick = e => { e.stopPropagation(); const d = Math.hypot(BS.fly.pos.x - q.x, BS.fly.pos.z - q.z); if (d > 25) return toast("Walk up closer to open your letterbox.", 2200); q.near = true; talk(q); }; }
     // (the little name tags on businesses further off, with their yellow mark, are gone: Ash, 20 November 2026, "Let's drop the
     // business indicator with the yellow square")
@@ -18372,7 +18373,7 @@ const handle = async (m, post) => {
         // (and the postie, and Ash's letterbox, while there's a letter you haven't read: Ash, 23 November 2026, "Show a green icon there
         // if I have new mail")
         { const ml = (q.id === "post" || (q.id === "letterbox" && isAsh())) && !q.news && !!T.mail?.unread?.(); if (q.dot.classList.contains("mail") !== ml) q.dot.classList.toggle("mail", ml);
-          const s = (q.news || (q.id === "flick" && d < 60 && flickOffers()) || ml) && d < 220 && up < 150 ? onScreen(q.x, g(q.x, q.z) + (d < 60 && q.id !== "pandy" ? 3.1 : 2.4), q.z) : null; if (q.dot.hidden === !!s) q.dot.hidden = !s; if (s) q.dot.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; }
+          const s = (q.news || (q.id === "flick" && d < 60 && flickOffers()) || ml) && d < 220 && up < 150 ? onScreen(q.x, g(q.x, q.z) + (q.tap ? 2.5 : d < 60 && q.id !== "pandy" ? 3.1 : 2.4), q.z) : null; if (q.dot.hidden === !!s) q.dot.hidden = !s; if (s) q.dot.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; }
         // walk up (or drive up to the mechanic, or run up as the possum to the vet) and they talk to you, once a visit
         const r = q.tap ? 0 : me.k === "walk" ? (q.r || 3.4) : me.k === "possum" ? q.possum : /pigeon$/.test(me.k) ? q.pigeon : /^(car|gold|bus)$/.test(me.k) ? q.car : 0;
         if (r && d < r) { if (!q.near && !q.done && !open) { q.near = true; talk(q); } }
