@@ -2984,3 +2984,19 @@ first): building each block's detailed houses mid-game (?v=68 to ?v=70) is undon
 stick drops on an iPhone, and dropping them far away (?v=70) made it happen again each time you came back. The other memory savings
 (no weather town centre on Moorooka and Logan, the half-size Inverloch ground on phones) stay.
 
+### Race polish (23 November 2026, late)
+
+Ash: "Hide street signs and flood during race", "Time trial is over the top of much sharper turns", "Find another way to do up and down in
+a plane", "Make the end of a section more clear. Like car race part over", "Polish the race overall", "Try to make the arrow show
+elevation", "Possum leg too short".
+- Mid-race the street names go off (back after) and the names, tide and flood buttons hide. The upgrade chip goes down a row whenever the
+  race card shows, finished or not.
+- The plane on a phone: the left stick's up and down climb and dive in the air, with the power kept on; on the ground up is power and it
+  lifts off once it's fast. The Climb and Dive buttons are gone for the plane (the helicopter keeps them; `body.bsheli`).
+- The end of each leg: a yellow banner right across the screen ("Car part over! Next up: the plane ..."), a fanfare, and 2.2 s before
+  the change of ride. The card shows the three legs, ticked as you finish them.
+- The arrow rises and stands up for a ring above you, drops and lies down for one below, with how many metres up or down.
+- The possum's leg is 600 m (was 280), with two gates and two rows of boxes. The plane's leg is shorter for it.
+- At the finish: a banner, a fanfare, your best time on this lap kept on the device ("a new personal best!"), medals in the results, and
+  Race again.
+
