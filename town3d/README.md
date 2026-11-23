@@ -2826,3 +2826,23 @@ simple or mixed controls on a computer, each notch of the wheel while walking st
 does after Pandy's lime cordial; `F.wheelRun`, for the 0.3 s each notch holds W or S). Gamer controls are as before. Shift on its own
 still only sprints with the cordial.
 
+
+## The race through the back streets, with gates; Unstick on a phone (23 November 2026)
+
+Ash: "With the race navigate a bit more through the polished parts and backstreets of moorooka. Put in clear check marker spots
+frequently. With unstuck some users on phone are struggling to press it. Not sure why."
+
+- **The lap** (`MOO_RACE`, worked out by `tools/race/course.py`, which says how): 2.8 km, from the same start and line on Beaudesert
+  Road, down past the school to Sherley Street, east through Blomfield, Southwell, Medina, Bracken and Corsica Streets, across Mayfield
+  Road and up Weir Street, along Koala Road past the bowls club, down Homestead Street and back west along Goodwin Terrace, Giardini
+  Lane and Wall Street to Mayfield Road. Each leg by the shortest way on one-way carriageways, side streets no dearer than main roads.
+  It was 4.4 km of main roads (Beaudesert, Evans, Tarragindi and Mayfield Roads). It crosses itself once, where Goodwin Terrace meets
+  Weir Street; the checkpoints are taken in order, so that's fine.
+- **Checkpoints** every 60 m or so (were 120): 45 gates, each two posts striped black and yellow, a chequered banner across the road at
+  3.7 m and a yellow and black band on the road (about 7,000 triangles, all in the one piece with the yellow line). The next one has a
+  big yellow diamond turning over it, not lit by the sun, so it shows in shade and at night, bigger the further off it is.
+- **Unstick** now goes on the finger that touches it (`pointerdown`), not on the click after. A phone sends no click while another finger
+  is down, and the other thumb is usually on the drive stick; Boost and the handbrake already worked this way. It's bigger too (52 px
+  tall, at least 112 px wide) and over the other buttons (`z-index` 6). `T.car.unTest()` shows it as if stuck, for tests.
+- Tested in headless Chrome: a time trial at desktop and phone sizes (gates, marker, card); on a phone with a thumb held on the drive
+  stick, a tap on Unstick fires it and the stick holds.
