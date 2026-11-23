@@ -2764,3 +2764,18 @@ Ash: "Remove the tree that goes through my balcony concept and the stairs that g
   20 s). Driving more than 40 m away in that time still carries on showing the way.
 - Tested in headless Chrome: in a car on a "You drive" route the button shows and hands over to Autodrive; arriving clears the GPS
   after 4.9 s.
+
+## Sharper shadows up close (23 November 2026)
+
+Ash, on his iPhone: "See the issue with the pixelated wall here. Fix this and look for same issue on other buildings". The stepped band
+under a roof edge was the sun's shadow drawn too coarsely: on foot the shadow map (2048 pixels) covered 280 m, about 14 cm a pixel,
+so from a few metres away each step was 30 to 60 screen pixels tall, on every building. Patched in all three bundles
+(`moorooka-model.js?v=67` and the beta page's `moorooka-model-am.js`, `logan/logan-model.js?v=45`, `inverloch-model.js?v=22`; ai-forge's atmosphere `aimShadow` should get the
+same when the models are next built):
+
+- The smallest shadow area is 180 m across, not 280 (`clamp(e*.7, 90, 2400)`), and on foot in Moorooka and Inverloch it's aimed 40 m
+  ahead, not 60 (`40+c*3`): about 9 cm a pixel. High views and flying are as before. Logan aims 60 m ahead, as it did.
+- The sun's shadow is softened a little (`shadow.radius = 1.5`; three.js r187's PCF filter, five samples): the steps blend into a soft
+  edge. 3 was tried and left a speckled grain along edges.
+- Shadows now end about 130 m ahead of you on foot (205 m before).
+
