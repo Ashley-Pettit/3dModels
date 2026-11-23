@@ -3000,3 +3000,31 @@ elevation", "Possum leg too short".
 - At the finish: a banner, a fanfare, your best time on this lap kept on the device ("a new personal best!"), medals in the results, and
   Race again.
 
+
+### The race, third version: car, possum house, possum, plane (24 November 2026)
+
+Ash: "In the race the car section should be about 75% longer and end at giant low res possum house. I should need to get out of my car
+and walk into the possum house. And I become a possum. Possum now phase 2. The possums quest should initially start straight and then be
+a fun mini game that takes me further away from the starting point. At the end of the possums missions end at a parked plane.
+Automatically get me out of the possum but I need to manually enter the plane and take off from the ground. The plane should have to fly
+lowish over moorooka initially straight. Covering a backwards direction to what I drove and played as the possum for." Also: "When I
+click start race immediately hide the menu", and "check the overall feel of the race feels fun and polished".
+- **The car** drives the lap from the line to a giant possum house on Goodwin Terrace: 2.4 km (1.7 times the 1.4 km it was), yellow gates
+  about every 180 m. The last gate stops the car.
+- **The possum house**: cream walls, a red roof, a green band, two big windows and a tall door with a warm light inside, a path from the
+  road to the door and a giant possum on the ridge. Low and blocky on purpose, one draw call (two more for the possum). On foot between
+  legs the race lets you out (`race.free`, `body.bsraceout` shows Get out and Get in); run in the door (within 4.5 m) and you're the
+  possum.
+- **The possum** (`RACE_POSSUM`, from `tools/race/legs.py`): straight along Goodwin Terrace (two rows of boxes), then a gum-leaf hunt down
+  Homestead and Harlock Streets, along Fegen Drive past the possum's own house and up Kingwell Street to Mayfield Road: 0.95 km, a green
+  line and small gates (5 m either side) every 75 m or so. A bunch of leaves every 20 m, weaving side to side; every fifth one up high
+  (jump), every seventh golden. Each is half a second off your time (two for a golden one, and a burst of speed); quick ones in a row
+  chime higher and higher. The card counts them.
+- **The plane** is parked facing back west at the end of the possum's run. Out of the possum by itself, you walk to it and get in, then
+  take off straight down Mayfield Road. The plane's way (`RACE_PLANE`, then the lap backwards from Weir Street to the line) is smoothed
+  so its corners are curves. Rings: the first 320 m along (13 m up), then about every 200 m, 19 to 29 m up, and a big chequered ring
+  over the line to finish. A ring through: a tick, "Ring 3 of 13" and a ding; missed: a cross, a low buzz and 2 s on.
+- Every target has `D`, how far along the whole race it is (5.8 km), and progress, standings and "to go" count the same way. Best times
+  are kept under the new length.
+- Start hides the panel at once; the car picker shows only for racers someone else started it for.
+- Boxes are a part per row of three (one draw call a row): hit one and that row is gone for you for 6 s. Leaves are a part each.
