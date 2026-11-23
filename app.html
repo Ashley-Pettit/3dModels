@@ -6767,7 +6767,9 @@ const handle = async (m, post) => {
     // a zebra crossing on A'Beckett; cars nose-in; benches, bins and bollards round the clock's plaza; the Hub and library clad
     // in timber battens; gums and teal street lamps. The data is in local metres (x east, z south, from the library), turned so
     // the usual view looks from in front of the shops across to the clock, with the library and the Hub behind it.
-    {
+    // (only built where it's seen: on this 3D site with no news, opening Moorooka or Logan never shows Inverloch's town centre, and building
+    // it left about 44 MB of lists in memory after bsLite hid it. Ash, 23 November 2026: "Do Skip the weather scene")
+    if (!(NO_NEWS && BS.exploreOnly && BS.exploreOnly !== "inv")) {
       const D = INV_TOWN, TG = new THREE.Group(), G0 = 2.2; twn.add(TG); W.invTG = TG;
       // the usual view, in the map's own metres: on the library side of the clock at eye level, looking up at it, with the shops
       // across A'Beckett behind
