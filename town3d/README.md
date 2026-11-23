@@ -2790,6 +2790,10 @@ me to also read mail at my letterbox at 6 Beaudesert." In `app.html` (`townMail`
 
 - While a letter to you is unread, the postie at the Moorooka Post Office has a green envelope mark over his head (the locals' green
   mark, with an envelope instead of the "!"), seen from up to 220 m. For Ash, so does his letterbox at number 6.
+- **The letterbox opens on a tap only** (Ash, 23 November 2026: "I only want the letterbox to come up if I tap on it. ATM comes up
+  too easily"): walking past does nothing. Its label, "📬 Your letterbox" (Ash only, within 60 m), is a button: a tap within 25 m opens
+  it (further off it says to walk closer). A click, no touch listeners, and the label hides in the bottom 190 px of the screen so it
+  can never sit over a stick. (`tap: true` in `MOO_LOCALS`.)
 - **Number 6's letterbox** is a walk-up spot on the footpath in front of its pier (`letterbox` in `MOO_LOCALS`, nobody drawn, 2.3 m). For
   Ash it shows his letters, the new ones highlighted, and marks them read; anyone else is told it's number 6's and their letters are
   at the post office. Writing a letter is still at the post office.
