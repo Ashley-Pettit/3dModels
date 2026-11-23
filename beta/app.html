@@ -8355,7 +8355,10 @@ const handle = async (m, post) => {
           if (F.mouseCar?.() && (e.button === 0 || e.button === 2)) { const D = F.drag; D.car = true; clearTimeout(F.mdT); F.mdT = setTimeout(() => { if (F.drag === D) mdGo(D); }, 180); }
           return; }
         try { canvas.setPointerCapture(e.pointerId); } catch {}
-        F.touches.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, move: e.clientX < innerWidth / 2 }); tip.classList.add("dim"); },
+        // a finger on the view's left half moves you, unless you're already holding the move stick: then it looks round like one on the
+        // right half (Ash, 23 November 2026, on his iPhone: "I use right hand to drag right - only works intermittently". A drag to the
+        // right often starts left of the middle, and was taken as a second move finger and ignored)
+        F.touches.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, move: e.clientX < innerWidth / 2 && !F.joys?.some(j => j.move && j.held()) }); tip.classList.add("dim"); },
       pointermove: e => {
         if (e.pointerType === "mouse") { const D = F.drag;
           if (D?.car) { D.x = e.clientX; D.y = e.clientY; if (!D.on && Math.hypot(D.x - D.sx, D.y - D.sy) > 6) mdGo(D); if (D.on) mdSteer(D); return; }  // (driving with the mouse: no looking round)
@@ -8809,7 +8812,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model-mem.js?v=1", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model-mem.js?v=1", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model-mem.js?v=2", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).

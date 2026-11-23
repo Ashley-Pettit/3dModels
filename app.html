@@ -1672,6 +1672,7 @@ body.bsme .bs-height, body.bstown.bsme .bs-height { left: 16px; top: calc(62px +
 .bs-me-head h2 { margin: 0; font: 750 1rem/1.2 var(--ui); }
 .bs-me-x { width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.12); color: inherit; font: 600 1.1rem/1 var(--ui); cursor: pointer; }
 .bs-me-sec { display: grid; gap: 8px; }
+.bs-me-mem { margin: 0; font: 600 0.78rem/1.35 var(--ui); color: rgba(255, 255, 255, 0.8); }
 .bs-me-new summary { min-height: 40px; display: flex; align-items: center; padding: 0 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.12); color: #fff; font: 700 0.84rem/1.2 var(--ui); cursor: pointer; }
 .bs-me-new[open] summary { margin-bottom: 6px; }
 .bs-me-newi { display: block; width: 100%; text-align: left; margin: 0 0 4px; padding: 8px 12px; border: 0; border-radius: 10px; background: rgba(255, 255, 255, 0.07); color: #fff; font: 650 0.8rem/1.25 var(--ui); cursor: pointer; }
@@ -6767,7 +6768,9 @@ const handle = async (m, post) => {
     // a zebra crossing on A'Beckett; cars nose-in; benches, bins and bollards round the clock's plaza; the Hub and library clad
     // in timber battens; gums and teal street lamps. The data is in local metres (x east, z south, from the library), turned so
     // the usual view looks from in front of the shops across to the clock, with the library and the Hub behind it.
-    {
+    // (only built where it's seen: on this 3D site with no news, opening Moorooka or Logan never shows Inverloch's town centre, and building
+    // it left about 44 MB of lists in memory after bsLite hid it. Ash, 23 November 2026: "Do Skip the weather scene")
+    if (!(NO_NEWS && BS.exploreOnly && BS.exploreOnly !== "inv")) {
       const D = INV_TOWN, TG = new THREE.Group(), G0 = 2.2; twn.add(TG); W.invTG = TG;
       // the usual view, in the map's own metres: on the library side of the clock at eye level, looking up at it, with the shops
       // across A'Beckett behind
@@ -8352,7 +8355,10 @@ const handle = async (m, post) => {
           if (F.mouseCar?.() && (e.button === 0 || e.button === 2)) { const D = F.drag; D.car = true; clearTimeout(F.mdT); F.mdT = setTimeout(() => { if (F.drag === D) mdGo(D); }, 180); }
           return; }
         try { canvas.setPointerCapture(e.pointerId); } catch {}
-        F.touches.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, move: e.clientX < innerWidth / 2 }); tip.classList.add("dim"); },
+        // a finger on the view's left half moves you, unless you're already holding the move stick: then it looks round like one on the
+        // right half (Ash, 23 November 2026, on his iPhone: "I use right hand to drag right - only works intermittently". A drag to the
+        // right often starts left of the middle, and was taken as a second move finger and ignored)
+        F.touches.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, move: e.clientX < innerWidth / 2 && !F.joys?.some(j => j.move && j.held()) }); tip.classList.add("dim"); },
       pointermove: e => {
         if (e.pointerType === "mouse") { const D = F.drag;
           if (D?.car) { D.x = e.clientX; D.y = e.clientY; if (!D.on && Math.hypot(D.x - D.sx, D.y - D.sy) > 6) mdGo(D); if (D.on) mdSteer(D); return; }  // (driving with the mouse: no looking round)
@@ -8805,8 +8811,8 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=22", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=67", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=23", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=69", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -16874,7 +16880,13 @@ const handle = async (m, post) => {
       // Admin (Ash only; Ash, 23 November 2026: "Seperate the admin stuff out of jump and add to an admin spot in settings"): the golden
       // rides, then New to check folded up
       const adminSec = () => { const sec = el("div", "bs-me-sec bs-me-admin"), A = T.adminJumps(), btn = (q, cls) => { const b = el("button", cls, q.name); b.type = "button"; b.title = q.what; b.onclick = () => { meClose(); q.run(); }; return b; };
-        sec.append(el("span", "bs-me-lbl", "Admin (just you)")); for (const g of A.gold) sec.append(btn(g, "bs-me-go"));
+        sec.append(el("span", "bs-me-lbl", "Admin (just you)"));
+        // how much memory the page is using (Ash, 23 November 2026: "Help me keep track of memory"): the JavaScript heap, where the browser
+        // tells (Chrome and Edge; iPhone Safari doesn't), and the device's memory where it says. Graphics memory isn't reported by any browser
+        { const pm = performance.memory, dm = navigator.deviceMemory, mb = n => Math.round(n / 1048576);
+          sec.append(el("p", "bs-me-mem", pm ? `Memory: ${mb(pm.usedJSHeapSize)} MB of JavaScript in use (of ${mb(pm.jsHeapSizeLimit)} MB allowed)${dm ? `, on a ${dm} GB device` : ""}. Graphics memory isn't counted.`
+            : "Memory: this browser doesn't report it (iPhone Safari doesn't). Open the same town on a computer in Chrome, Settings > Admin, to see it.")); }
+        for (const g of A.gold) sec.append(btn(g, "bs-me-go"));
         if (A.news.length) { const d = el("details", "bs-me-new"); d.append(el("summary", "", `New to check (${A.news.length})`)); for (const q of A.news) { const b = btn(q, "bs-me-newi"); b.append(el("small", "", q.what)); d.append(b); } sec.append(d); }
         return sec; };
       meBox.append(head, you, st, as, sw, here, tm, app, ...(sug ? [sug] : []), ...(isAsh() && T.adminJumps ? [adminSec()] : []), ...(isAsh() ? exAshSecs(meDraw) : []), towns, ...(keysB ? [keysB] : []), tut, ...(wv ? [wv] : []), hi, priv, ver); };  // no Exit explore (Ash, 15 November 2026: "Remove exit explore"); Esc, or the browser's back, still leaves
