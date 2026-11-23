@@ -1638,6 +1638,22 @@ body.bsfly input, body.bsfly textarea { -webkit-user-select: text !important; us
 .bs-me-go { display: block; min-height: 40px; box-sizing: border-box; padding: 10px 12px; border: 0; border-radius: 12px; background: #fff; color: #1b1830; font: 700 0.84rem/1.2 var(--ui); text-align: center; text-decoration: none; cursor: pointer; }
 body.bsme:not(.bsdrive) .bs-height { display: none; }
 body.bsme .bs-height, body.bstown.bsme .bs-height { left: 16px; top: calc(62px + env(safe-area-inset-top)); }
+/* A town on a phone or tablet: the top in even rows 46 px apart, everything 38 px tall and lined up on the 16 px edges (Ash, 23 November
+   2026, on his iPhone: "Lay out the top buttons a bit nicer"). Row 1 settings, share, mode and Jump to; row 2 the speed beside the
+   street names, GPS and Flood; row 3 the upgrade badge and the red pointer; then the GPS card, as wide as the rows */
+@media (max-width: 999px) {
+  body.bstown .bs-height { top: calc(60px + env(safe-area-inset-top)); height: 38px; box-sizing: border-box; padding: 0 14px; line-height: 38px; font-size: 0.8rem; }
+  body.bstown .bs-upchip { top: calc(106px + env(safe-area-inset-top)); max-width: calc(100% - 32px); box-sizing: border-box; }
+  /* the red pointer (to the doctor, or a helicopter) on the right of row 3, half each when the badge is there too */
+  body.bstown .bs-ptr { top: calc(106px + env(safe-area-inset-top)); left: auto; right: 16px; transform: none; height: 38px; box-sizing: border-box; padding: 0 14px; max-width: calc(100% - 32px); }
+  body.bstown .bs-ptr .bs-ptr-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  body.bstown:has(.bs-ptr:not([hidden])) .bs-upchip:not([hidden]) { max-width: calc(50% - 22px); }
+  body.bstown:has(.bs-upchip:not([hidden])) .bs-ptr { max-width: calc(50% - 22px); }
+  body.bstown .bs-upchip:not(.open) { height: 38px; padding: 0 14px; line-height: 38px; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.14); }
+  body.bstown .bs-upchip.open { border-radius: 19px; padding: 9px 14px; }
+  .bs-gps, .bs-race { left: 16px; right: 16px; width: auto; max-width: none; transform: none; }
+  .bs-gps > div { flex: 1 1 auto; }
+}
 .bs-me { pointer-events: auto; position: absolute; z-index: 4; left: 16px; top: calc(108px + env(safe-area-inset-top)); width: min(300px, calc(100% - 32px)); max-height: calc(100% - 128px - env(safe-area-inset-top)); overflow: auto; box-sizing: border-box;
   padding: 14px; border-radius: 18px; background: rgba(22, 24, 34, 0.86); color: #fff; font: 500 0.8rem/1.4 var(--ui); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.12); display: grid; gap: 14px; }
@@ -8761,7 +8777,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=22", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=66", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=67", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -9145,9 +9161,10 @@ const handle = async (m, post) => {
         // stops the tap: a thumb that lands on a stick still drives it
         T.listOut = e => { if (!list.hidden && !list.contains(e.target) && !jump.contains(e.target) && !$("bsTownNew")?.contains(e.target)) openList(false); };
         document.addEventListener("pointerdown", T.listOut, { capture: true, passive: true });
-        const newBtn = $("bsTownNew"), newShow = () => { newBtn.hidden = !(cfg.place === "moo" && isAsh() && MOO_NEW.length); };
-        if (newBtn) { newShow(); clearInterval(BS.newT); BS.newT = setInterval(newShow, 4000);  // (the name can be set after Explore opens)
-          newBtn.onclick = () => { openList(true); const h = list.querySelector(".bs-town-newhead"); if (h) { list.scrollTop = 0; h.nextElementSibling?.focus({ preventScroll: true }); } }; }
+        // New is in Settings now, for Ash only (Ash, 23 November 2026: "Move new into settings admin only"): its button there opens
+        // Jump to at the New list. The yellow button up top stays hidden
+        clearInterval(BS.newT); const newBtn = $("bsTownNew"); if (newBtn) newBtn.hidden = true;
+        T.showNew = () => { openList(true); const h = list.querySelector(".bs-town-newhead"); if (h) { list.scrollTop = 0; h.nextElementSibling?.focus({ preventScroll: true }); } };
         list.onclick = e => { if (e.target.closest("[data-town-fly]")) { openList(false); flyTo(); jump.focus({ preventScroll: true }); return; }
           if (e.target.closest("[data-town-race]")) { openList(false); T.race?.open(); return; }
           const nw = e.target.closest("[data-town-new]"); if (nw) { const q = MOO_NEW[+nw.dataset.townNew]; openList(false); if (q) { T.tween = null; if (!T.walk) setMode(true);
@@ -14511,9 +14528,14 @@ const handle = async (m, post) => {
     fences: [[1, [-256.27, -1003.27], [-242.32, -1000.91]], [1.6, [-242.32, -1000.91], [-182.84, -990.86]], [1.6, [-240.75, -983.01], [-185.24, -974.26]], [1.7, [-182.84, -990.86], [-185.24, -974.26]]],
     planters: [[-217, -980.65], [-214.26, -980.2], [-211.75, -979.92]], bed: [-255.52, -1001.86, 0.9],
     northFence: 4.5,  // Ash, 21 November 2026: "from the current house there is 4.5m before the fence"
+    balTrees: [[-234.75, -998.5]],  // the model's tree (a palm) that stood up through the balcony: hidden while the concept shows
     near: 300,        // drawn here within this many metres (the model's own house further off)
   };
   window.anDetailOff = id => id === "6-beaudesert" && !!BS.town?.bal6?.near;
+  // number 10's back stairs (the model's detailed house next door, near-6-1rp130916) ran down through the fence into number 6's yard, by
+  // the balcony (Ash, 23 November 2026: "Remove ... the stairs that go through the fence from the neighbours house"). The model leaves them
+  // off and closes the landing with a rail when this says no (moorooka-model.js ?v=66).
+  window.anDetailStairs = (id, which) => !(id === "near-6-1rp130916" && which === "back");
   function townBalcony6(T, m) {
     const THREE = BS.B.THREE, B = MOO_BAL6, V = THREE.Vector3;
     // ---- the frame: the survey's outline gives the house's centre, its depth (dB, to the back) and width (dS, to the south). Here, as in
@@ -14822,11 +14844,14 @@ const handle = async (m, post) => {
     // November 2026: "Remove the label for the button"); how it is, or the balcony. What it does is said once you've pressed it
     const btn = document.createElement("button"); btn.type = "button"; btn.className = "bs-bal6"; btn.hidden = true;
     const label = () => { btn.setAttribute("aria-label", P.mode === "bal" ? "Show number 6 as it is" : "Show the balcony concept"); btn.setAttribute("aria-pressed", String(P.mode === "bal")); };
-    P.set = mode => { P.mode = mode; label(); if (P.near) { show("now", mode === "now"); show("bal", mode === "bal"); } };
+    // the model's tree on the north side (a palm) stood up through the balcony and the hexagon's roof: it goes while the concept shows (Ash,
+    // 23 November 2026: "Remove the tree that goes through my balcony concept"), and is back for the house as it is
+    const trees = () => { T.hideTrees = P.mode === "bal" ? B.balTrees : []; if (T.admin?.apply) T.admin.apply(); else m.setRemoved?.({ cars: T.hideCars || [], trees: T.hideTrees, people: [] }); };
+    P.set = mode => { P.mode = mode; label(); trees(); if (P.near) { show("now", mode === "now"); show("bal", mode === "bal"); } };
     btn.addEventListener("click", e => { e.stopPropagation(); btn.blur(); P.set(P.mode === "bal" ? "now" : "bal"); try { localStorage.setItem("an3d-bal6", P.mode); } catch {}
       toast(P.mode === "bal" ? "The balcony concept: walk up the new stairs down the side" : "Number 6 as it is now", 2400); });
     ($("bsFly") || document.body).append(btn);
-    try { P.mode = localStorage.getItem("an3d-bal6") === "bal" ? "bal" : "now"; } catch {} label();
+    try { P.mode = localStorage.getItem("an3d-bal6") === "bal" ? "bal" : "now"; } catch {} label(); T.hideTrees = P.mode === "bal" ? B.balTrees : [];
     const PIN = toModel(BTN.x, BTN.z), PINY = y0 + BTN.y + 0.03;  // the button's middle
     let last = "";
     P.frame = () => { const F = BS.fly; if (!F || P.dead) return;
@@ -15666,7 +15691,7 @@ const handle = async (m, post) => {
       // (front fences: the app's own houses; the model's fences and street lights: the model, setMore, moorooka-model.js ?v=47)
       if (cfg.place === "moo") { const fr = L.flatMap(e => e.gone.fronts); T.liteGone = fr; T.housesLite?.set(fr); m.setMore?.({ fences: L.flatMap(e => e.gone.fences), lights: L.flatMap(e => e.gone.lights) }); }
       m.setGroundEdits([...L.flatMap(e => e.paint), ...(draft ? [draft] : [])]);
-      m.setRemoved({ cars: [...L.flatMap(e => e.gone.cars), ...(T.hideCars || [])], trees: L.flatMap(e => e.gone.trees), people: L.flatMap(e => e.gone.people) }); };
+      m.setRemoved({ cars: [...L.flatMap(e => e.gone.cars), ...(T.hideCars || [])], trees: [...L.flatMap(e => e.gone.trees), ...(T.hideTrees || [])], people: L.flatMap(e => e.gone.people) }); };  // (T.hideTrees: number 6's balcony concept)
     apply(); A.apply = apply;  // (also when the golden car takes a parked car's place: T.hideCars)
     // what has been published for everyone; anything of mine that is in it now comes off my own list
     fetch(cfg.assets + "edits.json", { cache: "no-cache" }).then(r => r.ok ? r.json() : null).then(j => { if (!j || T.dead) return; pub = tidy(j);
@@ -16711,7 +16736,8 @@ const handle = async (m, post) => {
       let sug = null; if (isAsh() && T.admin?.plans) { const n = T.admin.plans.count(); sug = el("div", "bs-me-sec"); sug.append(el("span", "bs-me-lbl", "Suggested map changes (just you)"));
         const b = el("button", "bs-me-go", n ? `Review ${n} suggestion${n === 1 ? "" : "s"}` : "Check for suggestions"); b.type = "button"; b.onclick = () => { meClose(); T.admin.plans.open(); };
         sug.append(b, el("p", "", n ? "Shows each one on the map where it is, then Approve puts it in everyone's app, or Deny drops it." : "None waiting from construction workers.")); }
-      meBox.append(head, you, st, as, sw, here, tm, app, ...(sug ? [sug] : []), ...(isAsh() ? exAshSecs(meDraw) : []), towns, ...(keysB ? [keysB] : []), tut, ...(wv ? [wv] : []), hi, priv, ver); };  // no Exit explore (Ash, 15 November 2026: "Remove exit explore"); Esc, or the browser's back, still leaves
+      meBox.append(head, you, st, as, sw, here, tm, app, ...(sug ? [sug] : []), ...(isAsh() && T.cfg?.place === "moo" && MOO_NEW.length && T.showNew ? [(() => { const sec = el("div", "bs-me-sec"), b = el("button", "bs-me-go", `See what's new (${MOO_NEW.length})`);
+        sec.append(el("span", "bs-me-lbl", "What's new (just you)")); b.type = "button"; b.onclick = () => { meClose(); T.showNew(); }; sec.append(b); return sec; })()] : []), ...(isAsh() ? exAshSecs(meDraw) : []), towns, ...(keysB ? [keysB] : []), tut, ...(wv ? [wv] : []), hi, priv, ver); };  // no Exit explore (Ash, 15 November 2026: "Remove exit explore"); Esc, or the browser's back, still leaves
     // closes with its \u00d7, the gear again, or a tap anywhere else
     const meOut = e => { if (!meBox.hidden && !meBox.contains(e.target) && !meBtn.contains(e.target)) meClose(); }; document.addEventListener("pointerdown", meOut, true);
     document.body.classList.add("bsme"); meBtn.hidden = false; meBtn.onclick = () => { meBox.hidden = !meBox.hidden; meBtn.setAttribute("aria-expanded", String(!meBox.hidden)); if (!meBox.hidden) meDraw(); meBtn.blur(); };
@@ -17659,7 +17685,13 @@ const handle = async (m, post) => {
       for (let i = Math.max(0, R.i - 15); i < Math.min(n - 1, R.i + 80); i++) { const ax = R.pts[i * 2], az = R.pts[i * 2 + 1], dx = R.pts[i * 2 + 2] - ax, dz = R.pts[i * 2 + 3] - az, L2 = dx * dx + dz * dz || 1, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L2)), d = Math.hypot(x - ax - dx * t, z - az - dz * t);
         if (d < bd) { bd = d; bi = i; bt = t; } }
       R.i = bi; const along = R.at[bi] + (R.at[Math.min(n - 1, bi + 1)] - R.at[bi]) * bt, left = R.at[n - 1] - along, toDest = Math.hypot(R.dest.x - x, R.dest.z - z);
-      if (toDest < 15 || left < 12) { const lab = R.dest.label; G.stop(); toast(`You've arrived: ${lab}.`, 3200); return; }
+      // there: it says so, and the line and card stay 20 seconds before the GPS clears (Ash, 23 November 2026: "My autodrive ended too
+      // early. I drove off myself in a different direction. This was good but allow an extra 20 second allowance before ending the
+      // gps"). Drive off more than 40 m in that time and it carries on showing the way there
+      const there = toDest < 15 || left < 12, to = String(R.dest.label).split(",")[0];  // (the address without its suburb, so it fits on a phone)
+      if (there && !R.arr) { R.arr = now; toast(`You've arrived: ${R.dest.label}.`, 3200); if (R.dest.auto) { T.car?.autoStop?.(); T.car?.faceTo?.(R.dest.x, R.dest.z); } }
+      if (R.arr) { if (!there && toDest > 40) R.arr = 0;
+        else { if (now - R.arr > 20000) { G.stop(); return; } cb.textContent = `You've arrived at ${to}`; cs.textContent = `The GPS clears in ${Math.ceil((20000 - (now - R.arr)) / 1000)} s`; goShow(); return; } }
       if (R.dest.auto && now - R.t0 > 1500 && !T.car?.autoOn?.()) { R.dest.auto = false;  // you've taken the wheel (or got out): the line stays
         if (T.car?.in && !R.dest.toldGo) { R.dest.toldGo = true; toast("You've got the wheel. Tap Autodrive on the GPS to hand it back.", 3500); } }
       goShow();
@@ -17667,7 +17699,6 @@ const handle = async (m, post) => {
       if (bd < 35) R.on = true;  // (off the route only counts once you've been on it: you may start off in a park)
       if (R.on && bd > 35) { if (!offT) offT = now; if (now - offT > 1500 && now - rerouteT > 3000) { rerouteT = now; offT = 0; start(R.dest); return; } } else offT = 0;
       const nx = R.turns.find(q => q.at > along + 3);
-      const to = String(R.dest.label).split(",")[0];  // (the address without its suburb, so it fits on a phone)
       cb.textContent = nx ? `${nx.text}` : `Arrive at ${to}`; cs.textContent = nx ? `in ${fmt(nx.at - along)} · ${fmt(left)} to ${to}` : `in ${fmt(left)}`;
       // the arrow: towards the line 25 m ahead, turned to how you're facing
       let j = bi; while (j < n - 1 && R.at[j] < along + 25) j++; const tx = R.pts[j * 2] - x, tz = R.pts[j * 2 + 1] - z, want = Math.atan2(-tx, -tz);
@@ -19158,6 +19189,7 @@ const handle = async (m, post) => {
         // driving itself (a click on the road, or Drive for me): until a driving key, the stick, the handbrake or the Boost button takes
         // it back. (Shift is left out: the < and > keys are often pressed with it, and that would boost the car out of it)
         // (Autodrive from the GPS drives like a hoon: it works the boost and the handbrake itself too)
+        const mine = Math.abs(thr) > 0.05 || Math.abs(str) > 0.05;  // (your own driving, before Autodrive's)
         let aHand = false; if (auto) { if (Math.abs(thr) > 0.05 || Math.abs(str) > 0.05 || has("Space") || F.hand || F.boost) autoEnd(); else { const a = autoStep(dt); thr = a[0]; str = a[1]; boost = !!a[2]; aHand = !!a[3]; } }
         if (C.wait) { thr = 0; boost = false; car.v = 0; car.teamTil = 0; }  // on a race's grid: held still until Go (you can still look round)
         let v = car.v; const brake = has("Space") || !!F.hand || aHand;
@@ -19200,6 +19232,11 @@ const handle = async (m, post) => {
         v = bsClamp(v, -vboost, vboost);
         car.steer += (str * 0.55 / (1 + (Math.abs(v) / (8 * K)) ** 2 * (R.lockFade ?? 1.2)) - car.steer) * Math.min(1, dt * (R.steerSnap ?? 7));  // less lock the faster it goes
         car.v = v; let bump = 0;
+        // the end of Autodrive: once it has stopped, round on the spot to face the place (Ash, 23 November 2026: "At the end of autodrive,
+        // face my destination even if it means rotating the car in an abnormal way"). A driving key or the stick calls it off
+        if (car.face) { if (mine) car.face = null; else if (Math.abs(v) < 0.8) {
+          const want = Math.atan2(car.face.x - car.x, car.face.z - car.z), d = wrap(want - car.h), st = Math.sign(d) * Math.min(Math.abs(d), 3.2 * dt);
+          car.h = wrap(car.h + st); car.dir = car.h; car.steer = 0; if (Math.abs(d) < 0.03) car.face = null; } }
         for (let n = Math.max(1, Math.ceil(Math.abs(v) * dt / 1.2)), i = 0, st = dt / n; i < n; i++) {  // in steps of a metre or so, so it cannot skip through a wall
           // (how fast it turns: Settings > Cars and planes > Car turning, and Golden car turning: Ash, 15 November 2026)
           // the golden car's 180 (Ash, 15 November 2026: "Add a 180 spin to the golden car that quickly jumps up and heads perfectly in
@@ -19624,6 +19661,7 @@ const handle = async (m, post) => {
       const cx = [car.x], cz = [car.z]; for (let i = k0 + (bd < 2 ? 1 : 0); i < n; i++) { const x = pts[i * 2], z = pts[i * 2 + 1]; if (Math.hypot(x - cx[cx.length - 1], z - cz[cz.length - 1]) < 0.4) continue; cx.push(x); cz.push(z); }
       if (cx.length < 3) return false; autoBegin(cx, cz, new Array(cx.length - 1).fill(0), { hoon: !!o.hoon }); autoPin(null); return true; };
     C.autoOn = () => !!auto && !auto.done;  // (driving itself right now)
+    C.faceTo = (x, z) => { if (veh === "car" && car) car.face = { x, z }; };  // (Autodrive's end: turn to face the place, once stopped)
     C.autoStop = () => { if (auto && !auto.done) { auto.done = true; ezShow(); } };  // (the GPS cancelled, or there: it brakes to a stop, a skid if it's hooning)
     // a click on the view while driving, with Google Maps controls: the ground under the mouse (or just short of the building there)
     C.clickDrive = (sx, sy) => { if (veh !== "car" || !car || held || !gmDesk()) return false;

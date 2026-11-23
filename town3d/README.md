@@ -2332,6 +2332,10 @@ Ash: "Can you add a gps in the game to navigate to an address?"
   back toward the middle, using the same building check as the joins. Getting in or out of a car works the route out again, since
   driving keeps to one-way carriageways and walking doesn't. Logan's map doesn't say which roads are one-way, so there a divided road's
   two halves both count as two-way.
+- **The top on a phone** (Ash, 23 November 2026: "Lay out the top buttons a bit nicer", and "Move new into settings admin only"): under
+  1000 px wide, even rows 46 px apart, everything 38 px tall on the 16 px edges: settings, share, mode and Jump to; the speed beside
+  the street names, GPS and Flood; the upgrade badge and the red pointer (the doctor, a helicopter); then the GPS card as wide as the
+  rows. Ash's yellow New button is gone from the top: Settings has "See what's new", which opens Jump to at the New list.
 - **On a phone** (Ash, 23 November 2026: "Consider layout on iPhone"): under 1000 px wide the card (and the race card) sits below the
   upgrade badge and the New button instead of over them, and shows the address without its suburb so it fits.
 - **The card:** the next turn ("Turn left onto Beaudesert Road"), how far to it and how far to go, and an arrow that points the way
@@ -2346,7 +2350,11 @@ Ash: "Can you add a gps in the game to navigate to an address?"
   The speed chip says "Autodrive". The Drive stick (or any driving key, the handbrake or Boost) takes the wheel back, and the line
   stays to follow; the Look stick doesn't. × on the card stops the GPS and the car. Once you've taken the wheel, an **Autodrive** button shows
   on the card (Ash, 23 November 2026: "With autodrive, if I take over manual control, show a btn to resume autodrive"): a tap and
-  the car carries on along the line from where you are on it. Off the line by 35 m, it works the way out again
+  the car carries on along the line from where you are on it.
+- **Arriving** (Ash, 23 November 2026: "allow an extra 20 second allowance before ending the gps"): the card says "You've arrived at
+  ..." and counts down 20 seconds before the GPS clears; drive off more than 40 m in that time and it carries on showing the way.
+  At the end of Autodrive the car, once stopped, turns round on the spot to face the place (`C.faceTo`; "face my destination even if
+  it means rotating the car in an abnormal way"). The stick or a driving key calls the turn off. Off the line by 35 m, it works the way out again
   and carries on. In the tests: 771 m in 33 s and 2.3 km in 85 s in Moorooka, 951 m in 36 s in Inverloch, up to 118 km/h, never
   more than 2.4 m off the line once on it.
 - **Lag:** the network is built once, the first time the GPS is opened. Each frame only looks along the next 80 points of the route,
@@ -2734,12 +2742,25 @@ coffee, juice" noted on 19 November isn't in any of the newer photos, so the fro
   300 x 174 each; the soffit, the two signs and the OPEN sign smaller), about 0.6 MB on the graphics card and six more draw calls, close
   to where there was one. Nothing to download.
 
+## Number 6's balcony: the palm and number 10's stairs (23 November 2026)
+
+Ash: "Remove the tree that goes through my balcony concept and the stairs that go through the fence from the neighbours house".
+
+- **The palm** (one of the model's trees, at -234.75, -998.5 on number 6's north side) stood up through the balcony and the hexagon's
+  roof. It is hidden while the balcony concept shows and back for the house as it is (`MOO_BAL6.balTrees`, `T.hideTrees`, added to the
+  trees `setRemoved` is given).
+- **Number 10's back stairs** (the model's detailed house next door, `near-6-1rp130916`) ran down through the paling fence into number
+  6's yard. A new hook, `window.anDetailStairs(id, "back")`, lets the app say no; the model then leaves the stairs off and closes the
+  back landing with a rail (`moorooka-model.js` and `-am.js`, `?v=66`, in the detailed house builder `vu`). When the model is rebuilt
+  from ai-forge, make the same change in its detailed-house code.
+- Nothing more to download or draw.
+
 ## Sharper shadows up close (23 November 2026)
 
 Ash, on his iPhone: "See the issue with the pixelated wall here. Fix this and look for same issue on other buildings". The stepped band
 under a roof edge was the sun's shadow drawn too coarsely: on foot the shadow map (2048 pixels) covered 280 m, about 14 cm a pixel,
 so from a few metres away each step was 30 to 60 screen pixels tall, on every building. Patched in all three bundles
-(`moorooka-model.js?v=66`, `logan/logan-model.js?v=45`, `inverloch-model.js?v=22`; ai-forge's atmosphere `aimShadow` should get the
+(`moorooka-model.js?v=67` and the beta page's `moorooka-model-am.js`, `logan/logan-model.js?v=45`, `inverloch-model.js?v=22`; ai-forge's atmosphere `aimShadow` should get the
 same when the models are next built):
 
 - The smallest shadow area is 180 m across, not 280 (`clamp(e*.7, 90, 2400)`), and on foot in Moorooka and Inverloch it's aimed 40 m
