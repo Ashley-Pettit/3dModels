@@ -2312,6 +2312,12 @@ Ash: "Can you add a gps in the game to navigate to an address?"
   the Queensland Government's address finder (`QldLocator` suggest, then `findAddressCandidates`); Inverloch uses OpenStreetMap's
   Nominatim, which has few house numbers there. Places on the map and street names (the middle of the street) are matched on the
   device too, so a street still comes up when the finder has nothing.
+- **Local first** (Ash, 23 November 2026: "With the gps try to prioritise moorooka address and places rather than everything"): the
+  address finder is asked only for addresses inside the map (`searchExtent`, the streets' bounds, or 4 km round you before they're
+  ready), so "12 Mayfield" no longer offers Nambour. In Moorooka the suggestions also take in the shopfronts in the model
+  (`MOO_FRONTS`) and the places to eat (`MOO_FOOD`), by name or by what they are ("pizza", "bakery"), the same spot from two lists
+  shown once. The GPS's map-to-latitude sum had its sign the wrong way round, which put Moorooka near Nambour and Inverloch in the
+  tropics for the finder: fixed, so Inverloch's OpenStreetMap lookups find Inverloch again.
 - **The route:** only streets you can drive on (Ash, 22 November 2026: "The gps goes through houses. Stick to the roads"): no
   footpaths or laneways between houses, bush tracks, or unnamed driveways and car park aisles (classes 0 to 3 and named class 4 in
   Moorooka and Inverloch; 0 to 4 and named 5 in Logan). Shortest way by Dijkstra. A street that stops short of another, or meets it

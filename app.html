@@ -17414,7 +17414,9 @@ const handle = async (m, post) => {
     const fmt = d => d < 1000 ? `${Math.max(10, Math.round(d / 10) * 10)} m` : `${(d / 1000).toFixed(1)} km`;
     // lat/lon both ways (the model's conversion is straight-line)
     const a0 = m.fromLatLon(-27, 153), a1 = m.fromLatLon(-28, 154), kx = a1[0] - a0[0], kz = a1[1] - a0[1];
-    const toLL = (x, z) => [-27 + (z - a0[1]) / kz, 153 + (x - a0[0]) / kx];  // [lat, lon]
+    // (kz is how far z moves for a degree south, so latitude goes the other way: it was "+", which put Moorooka near Nambour and Inverloch
+    // in the tropics for the address finder)
+    const toLL = (x, z) => [-27 - (z - a0[1]) / kz, 153 + (x - a0[0]) / kx];  // [lat, lon]
     // ---- the streets as a network, only what you can drive on (Ash, 22 November 2026: "The gps goes through houses. Stick to the
     // roads"): no footpaths or laneways between houses, bush tracks, or unnamed driveways and car park aisles. Logan counts its
     // residential streets as class 4 and service roads 5; Moorooka and Inverloch count them 3 and 4. A named service road is a street.
@@ -17534,15 +17536,32 @@ const handle = async (m, post) => {
     let items = [];
     const show = list => { items = list; ul.innerHTML = ""; for (const [i, s] of list.entries()) { const li = document.createElement("li"), b = document.createElement("button"); b.type = "button"; b.dataset.i = i;
       b.append(s.text); if (s.sub) { const sm = document.createElement("small"); sm.textContent = s.sub; b.append(sm); } li.append(b); ul.append(li); } };
+    // Moorooka's own shops (the shopfronts in the model) and places to eat (MOO_FOOD), found by name or by what they are ("pizza"),
+    // ahead of anything from the address finder (Ash, 23 November 2026: "With the gps try to prioritise moorooka address and places
+    // rather than everything")
+    let mooP = null; const mooPlaces = () => { if (mooP) return mooP; mooP = []; if (cfg.place !== "moo") return mooP;
+      const nice = n => n === n.toUpperCase() ? n.toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase()) : n;
+      const KIND = { cafe: "Cafe", takeaway: "Takeaway", restaurant: "Restaurant", pub: "Pub", bakery: "Bakery", "ice cream": "Ice cream", bar: "Bar", "food court": "Food court", "bubble tea": "Bubble tea" };
+      try { for (const f of MOO_FRONTS) { const tot = f.shops.reduce((t, q) => t + (q.w || 0), 0) || 1; let at = 0;
+        for (const q of f.shops) { const mid = (at + (q.w || 0) / 2) / tot; at += q.w || 0; if (!q.n || q.plain) continue;
+          mooP.push({ name: nice(q.n), what: q.what || "", addr: f.addr || "", x: f.a[0] + (f.b[0] - f.a[0]) * mid + f.n[0] * 1.5, z: f.a[1] + (f.b[1] - f.a[1]) * mid + f.n[1] * 1.5 }); } } } catch {}
+      try { for (const q of MOO_FOOD.p || []) { if (!q.n || q.la == null) continue; const [x, z] = m.fromLatLon(q.la, q.lo); mooP.push({ name: q.n, what: (KIND[q.k] || "Food") + (q.c ? ", " + q.c : ""), addr: q.a || "", x, z }); } } catch {}
+      return mooP; };
     // suggestions: places on this map first, then addresses
     const local = q => { const w = q.toLowerCase().trim(), st = w.replace(/^\d+[a-z]?\s+/, ""); if (!w) return [];
       const pl = G.places.filter(p => p.walk && (p.name || "").toLowerCase().includes(w)).slice(0, 4).map(p => ({ text: p.name[0].toUpperCase() + p.name.slice(1), sub: p.what || "On this map", x: p.walk.x, z: p.walk.z }));
+      const seen = new Set(pl.map(p => p.text.toLowerCase())), mp = mooPlaces(), hit = p => !seen.has(p.name.toLowerCase()) && !pl.some(o => Math.hypot(o.x - p.x, o.z - p.z) < 25 && (o.text.toLowerCase().includes(p.name.toLowerCase()) || p.name.toLowerCase().includes(o.text.toLowerCase()))) && (seen.add(p.name.toLowerCase()), true);
+      const named = mp.filter(p => p.name.toLowerCase().includes(w)), kind = w.length >= 3 ? mp.filter(p => !p.name.toLowerCase().includes(w) && p.what.toLowerCase().includes(w)) : [];
+      for (const p of [...named, ...kind]) { if (pl.length >= 6) break; if (hit(p)) pl.push({ text: p.name, sub: [p.what, p.addr].filter(Boolean).join(" · ") || "In Moorooka", x: p.x, z: p.z, label: p.addr ? `${p.name}, ${p.addr}` : p.name }); }
       const sts = net && st.length >= 3 ? [...net.mid].filter(([nm]) => nm.toLowerCase().startsWith(st) || nm.toLowerCase().includes(" " + st)).slice(0, 3).map(([nm, v]) => ({ text: nm, sub: "The street (its middle)", x: v.x, z: v.z })) : [];
       return [...pl, ...sts]; };
     const QLD = cfg.place !== "inv";
     const suggest = async q => { ctl?.abort(); ctl = new AbortController(); const sig = ctl.signal, loc = local(q); let more = [];
       try { const [lat, lon] = toLL(F.pos.x, F.pos.z);
-        if (QLD) { const u = `https://spatial-gis.information.qld.gov.au/arcgis/rest/services/Location/QldLocator/GeocodeServer/suggest?f=json&maxSuggestions=6&distance=6000&location=${lon.toFixed(5)},${lat.toFixed(5)}&text=${encodeURIComponent(q)}`;
+        // only addresses inside this map (before the streets are ready, within 4 km of you): the finder's "near here" barely counts
+        if (QLD) { const b = net ? net.bb : [F.pos.x - 4000, F.pos.z - 4000, F.pos.x + 4000, F.pos.z + 4000], [la0, lo0] = toLL(b[0], b[1]), [la1, lo1] = toLL(b[2], b[3]);
+          const ext = JSON.stringify({ xmin: +Math.min(lo0, lo1).toFixed(5), ymin: +Math.min(la0, la1).toFixed(5), xmax: +Math.max(lo0, lo1).toFixed(5), ymax: +Math.max(la0, la1).toFixed(5), spatialReference: { wkid: 4326 } });
+          const u = `https://spatial-gis.information.qld.gov.au/arcgis/rest/services/Location/QldLocator/GeocodeServer/suggest?f=json&maxSuggestions=6&location=${lon.toFixed(5)},${lat.toFixed(5)}&searchExtent=${encodeURIComponent(ext)}&text=${encodeURIComponent(q)}`;
           const j = await fetch(u, { signal: sig }).then(r => r.json()); more = (j.suggestions || []).filter(s => !s.isCollection).map(s => ({ text: s.text.replace(/, Queensland$/, ""), key: s.magicKey, full: s.text })); }
         else { const [la0, lo0] = toLL(net ? net.bb[0] : -2000, net ? net.bb[1] : -2000), [la1, lo1] = toLL(net ? net.bb[2] : 2000, net ? net.bb[3] : 2000);
           const u = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&countrycodes=au&bounded=1&viewbox=${Math.min(lo0, lo1)},${Math.max(la0, la1)},${Math.max(lo0, lo1)},${Math.min(la0, la1)}&q=${encodeURIComponent(q)}`;
@@ -17569,7 +17588,7 @@ const handle = async (m, post) => {
           [x, z] = m.fromLatLon(lat, lon); }
         await load(); if (dead) return; const b = net.bb;
         if (!(x > b[0] && x < b[2] && z > b[1] && z < b[3])) return say("That's outside this map. Pick somewhere in town.");
-        lastPick = { x, z, label: s.text, auto: how === "auto" }; G.close();
+        lastPick = { x, z, label: s.label || s.text, auto: how === "auto" }; G.close();
         // Autodrive: into the nearest car first (within 300 m) if you're on foot
         if (lastPick.auto && !T.car?.in) { const C = T.car, c = C?.carNear?.(F.pos.x, F.pos.z, 300);
           if (!c || !C.enterCar(c)) { lastPick.auto = false; toast("There's no car close enough for Autodrive, so here's the way. Get in a car and pick the address again.", 4500); } }
