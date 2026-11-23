@@ -3065,3 +3065,26 @@ Ash: "I want the gum leaves to be more obvious and at the tops of trees houses a
 - Each sits a metre over what the possum stands on there (`C.raceSurf`, the possum's own `surf`, worked out when you become the possum,
   once the roofs and trees are in). You pick one up standing within 2 m of it on what it's on (2.6 m on a roof or a tree).
 - Bigger (2.5 times; golden 3.1), with a column of little diamonds rising 6 m over each so it shows from down the street.
+
+### The race's start, the possum's leaves as its goal, rounder rings (24 November 2026)
+
+Ash: "Make the possum leaves more like the objective rather than the gates or combine them so person has to do both. The plane rings are
+a bit too ugly. Be slightly more forgiving with radius for plane ring. The arrow in the plane is almost good but sometimes hard to know if
+it means up or down. The time trial box can be bigger. Auto collapse the launch control or similar box on race start. On the grid get ready
+remove that ... Make the camera angle start like this screenshot. I want to see the 3 2 1 more obviously."
+- **The possum's leaves are its goal:** no gates on its way now but the one at the plane. Till you have 15 the arrow and the diamond point
+  at the nearest leaf left from just behind you on (each leaf's place along the way is worked out at the start), then at the plane. The
+  card says "🍃 7 of 15 leaves", then "Got them! Run for the plane". Your place among the racers counts your leaves on the way.
+- **Rings:** round gold tubes with a pale lip on the inside, lit (and a touch of glow) so they look round; the finish ring a chequered tube.
+  Through within 3.5 m of the rim (was 1.8 m).
+- **Up or down:** the arrow lies flat and only turns; under it a green "▲ Climb 12 m" or an orange "▼ Dive 8 m" when a ring is more than
+  5 m above or below.
+- **The race card** is bigger mid-race (it has the top row to itself: up to the width less the two round buttons, larger type).
+- **The start:** no "On the grid. Get ready!" for whoever started it (those someone else started it for are still told). The camera goes
+  behind the car, looking up the road, when you're put on the grid and again at 3 (`C.camReset`), and the upgrade chip folds to its name
+  (`C.upClose`). The countdown is much bigger, with a dark edge, popping in on each number; Go! in green.
+- **The car's gates** a little more forgiving (Ash: "Slightly more forgiving on car objectives"): through within 10 m of a gate's middle
+  (was 8 m), 12 m at the house (was 10 m).
+- **Your car's badge** (Ash: "During the race instead of showing launch control; hide that box and put a symbol on my car instead based
+  on the upgrade I've chosen"): the upgrade chip is hidden mid-race, and your race car's sign (🚀 Rocket, ⚡ Launcher, 🔥 Nitro, 🛣️ Grip) sits
+  on a round plate in its colour on the car's roof, facing back at you, while you drive (`badgeMake`, a canvas texture; one draw call).

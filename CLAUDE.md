@@ -107,8 +107,8 @@ has broken three times. Before any change that touches Explore's input, loading 
   you leave Explore.
 - **Test before shipping any change like this.** Use the two-finger test: phone size with `hasTouch`, a finger held on the move
   stick, a second finger put down, moved and lifted on the view and on the look stick. The stick must hold. Do it in all three
-  towns, and also leave the game running for two minutes, then do it again (Ash, 22 November 2026: "With the test it doesn't need
-  11mins, you can tell within 2"). Say in the pull request that this was done. Then ask Ash to check on his iPhone before calling
+  towns, and also leave the game running for 30 seconds, then do it again (Ash, 24 November 2026: "Keep the two finger test to 30
+  seconds. It hasn't been picking up the bug anyway"; it was 2 minutes, and 11 before that). Say in the pull request that this was done. Then ask Ash to check on his iPhone before calling
   it fixed: a desktop browser does not behave like iOS.
 - **If Ash reports the stick dropping again,** revert the most recent change to Explore loading or input first, then investigate.
   Don't stack fixes on top.

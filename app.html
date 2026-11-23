@@ -1481,7 +1481,7 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 body .bs-race { top: calc(98px + env(safe-area-inset-top)); left: auto; right: 16px; transform: none; max-width: 300px; }
 @media (max-width: 999px) { body .bs-race { top: calc(106px + env(safe-area-inset-top)); right: 16px; left: auto; width: max-content; max-width: calc(50% - 22px); } }
 .bs-race-dir { pointer-events: none; position: absolute; z-index: 3; left: 50%; top: 24%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.45)); }
-.bs-race-dir[hidden] { display: none; } .bs-race-dir .tilt { width: 84px; height: 84px; transform: perspective(300px) rotateX(30deg); }  /* (less tilt, and a shaft on the arrow: Ash, 23 November 2026, "The arrow is hard to know which way it is facing") */
+.bs-race-dir[hidden] { display: none; } .bs-race-dir .tilt { width: 84px; height: 84px; transform: perspective(300px) rotateX(30deg); }  /* (flat, turning only: no rising or tipping for height, said under it instead) */  /* (less tilt, and a shaft on the arrow: Ash, 23 November 2026, "The arrow is hard to know which way it is facing") */
 .bs-race-dir svg { width: 100%; height: 100%; transition: transform 0.22s linear; opacity: 0.92; }
 .bs-race-dir small { margin-top: -6px; padding: 1px 8px; border-radius: 999px; background: rgba(27, 24, 48, 0.7); color: #ffe08a; font: 800 0.74rem/1.4 var(--ui); font-variant-numeric: tabular-nums; }
 .bs-race-item { pointer-events: auto; position: absolute; z-index: 4; right: 34px; bottom: calc(330px + env(safe-area-inset-bottom)); width: 72px; height: 72px; border: 3px solid #ffc93c; border-radius: 50%; background: rgba(27, 24, 48, 0.82); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; cursor: pointer; touch-action: manipulation; padding: 0; }
@@ -1502,8 +1502,17 @@ body .bs-race { top: calc(98px + env(safe-area-inset-top)); left: auto; right: 1
 @media (max-width: 999px) { body.bstown:not(.bsracing):has(.bs-race:not([hidden])) .bs-upchip { top: calc(152px + env(safe-area-inset-top)); max-width: calc(100% - 32px); } }
 /* mid-race the card goes up into the top row, where Explore mode and Jump to were (Ash, 24 November 2026: "Move time trial to the space at
    the top of the screen newly available") */
-body.bstown.bsracing .bs-race { top: calc(16px + env(safe-area-inset-top)); }
-body.bsracing:not(.bsraceout) #bsCarBtn, body.bsracing #bsFlyJump, body.bsracing #bsTownMode, body.bsracing #bsGpsBtn, body.bsracing .bs-slides, body.bsracing #bsTownFloods { display: none !important; }  /* (and the street names and flood: Ash, 23 November 2026, "Hide street signs and flood during race") */
+body.bstown.bsracing .bs-race { top: calc(16px + env(safe-area-inset-top)); max-width: calc(100% - 126px); min-width: 220px; padding: 8px 8px 8px 12px; gap: 8px; border-left-width: 5px; border-radius: 14px; }
+body.bstown.bsracing .bs-race b { font-size: 1.02rem; } body.bstown.bsracing .bs-race span { font-size: 0.84rem; line-height: 1.3; } body.bstown.bsracing .bs-race button { width: 32px; height: 32px; font-size: 1rem; }
+@media (min-width: 1000px) { body.bstown.bsracing .bs-race { max-width: 420px; } }
+/* the countdown: big, with a dark edge, popping in on each number; Go! in green (Ash, 24 November 2026: "I want to see the 3 2 1 more obviously") */
+.bs-race-n.cd { top: 34%; font-size: clamp(120px, 38vw, 230px); -webkit-text-stroke: 5px #1b1830; paint-order: stroke fill; text-shadow: 0 8px 28px rgba(0, 0, 0, 0.55); animation: bsCd 0.9s cubic-bezier(.2, 1.6, .4, 1) both; }
+.bs-race-n.cd.go { color: #7be36b; }
+@keyframes bsCd { 0% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; } 30% { transform: translate(-50%, -50%) scale(0.92); opacity: 1; } 55% { transform: translate(-50%, -50%) scale(1.05); } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .bs-race-n.cd { animation: none; } }
+.bs-race-dir .vv { margin-top: 4px; padding: 3px 12px; border-radius: 999px; background: #2f9e4f; color: #fff; font: 800 0.95rem/1.3 var(--ui); white-space: nowrap; }
+.bs-race-dir .vv.dn { background: #e0662b; } .bs-race-dir .vv[hidden] { display: none; }
+body.bsracing .bs-upchip, body.bsracing:not(.bsraceout) #bsCarBtn, body.bsracing #bsFlyJump, body.bsracing #bsTownMode, body.bsracing #bsGpsBtn, body.bsracing .bs-slides, body.bsracing #bsTownFloods { display: none !important; }  /* (and the street names and flood: Ash, 23 November 2026, "Hide street signs and flood during race") */
 .bs-race-ask .lab { margin: 6px 0 4px; font-weight: 700; opacity: 0.92; }
 .bs-race-prac { pointer-events: auto; position: absolute; z-index: 4; top: calc(108px + env(safe-area-inset-top)); left: 16px; padding: 8px 14px; border: 2px solid #ffc93c; border-radius: 999px; background: rgba(27, 24, 48, 0.86); color: #fff; font: 700 0.86rem var(--ui); cursor: pointer; }
 .bs-race-prac[hidden], body.bsheld .bs-race-prac { display: none; }
@@ -17686,11 +17695,12 @@ const handle = async (m, post) => {
       return way(X2, Z2); })();
     const PLN = AW.at(0), PLH = AW.head(12);  // the parked plane, facing the way it takes off
     const TG = [];
-    { const n = Math.max(4, Math.round(sH / 180)); for (let k = 1; k <= n; k++) { const s = k === n ? sH : pickS(sH * k / n, 60), p = at(s); TG.push({ D: s, x: p.x, z: p.z, y: null, h: headAt(s), leg: 0, kind: k === n ? "park" : "gate", w: k === n ? 10 : 8 }); } }
+    { const n = Math.max(4, Math.round(sH / 180)); for (let k = 1; k <= n; k++) { const s = k === n ? sH : pickS(sH * k / n, 60), p = at(s); TG.push({ D: s, x: p.x, z: p.z, y: null, h: headAt(s), leg: 0, kind: k === n ? "park" : "gate", w: k === n ? 12 : 10 }); } }  // (through within 10 m of a gate's middle, 8 m till Ash, 24 November 2026: "Slightly more forgiving on car objectives")
     const PD = sH + 14;  // (the walk in counts as 14 m)
     TG.push({ D: PD, x: DOOR.x, z: DOOR.z, y: null, h: HH, leg: 1, kind: "door" });
-    // the possum's gates: small ones about every 75 m, away from the corners; the last one just short of the plane
-    { const end = PW.len - 8, n = Math.max(6, Math.round(end / 75)); for (let k = 1; k <= n; k++) { const d = k === n ? end : pickS(end * k / n, 18, PW.turn), p = PW.at(d); TG.push({ D: PD + d, x: p.x, z: p.z, y: null, h: PW.head(d), leg: 1, kind: k === n ? "pend" : "gate", w: 5 }); } }
+    // the possum's one gate, just short of the plane: the leaves are what it's after on the way (Ash, 24 November 2026: "Make the possum
+    // leaves more like the objective rather than the gates"), the green line shows the way
+    { const d = PW.len - 8, p = PW.at(d); TG.push({ D: PD + d, x: p.x, z: p.z, y: null, h: PW.head(d), leg: 1, kind: "pend", w: 5 }); }
     const AD = PD + PW.len + 8;  // (and the walk to the plane 8 m)
     TG.push({ D: AD, x: PLN.x, z: PLN.z, y: null, h: PLH, leg: 2, kind: "board" });
     // the rings: the first 320 m along (you're off the ground and climbing, straight down Mayfield Road), then one every 300 m (200 m till
@@ -17714,13 +17724,27 @@ const handle = async (m, post) => {
     // time off is not relevant for multiplayer")
     const NEED = 15, LEAF = []; for (let i = 0; i < RACE_LEAVES.length; i += 4) { const x = RACE_LEAVES[i] / 10, z = RACE_LEAVES[i + 1] / 10, kind = RACE_LEAVES[i + 2], th = RACE_LEAVES[i + 3] / 10, g = ground(x, z), n = i / 4;
       LEAF.push({ x, z, g, kind, y: g + 1 + (kind === 1 ? th * 0.97 : kind === 3 ? 8.24 : kind === 2 ? 6 : 0), high: kind !== 0, gold: kind !== 0 && n % 6 === 5, got: 0 }); }
+    const pwAlong = (x, z, from = 0, to = PW.len) => { let b = from, bd = Infinity; for (let d = Math.max(0, from); d <= Math.min(PW.len, to); d += 4) { const p = PW.at(d), e = Math.hypot(p.x - x, p.z - z); if (e < bd) { bd = e; b = d; } } return b; };
+    for (const q of LEAF) q.d = pwAlong(q.x, q.z);
     // each one a metre over what it's on, as the possum finds it (the roofs and trees are in by the possum's turn: loaded on the grid)
     const placeLeaves = () => { for (const q of LEAF) { const y = T.car?.raceSurf?.(q.x, q.z); if (y != null && Number.isFinite(y)) q.y = y + 1; q.shown = undefined; } };
     // the grid: two by two behind the line, 7 m between rows, either side of the carriageway's middle
     const slot = i => { const row = i >> 1, side = i & 1 ? -1 : 1, s = L - 10 - row * 7, p = at(s), h = headAt(s); return { x: p.x + Math.cos(h) * 1.7 * side, z: p.z - Math.sin(h) * 1.7 * side, h }; };
     // ---- what's drawn: the yellow line (the car's way) and the green one (the possum's), the chequered line and banner, the gates, the
     // giant possum house (a big possum on its roof), the rings, the boxes and the leaves
-    let parts = null, mark = null, boxes = null, leaves = null, puss = null, ringsP = null; const clear = () => { for (const q of [parts, mark, boxes, leaves, puss, ringsP]) try { q?.remove(); } catch {} parts = mark = boxes = leaves = puss = ringsP = null; };
+    let parts = null, mark = null, boxes = null, leaves = null, puss = null, ringsP = null, badge = null; const clear = () => { for (const q of [parts, mark, boxes, leaves, puss, ringsP, badge]) try { q?.remove(); } catch {} parts = mark = boxes = leaves = puss = ringsP = badge = null; };
+    // your car's badge (Ash, 24 November 2026: "During the race instead of showing launch control; hide that box and put a symbol on my car
+    // instead based on the upgrade I've chosen"): its sign on a round plate in its colour, standing on the roof and facing back at you
+    let badgeOn = false; const BADGE_COL = { turbo: "#ff7a2f", launch: "#ffc93c", nitro: "#ff4d5e", grip: "#3ddc84" };
+    const badgeMake = id => { try { badge?.remove(); } catch {} badge = null; const c = RACE_CARS.find(q => q[0] === id); if (!c || !m.addParts) return;
+      const cv = document.createElement("canvas"); cv.width = cv.height = 128; const g = cv.getContext("2d");
+      g.beginPath(); g.arc(64, 64, 60, 0, Math.PI * 2); g.fillStyle = "#1b1830"; g.fill(); g.beginPath(); g.arc(64, 64, 52, 0, Math.PI * 2); g.fillStyle = BADGE_COL[id] || "#ffc93c"; g.fill();
+      g.font = '64px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(c[2], 64, 70);
+      const w = 0.42, P = [-w, 0, 0, w, 0, 0, w, 2 * w, 0, -w, 0, 0, w, 2 * w, 0, -w, 2 * w, 0], U = [1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1];  /* (read the right way round from behind the car) */
+      badge = m.addParts([{ positions: new Float32Array(P), normals: new Float32Array(18).map((_, i) => i % 3 === 2 ? 1 : 0), uvs: new Float32Array(U), map: cv, color: [1, 1, 1], unlit: true, doubleSide: true, opacity: 0.999 /* (see-through round the plate) */, matrix: new BS.B.THREE.Matrix4().makeScale(1e-4, 1e-4, 1e-4).elements }]); };
+    const badgeAt = () => { if (!badge?.setMatrix) return; const w = where(), on = !!race && race.state !== "done" && race.leg === 0 && w?.kind === "car";
+      if (on) { const h = w.heading, x = w.x - Math.sin(h) * 0.5, z = w.z - Math.cos(h) * 0.5; MQ.setFromAxisAngle(MY, h); MM.compose(MV.set(x, ground(x, z) + 1.5, z), MQ, MS.setScalar(1)); }
+      if (on || badgeOn) badge.setMatrix(0, (on ? MM : MM.makeScale(1e-4, 1e-4, 1e-4)).elements.slice()); badgeOn = on; };
     const showRings = on => { try { ringsP?.setMatrix?.(0, (on ? new BS.B.THREE.Matrix4() : new BS.B.THREE.Matrix4().makeScale(1e-4, 1e-4, 1e-4)).elements.slice()); } catch {} };
     const draw = () => { clear(); for (const q of [...BOX, ...LEAF]) q.shown = undefined; const pos = [], nor = [], col = [], Y = lin("#ffc93c"), K = lin("#18181f"), W = lin("#f2f2f2"), G = lin("#9aa0a8"), GR = lin("#58b947");
       const quad = (a, b, c, d, k) => { for (const q of [a, b, c, a, c, d]) { pos.push(q[0], q[1], q[2]); nor.push(0, 1, 0); col.push(k[0], k[1], k[2]); } };
@@ -17761,11 +17785,16 @@ const handle = async (m, post) => {
         for (let u = -0.3; u > -9.6; u -= 1.2) { const a = P3(u, -1.4, 0), b = P3(u, 1.4, 0), c = P3(u - 1, 1.4, 0), d = P3(u - 1, -1.4, 0); for (const q of [a, b, c, d]) q[1] = ground(q[0], q[2]) + 0.14; quad(a, b, c, d, PATH); } }
       parts = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.6, doubleSide: true, matrix: new BS.B.THREE.Matrix4().elements }]);
       pos.length = nor.length = col.length = 0;
-      // the rings: striped yellow and black, square to the way the plane flies; the last one bigger and chequered, over the line
-      for (const q of RINGS) { const ux = Math.cos(q.h), uz = -Math.sin(q.h), r1 = q.r, r0 = q.r - 1.4, nS = q.fin ? 24 : 16;
-        const P = (r, a) => [q.x + ux * Math.cos(a) * r, q.y + Math.sin(a) * r, q.z + uz * Math.cos(a) * r];
-        for (let i = 0; i < nS; i++) { const a0 = i / nS * Math.PI * 2, a1 = (i + 1) / nS * Math.PI * 2; if (q.fin) { const rm = (r0 + r1) / 2; quad(P(r0, a0), P(rm, a0), P(rm, a1), P(r0, a1), i % 2 ? K : W); quad(P(rm, a0), P(r1, a0), P(r1, a1), P(rm, a1), i % 2 ? W : K); } else quad(P(r0, a0), P(r1, a0), P(r1, a1), P(r0, a1), i % 2 ? K : Y); } }
-      ringsP = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.6, doubleSide: true, matrix: new BS.B.THREE.Matrix4().makeScale(1e-4, 1e-4, 1e-4).elements }]);
+      // the rings: round gold tubes with a pale lip on the inside, square to the way the plane flies, lit so they look round; the last one
+      // bigger and chequered, over the line (Ash, 24 November 2026: "The plane rings are a bit too ugly")
+      { const GOLD = lin("#ffbf2e"), LIP = lin("#fff1c2"), CK = [lin("#f4f4f4"), lin("#1d1d24")];
+        const tv = (p, n, k) => { pos.push(p[0], p[1], p[2]); nor.push(n[0], n[1], n[2]); col.push(k[0], k[1], k[2]); };
+        for (const q of RINGS) { const ux = Math.cos(q.h), uz = -Math.sin(q.h), fx = Math.sin(q.h), fz = Math.cos(q.h), tr = q.fin ? 0.9 : 0.6, R0 = q.r - tr, nS = q.fin ? 48 : 36, nT = 8;
+          const V = (i, j) => { const a = i / nS * Math.PI * 2, b = j / nT * Math.PI * 2, rx = ux * Math.cos(a), ry = Math.sin(a), rz = uz * Math.cos(a), nx = rx * Math.cos(b) + fx * Math.sin(b), ny = ry * Math.cos(b), nz = rz * Math.cos(b) + fz * Math.sin(b);
+            return [[q.x + rx * R0 + nx * tr, q.y + ry * R0 + ny * tr, q.z + rz * R0 + nz * tr], [nx, ny, nz], Math.cos(b)]; };
+          for (let i = 0; i < nS; i++) for (let j = 0; j < nT; j++) { const A = V(i, j), B = V(i + 1, j), C = V(i + 1, j + 1), D = V(i, j + 1), k = q.fin ? CK[Math.floor(i / 4) % 2] : (A[2] + D[2]) / 2 < -0.45 ? LIP : GOLD;
+            for (const P of [A, B, C, A, C, D]) tv(P[0], P[1], k); } } }
+      ringsP = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.35, emissive: [0.12, 0.08, 0.02], doubleSide: true, matrix: new BS.B.THREE.Matrix4().makeScale(1e-4, 1e-4, 1e-4).elements }]);
       // a big possum on the ridge, looking down at the road
       try { const T3 = BS.B.THREE, Mx = new T3.Matrix4().compose(new T3.Vector3(DOOR.x + lx * 9 + fx0 * 7, ground(DOOR.x, DOOR.z) + 17.2, DOOR.z + lz * 9 + fz0 * 7), new T3.Quaternion().setFromEuler(new T3.Euler(0, Math.atan2(-lx, -lz), 0, "YXZ")), new T3.Vector3(7, 7, 7));
         puss = m.addParts(townPlaneParts(undefined, "possum").map((q, i) => ({ ...q, matrix: (i === 1 ? Mx.clone().multiply(new T3.Matrix4().makeTranslation(0, 0, -0.27)) : Mx).elements.slice() }))); } catch {}
@@ -17805,8 +17834,8 @@ const handle = async (m, post) => {
     // the way to go: a big arrow tilted back into the view over your ride, with how far under it (Ash, 23 November 2026: "make the arrow
     // towards them a bit more obvious"; "The arrow should feel like it's more part of the screen")
     const dir = document.createElement("div"); dir.className = "bs-race-dir"; dir.hidden = true; dir.setAttribute("aria-hidden", "true");
-    dir.innerHTML = `<div class="tilt"><svg viewBox="0 0 64 64"><path d="M32 3 L57 30 L42 30 L42 61 L22 61 L22 30 L7 30 Z" fill="#ffc93c" stroke="#1b1830" stroke-width="3" stroke-linejoin="round"/></svg></div><small></small>`;
-    const dirArr = dir.querySelector("svg"), dirD = dir.querySelector("small"), dirTilt = dir.querySelector(".tilt");
+    dir.innerHTML = `<div class="tilt"><svg viewBox="0 0 64 64"><path d="M32 3 L57 30 L42 30 L42 61 L22 61 L22 30 L7 30 Z" fill="#ffc93c" stroke="#1b1830" stroke-width="3" stroke-linejoin="round"/></svg></div><small></small><b class="vv" hidden></b>`;
+    const dirArr = dir.querySelector("svg"), dirD = dir.querySelector("small"), dirTilt = dir.querySelector(".tilt"), dirV = dir.querySelector(".vv");
     const itemBtn = document.createElement("button"); itemBtn.type = "button"; itemBtn.className = "bs-race-item"; itemBtn.hidden = true;
     const big = document.createElement("div"); big.className = "bs-race-n"; big.hidden = true; big.setAttribute("aria-live", "assertive");
     const panel = document.createElement("div"); panel.className = "bs-race-ask"; panel.hidden = true; panel.setAttribute("role", "dialog"); panel.setAttribute("aria-label", "Race around Moorooka");
@@ -17821,7 +17850,7 @@ const handle = async (m, post) => {
     const banner = (t, sub, ms) => { legBox.replaceChildren(); const b2 = document.createElement("b"), s2 = document.createElement("span"); b2.textContent = t; s2.textContent = sub || ""; legBox.append(b2, s2);
       legBox.hidden = false; legBox.classList.remove("in"); void legBox.offsetWidth; legBox.classList.add("in"); clearTimeout(legT); legT = setTimeout(() => { legBox.hidden = true; }, ms); };
     const fanfare = big2 => { const N = big2 ? [523, 659, 784, 1047, 1319] : [523, 659, 784, 1047]; N.forEach((f, i) => setTimeout(() => T.snd?.tone?.(f, f, i === N.length - 1 ? 0.55 : 0.16, 0.1, "square"), i * 120)); };
-    const say = (t, ms = 900, sub) => { big.classList.toggle("msg", t.length > 4); big.replaceChildren(t); if (sub) { const sm = document.createElement("small"); sm.textContent = sub; big.append(sm); } big.hidden = false; bigT = performance.now() + ms; };
+    const say = (t, ms = 900, sub, cd) => { big.classList.toggle("msg", t.length > 4 && !cd); big.classList.remove("cd", "go"); if (cd) { void big.offsetWidth; big.classList.add("cd"); if (t === "Go!") big.classList.add("go"); } big.replaceChildren(t); if (sub) { const sm = document.createElement("small"); sm.textContent = sub; big.append(sm); } big.hidden = false; bigT = performance.now() + ms; };
     const nameOf = id => id === me() ? "You" : race?.others.get(id)?.name || T.peers?.nameOf?.(id) || "A player";
     // ---- the line of news under the card: one at a time for 3.2 s; at most three waiting (the oldest unimportant one goes)
     const NEWS = []; let newsT = 0;
@@ -17848,7 +17877,7 @@ const handle = async (m, post) => {
       wrap.className = "cars"; lab.className = "small lab"; lab.textContent = "Your car"; row.className = "pick"; info.className = "small";
       const show = () => { const v = raceCarPick(); row.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.car === v ? "true" : "false")); info.textContent = RACE_CARS.find(c => c[0] === v)[3]; };
       for (const [id, nm, em] of RACE_CARS) { const b = document.createElement("button"); b.type = "button"; b.dataset.car = id; b.innerHTML = `<span aria-hidden="true">${em}</span>${nm}`;
-        b.onclick = () => { try { localStorage.setItem("an3d-race-car", id); } catch {} show(); if (race && race.state === "grid") { race.car = id; T.car?.raceRide?.({ car: id, hc: race.hc }); } }; row.append(b); }
+        b.onclick = () => { try { localStorage.setItem("an3d-race-car", id); } catch {} show(); if (race && race.state === "grid") { race.car = id; badgeMake(id); T.car?.raceRide?.({ car: id, hc: race.hc }); } }; row.append(b); }
       show(); wrap.append(lab, row, info); return wrap; };
     // ---- handicaps (whoever starts the race sets them): 0 to 8 for each player
     const HC = new Map();
@@ -17913,12 +17942,12 @@ const handle = async (m, post) => {
       for (const q of LEAF) { q.got = 0; q.gone = 0; } for (const r of BOX) r.back = 0;
       ids.forEach(id => { if (id !== me()) race.others.set(id, { name: T.peers?.nameOf?.(id) || "A player", m: 0, fin: 0, last: 0, leg: 0, hc: Math.max(0, Math.min(8, Math.round(+(hc && hc[id]) || 0))) }); });
       race.names = $("bsNamesBtn")?.getAttribute("aria-pressed") === "true"; if (race.names) T.streets?.set?.(false);  // (street names off mid-race, back after)
-      draw(); card.hidden = false; document.body.classList.add("bsracing"); if (T.car) T.car.wait = true; seat(); T.car?.raceRide?.({ car: race.car, hc: myHc }); T.car?.racePrep?.();
+      draw(); badgeMake(race.car); card.hidden = false; document.body.classList.add("bsracing"); if (T.car) T.car.wait = true; seat(); T.car?.raceRide?.({ car: race.car, hc: myHc }); T.car?.racePrep?.();
       const hcT = myHc ? ` You've a handicap of ${myHc}.` : "";
-      toast(from ? `${from} has started a race around Moorooka! You're on the grid: pick your car.${hcT}` : ids.length > 1 ? `You're on the grid. Pick your car, then get ready!${hcT}` : `On the grid. Get ready!${hcT}`, 3600);
+      if (from) toast(`${from} has started a race around Moorooka! You're on the grid: pick your car.${hcT}`, 3600);
       if (from) { const h = document.createElement("h3"); h.textContent = "On the grid"; panel.replaceChildren(h, picker()); panel.hidden = false; }  /* (whoever pressed Start has picked: no panel for them. Ash, 24 November 2026: "When I click start race immediately hide the menu") */
       R.frame(true); };
-    const seat = () => { const g = slot(race.i); race.tryAt = performance.now(); race.tries++; race.seated = !!T.toStart?.(g.x, g.z, g.h);
+    const seat = () => { const g = slot(race.i); race.tryAt = performance.now(); race.tries++; race.seated = !!T.toStart?.(g.x, g.z, g.h); if (race.seated) { T.car?.camReset?.(); setTimeout(() => T.car?.upClose?.(), 300); }
       if (race.seated && T.car) T.car.wait = true; };
     // ---- the power-ups
     const rollItem = () => { const rows = standings(), n = rows.length, pl = rows.findIndex(r => r.you), f = n < 2 ? 0.5 : pl / (n - 1), tab = RACE_ODDS[f < 0.34 ? 0 : f < 0.67 ? 1 : 2];
@@ -17990,12 +18019,12 @@ const handle = async (m, post) => {
         // (no possum to be: on in a car instead, along the green line)
         if (!ok) ok = !!T.car?.grid?.(p.x, p.z, PW.head(22)); race.noPossum = T.car?.where?.()?.kind !== "possum"; say("🐾", 1000); T.snd?.pop?.(); [1568, 1760, 1568, 2093].forEach((f, i) => setTimeout(() => T.snd?.tone?.(f, f * 0.9, 0.06, 0.05, "square"), 140 + i * 70));
         banner("🐾 You're the possum!", `Climb trees, roofs and street lights for ${NEED} gum leaves: the plane won't fly without them. Golden ones count 3`, 4200); parkPlane(); placeLeaves(); }
-      else if (t.kind === "pend") { race.leg = 2; T.car?.raceOut?.(); onFoot(true); fanfare(); showRings(true);
+      else if (t.kind === "pend") { race.leg = 2; { const p = PW.at(PW.len - 9); T.car?.raceOut?.(p.x, p.z, PLN.x, PLN.z); } onFoot(true); fanfare(); showRings(true);
         if (!parkPlane()) { const ok = T.car?.raceSwap?.("plane", PLN.x, PLN.z, PLH, ground(PLN.x, PLN.z) + 25); if (ok) { race.ti++; onFoot(false); } else race.noPlane = true; }
         banner("🏁 Possum part over!", race.free ? "Jump in the plane (Get in) and take off down the road" : "No plane on the ground: you're straight in the air", 3600); if (race.free) tell("Walk to the plane and tap Get in", true); }
       else if (t.kind === "board") { onFoot(false); say("✈️", 1000); tell(touch() ? "Push the left stick up: speed down the road, lift off, and stay low through the rings" : "Hold W to speed down the road and lift off, then stay low through the rings", true); }
       else if (nx.kind === "park") tell("Last gate: the possum house is next!", false);
-      else if (nx.kind === "pend") tell("Last gate: the plane's just ahead", false);
+
       else if (nx.kind === "finish") tell("Through the big ring over the line to finish!", true); };
     const touch = () => matchMedia("(pointer: coarse)").matches;
     const finish = now => { race.fin = Math.max(1000, now - race.t0 + race.pen); race.state = "done"; race.free = false; document.body.classList.remove("bsracing", "bsraceout"); race.m = TOT; itemBtn.hidden = true;
@@ -18009,18 +18038,21 @@ const handle = async (m, post) => {
       if (q.gold) { setTimeout(() => T.snd?.tone?.(f * 2, f * 2, 0.25, 0.08, "sine"), 90); T.car?.raceFx?.("turbo", 1200); say("🌟", 800, "Golden leaf: counts 3"); }
       else if (race.streak >= 3 && race.streak % 3 === 0) say("🍃", 700, `${race.streak + 1} in a row!`);
       if (had < NEED && race.leaves >= NEED) { setTimeout(() => { ding(); say("🍃", 1400, "That's enough leaves: on to the plane!"); }, 300); tell("Enough gum leaves: run for the plane", true); } };
+    // where to head: the next target; as the possum with too few leaves, the nearest leaf left from just behind you on (any, if none)
     const aim = (x, z, now) => { const t = TG[race.ti]; if (!t || race.leg !== 1 || race.leaves >= NEED || t.kind !== "pend") return t;
-      let b = null, bd = Infinity; for (const q of LEAF) if (!q.got && !(q.gone > now)) { const d = Math.hypot(q.x - x, q.z - z); if (d < bd) { bd = d; b = q; } } return b ? { x: b.x, z: b.z, y: b.y + 1, r: 0, kind: "leaf", leg: 1, D: t.D } : t; };
+      race.pd = pwAlong(x, z, (race.pd || 0) - 60, (race.pd || 0) + 160);
+      let b = null, bd = Infinity; for (const pass of [0, 1]) { for (const q of LEAF) if (!q.got && !(q.gone > now) && (pass || q.d >= race.pd - 25)) { const d = Math.hypot(q.x - x, q.z - z); if (d < bd) { bd = d; b = q; } } if (b) break; }
+      return b ? { x: b.x, z: b.z, y: b.y + 1, r: 0, kind: "leaf", leg: 1, D: t.D } : t; };
     // ---- each frame: the countdown, the marker, boxes and leaves, picking things up; five times a second, the rest
     R.frame = force => { if (!race || dead) return; const now = performance.now();
       if (!big.hidden && now > bigT) big.hidden = true;
       if (race.state === "grid") { const left = race.t0 - now;
         if (!race.seated && race.tries < 4 && now - race.tryAt > 700) seat();
-        const n = left <= 3000 && left > 0 ? String(Math.ceil(left / 1000)) : ""; if (n && n !== lastN) { say(n, 1100); T.snd?.tone?.(660, 660, 0.16, 0.1, "square"); if (n === "3") panel.hidden = true; } lastN = n;  // (the car picker goes at 3, a beep each: Ash, 23 November 2026, "When the race starts and I see 3 2 1 hide the car options on 3 and play sounds")
-        if (left <= 0) { race.state = "go"; if (T.car) T.car.wait = false; say("Go!", 1100); T.snd?.tone?.(988, 988, 0.5, 0.11, "square"); panel.hidden = true; showItem();
+        const n = left <= 3000 && left > 0 ? String(Math.ceil(left / 1000)) : ""; if (n && n !== lastN) { say(n, 1100, "", true); T.snd?.tone?.(660, 660, 0.16, 0.1, "square"); if (n === "3") { panel.hidden = true; T.car?.camReset?.(); T.car?.upClose?.(); } } lastN = n;  // (the car picker goes at 3, a beep each: Ash, 23 November 2026, "When the race starts and I see 3 2 1 hide the car options on 3 and play sounds")
+        if (left <= 0) { race.state = "go"; if (T.car) T.car.wait = false; say("Go!", 1100, "", true); T.car?.upClose?.(); T.snd?.tone?.(988, 988, 0.5, 0.11, "square"); panel.hidden = true; showItem();
           if (!race.seated) toast("Couldn't get you a car: hop in any car close by and follow the yellow line.", 4000); } }
       const [x, z, y] = here(), kind = T.car?.in ? where()?.kind || "ride" : "foot";
-      markAt(race.state === "done" ? null : aim(x, z, now), x, z); boxesAt(x, z); newsTick(now);
+      markAt(race.state === "done" ? null : aim(x, z, now), x, z); boxesAt(x, z); badgeAt(); newsTick(now);
       if (race.state === "go" && !race.free) {
         // a box: within 2.6 m, if your hands are empty (the car, or the possum on its straight)
         if (!race.item && race.leg < 2) for (const r of BOX) if (r.leg === race.leg && r.back < now && r.b.some(b => Math.abs(b.x - x) < 2.6 && Math.abs(b.z - z) < 2.6)) { r.back = now + 6000; race.item = rollItem(); T.snd?.pop?.();
@@ -18042,11 +18074,12 @@ const handle = async (m, post) => {
           // through the gate, not just near it (Ash, 24 November 2026: "The checkpoints are a tiny bit too forgiving"). v is how far past the
           // gate's line you are and u how far to the side of its middle. A gate counts when you're level with it, or have crossed its line
           // since the last look (a fast car covers 9 m between looks), within 8 m of its middle (the car's flags stand 4.7 m out; the
-          // possum's 5 m, its flags 2.7 m out) or, for a ring, within 1.8 m of its rim all round
+          // possum's 5 m, its flags 2.7 m out) or, for a ring, within 3.5 m of its rim all round (1.8 m till Ash, 24 November 2026: "Be
+          // slightly more forgiving with radius for plane ring")
           const fx = Math.sin(t.h), fz = Math.cos(t.h), v = (x - t.x) * fx + (z - t.z) * fz, u = (x - t.x) * fz - (z - t.z) * fx, pv = race.pv; race.pv = v;
           // (crossed either way: having missed one, you can come back through it from the far side)
           const crossed = pv != null && (pv < 0) !== (v < 0), side = air ? Math.hypot(u, y - t.y) : Math.abs(u);
-          hit = !race.free && (Math.abs(v) < 3 || crossed) && side < (air ? t.r + 1.8 : t.w || 8);
+          hit = !race.free && (Math.abs(v) < 3 || crossed) && side < (air ? t.r + 3.5 : t.w || 8);
           if (hit && t.kind === "pend" && race.leaves < NEED) { hit = false; race.short = true; if (now - (race.missAt || 0) > 2500) { race.missAt = now; T.snd?.tone?.(196, 147, 0.4, 0.1, "sawtooth"); say("🍃", 1300, `${NEED - race.leaves} more gum leaves first`); tell(`You need ${NEED} gum leaves to fly: ${NEED - race.leaves} more. The arrow shows the nearest`, true); } }
           // missed: across its line outside it. It doesn't count: turn back and go through it (said once, with a low buzz)
           if (!hit && crossed && !race.short && dh < (air ? 150 : 40) && now - (race.missAt || 0) > 1500) { race.missAt = now; race.missed = race.ti; T.snd?.tone?.(196, 147, 0.4, 0.1, "sawtooth");
@@ -18055,7 +18088,8 @@ const handle = async (m, post) => {
           if (t.kind === "ring" || t.kind === "finish") { T.car?.raceFx?.("turbo", 900); ding(); if (t.kind === "ring") say("✓", 700, `Ring ${ringNo(i0)} of ${NR}`); }
           else if (t.kind === "gate") ding();
           if (race.ti >= NT) finish(now); else stage(t, now); }
-        if (race.state === "go") { const t2 = TG[race.ti], prev = race.ti ? TG[race.ti - 1].D : 0; race.m = Math.max(prev, Math.min(t2.D, t2.D - Math.hypot(t2.x - x, t2.z - z))); } }
+        if (race.state === "go") { const t2 = TG[race.ti], prev = race.ti ? TG[race.ti - 1].D : 0; race.m = Math.max(prev, Math.min(t2.D, t2.D - Math.hypot(t2.x - x, t2.z - z)));
+          if (t2.kind === "pend" && !race.free) race.m = Math.max(prev, Math.min(t2.D, PD + (PW.len - 60) * Math.min(1, race.leaves / NEED) * (race.leaves < NEED ? 0.9 : 1), race.leaves >= NEED ? t2.D - Math.hypot(t2.x - x, t2.z - z) : 0)); } }
       // where you are, to the others, once a second (and for half a minute after you finish, so it gets there)
       if (race.state !== "grid" && now - race.sentAt > 1000 && (race.state === "go" || now - race.t0 - race.fin < 30000)) { race.sentAt = now; send(["at", race.id, Math.round(race.m), Math.round(race.fin), race.leg, race.leaves]); }
       // anyone who never says where they are (an older copy of the app, or gone) is dropped after 20 s
@@ -18074,7 +18108,7 @@ const handle = async (m, post) => {
           : t.kind === "door" ? (kind === "foot" ? `Run in the door · ${tm}` : `Tap Get out · ${tm}`)
           : t.kind === "board" ? (kind === "foot" ? `Get in the plane · ${tm}` : `Get out, then in the plane`)
           : off ? (race.leg === 2 ? "Back to the rings: follow the diamond" : race.leg === 1 ? "Missed a gate: back to the green line" : "Missed a checkpoint: back to the yellow line")
-          : race.leg === 2 ? `${tm} · ring ${Math.max(1, Math.min(NR, ringNo(race.ti)))} of ${NR}` : race.leg === 1 ? (race.leaves < NEED && t.kind === "pend" ? `🍃 ${race.leaves}/${NEED} · more leaves!` : `🍃 ${Math.min(race.leaves, NEED)}/${NEED} · ${tm} · ${fmtD(TOT - race.m)}`) : `${tm} · ${fmtD(TOT - race.m)} to go`; }
+          : race.leg === 2 ? `${tm} · ring ${Math.max(1, Math.min(NR, ringNo(race.ti)))} of ${NR}` : race.leg === 1 ? (race.leaves < NEED ? `🍃 ${race.leaves} of ${NEED} leaves · ${tm}` : `🍃 Got them! Run for the plane · ${tm}`) : `${tm} · ${fmtD(TOT - race.m)} to go`; }
       else { cb.textContent = n > 1 ? `Finished ${ord(pl)} of ${n}` : "Finished!"; cs.textContent = `${fmtT(race.fin)} · tap × to close`; }
       std.textContent = n > 1 ? rows.slice(0, 4).map((r, i) => `${i + 1} ${r.you ? "You" : r.name} ${r.fin ? "🏁" : LEG_ICON[r.leg || 0]}${!r.fin && r.leg === 1 ? ` ${Math.min(NEED, r.you ? race.leaves : r.leaves || 0)}🍃` : ""}`).join("  ·  ") : ""; std.hidden = n < 2;
       // the arrow: towards the next target, turned to how you're facing
@@ -18083,8 +18117,8 @@ const handle = async (m, post) => {
       dir.hidden = race.state !== "go"; if (!dir.hidden) { dirArr.style.transform = `rotate(${(-rel * 180 / Math.PI).toFixed(0)}deg)`; const dy = t.y != null && kind === "plane" ? t.y - y : 0, dist = Math.hypot(t.x - x, t.z - z), el = Math.atan2(dy, Math.max(8, dist)) * 180 / Math.PI;
         // (the arrow shows how far up or down it is too: it stands up and rises on the screen for a ring above you, lies down and drops for one
         // below. Ash, 23 November 2026, "Try to make the arrow show elevation")
-        dirTilt.style.transform = `translateY(${(-el * 1.6).toFixed(0)}px) perspective(300px) rotateX(${bsClamp(30 - el * 1.3, -45, 75).toFixed(0)}deg)`;
-        dirD.textContent = fmtD(dist) + (dy > 6 ? ` ↑ ${Math.round(dy)} m up` : dy < -6 ? ` ↓ ${Math.round(-dy)} m down` : ""); } };
+        dirD.textContent = fmtD(dist); const vt = dy > 5 ? `\u25B2 Climb ${Math.round(dy)} m` : dy < -5 ? `\u25BC Dive ${Math.round(-dy)} m` : "";
+        if (dirV.textContent !== vt) dirV.textContent = vt; dirV.hidden = !vt; dirV.classList.toggle("dn", dy < -5); void el; } };
     pracBtn.onclick = e => { R.open(); e.currentTarget.blur(); };
     R.dispose = () => { leaveRace(); dead = true; card.remove(); big.remove(); panel.remove(); itemBtn.remove(); dir.remove(); legBox.remove(); pracBtn.remove(); };
     R.lap = { L, sH, TOT, NT, NR, TG, RINGS, BOX, LEAF, DOOR, PLN, PLH, PW, AW, slot, at };  // (for tests)
@@ -20672,7 +20706,10 @@ const handle = async (m, post) => {
       racePlane = P; P.x = x; P.z = z; P.h = h; P.air = false; P.v = 0; P.spin = 0; const [y, p, r] = lie(P, 2, 1.2); P.y = y; P.p = p; P.r = r; showPlane(P); return true; };
     C.raceParkOk = () => !!racePlane && !racePlane.takenBy;
     C.raceSurf = (x, z) => surf(x, z);  // (what the possum would stand on there: where the race puts its gum leaves)
-    C.raceOut = () => { const was = veh; if (veh) leave(true); if (was === "possum") possumHome(); };  // (out of the possum at the plane, standing where it was; it goes home, so Get in is for the plane)
+    C.camReset = () => { const o = veh === "car" ? car : null; if (!o) return; camYaw = o.h + Math.PI; off = [0, 0.16]; camOff = null; idle = 0; };  // (the race's start: behind the car, up the road)
+    C.upClose = () => { clearTimeout(upT); upChip.classList.remove("open"); };  // (the race's start: the upgrade chip folded down to its name)
+    C.raceOut = (x, z, fx, fz) => { const was = veh; if (veh) leave(true); if (was === "possum") possumHome();
+      if (x != null) { F.pos.x = x; F.pos.z = z; F.pos.y = ground(x, z) + F.eye; if (fx != null) F.yaw = Math.atan2(-(fx - x), -(fz - z)); F.pitch = -0.04; } };  // (and you stand where the race says, facing the plane: not off at the possum's home when the view was in a hedge)  // (out of the possum at the plane, standing where it was; it goes home, so Get in is for the plane)
     C.raceWarp = (x, z, h, y) => { if (veh === "car" && car) { car.x = x; car.z = z; car.h = car.dir = h; car.y = ground(x, z) + 0.05; car.v = Math.max(car.v, 15); return true; }
       if (veh === "possum" && pos) { pos.x = x; pos.z = z; pos.h = h; pos.y = surf(x, z); return true; } if (veh === "plane" && plane) { plane.x = x; plane.z = z; plane.h = h; if (y != null) plane.y = y; return true; } return false; };
     C.raceSwap = (kind, x, z, h, y) => { try {
