@@ -1499,7 +1499,7 @@ body.bstown:has(#bsKeys:not([hidden])) #bsFlyTip { display: none !important; }
 .bs-fly-x.bs-plant { position: absolute; left: 50%; right: auto; top: auto; bottom: calc(116px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: #4f8a3a; color: #fff; }
 .bs-fly-x.bs-plant[hidden], .bs-plantmenu[hidden] { display: none; }
 /* Unstick, over Boost when the car's stuck (placed by the app, from where Boost is) */
-.bs-fly-x.bs-unstick { right: auto; bottom: auto; transform: translate(-50%, -100%); z-index: 3; background: #ff9f1c; color: #1b1830; min-height: 44px; padding: 0 18px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35); }
+.bs-fly-x.bs-unstick { right: auto; bottom: auto; transform: translate(-50%, -100%); z-index: 6; background: #ff9f1c; color: #1b1830; min-height: 52px; min-width: 112px; padding: 0 20px; font-size: 0.95rem; touch-action: none; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35); }
 .bs-fly-x.bs-unstick[hidden] { display: none; }
 /* Drive for me, and the next left and right (Ash, 22 November 2026: "simple keys for people to be able to drive without being a gamer"):
    three buttons under Get out, in a car, with Google Maps controls on a computer (the mouse is free to click them there). Their keys
@@ -17348,12 +17348,17 @@ const handle = async (m, post) => {
   // ---- A race around Moorooka (Ash, 22 November 2026: "Add a race around moorooka, all players are teleported into a starting postion
   // using all standard cars but keep their upgrades"). Jump to > Race around Moorooka: everyone in town goes to a place on the grid on
   // Beaudesert Road, just past Mayfield Road, in one of the model's ordinary parked cars (not the golden car, not a bus), with their own
-  // upgrades. Held still for the countdown, then one lap of 4.4 km: south down Beaudesert Road, east along Evans Road, north up
-  // Tarragindi Road, west along Mayfield Road and back down Beaudesert Road to the line. A yellow line marks the way, a checkpoint
-  // every 120 m or so keeps it honest, and each player's progress goes round the room once a second for the places.
+  // upgrades. Held still for the countdown, then one lap. Since 23 November 2026 it's 2.8 km of Moorooka's back streets (Ash: "With the
+  // race navigate a bit more through the polished parts and backstreets of moorooka. Put in clear check marker spots frequently"): down
+  // Beaudesert Road past the school to Sherley Street, east through Blomfield, Southwell, Medina, Bracken and Corsica Streets, across
+  // Mayfield Road and up Weir Street, along Koala Road past the bowls club, down Homestead Street, back west along Goodwin Terrace,
+  // Giardini Lane and Wall Street to Mayfield Road and the line (it was 4.4 km of main roads: Beaudesert, Evans, Tarragindi and
+  // Mayfield). A yellow line marks the way, a checkpoint every 60 m or so keeps it honest, each one a striped gate over the road with
+  // a yellow band across it, the next one with a big yellow diamond over it, and each player's progress goes round the room once a
+  // second for the places.
   // The lap is the town's own street lines (one-way carriageways the way they run), worked out ahead of time (tools/race/course.py),
   // so nothing is fetched or worked out mid-game: x, z in decimetres.
-  const MOO_RACE = [-640,-1166,-677,-918,-774,-739,-1252,-33,-1358,149,-1425,243,-1603,436,-2252,1003,-2600,1298,-2746,1505,-3011,1965,-3255,2436,-3326,2592,-3354,2765,-3353,2871,-3340,2963,-3146,4030,-3142,4165,-3269,4961,-3327,5179,-3491,5714,-3652,6230,-3828,6725,-4256,7997,-3991,8994,-3828,9540,-3754,9687,-3661,9798,-3580,9855,-3469,9898,-3368,9964,-1904,10210,-617,10419,412,10600,1420,10775,2622,10982,3744,11185,4523,11315,4668,10470,6065,9324,6386,7426,6025,7374,4864,7183,5107,5819,5513,5449,6367,3500,6375,3451,6381,3415,6386,1754,6435,1351,6533,788,6539,747,6519,336,6652,-86,6725,-547,6676,-565,6650,-583,6628,-608,6612,-636,6602,-667,6601,-725,6318,-785,5965,-902,5528,-908,4940,-1011,4128,-1153,3298,-1303,3103,-1339,2368,-1472,1371,-1648,868,-1737,390,-1823,-692,-2019,-829,-1992,-921,-1948,-713,-1542,-655,-1347];
+  const MOO_RACE = [-640,-1166,-677,-918,-774,-739,-1252,-33,-1358,149,-1425,243,-1603,436,-2252,1003,-482,1312,-724,2749,262,2924,1067,2998,1298,2569,1367,1637,1533,649,1965,707,2368,-1472,1371,-1648,868,-1737,1013,-2579,979,-2591,946,-2621,927,-2661,927,-2706,946,-2745,979,-2775,1021,-2789,1051,-2788,1190,-3523,1186,-3575,1149,-3579,1116,-3598,1103,-3612,1089,-3645,1089,-3683,1103,-3716,1116,-3731,1131,-3742,1162,-3752,1204,-3749,1237,-3731,1258,-3701,1265,-3683,1265,-3650,3452,-3292,3535,-3534,3452,-3292,3298,-2450,3342,-2435,3380,-2401,3401,-2353,3404,-2328,3399,-2296,3380,-2255,3342,-2220,3292,-2205,3255,-2207,3217,-2220,3179,-2255,3158,-2302,3156,-2340,1137,-2667,1130,-2640,1118,-2621,1086,-2591,1043,-2578,1013,-2579,979,-2591,946,-2621,927,-2661,927,-2706,237,-2854,27,-2913,-235,-3021,-502,-3250,-914,-2815,-624,-2369,-692,-2019,-829,-1992,-921,-1948,-713,-1542,-655,-1347];
   function townRace(T, m, F, ground, box) {
     const R = { frame() {}, dispose() {}, got() {}, open() {}, active: () => false };
     if (!m.addParts || !m.nearestCar) return R;
@@ -17370,12 +17375,12 @@ const handle = async (m, post) => {
     const at = s => { s = ((s % L) + L) % L; let lo = 0, hi = N - 1; while (lo < hi) { const md = (lo + hi + 1) >> 1; if (A[md] <= s) lo = md; else hi = md - 1; }
       const j = (lo + 1) % N, a = A[lo], b = j ? A[j] : L, t = b > a ? (s - a) / (b - a) : 0; return { x: X[lo] + (X[j] - X[lo]) * t, z: Z[lo] + (Z[j] - Z[lo]) * t }; };
     const headAt = s => { const a = at(s - 8), b = at(s + 8); return Math.atan2(b.x - a.x, b.z - a.z); };  // the way the lap runs there (a car's heading: x += sin, z += cos)
-    // checkpoints: one every 120 m or so, the last on the line
-    const NG = Math.max(8, Math.round(L / 120)), GA = [], GP = []; for (let k = 0; k <= NG; k++) { GA.push(k * L / NG); GP.push(at(k * L / NG)); }
+    // checkpoints: one every 60 m or so (it was 120), the last on the line
+    const NG = Math.max(8, Math.round(L / 60)), GA = [], GP = []; for (let k = 0; k <= NG; k++) { GA.push(k * L / NG); GP.push(at(k * L / NG)); }
     // the grid: two by two behind the line, 7 m between rows, either side of the carriageway's middle
     const slot = i => { const row = i >> 1, side = i & 1 ? -1 : 1, s = L - 10 - row * 7, p = at(s), h = headAt(s); return { x: p.x + Math.cos(h) * 1.7 * side, z: p.z - Math.sin(h) * 1.7 * side, h }; };
     // ---- the yellow line, the chequered strip across the road at the line and a chequered banner over it on two posts
-    let parts = null; const clear = () => { try { parts?.remove(); } catch {} parts = null; };
+    let parts = null, mark = null; const clear = () => { try { parts?.remove(); } catch {} try { mark?.remove(); } catch {} parts = mark = null; };
     const draw = () => { clear(); const pos = [], nor = [], col = [], Y = lin("#ffc93c"), K = lin("#18181f"), W = lin("#f2f2f2"), G = lin("#9aa0a8");
       const quad = (a, b, c, d, k) => { for (const q of [a, b, c, a, c, d]) { pos.push(q[0], q[1], q[2]); nor.push(0, 1, 0); col.push(k[0], k[1], k[2]); } };
       for (let s = 6; s < L - 4; s += 6) { const a = at(s), b = at(s + 3), dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz) || 1, nx = -dz / d * 0.22, nz = dx / d * 0.22, ya = ground(a.x, a.z) + 0.16, yb = ground(b.x, b.z) + 0.16;
@@ -17386,7 +17391,23 @@ const handle = async (m, post) => {
       const up = (u, y) => [s0.x + lx * u, g0 + y, s0.z + lz * u];
       for (const u of [-8.6, 8.6]) for (const [ax, az] of [[0.15 * lx, 0.15 * lz], [0.15 * fx, 0.15 * fz]]) { const b = up(u, 0); quad([b[0] - ax, b[1], b[2] - az], [b[0] + ax, b[1], b[2] + az], [b[0] + ax, b[1] + 6, b[2] + az], [b[0] - ax, b[1] + 6, b[2] - az], G); }
       for (let i = 0; i < 18; i++) for (let j = 0; j < 2; j++) { const u = -8.6 + i * 17.2 / 18, du = 17.2 / 18, y = 5.2 + j * 0.5; quad(up(u, y), up(u + du, y), up(u + du, y + 0.5), up(u, y + 0.5), (i + j) % 2 ? K : W); }
-      parts = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.6, doubleSide: true, matrix: new BS.B.THREE.Matrix4().elements }]); };
+      // the checkpoints: a gate over the road at each (not the line, which has its banner): two posts striped black and yellow, a chequered
+      // banner across between them at 3.7 m, and a band of yellow and black on the road
+      const HW = 4.6;
+      for (let k = 1; k < NG; k++) { const p = GP[k], h = headAt(GA[k]), gx = Math.sin(h), gz = Math.cos(h), ux = Math.cos(h), uz = -Math.sin(h), g = ground(p.x, p.z);
+        const P = (u, v, y) => { const x = p.x + ux * u + gx * v, z = p.z + uz * u + gz * v; return [x, y == null ? ground(x, z) + 0.17 : g + y, z]; };
+        for (let i = 0; i < 8; i++) { const u = -HW + i * HW / 4; quad(P(u, -0.4), P(u + HW / 4, -0.4), P(u + HW / 4, 0.4), P(u, 0.4), i % 2 ? K : Y); }
+        for (const u0 of [-HW - 0.25, HW + 0.25]) for (let j = 0; j < 7; j++) { const y0 = j * 0.6, y1 = y0 + 0.6, c = j % 2 ? K : Y, r = 0.13;
+          const cs = [[-r, -r], [r, -r], [r, r], [-r, r]]; for (let f = 0; f < 4; f++) { const [a0, b0] = cs[f], [a1, b1] = cs[(f + 1) % 4]; quad(P(u0 + a0, b0, y0), P(u0 + a1, b1, y0), P(u0 + a1, b1, y1), P(u0 + a0, b0, y1), c); } }
+        for (let i = 0; i < 12; i++) for (let j = 0; j < 2; j++) { const u = -HW - 0.25 + i * (2 * HW + 0.5) / 12, du = (2 * HW + 0.5) / 12, y = 3.7 + j * 0.35; quad(P(u, 0, y), P(u + du, 0, y), P(u + du, 0, y + 0.35), P(u, 0, y + 0.35), (i + j) % 2 ? K : Y); } }
+      parts = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.6, doubleSide: true, matrix: new BS.B.THREE.Matrix4().elements }]);
+      // the next checkpoint's marker: a big yellow diamond turning over its gate (not lit by the sun, so it shows in the shade and at night)
+      { const o = [], e = [[0.6, 0, 0], [0, 0, 0.6], [-0.6, 0, 0], [0, 0, -0.6]];
+        for (const t of [[0, 1, 0], [0, -1, 0]]) for (let i = 0; i < 4; i++) o.push(...t, ...e[i], ...e[(i + 1) % 4]);
+        mark = m.addParts([{ positions: new Float32Array(o), normals: new Float32Array(o.length).map((_, i) => i % 3 === 1 ? 1 : 0), color: lin("#ffd23c"), unlit: true, doubleSide: true, matrix: new BS.B.THREE.Matrix4().elements }]); } };
+    const MQ = new BS.B.THREE.Quaternion(), MV = new BS.B.THREE.Vector3(), MS = new BS.B.THREE.Vector3(), MM = new BS.B.THREE.Matrix4(), MY = new BS.B.THREE.Vector3(0, 1, 0);
+    const markAt = (k, x, z) => { if (!mark?.setMatrix) return; const p = GP[k], t = performance.now() / 1000, d = Math.hypot(p.x - x, p.z - z), sc = bsClamp(d * 0.02, 1.6, 7);
+      MQ.setFromAxisAngle(MY, t * 1.6); MM.compose(MV.set(p.x, ground(p.x, p.z) + 5.6 + sc * 0.9 + Math.sin(t * 3) * 0.25, p.z), MQ, MS.set(sc, sc * 1.25, sc)); mark.setMatrix(0, MM.elements.slice()); };
     // ---- what's on the screen: the card (place, time, the way), the big countdown, and one panel for starting and for the results
     const card = document.createElement("div"); card.className = "bs-race"; card.hidden = true; card.setAttribute("role", "status");
     card.innerHTML = `<svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 16-7-4-7 4z" fill="#ffc93c"/></svg><div><b></b><span></span></div><button type="button" aria-label="Leave the race">×</button>`;
@@ -17414,7 +17435,7 @@ const handle = async (m, post) => {
     // ---- starting one: from Jump to, a word on what happens, then Start
     R.open = () => { if (dead) return; if (race) { if (race.state === "done") results(); return; }
       const n = (T.peers?.ids?.() || []).length, h = document.createElement("h3"), p1 = document.createElement("p"), p2 = document.createElement("p"), row = document.createElement("div");
-      h.textContent = "Race around Moorooka"; p1.textContent = `One lap, ${fmtD(L)}: down Beaudesert Road, along Evans Road, up Tarragindi Road and back along Mayfield Road. Follow the yellow line.`;
+      h.textContent = "Race around Moorooka"; p1.textContent = `One lap, ${fmtD(L)}, through Moorooka's back streets: Sherley Street, Medina and Corsica Streets, up Weir Street, along Koala Road and back by Goodwin Terrace and Wall Street. Follow the yellow line through the ${NG - 1} striped gates; the next one has a yellow diamond over it.`;
       p2.textContent = n ? `You and the ${n === 1 ? "other player" : `${n} other players`} here go to the start line in standard cars, each with their own upgrades.` : "No one else is here right now, so it's a time trial: you against the clock, in a standard car with your upgrades.";
       // invite someone first (Ash, 23 November 2026: "If I click race first show a thing where I can invite someone to join the race. If
       // I share with this link I want them to spawn ready to race"): the link opens Moorooka with ?race=1, and they arrive in a car at
@@ -17463,6 +17484,7 @@ const handle = async (m, post) => {
         const n = left <= 3000 && left > 0 ? String(Math.ceil(left / 1000)) : ""; if (n && n !== lastN) { say(n, 1100); T.snd?.pop?.(); } lastN = n;
         if (left <= 0) { race.state = "go"; if (T.car) T.car.wait = false; say("Go!", 1100); T.snd?.pop?.();
           if (!race.seated) toast("Couldn't get you a car: hop in any car close by and follow the yellow line.", 4000); } }
+      { const [x, z] = here(); markAt(race.state === "done" ? NG : Math.min(NG, race.gate + 1), x, z); }  // (every frame, so it turns smoothly)
       if (!force && now - hudT < 200) return; hudT = now;
       const [x, z] = here();
       if (race.state === "go") { const k = race.gate + 1, d = Math.hypot(GP[k].x - x, GP[k].z - z);
@@ -19967,7 +19989,13 @@ const handle = async (m, post) => {
         if (!inside(x, z) || !fits(SH, x, z, h)) continue;
         car.x = x; car.z = z; car.h = car.dir = h; car.v = 0; car.steer = 0; unReset(); snd.whoosh?.(); toast("Back on the road.", 2000); return; }
       toast("Couldn't find a clear bit of road near here.", 2500); };
+    // on a phone it goes on the finger touching it, not on the click after (Ash, 23 November 2026: "With unstuck some users on phone are
+    // struggling to press it"): a phone sends no click while another finger is down, and the other thumb is usually on the stick. Boost
+    // and the handbrake work the same way
+    let unDown = 0; unBtn.addEventListener("pointerdown", e => { if (e.pointerType === "mouse") return; e.preventDefault(); unDown = performance.now(); unBtn.onclick(e); });
+    { const tap = unBtn.onclick; unBtn.onclick = e => { if (e.type === "click" && performance.now() - unDown < 800) return; tap(e); }; }
     C.unstick = () => { if (unBtn.hidden) return false; unBtn.click(); return true; };
+    C.unTest = () => { if (car) un.at = [car.x, car.z, performance.now()]; };  // (for tests: shows Unstick as if the car were stuck)
     // ---- powers for the one along for the ride (Ash, 16 November 2026: "Whilst someone else is driving as the passenger give me access
     // to a boost with charge to power up my teammates car or plane with a tiny extra of 2kmph plus a 50% of a normal boost; the ability
     // to make the car jump every 15 seconds or plane/heli 360 spin. The possum has similar effects when gripped but can make the car do a
