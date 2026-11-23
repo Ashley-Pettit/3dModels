@@ -2779,3 +2779,16 @@ same when the models are next built):
   edge. 3 was tried and left a speckled grain along edges.
 - Shadows now end about 130 m ahead of you on foot (205 m before).
 
+## Mail: the green envelope, and Ash's letterbox (23 November 2026)
+
+Ash: "Can you improve how the post office works particularly around receiving mail. Show a green icon there if I have new mail. Allow
+me to also read mail at my letterbox at 6 Beaudesert." In `app.html` (`townMail`, `MOO_LOCALS`, `townLocals`):
+
+- While a letter to you is unread, the postie at the Moorooka Post Office has a green envelope mark over his head (the locals' green
+  mark, with an envelope instead of the "!"), seen from up to 220 m. For Ash, so does his letterbox at number 6.
+- **Number 6's letterbox** is a walk-up spot on the footpath in front of its pier (`letterbox` in `MOO_LOCALS`, nobody drawn, 2.3 m). For
+  Ash it shows his letters, the new ones highlighted, and marks them read; anyone else is told it's number 6's and their letters are
+  at the post office. Writing a letter is still at the post office.
+- A letter that comes in while you play says who it's from and where it's waiting, and stays unread (so the mark shows) until you
+  open it at the post office or the letterbox. Before, it showed the letter in a toast and marked it read.
+
