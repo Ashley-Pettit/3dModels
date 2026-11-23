@@ -9537,10 +9537,30 @@ const handle = async (m, post) => {
       shops: [{ n: "BARBER", w: 5, c: ["#161616", "#ffffff"], what: "Barber" }, { n: "DINDER GIFTWARE", w: 6.5, c: ["#d8c08a", "#5a3a1a"], what: "Gifts" }, { n: "Ariana", sub: "BAKERY · FRESH HOT BREAD", w: 7, c: ["#c8281e", "#fff1c9"], what: "Afghan grocery and bakery", jump: true }] },
     { kind: "sign", addr: "838 Ipswich Road", a: [-122.4, -1192.1], b: [-124.7, -1182.7], n: [-0.9713, -0.2377], kerb: 39.14, across: 48.74, eave: 24.1, wall: "#f1ece4", shops: [{ n: "Red Rooster", w: 9.7, c: ["#d71920", "#ffffff"], what: "Chicken", jump: true }] },
     { kind: "row", addr: "1029 Ipswich Road", a: [-903.5, -321.9], b: [-875.0, -362.8], n: [0.8205, 0.5717], kerb: 24, across: 38.74, eave: 19.7, wall: "#ecebe6", shops: [{ n: "Subway", w: 12, c: ["#008c15", "#ffc600"], what: "Sandwiches", jump: true }, { n: "Time Saver", w: 22, c: ["#e01a22", "#ffffff"], what: "Liberty's servo shop" }, { n: "Gloria Jean's", sub: "DRIVE THRU", w: 16, c: ["#2b2b2b", "#d4af37"], what: "Coffee", jump: true }] },
-    // 49 Beaudesert Road's charcoal building, south of the gap (the Vanilla Lab's sign was on it, but the Vanilla Lab is the dessert
-    // trailer in the gap: the next front). Shops under the flats upstairs; no names on its front, as the tenants aren't known well enough
-    { kind: "sign", addr: "49 Beaudesert Road", a: [-313.9, -799.1], b: [-320.3, -815.4], n: [0.9308, -0.3655], kerb: 0.44, across: 10.24, eave: 33.3, wall: "#4a4c50", glass: "#2a3640", noBoard: true,
-      windows: [3.7, 4.9, 6, "#2a3640"], shops: [{ w: 17.5 }] },
+    // 49 Beaudesert Road's charcoal building, south of the Vanilla Lab's gap: part of Colebrook Corner, with the white weatherboard building
+    // on the corner of Colebrook Avenue (Ash, 23 November 2026: "Can you fix the businesses either side of the vanilla lab cart. Use google
+    // maps"). From Street View, September 2026, left to right as you face it: on the fascia over the shops, Cleo Hairdressing (white),
+    // Gold Saint Beauty (white, gold letters; Shop 2/49), the small navy COLEBROOK CORNER sign over the stairs door, Fat Wombat Gallery
+    // (yellow, purple script), then a shop with no fascia sign; along the top of the wall, six boards: cleo, LA Lips, Fat Wombat Gallery,
+    // urban, KILR Studios and Moorooka Tobacco & Gifts. Each board is its own front on the same wall (bx, bw, sy); only the ground floor's
+    // names and the tobacconist's carry name tags
+    { kind: "sign", addr: "49 Beaudesert Road", a: [-313.9, -799.1], b: [-320.3, -815.4], n: [0.9308, -0.3655], kerb: 0.44, across: 10.24, eave: 35.4, wall: "#4a4c50", glass: "#2a3640", noBoard: true,
+      windows: [4.0, 5.4, 6, "#2a3640"], shops: [{ w: 17.5 }] },
+    { kind: "sign", addr: "49 Beaudesert Road", a: [-313.9, -799.1], b: [-320.3, -815.4], n: [0.9308, -0.3655], kerb: 0.44, across: 10.24, eave: 35.4, wall: "#4a4c50", sy: [2.8, 3.3], bx: 2.4, bw: 4.3,
+      shops: [{ n: "Cleo Hairdressing", w: 4.3, c: ["#ffffff", "#1d1d1d"], what: "Hair salon", jump: true }] },
+    { kind: "sign", addr: "49 Beaudesert Road", a: [-313.9, -799.1], b: [-320.3, -815.4], n: [0.9308, -0.3655], kerb: 0.44, across: 10.24, eave: 35.4, wall: "#4a4c50", sy: [2.8, 3.3], bx: 6.6, bw: 3.8,
+      shops: [{ n: "Gold Saint", sub: "BEAUTY", w: 3.8, c: ["#f7f5f0", "#a8862f"], what: "Beauty salon (Shop 2/49)", jump: true }] },
+    { kind: "sign", addr: "49 Beaudesert Road", a: [-313.9, -799.1], b: [-320.3, -815.4], n: [0.9308, -0.3655], kerb: 0.44, across: 10.24, eave: 35.4, wall: "#4a4c50", sy: [2.85, 3.25], bx: 9.5, bw: 1.9,
+      shops: [{ t: "COLEBROOK CORNER", w: 1.9, c: ["#1f2d4a", "#ffffff"] }] },
+    { kind: "sign", addr: "49 Beaudesert Road", a: [-313.9, -799.1], b: [-320.3, -815.4], n: [0.9308, -0.3655], kerb: 0.44, across: 10.24, eave: 35.4, wall: "#4a4c50", sy: [2.8, 3.3], bx: 12.3, bw: 3.6,
+      shops: [{ n: "Fat Wombat Gallery", w: 3.6, c: ["#f2c230", "#5e2f8c"], script: true, what: "Art gallery", jump: true }] },
+    { kind: "sign", addr: "49 Beaudesert Road", a: [-313.9, -799.1], b: [-320.3, -815.4], n: [0.9308, -0.3655], kerb: 0.44, across: 10.24, eave: 35.4, wall: "#4a4c50", sy: [6.4, 7.2], bx: 1.6, bw: 2.3, shops: [{ t: "cleo", w: 2.3, c: ["#ffffff", "#1d1d1d"], script: true }] },
+    { kind: "sign", addr: "49 Beaudesert Road", a: [-313.9, -799.1], b: [-320.3, -815.4], n: [0.9308, -0.3655], kerb: 0.44, across: 10.24, eave: 35.4, wall: "#4a4c50", sy: [6.4, 7.2], bx: 4.5, bw: 2.3, shops: [{ t: "LA Lips", w: 2.3, c: ["#1d1d1d", "#ffffff"], script: true }] },
+    { kind: "sign", addr: "49 Beaudesert Road", a: [-313.9, -799.1], b: [-320.3, -815.4], n: [0.9308, -0.3655], kerb: 0.44, across: 10.24, eave: 35.4, wall: "#4a4c50", sy: [6.4, 7.2], bx: 7.4, bw: 2.3, shops: [{ t: "Fat Wombat Gallery", w: 2.3, c: ["#f2c230", "#5e2f8c"], script: true }] },
+    { kind: "sign", addr: "49 Beaudesert Road", a: [-313.9, -799.1], b: [-320.3, -815.4], n: [0.9308, -0.3655], kerb: 0.44, across: 10.24, eave: 35.4, wall: "#4a4c50", sy: [6.4, 7.2], bx: 10.3, bw: 2.3, shops: [{ t: "urban", w: 2.3, c: ["#ffffff", "#1f78c8"] }] },
+    { kind: "sign", addr: "49 Beaudesert Road", a: [-313.9, -799.1], b: [-320.3, -815.4], n: [0.9308, -0.3655], kerb: 0.44, across: 10.24, eave: 35.4, wall: "#4a4c50", sy: [6.4, 7.2], bx: 13.2, bw: 2.3, shops: [{ t: "KILR", sub: "STUDIOS", w: 2.3, c: ["#1d1d1d", "#e0b43c"] }] },
+    { kind: "sign", addr: "49 Beaudesert Road", a: [-313.9, -799.1], b: [-320.3, -815.4], n: [0.9308, -0.3655], kerb: 0.44, across: 10.24, eave: 35.4, wall: "#4a4c50", sy: [6.4, 7.2], bx: 16.0, bw: 2.3,
+      shops: [{ n: "Moorooka Tobacco & Gifts", t: "TOBACCO & GIFTS", sub: "OPEN 7 DAYS", w: 2.3, c: ["#1d1d1d", "#ffffff"], what: "Tobacconist and gifts, open 7 days" }] },
     // The Vanilla Lab: the dessert trailer in the gap between 49's two buildings, on a deck with picnic tables under festoon lights (Ash, 23
     // November 2026: "Redo the vanilla lab ... This isn't accurate"; see kind "truck"). a, b: across the gap at the footpath, from the
     // charcoal building's wall to Colebrook Corner's
@@ -9748,9 +9768,14 @@ const handle = async (m, post) => {
         { n: "Red Sea", sub: "GROCERIES", w: 3.4, c: ["#b71c1c", "#ffffff"], what: "African groceries" }] },
     { kind: "sign", addr: "8 Moorvale Lane", a: [-161.8, -184.4], b: [-157.5, -177.5], n: [-0.8487, 0.5289], kerb: 0.3, across: 7.61, eave: 49.6, wall: "#e4ddd0",
       shops: [{ n: "Moorooka Accountant", w: 7, c: ["#f2f2f2", "#1d3557"], what: "Accountant" }] },
-    { kind: "strip", addr: "49 Beaudesert Road (Colebrook Corner)", a: [-322.5, -820.3], b: [-326.5, -830.9], n: [0.9356, -0.3531], kerb: 3.24, across: 13.04, eave: 31.0, wall: "#f1efe9", awning: "#efede8",
-      shops: [{ n: "Kip McGrath", sub: "EDUCATION CENTRES", w: 6, c: ["#003b71", "#ffffff"], what: "English and maths tutoring" }, { n: "Gold Saint", sub: "BEAUTY", w: 5, c: ["#1d1d1d", "#d4af37"], what: "Beauty salon" }],
-      tenants: { lines: ["Kip McGrath", "Gold Saint Beauty", "Cleo Hairdressing", "Kooperativ Hair"], c: ["#2b4a6f", "#ffffff"], foot: { n: "COLEBROOK CORNER", c: ["#ffffff", "#2b4a6f"] }, x: 1.3, o: 1.4, w: 1.6 } },  // (x 1.3: on its own front, not across the Vanilla Lab's gap)
+    // Colebrook Corner's white weatherboard building on the corner of Colebrook Avenue, north of the Vanilla Lab's gap (Street View, April
+    // 2024 and September 2026): two storeys with a stepped parapet, a corrugated verandah on white posts over the footpath, posters in the
+    // shop windows under it, and small signs up on the parapet: COLEBROOK CORNER in navy and Kip McGrath in blue (Kip McGrath is 8a/49,
+    // Google Maps). Gold Saint Beauty is in the charcoal building, not here, and there's no tenants' board out the front
+    { kind: "verandah", addr: "49 Beaudesert Road (Colebrook Corner)", a: [-322.5, -820.3], b: [-326.5, -830.9], n: [0.9356, -0.3531], kerb: 3.24, across: 13.04, eave: 33.8, wall: "#f1efe9", shops: [{ w: 11.3, posters: true }] },
+    { kind: "sign", addr: "49 Beaudesert Road (Colebrook Corner)", a: [-322.5, -820.3], b: [-326.5, -830.9], n: [0.9356, -0.3531], kerb: 3.24, across: 13.04, eave: 33.8, wall: "#f1efe9", sy: [6.5, 7.1], bx: 5.4, bw: 2.6, windows: [4.0, 5.4, 3, "#2a3640"], shops: [{ t: "COLEBROOK CORNER", w: 2.6, c: ["#1f2d4a", "#ffffff"] }] },
+    { kind: "sign", addr: "49 Beaudesert Road (Colebrook Corner)", a: [-322.5, -820.3], b: [-326.5, -830.9], n: [0.9356, -0.3531], kerb: 3.24, across: 13.04, eave: 33.8, wall: "#f1efe9", sy: [6.5, 7.1], bx: 8.8, bw: 2.6,
+      shops: [{ n: "Kip McGrath", sub: "EDUCATION CENTRES", w: 2.6, c: ["#1b5fb4", "#ffffff"], what: "English and maths tutoring (8a/49)" }] },
     { kind: "sign", addr: "101 Lyon Street", a: [-219.6, -271.6], b: [-229.5, -277.1], n: [0.4856, -0.8742], kerb: 9.57, across: 21.37, eave: 45.1, wall: "#f4f2ee",
       shops: [{ n: "Brisbane Biodentistry", w: 9, c: ["#ffffff", "#2f8f83"], what: "Dentist" }] },
     { kind: "sign", addr: "190-204 Beaudesert Road (on Mayfield Road)", a: [-49.8, -188.8], b: [-59.8, -191.5], n: [0.2607, -0.9654], kerb: 3.05, across: 14.95, eave: 51.5, wall: "#e9e4da",
@@ -10216,8 +10241,8 @@ const handle = async (m, post) => {
     { at: [384.44, 982.26], kind: 2, wall: [196, 200, 204] },               // 17 Chrome Street (the bookshop's shed): grey iron
     { at: [205.06, 1065.4], kind: 2, hip: true, wall: [239, 232, 216], roof: [150, 70, 52] },  // Salisbury Snack Bar (124 Evans Road): cream under red, hipped
     { at: [-1128.20, 397.24], kind: 2, flat: true, wall: [88, 92, 98] },   // Connections Early Learning (5 Hamilton Road): charcoal, flat-roofed
-    { at: [-323.20, -804.75], kind: 2, flat: true, wall: [74, 76, 80] },    // 49 Beaudesert Road's south building (the Vanilla Lab's trailer is in the gap north of it): charcoal, two storeys, flat
-    { at: [-331.87, -825.87], kind: 2, flat: true, wall: [242, 241, 236] }, // Colebrook Corner (49 Beaudesert Road): white, two storeys, a stepped parapet
+    { at: [-323.20, -804.75], kind: 2, flat: true, wall: [74, 76, 80], eave: 35.4, ridge: 35.6 },    // 49 Beaudesert Road's south building (the Vanilla Lab's trailer is in the gap north of it): charcoal, two storeys, flat (eave raised 23 November 2026: about 8 m, as in Street View, with the boards along its top)
+    { at: [-331.87, -825.87], kind: 2, flat: true, wall: [242, 241, 236], eave: 33.8, ridge: 34.0 }, // Colebrook Corner (49 Beaudesert Road): white, two storeys, a stepped parapet (eave raised 23 November 2026: two storeys, the survey had about one)
     { at: [-647.89, 1164.02], kind: 2, wall: [238, 237, 233] },             // Garde Timber (22 Gladstone Street): a white shed
     { at: [-231.28, 593.50], kind: 2, flat: true, wall: [200, 124, 84] },   // Fegen Drive's shops (8-10): the terracotta parapet over the arches, flat behind it
     { at: [-675.72, 378.39], wall: [178, 92, 62] },                         // Moorooka Presbyterian (27 Hawtree Street): red brick

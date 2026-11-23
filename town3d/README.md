@@ -2904,3 +2904,15 @@ to display mockup of real businesses."
   Vanilla Lab as ice cream (dessert trailer) with its hours, eat in and takeaway.
 - **Not known:** which way its hatch faces and its exact colours: no photo of the trailer itself was found (Street View predates it).
   A photo from Ash would settle both.
+
+### Colebrook Corner either side of the Vanilla Lab (23 November 2026)
+
+Ash: "Can you fix the businesses either side of the vanilla lab cart. Use google maps". From Street View (September 2026 and April 2024)
+and Google Maps: both buildings are Colebrook Corner, 49 Beaudesert Road. The charcoal one, south of the gap, now carries its real signs:
+on the fascia Cleo Hairdressing, Gold Saint Beauty (Shop 2/49), a small COLEBROOK CORNER sign and Fat Wombat Gallery; along its top six
+boards (cleo, LA Lips, Fat Wombat Gallery, urban, KILR Studios, Moorooka Tobacco & Gifts). The white weatherboard one on the Colebrook
+Avenue corner is a verandah on white posts with posters in the windows, COLEBROOK CORNER and Kip McGrath (8a/49) high on its parapet.
+Gold Saint Beauty, Cleo and Kooperativ Hair were wrongly on the white building, with a tenants' board in front that isn't there. Both
+buildings are raised to two storeys (MOO_STYLE eave). Not done: the verandah wrapping round onto Colebrook Avenue, the small white sign
+left of COLEBROOK CORNER (unreadable), and Kooperativ Hair (on Google Maps at 49 but no sign seen).
+
