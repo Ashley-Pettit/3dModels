@@ -17620,7 +17620,7 @@ const handle = async (m, post) => {
     // The car's leg runs to gate NC (about halfway), the plane's rings follow, and the possum runs from SP to the line
     const turnAt = s => { const a = headAt(s - 24), b = headAt(s + 24); return Math.abs(Math.atan2(Math.sin(b - a), Math.cos(b - a))); };
     const pickS = (s0, w) => { let best = s0, bt = Infinity; for (let s = s0 - w; s <= s0 + w; s += 4) { const t = turnAt(s) + Math.abs(s - s0) * 0.002; if (t < bt) { bt = t; best = s; } } return best; };
-    const SP = L - 600, GA = [0];  // (the possum's leg 600 m, it was 280: Ash, 23 November 2026, "Possum leg too short") { const half = L / 2, n = Math.max(3, Math.round(half / 180)); for (let k = 1; k <= n; k++) GA.push(pickS(half * k / n, k === n ? 40 : 60)); }
+    const SP = L - 600, GA = [0]; /* (the possum's leg 600 m, it was 280: Ash, 23 November 2026, "Possum leg too short") */ { const half = L / 2, n = Math.max(3, Math.round(half / 180)); for (let k = 1; k <= n; k++) GA.push(pickS(half * k / n, k === n ? 40 : 60)); }
     const NC = GA.length - 1; GA.push(pickS(SP + 200, 50), pickS(SP + 400, 50), L); const NG = GA.length - 1, GP = GA.map(s => at(s));
     const RINGS = []; { const s0 = GA[NC] + 110, s1 = SP - 70, n = Math.max(3, Math.round((s1 - s0) / 120));
       for (let i = 0; i < n; i++) { const s = s0 + (s1 - s0) * i / (n - 1), p = at(s); RINGS.push({ s, x: p.x, z: p.z, y: ground(p.x, p.z) + 36 + 9 * Math.sin(i * 1.9), h: headAt(s) }); } }
@@ -17690,13 +17690,13 @@ const handle = async (m, post) => {
     const itemBtn = document.createElement("button"); itemBtn.type = "button"; itemBtn.className = "bs-race-item"; itemBtn.hidden = true;
     const big = document.createElement("div"); big.className = "bs-race-n"; big.hidden = true; big.setAttribute("aria-live", "assertive");
     const panel = document.createElement("div"); panel.className = "bs-race-ask"; panel.hidden = true; panel.setAttribute("role", "dialog"); panel.setAttribute("aria-label", "Race around Moorooka");
+    const legBox = document.createElement("div"); legBox.className = "bs-race-leg"; legBox.hidden = true; legBox.setAttribute("aria-live", "assertive"); let legT = 0;  // (the banner at the end of a leg)
     ($("bsFly") || box).append(card, big, panel, itemBtn, dir, legBox);  // over the town's own labels and buttons (number 6's balcony button sat on Start)
     let race = null, dead = false, hudT = 0, bigT = 0, lastN = "";
     const where = () => T.car?.in ? T.car.where?.() : null;
     const here = () => { const w = where(); return w && w.x != null ? [w.x, w.z, w.y ?? F.pos.y] : [F.pos.x, F.pos.z, F.pos.y]; };
     const me = () => T.peers?.myId?.() || "me";
     const send = d => T.peers?.raceSend?.(d);
-    const legBox = document.createElement("div"); legBox.className = "bs-race-leg"; legBox.hidden = true; legBox.setAttribute("aria-live", "assertive"); let legT = 0;
     const banner = (t, sub, ms) => { legBox.replaceChildren(); const b2 = document.createElement("b"), s2 = document.createElement("span"); b2.textContent = t; s2.textContent = sub || ""; legBox.append(b2, s2);
       legBox.hidden = false; legBox.classList.remove("in"); void legBox.offsetWidth; legBox.classList.add("in"); clearTimeout(legT); legT = setTimeout(() => { legBox.hidden = true; }, ms); };
     const fanfare = big2 => { const N = big2 ? [523, 659, 784, 1047, 1319] : [523, 659, 784, 1047]; N.forEach((f, i) => setTimeout(() => T.snd?.tone?.(f, f, i === N.length - 1 ? 0.55 : 0.16, 0.1, "square"), i * 120)); };
@@ -17716,10 +17716,10 @@ const handle = async (m, post) => {
       rows.forEach((r, i) => { const li = document.createElement("li"), sm = document.createElement("small"); li.append(r.fin && i < 3 ? ["🥇 ", "🥈 ", "🥉 "][i] : "", r.you ? "You" : r.name || "A player", " "); if (r.you) li.className = "you";
         sm.textContent = r.fin ? fmtT(r.fin) : `still racing, ${fmtD(L - r.m)} to go`; li.append(sm); ol.append(li); });
       const h = document.createElement("h3"); h.textContent = rows.every(r => r.fin) ? "Results" : "Results so far";
-      if (race?.fin) { const pb = document.createElement("p"); pb.className = "small"; pb.textContent = race.pb ? (race.best ? `A new personal best! (It was ${fmtT(race.best)})` : "Your first time on this lap: that's your best to beat.") : `Your best on this lap: ${fmtT(race.best)}`; h.after(pb); ol.before(pb); }
+      let pbEl = null; if (race?.fin) { const pb = pbEl = document.createElement("p"); pb.className = "small"; pb.textContent = race.pb ? (race.best ? `A new personal best! (It was ${fmtT(race.best)})` : "Your first time on this lap: that's your best to beat.") : `Your best on this lap: ${fmtT(race.best)}`; }
       const row = document.createElement("div"); row.className = "row"; const x = document.createElement("button"); x.type = "button"; x.textContent = "Close"; x.onclick = end;
       if (rows.every(r => r.fin)) { const again = document.createElement("button"); again.type = "button"; again.className = "go"; again.textContent = "Race again"; again.onclick = () => { end(); R.open(); }; row.append(again); }
-      row.append(x); panel.replaceChildren(h, ol, row); panel.hidden = false; };
+      row.append(x); panel.replaceChildren(...[h, pbEl, ol, row].filter(Boolean)); panel.hidden = false; };
     // ---- picking a car: four buttons, the pick kept on this device; mid-countdown it changes the car you're sitting in
     const picker = () => { const wrap = document.createElement("div"), lab = document.createElement("p"), row = document.createElement("div"), info = document.createElement("p");
       wrap.className = "cars"; lab.className = "small lab"; lab.textContent = "Pick your car for this race:"; row.className = "pick"; info.className = "small";
@@ -19565,7 +19565,7 @@ const handle = async (m, post) => {
       keysList.replaceChildren(...[...(KEYS_FEW[kind] || []), ...(/^(car|bus|gold)$/.test(kind) ? (gmDesk() ? [[["Click"], "The road, and the car drives you there"]] : [[["G"], "Drive for me, and stop"], [["<", ">"], "The next left, the next right"]]) : [])].map(([ks, what]) => [RODMAP ? ks.map(k => RODMAP[k] || k) : ks, what]).filter(([ks]) => !(kind === "plane" && plane && !canBoost(plane) && ks[0] === "Shift")).flatMap(([ks, what]) => { const dt = document.createElement("dt"), dd = document.createElement("dd");
         for (const key of ks) { const kb = document.createElement("kbd"); kb.textContent = key; dt.append(kb); } dd.textContent = what; return [dt, dd]; }));
       // the stick and the Up and Down buttons say what they do in it
-      if (joyName) joyName.textContent = kind === "plane" ? "Power and turn" : kind === "heli" ? "Go and turn" : kind === "car" ? "Drive" : kind === "possum" ? "Run and turn" : "Move";
+      if (joyName) joyName.textContent = kind === "plane" ? "Fly: up, down, turn" : kind === "heli" ? "Go and turn" : kind === "car" ? "Drive" : kind === "possum" ? "Run and turn" : "Move";
       if (udName.length === 2) { udName[0].textContent = kind === "plane" ? "Climb" : kind === "possum" ? "Jump" : "Up"; udName[1].textContent = kind === "plane" ? "Dive" : kind === "possum" ? "Let go" : "Down"; } };
     // which of your copies another player has just got into: the one of that kind nearest where they are (within 25 m; the possum, the
     // pigeon and the drone are one of a kind), never the one you're in
