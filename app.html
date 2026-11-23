@@ -17259,7 +17259,9 @@ const handle = async (m, post) => {
     // number 6's letterbox pier, on the footpath in front of it: Ash reads his letters here too (Ash, 23 November 2026: "Allow me to also
     // read mail at my letterbox at 6 Beaudesert"). Nobody stands there: walk up to it
     // (opened by a tap on its label, never by walking past: Ash, 23 November 2026, "I only want the letterbox to come up if I tap on it")
-    { id: "letterbox", name: "\ud83d\udcec Your letterbox", x: -262.4, z: -991.1, draw: false, tap: true },
+    // (its icon sits on the pier's street face at the slot, 1.3 m up, and the green mail mark just over the pier's cap: Ash, 23 November
+    // 2026, "Move that icon much closer to the real mailbox. Further back and lower so it's right on it")
+    { id: "letterbox", name: "\ud83d\udcec Your letterbox", x: -261.51, z: -990.8, draw: false, tap: true, tagY: 1.3, markY: 1.85 },
     // locals who pass on what they've heard, a different thing each time (Ash, 16 November 2026: "add some vendors that give information
     // like I heard of a love potion, I heard are helicopter around here (they don't know where) or similar, can you catch a possum for
     // me; I last saw it on kingwell street. I heard the chips from big boss are the best ever, that mechanic in town did some amazing
@@ -18129,6 +18131,10 @@ const handle = async (m, post) => {
     // business indicator with the yellow square")
     folk.forEach(q => { q.dot = Object.assign(document.createElement("div"), { className: "bs-news", hidden: true, title: "Has news for you" }); box.append(q.tag, q.dot); });
     // where a point is on the screen, or null behind you
+    // the sticks' boxes on screen (16 px round them), looked up at most twice a second: a label you tap stays off them
+    let joyR = [], joyT = 0; const overSticks = (x, y) => { const now = performance.now(); if (now - joyT > 500) { joyT = now; const b = box.getBoundingClientRect();
+        joyR = [...document.querySelectorAll(".bs-joy")].map(e => e.getBoundingClientRect()).filter(r => r.width).map(r => [r.left - b.left - 16, r.top - b.top - 16, r.right - b.left + 16, r.bottom - b.top + 16]); }
+      return joyR.some(r => x + 14 > r[0] && x - 14 < r[2] && y + 14 > r[1] && y - 14 < r[3]); };
     const onScreen = (x, y, z) => { const cam = m.getCamera?.(); if (!cam) return null; const w = box.clientWidth, h = box.clientHeight, f = 1 / Math.tan(((m.fov ? m.fov() : 50) * Math.PI) / 360);
       const cp = Math.cos(cam.pitch), fx = -Math.sin(cam.yaw) * cp, fy = Math.sin(cam.pitch), fz = -Math.cos(cam.yaw) * cp, rx = Math.cos(cam.yaw), rz = -Math.sin(cam.yaw), ux = -fy * rz, uy = rz * fx - rx * fz, uz = fy * rx;
       const ax = x - cam.x, ay = y - cam.y, az = z - cam.z, depth = ax * fx + ay * fy + az * fz; if (depth < 1) return null;
@@ -18364,8 +18370,8 @@ const handle = async (m, post) => {
               M.compose(V.set(q.x, g(q.x, q.z), q.z), Q.setFromEuler(E.set(0, q.look, 0, "YXZ")), q.scale ? V2S.set(q.scale, q.scale, q.scale) : ONE); q.parts.setMatrix(0, M.elements.slice());
               q.parts.setMatrix(1, M.clone().multiply(S[0]).multiply(new THREE.Matrix4().makeRotationZ(-0.06)).multiply(new THREE.Matrix4().makeRotationX(toss ?? sw)).elements); q.parts.setMatrix(2, M.clone().multiply(S[1]).multiply(new THREE.Matrix4().makeRotationZ(0.06)).multiply(new THREE.Matrix4().makeRotationX(-sw)).elements); } } }
         // their name over their head while you're near enough to read it (Pandy's is townHome6's)
-        if (q.id !== "pandy" && (q.id !== "letterbox" || isAsh())) { let s = d < 60 && up < 120 ? onScreen(q.x, g(q.x, q.z) + 2.15, q.z) : null;
-          if (s && q.tap && s[1] > innerHeight - 190) s = null;  // (a label you tap never sits down among the sticks, where a thumb on a stick could catch it)
+        if (q.id !== "pandy" && (q.id !== "letterbox" || isAsh())) { let s = d < 60 && up < 120 ? onScreen(q.x, g(q.x, q.z) + (q.tagY ?? 2.15), q.z) : null;
+          if (s && q.tap && overSticks(s[0], s[1] - 14)) s = null;  // (a label you tap never sits over a stick, where a thumb on the stick could catch it)
           q.tag.hidden = !s; if (s) q.tag.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; }
         // the green mark: they've news for you
         // (and Flick, near her, when she's pigeon food for you: Ash, 21 November 2026, "make flick have a little green icon if near her and
@@ -18373,7 +18379,7 @@ const handle = async (m, post) => {
         // (and the postie, and Ash's letterbox, while there's a letter you haven't read: Ash, 23 November 2026, "Show a green icon there
         // if I have new mail")
         { const ml = (q.id === "post" || (q.id === "letterbox" && isAsh())) && !q.news && !!T.mail?.unread?.(); if (q.dot.classList.contains("mail") !== ml) q.dot.classList.toggle("mail", ml);
-          const s = (q.news || (q.id === "flick" && d < 60 && flickOffers()) || ml) && d < 220 && up < 150 ? onScreen(q.x, g(q.x, q.z) + (q.tap ? 2.5 : d < 60 && q.id !== "pandy" ? 3.1 : 2.4), q.z) : null; if (q.dot.hidden === !!s) q.dot.hidden = !s; if (s) q.dot.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; }
+          const s = (q.news || (q.id === "flick" && d < 60 && flickOffers()) || ml) && d < 220 && up < 150 ? onScreen(q.x, g(q.x, q.z) + (q.markY ?? (d < 60 && q.id !== "pandy" ? 3.1 : 2.4)), q.z) : null; if (q.dot.hidden === !!s) q.dot.hidden = !s; if (s) q.dot.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; }
         // walk up (or drive up to the mechanic, or run up as the possum to the vet) and they talk to you, once a visit
         const r = q.tap ? 0 : me.k === "walk" ? (q.r || 3.4) : me.k === "possum" ? q.possum : /pigeon$/.test(me.k) ? q.pigeon : /^(car|gold|bus)$/.test(me.k) ? q.car : 0;
         if (r && d < r) { if (!q.near && !q.done && !open) { q.near = true; talk(q); } }
