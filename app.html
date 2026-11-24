@@ -9273,7 +9273,7 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=26", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=27", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
     moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=71", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
@@ -9480,6 +9480,7 @@ const handle = async (m, post) => {
 
         // the town centre round the Rotary clock and number 11 Norman Road, stood in the model where they really are
         let mine = []; if (inv) try { mine = townModelGuests(T, m); } catch (e) { console.warn("Town model: the town centre and Norman Road couldn't be added", e); }
+        if (inv) invAddDesignedWalls(T, m.designedWallFootprints?.());
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
@@ -16160,7 +16161,8 @@ const handle = async (m, post) => {
   function invCivicCollision(at, inPilot) {
     const cells = new Map(), parked = new Map(), moved = new Map(), cell = v => Math.floor(v / 16), key = (a, b) => a * 65536 + b;
     let stamp = 0, minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
-    const nearby = (x,z,r) => x+r >= minX && x-r <= maxX && z+r >= minZ && z-r <= maxZ;
+    const nearby = (x,z,r) => x+r >= minX && x-r <= maxX && z+r >= minZ && z-r <= maxZ
+      && (cell(x-r) !== cell(x+r) || cell(z-r) !== cell(z+r) || cells.has(key(cell(x), cell(z))));
     const eachCell = (x0, z0, x1, z1, fn) => {
       for (let i = cell(x0); i <= cell(x1); i++)
         for (let j = cell(z0); j <= cell(z1); j++) fn(key(i, j));
@@ -16285,6 +16287,18 @@ const handle = async (m, post) => {
     // A quality swap reconstructs the renderer (including the cars in their original bays).
     const restoreCars = model => { for (const pose of moved.values()) model.driveCar?.(...pose); };
     return { polygon, box, post, depth, slide, canDrive, take, park, addCars, hideCars, restoreCars };
+  }
+
+  // Native wall rings are already in model metres. Register individual masses so open
+  // driveways and gaps between wings stay clear. Quality tiers share the same plan.
+  function invAddDesignedWalls(town, rings) {
+    if (!rings?.length) return;
+    const grid = town.invStatic ??= invCivicCollision((x, z) => [x, z], () => false);
+    for (const ring of rings) {
+      const points = [];
+      for (let i = 0; i < ring.length; i += 2) points.push([ring[i], ring[i + 1]]);
+      grid.polygon(points);
+    }
   }
 
   // Things made for the model's town centre alone. The foot of the Rotary clock as in photos of it: brick paving, a planted

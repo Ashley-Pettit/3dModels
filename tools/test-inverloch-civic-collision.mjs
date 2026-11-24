@@ -67,4 +67,14 @@ assert.ok(cars.depth(12,13,0,0,radius) > 0);
 cars.take(id);
 cars.park(id,200,300,0);
 assert.equal(cars.depth(200,300,0,0,radius),0,'pilot stays local');
+// Renderer rings use world metres even if the civic block has a different transform.
+const addWalls = runInNewContext(source.slice(start, end) + '\ninvAddDesignedWalls');
+const rings = [[-1618,411,-1612,411,-1612,421,-1618,421],
+               [-1612,416,-1609,416,-1609,419,-1612,419]];
+for (const town of [{}, { invStatic: make((x,z) => [x+100,z-100], () => false) }]) {
+  addWalls(town, rings);
+  assert.ok(town.invStatic.depth(-1616,415,0,0,radius) > 0);
+  assert.equal(town.invStatic.depth(-1610,413,0,0,radius),0,'recess beside the second mass stays clear');
+  assert.equal(town.invStatic.canDrive(-1623,415,0,-1614,415,0,2.1,.8),false);
+}
 console.log('A\'Beckett static collision fixtures passed');
