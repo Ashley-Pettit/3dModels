@@ -3123,3 +3123,17 @@ and "Library" glass to its entrance corner (Ash: "your call on how to merge as l
 - **The library:** you stand out in front of its entrance corner (6 m along, 13 m out from it) looking at the doors, so the round window,
   the "Library" glass, the Hub's sign and the Open flag are all in view (it looked at plain glass).
 - The hotel's window-making function is `sash`, not `window` (which hid the browser's own `window` in that block).
+
+### Turbo on the Boost button, a higher start view, inviting from Ash (24 November 2026)
+
+- **Turbo** (Ash: "I want turbo to make my boost btn more powerful but not auto boost on accel"): the mechanic's Turbo and the race's
+  Rocket now only change the Boost button: 40% more top speed on boost (210 to 294 km/h by default) and 1.6 times the push
+  (`PERK_X.turbo`, `PERK_X.turboPush`, `r.boostPush`). Off the boost the car is as it was (it had a quarter more top speed all the time).
+  The car's top speeds are read from its settings as they are now (`R.carTop`, `R.carBoostTop`), not fixed when the car code started, so
+  an upgrade, or a race car, counts straight away; the race's `spdK` is just the handicap now.
+- **The race's start** (Ash: "Polish how the race starts, position the 3rd person view of my car earlier and higher"): on the grid and at 3
+  the view is 13 m behind the car and about 5 m up, looking down the road over it to the line (`C.camReset`: `camBack` 5.5 m, pitch
+  -0.3); once you're off the line it glides in to the usual view (7.5 m back, about 3 m up) in a couple of seconds. It was low and level.
+- **Inviting** (Ash: "I want invite people to race like in moorooka"): the race panel's Invite someone works in Inverloch as in Moorooka
+  (the link puts them in a car on the grid by Ash, with "Ash is hosting"); Ash's card has it too: Invite someone shares the link and opens
+  the race panel.
