@@ -20775,24 +20775,33 @@ const handle = async (m, post) => {
         v = bsClamp(v, -vboost, vboost);
         car.steer += (str * 0.55 / (1 + (Math.abs(v) / (8 * K)) ** 2 * (R.lockFade ?? 1.2)) - car.steer) * Math.min(1, dt * (R.steerSnap ?? 7));  // less lock the faster it goes
         car.v = v; let bump = 0;
+        const trafficTravel = (x, z, h) => T.traffic?.travel?.(car.bus ? "bus" : "car", car.x, car.z, car.h, x, z, h, car.y) ?? 1;
+        const civicStep = (x, z, h) => !T.invStatic || T.invStatic.canDrive(car.x, car.z, car.h, x, z, h, car.bus ? 5.4 : 2.1, car.bus ? 1.2 : 0.8);
         // the end of Autodrive: once it has stopped, round on the spot to face the place (Ash, 23 November 2026: "At the end of autodrive,
         // face my destination even if it means rotating the car in an abnormal way"). A driving key or the stick calls it off
         if (car.face) { if (mine) car.face = null; else if (Math.abs(v) < 0.8) {
           const want = Math.atan2(car.face.x - car.x, car.face.z - car.z), d = wrap(want - car.h), st = Math.sign(d) * Math.min(Math.abs(d), 3.2 * dt);
-          car.h = wrap(car.h + st); car.dir = car.h; car.steer = 0; if (Math.abs(d) < 0.03) car.face = null; } }
-        for (let n = Math.max(1, Math.ceil(Math.abs(v) * dt / 1.2)), i = 0, st = dt / n; i < n; i++) {  // in steps of a metre or so, so it cannot skip through a wall
+          const turn = st * trafficTravel(car.x, car.z, car.h + st);
+          if (civicStep(car.x, car.z, car.h + turn)) car.h = wrap(car.h + turn); else car.face = null;
+          car.dir = car.h; car.steer = 0; if (Math.abs(d) < 0.03) car.face = null; } }
+        for (let n = Math.max(1, Math.ceil(Math.abs(v) * dt / 1.2)), i = 0, st = dt / n; i < n && !bump; i++) {  // in steps of a metre or so, so it cannot skip through a wall
           // (how fast it turns: Settings > Cars and planes > Car turning, and Golden car turning: Ash, 15 November 2026)
           // the golden car's 180 (Ash, 15 November 2026: "Add a 180 spin to the golden car that quickly jumps up and heads perfectly in
           // the opposite direction keeping momentum"): up off the road, round half a turn in under half a second, still carrying on
           // the way it was going; it lands facing back and going back at the same speed
           if (car.flip) { const Fp = car.flip; Fp.t += st; const f = Math.min(1, Fp.t / 0.42), ease = f * f * (3 - 2 * f); car.hop = 1.1 * Math.sin(Math.PI * f);
             const h = Fp.h0 + Math.PI * ease * Fp.way, x = car.x + Math.sin(Fp.d0) * car.v * st, z = car.z + Math.cos(Fp.d0) * car.v * st;
+            if (trafficTravel(x, z, h) < 1 || !civicStep(x, z, h)) { car.flip = null; car.hop = 0; bump = Math.abs(car.v); car.v = 0; car.dir = car.h; break; }
             if (inside(x, z) && fits(SHAPE, x, z, h)) { car.x = x; car.z = z; } car.h = h; car.dir = Fp.d0;
             if (f >= 1) { car.h = wrap(Fp.h0 + Math.PI); car.dir = wrap(Fp.d0 + Math.PI); car.hop = 0; car.flip = null; snd.thud(0.5); }
             continue; }
-          const h = car.h - (slide ? str * sTurn * Math.PI / 180 * Math.sign(car.v) : (car.v / (car.bus ? 6.4 : 2.6)) * Math.tan(car.steer) * (gc ? R.goldTurn : R.carTurn) / 100 * (C.starTil > performance.now() ? 1.4 : 1)) * st;
+          let h = car.h - (slide ? str * sTurn * Math.PI / 180 * Math.sign(car.v) : (car.v / (car.bus ? 6.4 : 2.6)) * Math.tan(car.steer) * (gc ? R.goldTurn : R.carTurn) / 100 * (C.starTil > performance.now() ? 1.4 : 1)) * st;
           const d = car.dir + wrap(h - car.dir) * Math.min(1, st * (slide ? 1.5 : 10));  // the way it travels comes round to the way it points: slowly while it slides
-          const x = car.x + Math.sin(d) * car.v * st, z = car.z + Math.cos(d) * car.v * st;
+          let x = car.x + Math.sin(d) * car.v * st, z = car.z + Math.cos(d) * car.v * st;
+          const t = trafficTravel(x, z, h);
+          if (t < 1) { x = car.x + (x - car.x) * t; z = car.z + (z - car.z) * t; h = car.h + wrap(h - car.h) * t;
+            bump = Math.abs(car.v); car.v = 0; }
+          if (!civicStep(x, z, h)) { bump = Math.abs(car.v); car.v = bump > 2 ? -car.v * 0.2 : 0; car.dir = car.h; break; }
           if (inside(x, z) && (fits(SHAPE, x, z, h) || !fits(SHAPE, car.x, car.z, car.h))) { car.x = x; car.z = z; car.h = h; car.dir = d; }  // (a car parked inside a building's outline can still drive out)
           else { bump = Math.abs(car.v); car.v = bump > 2 ? -car.v * 0.2 : 0; car.dir = car.h; break; } }
         if (bump > 1.5) snd.thud(Math.min(1.6, 0.4 + bump / 14));
