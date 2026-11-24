@@ -330,8 +330,8 @@ To update one, run its build there and copy its four files (and Moorooka's `deta
 ### Source for the proposed Inverloch terrain-tiling trial
 
 To reproduce the land renderer, contributors need the revision of `ai-forge` that matches the shipped Inverloch embed.
-Start with [the documented combined branch](../CLAUDE.md#inverlochs-3d-model-build-it-from-the-full-source-only), its shared
-`src/features/town3d/terrain.ts` and the Inverloch embed build above. Confirm any downstream bundle fixes with the maintainer before rebuilding.
+Start with [the documented combined branch](../CLAUDE.md#inverlochs-3d-model-build-it-from-the-full-source-only), its
+`src/features/inverloch3d/terrain.ts` (Inverloch's land; there's no `src/features/town3d/` on that branch) and the Inverloch embed build above. Confirm any downstream bundle fixes with the maintainer before rebuilding.
 
 The proposed trial would split the existing land mesh into sections with their own bounds so a street-level camera can skip ground outside its view.
 At full detail the 800 × 690 grid contributes 1,101,022 land triangles. The trial would reuse the same height and tidal-exposure samples, ground
@@ -3156,3 +3156,16 @@ the back window and the two on the doors are gone (from the higher start view an
 never showed: that town's cars sit 0.25 m up and come in three heights (roofs 1.74, 1.88 and 1.92 m up), and the model doesn't say which
 you're in, so there it sits at 1.94 m over the part of the roof all three have (`RACE_INV.logo`); on the lowest (sedan) it's a hand's
 width over the roof.
+
+### The race's arrow looks ahead; the yellow line only to the next checkpoint (24 November 2026)
+
+Ash: "In the race I feel like the arrow is too late to show I need to turn. I miss the road before realising I needed to turn. With the
+yellow path only show the path to the next checkpoint."
+- **The arrow** (driving): it points at a spot along the course ahead of where you are on it (`roadAhead`), further the faster you go (35 m,
+  up to 120 m at about 130 km/h), so it swings round before the corner does, not as you reach it. Under it, a yellow pill names the next
+  real corner within 160 m, which way and how far ("↱ Right turn · 80 m"). The distance under the arrow is still to the next checkpoint.
+  More than 30 m off the course it points back to the nearest bit of it; having missed a checkpoint it points back at that.
+- **The yellow line** is a piece for each of the car's checkpoints, made with the rest of the course on the grid (`lineP`, one part each,
+  `lineAt` only moves them): in a race only the piece from the last checkpoint to the next one shows; practising, all of it.
+- **Inverloch's road marks were under its roads** (its roads sit 0.11 to 0.34 m over the ground; the marks were 0.16 m): the yellow line,
+  the start line on the road and the gates' chevrons go 0.2 m higher there (`RACE_INV.lift`).
