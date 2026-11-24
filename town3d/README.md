@@ -284,6 +284,21 @@ Rd". `inverloch-model.js` ?v=25, built from ai-forge `src/features/inverloch3d/d
   left to the app. Number 13 is drawn 7.8 m wide, not about 11 m, because number 11's lot in the game is wider than the real one.
 - East of Ebor Avenue (the Beach Avenue units and the building site at 3 Norman Road) is as it was.
 
+### Norman Road from real outlines (25 November 2026, ?v=26)
+
+Ash, 25 November 2026: "Okay try for Norman Rd". The traced rectangles are replaced by real building outlines from Overture Maps
+(release 2026-11-18; here Microsoft's outlines from aerial photos plus a few from OpenStreetMap), read from Overture's open data by
+range requests (one 600 MB file, 3.6 MB of it read). Street View still gives each house its walls, roof, storeys and extras.
+
+- The outlines and the model's streets (OpenStreetMap) agree; Google's picture sits about 2.5 m off both (2.2 m west, 1.3 m
+  north), so anything traced off Google's picture has to be moved by that much.
+- An outline that isn't square is split into up to three square parts, each with its own roof, all on one floor level.
+- Of the 24 houses, 22 have an outline. 23's units and 22's garage have none, so they keep the traced size. The outlines found
+  three outbuildings as well.
+- Some outlines are smaller than the roof seen from above (18, 17, 24), probably walls only, or part of the house missed.
+- For the whole town: Microsoft's outlines put about 4,700 buildings where the model has its 5,712 made-up houses (and 311
+  OpenStreetMap ones). Each would get its colours from the satellite, and Street View detail only where it matters.
+
 ## Inverloch's power poles cast no shadows
 
 Ash, 13 November 2026: "remove power pole shadows from Inverloch". The timber power poles and their wires along the
