@@ -268,6 +268,22 @@ no imagery, only the street data, buildings and houses in `town.json` (`tools/gr
 - checked and fine as they were: no grass islands inside car parks or paving in the close-up ground, every painted
   road matches a street, no houses on streets or overlapping, no parked cars off sealed ground.
 
+## Inverloch: Norman Road rebuilt house by house (24 November 2026, a test run)
+
+Ash, 24 November 2026: "list every single building in Inverloch. Use google maps and google satellite to rebuild each building
+ensuring you use low res ... Do a test run just on Norman Rd now", "Make sure you use street view pictures", "Don't alter 11 Norman
+Rd". `inverloch-model.js` ?v=25, built from ai-forge `src/features/inverloch3d/designed.ts`:
+
+- The model's 5,712 houses were made up (`build_stage2.py` places them along streets). OpenStreetMap has only 311 real outlines.
+- On Norman Road (Florida Avenue to Evergreen/Ebor Avenue) the 34 made-up buildings (26 houses, 8 sheds) whose nearest street is
+  Norman Road, within 45 m, are gone, and 24 real ones stand in their place. Each outline is traced from the Google satellite picture (a flood fill on the roof
+  from a seed, then the smallest rectangle round it); its walls, roof shape, storeys, colours and verandah, balcony or garage door
+  come from Street View (October 2025), or from the satellite colours where bush hides it from the road.
+- Same low-poly kit as the made-up houses (a box, a hip, gable, skillion or flat roof, windows as flat panels), so it opens as fast.
+- Number 11 is the app's own and is untouched: nothing new stands in its lot, and the made-up houses within 24 m of it are still
+  left to the app. Number 13 is drawn 7.8 m wide, not about 11 m, because number 11's lot in the game is wider than the real one.
+- East of Ebor Avenue (the Beach Avenue units and the building site at 3 Norman Road) is as it was.
+
 ## Inverloch's power poles cast no shadows
 
 Ash, 13 November 2026: "remove power pole shadows from Inverloch". The timber power poles and their wires along the
