@@ -1340,7 +1340,7 @@ body.bspowers.bspossum .bs-fly-x.bs-boost, body.bspowers.bspossum .bs-fly-x.bs-h
    other btns") */
 .bs-fly-x.bs-arlo[hidden] { display: none; }
 body.bsdrive:not(.bsplane) .bs-ud { display: none; }  /* in the plane, Up and Down lift and lower the nose */
-body.bsplane:not(.bsheli) .bs-ud { display: none; }  /* (not now: the plane's left stick climbs and dives, 23 November 2026) */
+body.bsplane:not(.bsheli):not(.bsdrone) .bs-ud { display: none; }  /* (not now: the plane's left stick climbs and dives, 23 November 2026. The helicopter and the drone keep them) */
 body.bsdrive:not(.bsplane) .bs-fly-x.bs-car { bottom: calc(68px + env(safe-area-inset-bottom)); }
 /* Boost: held down while you drive or fly (Shift on a keyboard). Over the right stick on a phone, by Get out on a desktop */
 .bs-fly-x.bs-boost { top: auto; left: auto; right: 34px; bottom: calc(192px + env(safe-area-inset-bottom)); background: linear-gradient(90deg, #ffd166 var(--charge, 100%), #8d8676 var(--charge, 100%)); color: #1b1830; z-index: 2; touch-action: none; user-select: none; -webkit-user-select: none; }
@@ -9454,7 +9454,7 @@ const handle = async (m, post) => {
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
-        if (cfg.place === "moo") try { T.room6 = townRoom6(T, m); } catch (e) { console.warn("Town model: number 6's room couldn't be drawn", e); }  // where the drone waits
+        if (cfg.place === "moo") try { T.room6 = townRoom6(T, m); } catch (e) { console.warn("Town model: number 6's room couldn't be drawn", e); }  // (where the drone waited till 24 November 2026)
         if (cfg.place === "moo" && m.addParts && m.getCamera && !OFF.has("bal6")) try { T.bal6 = townBalcony6(T, m); } catch (e) { T.bal6 = null; console.warn("Town model: number 6's house and balcony couldn't be added", e); }  // number 6 as it is, or with the balcony concept
         if (cfg.place === "moo" && m.addParts) try { townHouse24(T, m); } catch (e) { console.warn("Town model: 24 Beaudesert Road couldn't be added", e); }  // Pandy's house as it really is (a demo)
         if (cfg.place === "moo" && m.addParts) try { townHousesLite(T, m); } catch (e) { console.warn("Town model: the houses drawn the light way couldn't be added", e); }
@@ -15160,6 +15160,18 @@ const handle = async (m, post) => {
     const O = toModel(0, 0), FRAME = new THREE.Matrix4().makeBasis(new V(-dS[0], 0, -dS[1]), new V(0, 1, 0), new V(dB[0], 0, dB[1])).setPosition(O[0], y0, O[1]);
     // ---- levels, as the model works them out for number 6: walls up to the eave, the floor 2.75 m under it
     const E = Math.max(B.eave - y0, 2.6), FL = Math.max(0.3, E - 2.75), RM = Math.max(B.ridge - B.eave, 0.8);
+    // the roof's faces as they are drawn below ("the roof (the model's)"), in its own frame (ux to the south, uz to the street): what the
+    // drone sits and lands on (P.roofY), and the middle of the ridge, where it waits facing the street (P.roofTop)
+    const TOPS = (() => { const hx = width / 2, hz = depth / 2, Lz = hz - B.ridgeBack * 2 * hz, Cy = E + RM, Dy = E + RM * B.frontGable, Az = hz - B.frontGable * (hz - Lz);
+      const q = (a, b, c, d) => [[a, b, c], [a, c, d]], tris = [[[-hx, E, hz], [0, Dy, hz], [0, Dy, Az]], [[hx, E, hz], [0, Dy, Az], [0, Dy, hz]],
+        ...q([-hx, E, hz], [0, Dy, Az], [0, Cy, Lz], [-hx, Cy, Lz]), ...q([hx, E, hz], [hx, Cy, Lz], [0, Cy, Lz], [0, Dy, Az]), ...q([-hx, Cy, Lz], [hx, Cy, Lz], [hx, E, -hz], [-hx, E, -hz])];
+      const at = (ux, uz) => { if (Math.abs(ux) > hx + 1e-6 || Math.abs(uz) > hz + 1e-6) return null;
+        for (const [a, b, c] of tris) { const d = (b[2] - c[2]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[2] - c[2]); if (Math.abs(d) < 1e-9) continue;
+          const l1 = ((b[2] - c[2]) * (ux - c[0]) + (c[0] - b[0]) * (uz - c[2])) / d, l2 = ((c[2] - a[2]) * (ux - c[0]) + (a[0] - c[0]) * (uz - c[2])) / d, l3 = 1 - l1 - l2;
+          if (l1 >= -1e-6 && l2 >= -1e-6 && l3 >= -1e-6) return l1 * a[1] + l2 * b[1] + l3 * c[1]; }
+        return null; };
+      const [X, Z] = toModel(12 - HS, -(Lz + HD));
+      return { at, top: { x: X, y: y0 + Cy, z: Z, h: Math.atan2(-dB[0], -dB[1]) } }; })();
     const yy = y => FL + (y - 2.6);  // a height on the balcony page (floor 2.6) on this house
 
     // ---- materials and pictures (the balcony page's)
@@ -15480,7 +15492,8 @@ const handle = async (m, post) => {
       if (sx < 40 || sx > w - 40 || sy < 70 || sy > h - 60) { if (!btn.hidden) btn.hidden = true; return; }
       const size = Math.round(Math.max(48, Math.min(140, 0.5 / dep * f * h)));  // the head (0.4 m across) and a little round it, never under 48 px
       const k = sx + "," + sy + "," + size; if (btn.hidden) btn.hidden = false; if (k !== last) { last = k; btn.style.width = btn.style.height = size + "px"; btn.style.transform = `translate(${sx}px, ${sy}px) translate(-50%, -50%)`; } };
-    P.toModel = toModel; P.toLocal = toLocal; P.levels = { y0, FL, E }; P.button = { x: PIN[0], y: PINY - 0.03, z: PIN[1], local: BTN };  // (for checking in the console)
+    P.toModel = toModel; P.toLocal = toLocal; P.levels = { y0, FL, E };
+    P.roofTop = TOPS.top; P.roofY = (X, Z) => { if (!P.near) return null; const [x, z] = toLocal(X, Z), y = TOPS.at(12 - HS - x, -z - HD); return y == null ? null : y0 + y; }; P.button = { x: PIN[0], y: PINY - 0.03, z: PIN[1], local: BTN };  // (for checking in the console)
     P.dispose = () => { P.dead = true; P.near = false; btn.remove(); for (const k in handles) try { handles[k].remove(); } catch {} };
     P.frame();
     return P;
@@ -17049,9 +17062,10 @@ const handle = async (m, post) => {
   // 11's red driveway (`pad`: across and out from the middle of its lot, worked out once the lot is laid). Moorooka's was at a random
   // spot on the grass; now (Ash, 22 November 2026: "move the drone into inside my house in moorooka") the drone waits inside 6
   // Beaudesert Road, in the room townRoom6 draws (`room`), and its remote lies on the front path (`at`: x, z, heading), since you can't
-  // walk into the house
+  // walk into the house. Now (Ash, 24 November 2026: "Move the drone outside of 6 Beaudesert rd, maybe on the roof") it waits up on number
+  // 6's roof, in the middle of the ridge and facing the street (`roof6`: T.bal6.roofTop), the remote still on the front path
   TOWN_RIDES.inv.drone = { pad: [3.0, 14.3], name: "11 Norman Road: the drone", what: "A remote control on the driveway of 11 Norman Road, the drone beside it" };
-  TOWN_RIDES.moo.drone = { at: [-251.0, -994.7, 1.9], room: true, name: "6 Beaudesert Road: the drone", what: "A remote control on the front path of 6 Beaudesert Road. The drone is inside the house: fly it out the front door" };
+  TOWN_RIDES.moo.drone = { at: [-251.0, -994.7, 1.9], roof6: true, name: "6 Beaudesert Road: the drone", what: "A remote control on the front path of 6 Beaudesert Road. The drone is up on the roof" };
   for (const t of Object.values(TOWN_RIDES)) if (t.more) { t.planes = [...t.planes, ...t.more.planes]; t.cars = [...t.cars, ...t.more.cars]; }
   // Other players (Ash, 15 November 2026: "making this multiplayer so I can see other people walking around and their names",
   // "Build for everyone ... a new settings btn where user can type their player name. Add to Logan", "Consider lag implications.
@@ -20360,14 +20374,18 @@ const handle = async (m, post) => {
       if (DR.pad) { const L = T.pads?.[0]; if (!L) return null; const fx = L.s, fz = L.c, lx = L.c, lz = -L.s; remoteAt = { x: L.x + fx * DR.pad[1] + lx * DR.pad[0], z: L.z + fz * DR.pad[1] + lz * DR.pad[0], h: Math.atan2(fx, fz) }; }
       else if (DR.at) remoteAt = { x: DR.at[0], z: DR.at[1], h: DR.at[2] };
       else { const q = DR.spots[Math.floor(Math.random() * DR.spots.length)]; remoteAt = { x: q[0], z: q[1], h: Math.random() * Math.PI * 2 }; }
-      const st = R6()?.start;  // (Moorooka's waits indoors, on the rug in number 6's front room)
+      const st = R6()?.start, top = DR.roof6 ? T.bal6?.roofTop : null;  // (Moorooka's: up on number 6's roof. Indoors on the rug in its front room, with `room`)
       if (st) Object.assign(dr, { x: st.x, z: st.z, h: st.h, y: st.y });
+      else if (top) Object.assign(dr, { x: top.x, z: top.z, h: top.h, y: top.y });
       else { Object.assign(dr, { x: remoteAt.x + Math.cos(remoteAt.h) * 1.4, z: remoteAt.z - Math.sin(remoteAt.h) * 1.4, h: remoteAt.h }); dr.y = surf(dr.x, dr.z); }
       return remoteAt; };
     // number 6's room (townRoom6): in it, in its doorway and on the landing the drone has the room's floor under it and the room's ceiling
     // over it; everywhere else, what everything has (surf: the ground, a roof, a tree, a car)
     const R6 = () => DR?.room ? T.room6 || null : null;
-    const dsurf = (x, z, y) => R6()?.floorAt(x, z, y) ?? surf(x, z);
+    // (and number 6's roof, while it is drawn here, so the drone sits on it, lands on it and doesn't fly through it: T.bal6.roofY. Over
+    // it, it is the roof, not the model's own, which stands a little higher in places)
+    const roof6 = (x, z) => (DR?.roof6 ? T.bal6?.roofY?.(x, z) : null) ?? null;
+    const dsurf = (x, z, y) => R6()?.floorAt(x, z, y) ?? roof6(x, z) ?? surf(x, z);
     const showDrone = () => { if (!droneMesh) return; if (dr.takenBy) return hideAll(droneMesh, 2); M.compose(V.set(dr.x, dr.y, dr.z), Q.setFromEuler(E.set(-dr.p, dr.h, dr.r, "YXZ")), ONE); droneMesh.setMatrix(0, M.elements.slice()); droneMesh.setMatrix(1, M.clone().multiply(TURN.makeRotationY(dr.spin)).elements.slice()); };
     const wakeDrone = () => { if (droneMesh || !droneSpot()) return; droneMesh = m.addParts(townPlaneParts(undefined, "drone").map(q => ({ ...q, matrix: M.identity().elements.slice() })));
       remoteMesh = m.addParts(townPlaneParts(undefined, "remote").map(q => ({ ...q, matrix: M.identity().elements.slice() }))); M.compose(V.set(remoteAt.x, ground(remoteAt.x, remoteAt.z), remoteAt.z), Q.setFromEuler(E.set(0, remoteAt.h, 0, "YXZ")), ONE); remoteMesh.setMatrix(0, M.elements.slice()); showDrone(); };
@@ -20552,7 +20570,8 @@ const handle = async (m, post) => {
     KEYS_FEW.bus = KEYS_FEW.gold = KEYS_FEW.car;
     KEYS.bus = KEYS.car; KEYS.gold = [...KEYS.car.slice(0, 4), [["X"], "180: hop and spin round, still going"], ...KEYS.car.slice(4)];
     KEYS.possum = [[["W", "A", "S", "D"], "Run that way, from where you're looking (the arrows too)"], [["W"], "Into a street light or a wall: climb it"], [["S"], "Walk backwards (on a wall: let go)"], [["Space"], "Jump (off a wall too)"], [["Shift"], "Boost"], [["Q"], "Grippy on or off: holds on to cars, planes and tree tops (on or against a car you hold on; only Grippy off lets go)"], [["Drag"], "Look around"], [["E"], "Human again"]];
-    KEYS.drone = [[["W", "A", "S", "D"], "Fly that way, from where you're looking"], [["Space", "C"], "Up, down"], [["Shift"], "Boost"], [["Q"], "A 360"], [["E"], "Put the remote down: back to you"]];
+    KEYS.drone = [[["W", "S"], "Forward, back (\u2191 and \u2193 too)"], [["A", "D"], "Turn (\u2190 and \u2192 too)"], [["Space", "C"], "Up, down"], [["Shift"], "Boost"], [["Q"], "A 360"], [["Drag"], "Look around"], [["E"], "Put the remote down: back to you"]];
+    KEYS_FEW.drone = [[["W", "S"], "Forward, back (scroll too)"], [["A", "D"], "Turn"], [["Space", "C"], "Up, down"]];
     KEYS.pigeon = [[["W", "A", "S", "D"], "Walk, or fly, that way from where you're looking"], [["Space"], "Flap: take off, and fly up"], [["C"], "Dive"], [["Shift"], "Faster"], [["E"], "Human again"]];
     // (only the sky rings' count and way: no tips bottom left, Ash, 16 November 2026, "The bottom left tooltips other that ? Aren't needed")
     const hint = text0 => { const text = /^Ring \d/.test(text0 || "") ? text0 : ""; if (keysNow.textContent !== text) { keysNow.textContent = text; if (touch) keysBox.hidden = !text; } };
@@ -20674,7 +20693,7 @@ const handle = async (m, post) => {
         if (step) { F.pos.x = P.x + Math.cos(P.h) * 1.9; F.pos.z = P.z - Math.sin(P.h) * 1.9; F.yaw = P.h + Math.PI; F.pitch = -0.04; }  // out of the left door
         plane = null; showPlane(P); }
       veh = null; car = null; plane = null; window.anFast = false; upShow(null); upLook = 0; showKeys(T.walk ? "walk" : null); C.in = false; F.drive = null; F.boost = false; F.hText = ""; F.vert = 0; F.stick.x = F.stick.y = F.lookStick.x = F.lookStick.y = 0; F.keys.clear();
-      document.body.classList.remove("bsdrive", "bsplane", "bsheli", "bspossum", "bsride", "bspowers"); pwBtn.hidden = tkBtn.hidden = true; cooBtn.hidden = true; boostBtn.hidden = true; boostBtn.textContent = "Boost"; handBtn.hidden = true; flipBtn.hidden = true; F.flip = false; plantBtn.hidden = plantMenu.hidden = true; gripBtn.hidden = true; unReset(); handBtn.classList.remove("on"); F.hand = false; at = 0; C.frame(); };
+      document.body.classList.remove("bsdrive", "bsplane", "bsheli", "bsdrone", "bspossum", "bsride", "bspowers"); pwBtn.hidden = tkBtn.hidden = true; cooBtn.hidden = true; boostBtn.hidden = true; boostBtn.textContent = "Boost"; handBtn.hidden = true; flipBtn.hidden = true; F.flip = false; plantBtn.hidden = plantMenu.hidden = true; gripBtn.hidden = true; unReset(); handBtn.classList.remove("on"); F.hand = false; at = 0; C.frame(); };
     // Explore mode from a car, plane, helicopter or the possum: you're kept in it, held still where it is (others see it there), and
     // back in it, the view where it was, when Explore mode goes off (Ash, 17 November 2026: "If I'm in a helicopter and I go to explore
     // mode, when I end explore mode go back in my helicopter")
@@ -20904,24 +20923,31 @@ const handle = async (m, post) => {
         o = P; D = P.cling || P.grip ? 9 : 3.4 + Math.min(3, Math.abs(P.v) / 12); text = P.cling ? `Holding on to ${P.cling.name} \u00b7 ${Math.round(P.v * 3.6)} km/h` : P.grip ? `Gripping the car \u00b7 ${Math.round(P.v * 3.6)} km/h` : P.mode === "climb" ? "Climbing \u00b7 " + Math.round(up) + " m" : Math.round(Math.abs(P.v) * 3.6) + " km/h" + (up > 1.5 ? " \u00b7 " + Math.round(up) + " m up" : "");
         if (mission) text = `\ud83d\udfe1 ${mission.got}/${mission.rings.length} rings \u00b7 ${Math.max(0, Math.ceil(mission.t))} s \u00b7 ` + text;
       } else if (veh === "drone") { const Dr = dr, vin = bsClamp((has("Space") ? 1 : 0) - (has("KeyC") ? 1 : 0) + F.vert, -1, 1);
-        // it flies the way you point it from where you're looking, 35 km/h, half as fast again on Boost; Up and Down (Space and C) climb and drop
-        const mag = Math.min(1, Math.hypot(str, thr)), goH = mag > 0.15 ? F.yaw + Math.PI + Math.atan2(-str, thr) : Dr.h, turn = wrap(goH - Dr.h);
-        if (mag > 0.15) Dr.h += Math.sign(turn) * Math.min(Math.abs(turn), 3 * dt);
-        const want = mag > 0.15 ? (35 / 3.6) * (boost ? 1.6 : 1) * mag * Math.max(0.2, Math.cos(turn)) : 0; Dr.v += (want - Dr.v) * Math.min(1, dt * 3);
+        // the stick (a phone): it flies the way you push it from where you're looking, 35 km/h, half as fast again on Boost; Up and Down
+        // (Space and C) climb and drop. The keys (a computer), as the helicopter's (Ash, 24 November 2026: "Make the controls for the drone
+        // better. Mobile they are fine"): W and S forward and back, A and D turn it on the spot (the arrows too). They flew it the way you
+        // pointed from where you were looking, and the view swinging round behind it as it turned, A or D took it round in circles and S
+        // turned it about, then about again
+        const kf = (has("KeyW", "ArrowUp") ? 1 : 0) - (has("KeyS", "ArrowDown") ? 1 : 0), kt = (has("KeyD", "ArrowRight") ? 1 : 0) - (has("KeyA", "ArrowLeft") ? 1 : 0);
+        const mag = Math.min(1, Math.hypot(F.stick.x, F.stick.y)), goH = mag > 0.15 ? F.yaw + Math.PI + Math.atan2(-F.stick.x, F.stick.y) : Dr.h, turn = wrap(goH - Dr.h);
+        let want = 0, bank = 0; Dr.yr = (Dr.yr || 0) + ((mag > 0.15 ? 0 : kt) - (Dr.yr || 0)) * Math.min(1, dt * 6);
+        if (mag > 0.15) { Dr.h += Math.sign(turn) * Math.min(Math.abs(turn), 3 * dt); want = (35 / 3.6) * (boost ? 1.6 : 1) * mag * Math.max(0.2, Math.cos(turn)); bank = bsClamp(-turn * 0.5, -0.4, 0.4); }
+        else { Dr.h -= Dr.yr * 1.9 * dt; want = kf > 0 ? (35 / 3.6) * (boost ? 1.6 : 1) : kf < 0 ? -15 / 3.6 : 0; bank = Dr.yr * (Math.abs(Dr.v) > 1 ? 0.3 : 0.12); }
+        Dr.v += (want - Dr.v) * Math.min(1, dt * 3);
         Dr.vy += (vin * 4 - Dr.vy) * Math.min(1, dt * 4);
         for (let n = Math.max(1, Math.ceil(Math.abs(Dr.v) * dt / 0.4)), i = 0, st = dt / n; i < n; i++) { const x = Dr.x + Math.sin(Dr.h) * Dr.v * st, z = Dr.z + Math.cos(Dr.h) * Dr.v * st;
           const fl = R6()?.floorAt(x, z, Dr.y);  // (indoors the floor rises to the landing's rail on the way out of the door: it is let up that, not stopped by it)
-          if (!inside(x, z) || (fl != null ? fl > Dr.y + 0.7 : surf(x, z) > Dr.y + 0.3)) { Dr.v = 0; break; } Dr.x = x; Dr.z = z; if (fl != null && Dr.y < fl) Dr.y = fl; }
+          if (!inside(x, z) || (fl != null ? fl > Dr.y + 0.7 : dsurf(x, z, Dr.y) > Dr.y + 0.3)) { Dr.v = 0; break; } Dr.x = x; Dr.z = z; if (fl != null && Dr.y < fl) Dr.y = fl; }
         Dr.y = Math.min(Dr.y + Dr.vy * dt, ground(Dr.x, Dr.z) + 120); const top = R6()?.ceilAt(Dr.x, Dr.z, Dr.y); if (top != null && Dr.y > top - 0.3) { Dr.y = top - 0.3; Dr.vy = Math.min(0, Dr.vy); }
         const s0 = dsurf(Dr.x, Dr.z, Dr.y); if (Dr.y < s0) { Dr.y = s0; Dr.vy = Math.max(0, Dr.vy); }
         // the 360 (Q, or the button): a roll right round
         if (nestAsk) { nestAsk = false; if (!Dr.flip && Dr.y > s0 + 1) { Dr.flip = 0; snd.whoosh(); } else if (!Dr.flip) toast("Up in the air first, then the 360.", 1800); }
-        if (Dr.flip != null) { Dr.flip += dt / 0.8; Dr.r = Math.PI * 2 * Math.min(1, Dr.flip); if (Dr.flip >= 1) { Dr.flip = null; Dr.r = 0; } } else Dr.r += (bsClamp(-turn * 0.5, -0.4, 0.4) * (mag > 0.15 ? 1 : 0) - Dr.r) * Math.min(1, dt * 5);
-        Dr.p += (bsClamp(Dr.v / 25, 0, 0.35) - Dr.p) * Math.min(1, dt * 5); Dr.spin += dt * (Dr.y > s0 + 0.05 || Dr.v > 0.1 || vin > 0 ? 60 : 0); showDrone();
+        if (Dr.flip != null) { Dr.flip += dt / 0.8; Dr.r = Math.PI * 2 * Math.min(1, Dr.flip); if (Dr.flip >= 1) { Dr.flip = null; Dr.r = 0; } } else Dr.r += (bank - Dr.r) * Math.min(1, dt * 5);
+        Dr.p += (bsClamp(Dr.v / 25, -0.2, 0.35) - Dr.p) * Math.min(1, dt * 5); Dr.spin += dt * (Dr.y > s0 + 0.05 || Math.abs(Dr.v) > 0.1 || Math.abs(Dr.yr) > 0.1 || vin > 0 ? 60 : 0); showDrone();
         if ((gripLook -= dt) <= 0) { gripLook = 0.25; if (gripBtn.hidden) gripBtn.hidden = false; if (gripBtn.textContent !== "360") gripBtn.textContent = "360"; gripBtn.classList.remove("on"); }
         const home = R6()?.floorAt(Dr.x, Dr.z, Dr.y) != null; hint(home && R6().ceilAt(Dr.x, Dr.z, Dr.y) != null ? (touch ? "Push the left stick forward: out the front door" : "W: out the front door") : "");
         const up = home ? Dr.y - s0 : Dr.y - ground(Dr.x, Dr.z); Dr.air = home || up > 0.3;
-        o = Dr; D = home ? 2.4 : 3.6 + Math.min(4, Dr.v / 5); text = Math.round(Dr.v * 3.6) + " km/h" + (up > 1.5 ? " \u00b7 " + Math.round(up) + " m up" : "");
+        o = Dr; D = home ? 2.4 : 3.6 + Math.min(4, Math.abs(Dr.v) / 5); text = Math.round(Math.abs(Dr.v) * 3.6) + " km/h" + (up > 1.5 ? " \u00b7 " + Math.round(up) + " m up" : "");
       } else if (veh === "pigeon") { const P = pg, U = P.up, G = P.gold ? 1.35 : 1, VPG = 52 / 3.6, flapK = has("Space") || !!F.boost, dive = has("KeyC") || !!F.hand, fast = has("ShiftLeft", "ShiftRight");  // (Dive: C, or the Dive button. Ash, 18 November 2026: "Pigeon needs a dive button that speeds him towards the ground. Not too fast")
         P.t += dt; const mag = Math.min(1, Math.hypot(str, thr)), goH = mag > 0.15 ? F.yaw + Math.PI + Math.atan2(-str, thr) : P.h, turn = wrap(goH - P.h);
         if (P.mode === "ground") {  // walking: it turns quick to the way the stick points and potters off; Jump (Flap) takes off
@@ -21317,9 +21343,9 @@ const handle = async (m, post) => {
         document.body.classList.add("bsdrive", "bsride"); T.peers?.ride?.(q.id, true); toast(`You're riding with ${q.name}. Look around with the right stick.`, 3000); }
       else if (c.possum) { if (!townPerks().wasPossum) townPerkSet("wasPossum", true); veh = "possum"; pos.v = 0; pos.jumped = true; camYaw = pos.h + Math.PI; document.body.classList.add("bsdrive", "bspossum");
         loadTrees(); const wait = loadRoofs(); if (wait) { toast("Loading the roofs\u2026", 8000); wait.then(() => { if (veh === "possum") toast("Ready.", 1200); }); } }  // (no Up and Down: Jump sits where Boost does, over the right stick)
-      else if (c.remote) { veh = "drone"; dr.home = { x: F.pos.x, y: F.pos.y, z: F.pos.z, yaw: F.yaw, pitch: F.pitch }; dr.v = 0; dr.vy = 0; camYaw = dr.h + Math.PI; document.body.classList.add("bsdrive", "bsplane"); gripLook = 0;
+      else if (c.remote) { veh = "drone"; dr.home = { x: F.pos.x, y: F.pos.y, z: F.pos.z, yaw: F.yaw, pitch: F.pitch }; dr.v = 0; dr.vy = 0; dr.yr = 0; camYaw = dr.h + Math.PI; document.body.classList.add("bsdrive", "bsplane", "bsdrone"); gripLook = 0;
         if (T.cfg?.place === "moo") loadRoofs();
-        toast(touch ? "Flying the drone! Left stick to fly, Up and Down to climb and drop, Boost to go faster. Get out to go back to you." : "Flying the drone! W A S D to fly, Space up, C down, Shift boost, Q for a 360. E puts the remote down.", 5500); }
+        toast(touch ? "Flying the drone! Left stick to fly, Up and Down to climb and drop, Boost to go faster. Get out to go back to you." : "Flying the drone! W and S forward and back, A and D turn, Space up, C down, Shift boost, Q for a 360. E puts the remote down.", 5500); }
       else if (c.pigeon) { veh = "pigeon"; pg.v = 0; pg.flapped = true; pg.up = townPerks().pigeon || null; gripLook = 0; pg.qAt = 0; pg.power = null;
  camYaw = pg.h + Math.PI; document.body.classList.add("bsdrive", "bspossum");
         loadTrees(); const wait = loadRoofs(); if (wait) { toast("Loading the roofs\u2026", 8000); wait.then(() => { if (veh === "pigeon") toast("Ready.", 1200); }); }
@@ -21471,7 +21497,7 @@ const handle = async (m, post) => {
     let peerShown = false;
     C.pose = () => veh === "ride" ? null : veh === "possum" ? { k: "possum", x: pos.x, y: pos.y, z: pos.z, h: pos.h, p: pos.p, r: 0 } : veh === "drone" ? { k: "drone", x: dr.x, y: dr.y, z: dr.z, h: dr.h, p: dr.p, r: dr.r } : veh === "pigeon" ? { k: pg.gold ? "goldpigeon" : "pigeon", x: pg.x, y: pg.y, z: pg.z, h: pg.h, p: pg.p, r: pg.r } : veh === "car" ? { k: car.bus ? "bus" : car.gold ? "gold" : "car", x: car.x, y: car.y, z: car.z, h: car.h + (car.spinY || 0), p: car.p, r: car.r + (car.roll || 0) }
       : veh ? { k: plane.heli ? (plane.gold ? "goldheli" : "heli") : plane.gold ? "goldplane" : "plane", x: plane.x, y: plane.y, z: plane.z, h: plane.h, p: plane.p, r: plane.r + (plane.roll || 0) } : null;
-    C.where = () => veh === "ride" ? { kind: "ride", with: ride.name } : veh === "pigeon" ? { kind: "pigeon", x: pg.x, y: pg.y, z: pg.z, heading: pg.h, speed: pg.v } /* (it fell through to the plane's, and threw) */ : veh === "possum" ? { kind: "possum", x: pos.x, y: pos.y, z: pos.z, heading: pos.h, speed: pos.v, mode: pos.mode, up: pos.y - ground(pos.x, pos.z) } : veh === "car" ? { kind: "car", gold: !!car.gold, bus: !!car.bus, x: car.x, z: car.z, heading: car.h, dir: car.dir, speed: car.v, charge } : veh ? { kind: "plane", heli: !!plane.heli, x: plane.x, y: plane.y, z: plane.z, heading: plane.h, pitch: plane.p, speed: plane.v, air: plane.air } : null;  // for checking
+    C.where = () => veh === "ride" ? { kind: "ride", with: ride.name } : veh === "pigeon" ? { kind: "pigeon", x: pg.x, y: pg.y, z: pg.z, heading: pg.h, speed: pg.v } /* (it fell through to the plane's, and threw) */ : veh === "drone" ? { kind: "drone", x: dr.x, y: dr.y, z: dr.z, heading: dr.h, speed: dr.v } /* (so did the drone) */ : veh === "possum" ? { kind: "possum", x: pos.x, y: pos.y, z: pos.z, heading: pos.h, speed: pos.v, mode: pos.mode, up: pos.y - ground(pos.x, pos.z) } : veh === "car" ? { kind: "car", gold: !!car.gold, bus: !!car.bus, x: car.x, z: car.z, heading: car.h, dir: car.dir, speed: car.v, charge } : veh ? { kind: "plane", heli: !!plane.heli, x: plane.x, y: plane.y, z: plane.z, heading: plane.h, pitch: plane.p, speed: plane.v, air: plane.air } : null;  // for checking
     C.reread = () => { Object.assign(R, townPerkRide(rideSettings())); if (BS.raceRide && C.spdK) R.carAccel /= C.spdK; };
     // ---- for the race (townRace): its car and handicap, the power-ups, and changing to the plane and the possum on the way round
     C.raceRide = RR => { BS.raceRide = RR || null; const k = RR ? bsClamp(+RR.hc || 0, 0, 8) : 0;
