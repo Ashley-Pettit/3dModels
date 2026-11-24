@@ -2402,7 +2402,7 @@ body.bsfly .toast.show { transform: translate(-50%, 0); }
     <div class="bs-fly-time bs-town-tide" id="bsTownTide" hidden><span>Tide</span><input type="range" id="bsTownTideIn" step="0.05" aria-label="Tide level"><output id="bsTownTideOut" for="bsTownTideIn"></output></div>
     <div class="bs-height" id="bsHeight" hidden aria-hidden="true"></div>
     <span class="bs-hires" id="bsHiRes" role="status" aria-label="Loading the sharper view" title="Loading the sharper view" hidden><i></i></span>
-    <div class="bs-town-mode" id="bsTownMode" role="group" aria-label="Explore mode" data-key="F" hidden><button type="button" data-town-mode="explore" aria-pressed="false">Explore mode</button></div>
+    <div class="bs-town-mode" id="bsTownMode" role="group" aria-label="Explore or Free view" data-key="F" hidden><button type="button" data-town-mode="walk" aria-pressed="true">Explore</button><button type="button" data-town-mode="free" aria-pressed="false">Free view</button></div>
     <div class="bs-town-list" id="bsTownList" role="menu" aria-label="Places to jump to" hidden></div>
     <div class="bs-town-list bs-town-floods" id="bsTownFloods" role="menu" aria-label="Floods to show on the map" hidden></div>
     <div class="bs-slides" role="group" aria-label="Street names, tide, time and flood"><button class="bs-fly-x bs-ic" type="button" id="bsNamesBtn" data-key="N" aria-pressed="false" aria-label="Street names" title="Show street names (N)" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M9 21h6"/><path d="M5 5h11l3 2.5L16 10H5z"/><path d="M19 12H8l-3 2.5L8 17h11z"/></svg></button><button class="bs-fly-x" type="button" id="bsTideBtn" aria-controls="bsTownTide" aria-expanded="false" hidden>Tide</button><button class="bs-fly-x" type="button" id="bsTimeBtn" aria-controls="bsFlyTimeBox" aria-expanded="false" aria-label="Time of day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span id="bsTimeBtnT">Time</span></button><button class="bs-fly-x" type="button" id="bsGpsBtn" data-key="I" aria-pressed="false" aria-label="GPS: directions to an address" title="GPS: directions to an address (I)" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 10.5 20 4l-6.5 16.5-2.3-7.2z"/></svg><span>GPS</span></button><button class="bs-fly-x bs-town-flood" type="button" id="bsTownFlood" data-key="L" aria-haspopup="menu" aria-expanded="false" aria-pressed="false" hidden>Flood</button></div>
@@ -8812,12 +8812,12 @@ const handle = async (m, post) => {
         ["Walk", "Hold W, or hold the right mouse button. A S D step left, back and right.", () => F.tutWalk > 8],
         ["Scroll to move", "Scroll the wheel up to go forwards, down to go back. It works in cars and helicopters too.", () => F.wheelN - F.tutWheel0 >= 3],
         ["Jump", "Press Space.", () => (F.jumpH || 0) > 0.05],
-        ["Explore mode", "Press F to see the whole town from above. Press F again to come back to where you were.", () => F.tutExplored && T.walk],
+        ["Free view", "Press F to see the whole town from above. Press F again to come back to where you were.", () => F.tutExplored && T.walk],
         ["Get in something", "Walk up to a car, plane or the possum and press E (E again to get out).", () => !!F.drive],
         ["That's it", "J jumps to a place, Enter chats, K frees the mouse for the menus, O is full screen. Have fun!", null]]
       : [["Look around", "Drag the right stick, or the right half of the screen.", () => F.tutTurn > 1.2],
         ["Walk", "Push the left stick the way you want to go.", () => F.tutWalk > 8],
-        ["Explore mode", "Tap Explore mode at the top to see the whole town. Tap it again to come back.", () => F.tutExplored && T.walk],
+        ["Free view", "Tap Free view at the top to see the whole town. Tap Explore to come back.", () => F.tutExplored && T.walk],
         ["Get in something", "Walk up to a car, plane or the possum and tap the Get in button.", () => !!F.drive],
         ["That's it", "Jump to (top) takes you to a place. Have fun!", null]];
       const card = document.createElement("div"), h = document.createElement("b"), p = document.createElement("span"), row = document.createElement("div"), next = document.createElement("button"), skip = document.createElement("button");
@@ -8917,9 +8917,9 @@ const handle = async (m, post) => {
           card.append(el("h2", "", `Welcome to ${place}`));
           let inp = null; if (needName) { const lab = el("label", "bs-wel-lbl", "Your player name"); inp = el("input"); inp.type = "text"; inp.maxLength = 16; inp.autocomplete = "off"; inp.placeholder = "So other players know you"; inp.id = "bsWelName"; lab.htmlFor = "bsWelName";
             inp.onkeydown = inp.onkeyup = e => e.stopPropagation(); inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); play(); } }); card.append(lab, inp); }
-          let gm = ls("an3d-style") === "gmaps"; const seg = el("div", "bs-wel-seg"); seg.setAttribute("role", "radiogroup"); seg.setAttribute("aria-label", "Style");
+          let gm = false; const seg = el("div", "bs-wel-seg"); seg.setAttribute("role", "radiogroup"); seg.setAttribute("aria-label", "Style");
           const opt = (v, t, s) => { const b = el("button"); b.type = "button"; b.setAttribute("role", "radio"); b.append(el("b", "", t), el("span", "", s)); b.onclick = () => { gm = v; draw(); }; return b; };
-          const std = opt(false, "Standard", touch ? "Walk the streets with the sticks" : "Walk the streets, game controls"), gmb = opt(true, "Google Maps controls", touch ? "Map from above: drag, pinch, twist" : "Drag to look, scroll to zoom, right-drag to turn. Mouse stays free");
+          const std = opt(false, "Play as explorer", touch ? "Walk the streets with the sticks" : "Walk the streets, game controls"), gmb = opt(true, "Google Maps controls", touch ? "Map from above: drag, pinch, twist" : "Drag to look, scroll to zoom, right-drag to turn. Mouse stays free");
           seg.append(std, gmb); card.append(el("p", "bs-wel-lbl", "Style"), seg);
           const tick = (t, on) => { const l = el("label", "bs-wel-tick"), c = el("input"); c.type = "checkbox"; c.checked = on; l.append(c, el("span", "", t)); return [l, c]; };
           const [fsL, fsC] = needFs ? tick("Play full screen (O switches it any time)", true) : [null, null];
@@ -9488,11 +9488,11 @@ const handle = async (m, post) => {
         tideBtn.setAttribute("aria-expanded", "false"); tideBtn.onclick = () => { tideBox.hidden = !tideBox.hidden; tideBtn.setAttribute("aria-expanded", String(!tideBox.hidden)); };  // Moorooka has no tide to move
         const setMode = (walk, to) => { if (walk && F.home) { if (F.home.veh && T.car?.held?.()) T.car.drop?.(); F.home = null; }  // (Jump to from Explore mode, while in a car: it was left held, and you stuck half in it)
           T.walk = walk; T.car?.walkKeys?.(walk); document.body.classList.toggle("bswalk", walk); F.walk = walk ? () => ground() + (T.bal6 ? T.bal6.eye(F.eye) : F.eye) : null; tideBtn.hidden = walk || !tidal; tideBox.hidden = tideBtn.hidden || tideBtn.getAttribute("aria-expanded") !== "true"; F.lim = walk ? inner : outer;
-          modeBox.querySelectorAll("button").forEach(bn => bn.setAttribute("aria-pressed", String(!walk)));
+          modeBox.querySelectorAll("button").forEach(bn => bn.setAttribute("aria-pressed", String((bn.dataset.townMode === "walk") === walk)));
           if (F.on?.freeFor) F.on.freeFor(); else if (document.pointerLockElement) document.exitPointerLock?.();
           F.vert = 0; F.keys.clear();  // (the sticks are left alone: a thumb still on one carries on, and lifting it centres it)
           // one set of controls for every town model (Inverloch, Moorooka, Logan)
-          if (touch) tip.textContent = walk ? "Left stick to walk, right stick to look around." : "Explore mode: drag the view, pinch to zoom, two fingers to turn. Your player stays where you left them.";
+          if (touch) tip.textContent = walk ? "Left stick to walk, right stick to look around." : "Free view: drag the view, pinch to zoom, two fingers to turn. Your player stays where you left them.";
           else bsTip(!walk && T.car && document.body.classList.contains("bsgmap") ? "Click a car to get in it. ? hides the buttons" : "? hides the buttons");  // (no list of keys: the buttons have their keys on them)
           tip.classList.remove("dim"); clearTimeout(F.tipT); F.tipT = setTimeout(() => tip.classList.add("dim"), 7000);
           T.tween = to ? { a: { x: F.pos.x, y: F.pos.y, z: F.pos.z, yaw: F.yaw, pitch: F.pitch }, b: to, t0: performance.now(), ms: 900 } : null; };
@@ -9515,7 +9515,7 @@ const handle = async (m, post) => {
         // (and on your feet somewhere, facing a way: to walk up to the race's host, Inverloch's Ash)
         T.standAt = (x, z, yaw, pitch = -0.06) => { T.car?.out?.(); T.tween = null; if (!T.walk) setMode(true); F.pos.set(x, ground(x, z) + F.eye, z); F.yaw = yaw; F.pitch = pitch; };
         T.firstWalk = () => { const fw = T.first?.walk; return fw ? { x: fw.x, y: ground(fw.x, fw.z) + F.eye, z: fw.z, yaw: fw.yaw, pitch: fw.pitch } : null; };
-        modeBox.onclick = e => { const bn = e.target.closest("[data-town-mode]"); if (!bn) return; toMode(!T.walk); bn.blur(); };
+        modeBox.onclick = e => { const bn = e.target.closest("[data-town-mode]"); if (!bn) return; toMode(bn.dataset.townMode === "walk"); bn.blur(); };  // (Explore or Free view: the side you tap)
         // Google Maps style (Ash, 19 November 2026: Standard or Google Maps, "Both" the controls and the look): the map from above (Explore
         // mode, with its drag, pinch and twist), in map colours; your player waits where you were, under the You are here pin
         BS.mapStyle = (on, start) => { try { localStorage.setItem("an3d-style", on ? "gmaps" : "std"); } catch {} document.body.classList.toggle("bsgmap", on);
@@ -17228,7 +17228,7 @@ const handle = async (m, post) => {
   // his device (an-keys) and sent to the town planner's topic (k: "keys"), which tools/plans.py keeps, so it can be looked at later
   const townIsRod = () => { let n = ""; try { n = (localStorage.getItem("an-player") || "").trim(); } catch {} return /^rod(ney)?\b/i.test(n) || (!n && isRod()); };
   const ROD_ACTIONS = { walk: [["fwd", "KeyW", "Walk forwards"], ["back", "KeyS", "Walk backwards"], ["left", "KeyA", "Step left"], ["right", "KeyD", "Step right"],
-      ["run", "ShiftLeft", "Run"], ["jump", "Space", "Jump"], ["getin", "KeyE", "Get in a car"], ["explore", "KeyF", "Explore mode"]],
+      ["run", "ShiftLeft", "Run"], ["jump", "Space", "Jump"], ["getin", "KeyE", "Get in a car"], ["explore", "KeyF", "Free view"]],
     car: [["go", "KeyW", "Go (accelerate)"], ["brake", "KeyS", "Brake and reverse"], ["left", "KeyA", "Steer left"], ["right", "KeyD", "Steer right"],
       ["boost", "ShiftLeft", "Boost"], ["hand", "Space", "Handbrake"], ["getout", "KeyE", "Get out"]] };
   const keyName = c => !c ? "?" : { Space: "Space", ShiftLeft: "Shift", ShiftRight: "Right Shift", ControlLeft: "Ctrl", ControlRight: "Right Ctrl", AltLeft: "Alt", AltRight: "Right Alt",
@@ -17609,11 +17609,12 @@ const handle = async (m, post) => {
         bn.onclick = () => { try { localStorage.setItem("an-player-colour", String(i)); } catch {} tell(); meDraw(); meBox.querySelector(`.bs-me-tops button:nth-child(${i + 1})`)?.focus(); }; row.append(bn); });
       you.append(lab, inp, el("span", "bs-me-lbl", "Top colour"), row, el("p", "", "Your name shows over you. Pick one you are happy for anyone to see."));
       // play as an explorer or a construction worker (who sees themselves from behind and can suggest changes to the ground)
-      // Standard or Google Maps style, here too, for once the welcome card has gone (Ash, 19 November 2026)
+      // Standard or Google Maps style, here too, for once the welcome card has gone (Ash, 19 November 2026). Standard is "Play as explorer"
+      // now (Ash, 24 November 2026: "Make play as explorer - relabel standard. This should be the default"), and the welcome card starts on it
       const st = el("div", "bs-me-sec"); { const sr = el("div", "bs-me-role"); sr.setAttribute("role", "group"); sr.setAttribute("aria-label", "Style");
         const gmNow = (() => { try { return localStorage.getItem("an3d-style") === "gmaps"; } catch { return false; } })();
-        for (const [v, label] of [[false, "Standard"], [true, "Google Maps"]]) { const bn = el("button", "", label); bn.type = "button"; bn.setAttribute("aria-pressed", String(gmNow === v));
-          bn.onclick = () => { if (gmNow === v) return; meClose(); BS.mapStyle?.(v); toast(v ? "Google Maps style: the map from above. Explore mode brings you back down to walk." : "Standard style: on foot, with the game controls.", 2800); }; sr.append(bn); }
+        for (const [v, label] of [[false, "Play as explorer"], [true, "Google Maps"]]) { const bn = el("button", "", label); bn.type = "button"; bn.setAttribute("aria-pressed", String(gmNow === v));
+          bn.onclick = () => { if (gmNow === v) return; meClose(); BS.mapStyle?.(v); toast(v ? "Google Maps style: the map from above. Explore brings you back down to walk." : "Playing as explorer: on foot, with the game controls.", 2800); }; sr.append(bn); }
         st.append(el("span", "bs-me-lbl", "Style"), sr); }
       const as = el("div", "bs-me-sec"), rl = el("div", "bs-me-role"); rl.setAttribute("role", "group"); rl.setAttribute("aria-label", "Play as");
       for (const [v, label] of [["explorer", "Explorer"], ["builder", "Construction worker"]]) { const bn = el("button", "", label); bn.type = "button"; bn.setAttribute("aria-pressed", String(townRole() === v));
@@ -20560,7 +20561,7 @@ const handle = async (m, post) => {
     KEYS.heli = [[["W", "S"], "Forward, back"], [["A", "D"], "Turn (\u2190 and \u2192 too)"], [["\u2193"], "Up (Space too)"], [["\u2191"], "Down (C too)"], [["Drag"], "Look around"], [["E"], "Get out, once you have landed"]];
     // on foot, on a computer: the buttons for getting in, Boost and getting out are not shown there, so the keys are listed instead
     // (Ash, 15 November 2026: "On computer hide emote and get in the car, instead show as controls")
-    KEYS.walk = [[["W", "A", "S", "D"], "Walk (the arrows too)"], [["Shift"], "Run"], [["Mouse"], "Look around (K locks the mouse for the menus, and unlocks it)"], [["O"], "Full screen"], [["E"], "Get in the car, plane or possum nearby"], [["F"], "Explore mode on or off (your player stays put)"], [["Enter"], "Chat"], [["Space"], "Jump"], [["?"], "Hide the buttons, for a clean view"]];
+    KEYS.walk = [[["W", "A", "S", "D"], "Walk (the arrows too)"], [["Shift"], "Run"], [["Mouse"], "Look around (K locks the mouse for the menus, and unlocks it)"], [["O"], "Full screen"], [["E"], "Get in the car, plane or possum nearby"], [["F"], "Free view on or off (your player stays put)"], [["Enter"], "Chat"], [["Space"], "Jump"], [["?"], "Hide the buttons, for a clean view"]];
     // a few keys back, bottom left: only the ones without a button on the screen (Ash, 17 November 2026: "Add back here a few key
     // controls, don't include those that are already on the screen"); none for the possum
     const KEYS_FEW = { walk: [[["W", "A", "S", "D"], "Walk"], [["Right click"], "Walk forwards"], [["Scroll"], "Forwards and back"], [["Shift"], "Run"], [["Space"], "Jump"], [["Mouse"], "Look around"]],
