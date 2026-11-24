@@ -1,0 +1,24 @@
+name: Explore PR check
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run Explore fixtures
+        run: node --test tools/test-inverloch-*.cjs tools/test-inverloch-*.mjs
+      - name: Build Pages
+        run: python3 build.py _site
+      - name: Verify published routes and revision
+        run: python3 tools/check-explore-pages.py _site "$GITHUB_SHA"
