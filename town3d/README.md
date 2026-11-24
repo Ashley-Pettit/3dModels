@@ -3270,3 +3270,18 @@ slow software renderer, not the app).
 Not done: the far-off ground picture (`ground.webp` and the detail tiles) still has the old edges until the sharper ground loads; the
 arms themselves are as mapped (the south arm's kerb and footpath lie about a metre nearer the island than in the photograph); the
 park side's curve is still the mapped line's 4 m straights.
+
+## Ash's letterbox: a bigger icon, a little higher, and letters sent from it (25 November 2026)
+
+Ash: "Make the letterbox icon slightly bigger and just slightly higher. Allow me to also send mail from my mailbox". In `app.html`
+(`.bs-peer.bs-tap`, `MOO_LOCALS`, `townMail`):
+
+- **The icon** is 33 px (28 before) with its 📬 at 18 px (15), and sits 0.15 m higher (`tagY` 1.45; the green envelope with it, `markY`
+  2.0). It still hides while it would overlap a stick with 16 px to spare (`overSticks` now takes 17 px as half the icon).
+- **Sending from the letterbox:** its card now has the post office's To and Letter boxes and Send it under his letters (`write()`, shared
+  by `P.card` and `P.box`), with the same three letters every 5 minutes and the same offer to share the app afterwards. Anyone else
+  tapping number 6's letterbox is still told their letters are at the post office.
+
+Checked on a local build at phone size as Ash, standing at the pier: the icon before and after, the card, and a letter typed and sent
+(the post caught by the test, not sent: one message, to, from and text as typed). Explore's input and loading are not touched; the
+two-finger test in Moorooka is in the pull request.
