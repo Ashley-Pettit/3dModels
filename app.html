@@ -15146,7 +15146,9 @@ const handle = async (m, post) => {
   // number 10's back stairs (the model's detailed house next door, near-6-1rp130916) ran down through the fence into number 6's yard, by
   // the balcony (Ash, 23 November 2026: "Remove ... the stairs that go through the fence from the neighbours house"). The model leaves them
   // off and closes the landing with a rail when this says no (moorooka-model.js ?v=66).
-  window.anDetailStairs = (id, which) => !(id === "near-6-1rp130916" && which === "back");
+  // (and the back stairs of the house north of number 6, 1RP65197 with the red trim, which ran down through the fence beside number 6: Ash,
+  // 24 November 2026, "remove these stairs in the fence")
+  window.anDetailStairs = (id, which) => !((id === "near-6-1rp130916" || id === "near-6-1rp65197") && which === "back");
   function townBalcony6(T, m) {
     const THREE = BS.B.THREE, B = MOO_BAL6, V = THREE.Vector3;
     // ---- the frame: the survey's outline gives the house's centre, its depth (dB, to the back) and width (dS, to the south). Here, as in
