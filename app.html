@@ -1279,6 +1279,9 @@ body.bstown .bs-ud { top: auto; right: auto; left: 50%; bottom: calc(22px + env(
 .bs-upchip b { font-weight: 600; }
 .bs-upchip .bs-upshort { display: block; font-weight: 500; opacity: 0.86; }
 .bs-upchip[hidden], body.bsheld .bs-upchip { display: none; }
+#bsGpsBtn.bsflash { animation: bsGpsFlash 0.6s ease-in-out 2; }  /* getting into a car: the GPS flashes green twice (Ash, 25 November 2026) */
+@keyframes bsGpsFlash { 50% { background: #2fb34a; color: #fff; box-shadow: 0 0 12px #2fb34a; } }
+@media (prefers-reduced-motion: reduce) { #bsGpsBtn.bsflash { animation-duration: 0.9s; } }
 .bs-hires { position: absolute; top: calc(104px + env(safe-area-inset-top)); left: 16px; z-index: 2; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; pointer-events: none;
   background: rgba(20, 24, 32, 0.5); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.14); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 .bs-hires i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.28); border-top-color: #ffd36b; animation: exspin 0.9s linear infinite; }
@@ -19383,13 +19386,27 @@ const handle = async (m, post) => {
     const suggestions = () => { const [hx, hz] = here(), far = (x, z) => Math.hypot(x - hx, z - hz), dist = d => d < 1000 ? `${Math.max(10, Math.round(d / 10) * 10)} m` : `${(d / 1000).toFixed(1)} km`;
       const near = (list, n) => list.map(p => ({ ...p, d: far(p.x, p.z) })).sort((a, b) => a.d - b.d).slice(0, n).map(p => ({ text: p.text, sub: [dist(p.d), p.sub].filter(Boolean).join(" · "), x: p.x, z: p.z, label: p.label || p.text }));
       const out = [], group = (head, list) => { if (list.length) out.push({ head }, ...list); }, seen = new Set(), once = p => { const k = p.text.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; };
+      // (more of each, and two more groups: what you can ride or fly, where it waits, and Inverloch's town centre shops. Ash, 25 November
+      // 2026: "Add more suggested places to the gps")
       if (cfg.place === "moo") {
         if (isAsh()) { seen.add("6 beaudesert road"); group("Home", [{ text: "6 Beaudesert Road", sub: dist(far(-262.4, -991.1)), x: -262.4, z: -991.1, label: "6 Beaudesert Road, Moorooka" }]); }
-        const mp = mooPlaces(); group("Places to eat", near(mp.filter(p => p.food).map(p => ({ text: p.name, sub: p.what, x: p.x, z: p.z, label: p.addr ? `${p.name}, ${p.addr}` : p.name })).filter(once), 5));
-        group("Shops", near(mp.filter(p => !p.food).map(p => ({ text: p.name, sub: p.what, x: p.x, z: p.z, label: p.addr ? `${p.name}, ${p.addr}` : p.name })).filter(once), 5)); }
-      group(cfg.place === "moo" ? "On the map" : "Places on this map", near(G.places.filter(p => p.walk && p.name).map(p => ({ text: p.name[0].toUpperCase() + p.name.slice(1), sub: p.what || "", x: p.walk.x, z: p.walk.z })).filter(once), cfg.place === "moo" ? 6 : 12));
+        const mp = mooPlaces(); group("Places to eat", near(mp.filter(p => p.food).map(p => ({ text: p.name, sub: p.what, x: p.x, z: p.z, label: p.addr ? `${p.name}, ${p.addr}` : p.name })).filter(once), 10));
+        group("Shops", near(mp.filter(p => !p.food).map(p => ({ text: p.name, sub: p.what, x: p.x, z: p.z, label: p.addr ? `${p.name}, ${p.addr}` : p.name })).filter(once), 10)); }
+      if (cfg.place === "inv") try { const T6 = INV_TOWN.s || [], named = T6.filter(q => typeof q[4] === "string" && q[4].trim()).map(q => { const [x, z] = m.fromLatLon(...townLL(q[0], q[1]));
+          const n = q[4].trim(), t = n === n.toUpperCase() ? n.toLowerCase().replace(/(^|[\s&-])[a-z]/g, c => c.toUpperCase()) : n; return { text: t, sub: "In the town centre", x, z, label: `${t}, Inverloch` }; });
+        group("In the town centre", near(named.filter(once), 10)); } catch {}
+      group("Things to ride", near(rideSpots().filter(once), 10));
+      group(cfg.place === "moo" ? "On the map" : "Places on this map", near(G.places.filter(p => p.walk && p.name && !/: the /.test(p.name)).map(p => ({ text: p.name[0].toUpperCase() + p.name.slice(1), sub: p.what || "", x: p.walk.x, z: p.walk.z })).filter(once), cfg.place === "moo" ? 12 : 20));
       // the people last (Ash, 23 November 2026: "Move the people down in priority for things on the gps")
-      if (cfg.place === "moo") group("People to see", near(MOO_LOCALS.filter(q => q.draw !== false && q.name && q.x != null).map(q => ({ text: q.name, x: q.x, z: q.z })).filter(once), 6));
+      if (cfg.place === "moo") group("People to see", near(MOO_LOCALS.filter(q => q.draw !== false && q.name && q.x != null).map(q => ({ text: q.name, x: q.x, z: q.z })).filter(once), 10));
+      return out; };
+    // where each plane, helicopter, car, the possum, the pigeon and the drone waits (not the golden car: it parks somewhere different each
+    // visit). "Kingwell Street: the possum" shows as "The possum", with "Kingwell Street" under it
+    const rideSpots = () => { const R = TOWN_RIDES[cfg.place] || {}, out = [];
+      for (const q of [...(R.planes || []), ...(R.cars || []), ...(R.more?.planes || []), ...(R.more?.cars || []), R.possum, R.pigeon, R.drone]) { if (!q || q.gold || q.park || !q.name) continue;
+        const x = Array.isArray(q.at) ? q.at[0] : q.x, z = Array.isArray(q.at) ? q.at[1] : q.z; if (!Number.isFinite(x) || !Number.isFinite(z)) continue;
+        const [where, what] = q.name.includes(": ") ? q.name.split(": ") : ["", q.name], text = what[0].toUpperCase() + what.slice(1);
+        out.push({ text, sub: where || (typeof q.at === "string" ? q.at[0].toUpperCase() + q.at.slice(1) : ""), x, z }); }
       return out; };
     // suggestions: places on this map first, then addresses
     const local = q => { const w = q.toLowerCase().trim(), st = w.replace(/^\d+[a-z]?\s+/, ""); if (!w) return [];
@@ -21702,7 +21719,10 @@ const handle = async (m, post) => {
         if (!car.own && !m.driveCar(c.id[0], c.id[1], car.x, car.y, car.z, car.h, 0, 0)) { car = null; toast("That car won't start. Try another one."); return true; }
         if (car.id) T.invStatic?.take(car.id);
         if (pos?.grip) { const r = pos.grip.ref; if (r === c.own || (r && Math.hypot(r.x - car.x, r.z - car.z) < 1.5)) { pos.grip.ref = car; toast("You're holding on to the roof. Off you go!", 2600); } }
-        veh = "car"; camYaw = car.h + Math.PI; document.body.classList.add("bsdrive"); showRing(charge < 0.999); }
+        veh = "car"; camYaw = car.h + Math.PI; document.body.classList.add("bsdrive"); showRing(charge < 0.999);
+        // the GPS button flashes green twice, to say you can use it now (Ash, 25 November 2026: "If I get into a car flash gps green twice
+        // to let the user know they can use it")
+        { const gb = $("bsGpsBtn"); if (gb) { gb.classList.remove("bsflash"); void gb.offsetWidth; gb.classList.add("bsflash"); setTimeout(() => gb.classList.remove("bsflash"), 1400); } } }
       if (veh === "car" && gmDesk() && !BS.gmDriveTip) { BS.gmDriveTip = true; setTimeout(() => { if (veh === "car" && !auto) toast("Hold the left mouse button to drive, and move the mouse left or right to steer. Hold the right button to brake and reverse. Or click the road and the car drives you there.", 8000); }, 700); }
       if (place === "inv") { trail.length = 0; unReset(); }
       C.in = true; camOff = null; camBack = 0; off = [wrap(F.yaw - camYaw), bsClamp(F.pitch + 0.2, -1, 0.55)]; idle = 0; last = [F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch];
