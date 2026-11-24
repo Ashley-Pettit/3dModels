@@ -2213,7 +2213,8 @@ Cost: `MOO_CORNER` is 26 KB in `app.html` (545 points, 891 triangles, 88 shrubs)
 13,600 triangles in one part on a phone and take about 50 ms to make on a slow test machine.
 
 To change the corner: edit `shapes.py`, `python3 zoom.py` to look, then `python3 corner.py ../../../app.html --kerbs KERBS.json --write`
-(KERBS.json: `window.anKerbDump = []` set before the model loads, saved after; without it no kerbs are left out).
+(KERBS.json: `window.anKerbDump = []` set before the model loads, saved after; without it no kerbs are left out); `look.py` saves it from a local
+build, see "The Bohain Street junction's outer sides" below).
 
 Not done: the far-off ground picture (`ground.webp` and the 16 detail tiles) still has the old corner under the new island, which
 covers it; the island's painted chevrons.
@@ -3233,3 +3234,39 @@ up down. This way is better for up down but I now can't adjust throttle. Is ther
   settles at the speed for that power, from flat out down to 58 km/h; under about 87 km/h it sinks, which is how it comes down to land.
   A bar beside the two buttons shows the power (yellow, full to empty) while it flies. On the ground, hold Faster to go and Slower to brake and back up.
 - The hints and the get-in and get-out messages say so. The helicopter, the drone and the keyboard are unchanged.
+
+## The Bohain Street junction's outer sides: the footpath, the lawn and the road's edge (25 November 2026)
+
+Ash, with a picture from above the park on his iPhone: "Fix this in the moorooka model. Note broken footpath, grass and road issue".
+East of the island, where Bohain Street's two arms become one street, the ground plan had each arm and the street at its own mapped
+width, so the road's edge jumped where they meet:
+
+- **Park side:** a bump of lawn 2 m into the road at the end of the north arm's curve, then the edge stepped 1.5 m back.
+- **House side (9 Bohain Street's corner):** a hook in the road's edge, lawn half a metre past the kerb's round corner.
+- **Footpath:** the south arm's footpath and the street's each ran 1.7 m behind its own kerb, so at the hook they stopped 1.5 m apart.
+
+Now (`tools/ground/beau_corner/shapes.py` `JN_*`, `corner.py`; `surface/2_6` and `3_6`, 38 m2 changed):
+
+- **Park side:** the road's edge follows the arm's curve to its end as the photograph has it (x -244.5), then runs straight to where the
+  street's mapped kerb is right again (x -211.87). The photograph has that stretch under trees, so the straight is inferred: a kerb
+  does not step sideways. The road is up to 1.8 m narrower there than the street data has it (about 8.7 m wide at x -240, 10.4 m from
+  x -212).
+- **House side:** the road's edge follows the kerb the model already draws round that corner.
+- **Footpath:** one strip round the corner, 1.62 to 2.88 m behind that kerb, from where the arm's path is right (x -250.6) to where the
+  street's is (x -237.4). The two old ends went to lawn.
+- **Kerbs** (they are drawn on the medium and sharp settings, not the light one): the model's six kerb points along the park side's old
+  edge are left out (6 more cells in `kerbOff`) and `MOO_CORNER.k` is that kerb on the new line, 37 m of it, the same size as the
+  model's (0.22 m wide). `townBowls` draws it only where the model draws kerbs (`hasKerbs()`: the light setting has no fences either),
+  and makes the medians again when the model that takes over draws kerbs and the last did not. Dumping the kerbs again: those six
+  points gone, nothing else changed, no new corner.
+- The beta page (`beta/app.html`) has the same change: it shares the ground plan and `kerbOff`.
+
+Checked on a local build with `tools/ground/beau_corner/look.py` (new: pictures from set views, and the kerb dump `corner.py` asks for):
+from above at desktop size, and Ash's view at phone size on the light setting and the sharper one. A second run of `corner.py` changes
+nothing. Explore's input and loading are not touched; the two-finger test in Moorooka held on the first go and after 30 s. In Logan and
+Inverloch it held after 30 s, and the first go misread the stick part way through its move, the same on `main` (the test's timing on a
+slow software renderer, not the app).
+
+Not done: the far-off ground picture (`ground.webp` and the detail tiles) still has the old edges until the sharper ground loads; the
+arms themselves are as mapped (the south arm's kerb and footpath lie about a metre nearer the island than in the photograph); the
+park side's curve is still the mapped line's 4 m straights.

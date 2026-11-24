@@ -6,7 +6,11 @@ What it makes:
   painted round the island and the give way line. Every point is lifted onto the ground by the app, so points are at most 2 m apart;
 - the ground plan round the island (surface blocks): asphalt up to its kerb, the island itself as bed and concrete;
 - kerbOff in town.json: the model's own kerbs along the island's sides (they follow the mapped streets, up to 2 m from the real kerb);
-- edits.json: the 16 strokes that painted the island by hand on 15 November 2026, which this replaces.
+- edits.json: the 16 strokes that painted the island by hand on 15 November 2026, which this replaces;
+- the junction's outer sides, east of the island (shapes.py JN_*; Ash, 25 November 2026: "Note broken footpath, grass and road issue"):
+  the ground plan's road edge along the park side's kerb line and along the house side's, the footpath carried round the house side's
+  corner behind that kerb, the park side's kerb as a strip for MOO_CORNER (k: drawn only where the model draws kerbs), and the model's
+  own kerb points along it added to kerbOff.
 
   python3 corner.py APP_HTML [--kerbs KERB_DUMP.json] [--write]      without --write it only reports, and saves corner.json for check.py
 KERB_DUMP.json is every kerb point the model draws (window.anKerbDump = [] before it loads, saved after)."""
@@ -131,6 +135,14 @@ JOIN = [round((E0[0] + W0[0]) / 2, 2), round((E0[1] + W0[1]) / 2, 2)]
 
 for ln in LINES:        # a point every 1.5 m at most along each line, so it follows the ground
     P = densify(ln[1:], 1.5, closed=False); ln[1:] = [[round(float(a), 2), round(float(b), 2)] for a, b in P]
+# ---- the park side's kerb east of the island (shapes.JN_KERB_N): a strip EDGE_W wide behind the road's edge, its top and the walls round it,
+# kept apart from the islands' (k in MOO_CORNER) because the app draws it only where the model draws kerbs
+KN = densify(S.JN_KERB_N, 2.0, closed=False); nk = normals(KN, closed=False)
+if (nk[:, 1] > 0).mean() > 0.5: nk = -nk                      # behind the kerb line is north here (the park)
+kf = [vid(p) for p in KN]; kb = [vid(p) for p in KN + nk * EDGE_W]; KTOP = []
+for i in range(len(KN) - 1): KTOP += [kf[i], kf[i + 1], kb[i + 1], kf[i], kb[i + 1], kb[i]]
+KSIDES = [kf[::-1] + kb + [kf[-1]]]                           # one run right round it, the strip on its right
+assert area(np.array([V[i] for i in KSIDES[0][:-1]])) > 0
 ntri = sum(len(v) for v in TOPS.values()) // 3
 print('island: %.0f m2, bed %.0f m2, %d shrubs | median end: %.0f m2, bed %.0f m2, %d shrubs' % (T['area'], T['bed'], T['shrubs'], N['area'], N['bed'], N['shrubs']))
 print(len(V), 'points,', ntri, 'top triangles,', sum(len(s) - 1 for s in SIDES), 'wall pieces,', len(LINES), 'lines')
@@ -144,6 +156,25 @@ conc = isl & ((Z < S.NOSE_Z) | plan.inside(S.PATH, X, Z) | plan.inside(S.PAD, X,
 P.K[isl & ~conc] = plan.OTHER; P.K[conc] = plan.CONC; P.K[~isl & (dist < 3.0)] = plan.ASPH
 changed = int((P.K != P.K0).sum()); print('ground plan: %d cells change (%.0f m2)' % (changed, changed * plan.MX * plan.MZ), {k: int(((P.K == k) & (P.K0 != k)).sum()) for k in range(4)})
 
+# ---- the junction's outer sides: the road's edge along each kerb line, and the footpath round the house side's corner
+def junction(P2):
+    X2, Z2 = P2.X, P2.Z; K = P2.K; soft = (K == plan.LAWN) | (K == plan.OTHER)
+    dn, sn, _ = plan.dist_to_line(S.JN_KERB_N, X2, Z2); n0, n1 = S.JN_KERB_N[0][0], S.JN_KERB_N[-1][0]       # + is south of a line that runs east
+    along = (X2 > n0) & (X2 < n1) & (dn < 2.6)
+    K[along & (sn > 0) & soft] = plan.ASPH; K[along & (sn < 0) & ((K == plan.ASPH) | (K == plan.OTHER))] = plan.LAWN      # (and the specks of bare ground left along the old edge)
+    ds, ss, _ = plan.dist_to_line(S.JN_KERB_S, X2, Z2); s0, s1 = S.JN_KERB_S[0][0] + 0.4, S.JN_KERB_S[-1][0] - 0.4
+    along = (X2 > s0) & (X2 < s1) & (ds < 2.6); soft = (K == plan.LAWN) | (K == plan.OTHER)
+    K[along & (ss < 0) & soft] = plan.ASPH; K[along & (ss > 0) & ((K == plan.ASPH) | (K == plan.OTHER))] = plan.LAWN
+    # the footpath: one band behind the kerb from where the south arm's path is right to where the street's is; what lay elsewhere on that verge goes
+    c0, c1 = -250.6, -237.4; verge = (X2 > c0) & (X2 < c1) & (ss > 0) & (ds < 4.3)
+    band = verge & (ds >= S.JN_PATH[0]) & (ds <= S.JN_PATH[1])
+    K[verge & (K == plan.CONC) & ~band] = plan.LAWN; K[band & (K != plan.ASPH)] = plan.CONC
+    return K
+P2 = plan.Plan(-256, -1042, -205, -1012)
+if WRITE: P.write(); P2 = plan.Plan(-256, -1042, -205, -1012)      # (the island's own change first: the two boxes share blocks)
+junction(P2); ch2 = P2.K != P2.K0
+print('junction: %d cells change (%.0f m2)' % (ch2.sum(), ch2.sum() * plan.MX * plan.MZ), {('other', 'lawn', 'asphalt', 'concrete')[k]: int((ch2 & (P2.K == k)).sum()) for k in range(4)})
+
 # ---- the model's kerbs to leave out: its kerb points on or within 2.6 m of the island
 t = json.load(open(plan.TOWN)); ko = np.frombuffer(base64.b64decode(t['kerbOff']), dtype='<i2').reshape(-1, 2); cells = {(int(a), int(b)) for a, b in ko}; new = set()
 if KERBS:
@@ -151,6 +182,12 @@ if KERBS:
     for q in json.load(open(KERBS)):
         x, z = q[1], q[2]
         if -282 < x < -246 and -1050 < z < -1002 and (PT.contains_point((x, z)) or to.query((x, z))[0] < 2.6):
+            c = (int(np.floor(x)), int(np.floor(z)))
+            if c not in cells: new.add(c)
+    kn = np.array(S.JN_KERB_N)
+    for q in json.load(open(KERBS)):                              # the park side: the model's kerb points along JN_KERB_N, between its ends
+        x, z = q[1], q[2]
+        if kn[0, 0] + 0.5 < x < kn[-1, 0] - 0.5 and plan.dist_to_line(S.JN_KERB_N, np.array([[x]]), np.array([[z]]))[0][0, 0] < 2.2:
             c = (int(np.floor(x)), int(np.floor(z)))
             if c not in cells: new.add(c)
     print('kerbs:', len(new), 'new cells to leave out', sorted(new))
@@ -162,18 +199,18 @@ for st in ed['paint']:
     if not old: keep.append(st)
 print('edits.json:', len(ed['paint']) - len(keep), 'strokes go,', len(keep), 'stay')
 
-for k, ix in TOPS.items():            # every top triangle wound the same way (anticlockwise from above: the app lights a face by its winding)
+for k, ix in list(TOPS.items()) + [(9, KTOP)]:            # every top triangle wound the same way (anticlockwise from above: the app lights a face by its winding)
     for i in range(0, len(ix), 3):
         A, B, C = (np.array(V[ix[i + j]]) for j in range(3))
         if (B[1] - A[1]) * (C[0] - A[0]) - (B[0] - A[0]) * (C[1] - A[1]) < 0: ix[i + 1], ix[i + 2] = ix[i + 2], ix[i + 1]
-out = dict(v=[c for p in V for c in p], t=[[k] + TOPS[k] for k in (0, 1, 2)], s=SIDES, b=[c for sh in SHRUBS for c in sh], l=LINES, j=JOIN)
-json.dump(dict(corner=out, tri=S.TRI, nose=nose), open(os.path.join(os.environ.get('BEAU_WORK', '/tmp'), 'corner.json'), 'w'))
+out = dict(v=[c for p in V for c in p], t=[[k] + TOPS[k] for k in (0, 1, 2)], s=SIDES, b=[c for sh in SHRUBS for c in sh], l=LINES, j=JOIN, k=dict(t=KTOP, s=KSIDES))
+json.dump(dict(corner=out, tri=S.TRI, nose=nose, kerb_n=S.JN_KERB_N, kerb_s=S.JN_KERB_S), open(os.path.join(os.environ.get('BEAU_WORK', '/tmp'), 'corner.json'), 'w'))
 if WRITE:
     num = lambda v: ('%.2f' % v).rstrip('0').rstrip('.') if isinstance(v, float) else str(v)
     arr = lambda a: '[' + ','.join(arr(x) if isinstance(x, list) else num(x) for x in a) + ']'
-    js = '{v:' + arr(out['v']) + ',t:' + arr(out['t']) + ',s:' + arr(out['s']) + ',b:' + arr(out['b']) + ',l:' + arr(out['l']) + ',j:' + arr(out['j']) + '}'
+    js = '{v:' + arr(out['v']) + ',t:' + arr(out['t']) + ',s:' + arr(out['s']) + ',b:' + arr(out['b']) + ',l:' + arr(out['l']) + ',j:' + arr(out['j']) + ',k:{t:' + arr(KTOP) + ',s:' + arr(KSIDES) + '}}'
     a = app.index('  const MOO_CORNER = '); b = app.index('\n', a); app = app[:a] + '  const MOO_CORNER = ' + js + ';' + app[b:]; open(APP, 'w', encoding='utf-8').write(app)
-    print('app.html: MOO_CORNER,', len(js), 'bytes'); print('surface blocks:', P.write())
+    print('app.html: MOO_CORNER,', len(js), 'bytes'); print('surface blocks:', P2.write())
     if new:        # town.json is one line: only the kerbOff string is changed
         allc = np.array(sorted(cells | new), dtype='<i2'); raw = open(plan.TOWN, encoding='utf-8').read(); m = re.search(r'"kerbOff":"[^"]*"', raw); assert m
         open(plan.TOWN, 'w', encoding='utf-8').write(raw[:m.start()] + '"kerbOff":"' + base64.b64encode(allc.tobytes()).decode() + '"' + raw[m.end():])
