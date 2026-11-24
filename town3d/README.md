@@ -3207,3 +3207,14 @@ yellow path only show the path to the next checkpoint."
     you slide round a corner or along a rail, not through it;
   - if you can't step anywhere at all, nothing takes a step back for 0.7 s.
 - **Eyes 2.4 m up** to start (Ash: "Starting height to 2.4"; was 2.6).
+
+### The plane's power on a phone (24 November 2026)
+
+Ash: "I don't know how I feel about the new plane controls in moorooka 3d. I now have no real way to slow down on phone. We previously had
+up down. This way is better for up down but I now can't adjust throttle. Is there a better way? Don't change heli or drone".
+- The left stick stays as it was: up and down climb and dive in the air, sideways turns; on the ground, up is power.
+- The two buttons between the sticks are back for the plane, now Faster and Slower. In the air they move a power lever that stays where
+  you leave it (a tap is a notch of 10%, holding moves it about 60% a second). It is full when the plane leaves the ground. The plane
+  settles at the speed for that power, from flat out down to 58 km/h; under about 87 km/h it sinks, which is how it comes down to land.
+  A bar beside the two buttons shows the power (yellow, full to empty) while it flies. On the ground, hold Faster to go and Slower to brake and back up.
+- The hints and the get-in and get-out messages say so. The helicopter, the drone and the keyboard are unchanged.
