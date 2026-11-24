@@ -1382,7 +1382,7 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 .bs-keys[hidden] { display: none; }
 /* another player's name, over them (townPeers) */
 .bs-peer { position: absolute; left: 0; top: 0; z-index: 1; padding: 3px 10px; border-radius: 999px; background: rgba(20, 22, 34, 0.82); color: #fff; font: 700 0.8rem/1.4 var(--ui); white-space: nowrap; pointer-events: none; will-change: transform; }
-.bs-peer.bs-tap { pointer-events: auto; cursor: pointer; width: 28px; height: 28px; padding: 0; display: grid; place-items: center; font-size: 15px; line-height: 1; background: rgba(20, 22, 34, 0.78); box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.7); }  /* a small icon you tap to open (the letterbox; Ash, 23 November 2026: "Make your letterbox way smaller") */
+.bs-peer.bs-tap { pointer-events: auto; cursor: pointer; width: 33px; height: 33px; padding: 0; display: grid; place-items: center; font-size: 18px; line-height: 1; background: rgba(20, 22, 34, 0.78); box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.7); }  /* a small icon you tap to open (the letterbox; Ash, 23 November 2026: "Make your letterbox way smaller"; 25 November 2026: "slightly bigger", 28 to 33 px) */
 .bs-peer.bs-tap[hidden] { display: none; }
 .bs-peer.bs-player { box-shadow: 0 0 0 2px #ffd166; }  /* real players only, not the town's people (Ash, 16 November 2026) */
 /* a player off the side of the screen or behind you: their name pinned to that edge, pointing their way, with how far (Ash, 16
@@ -18508,8 +18508,9 @@ const handle = async (m, post) => {
     // read mail at my letterbox at 6 Beaudesert"). Nobody stands there: walk up to it
     // (opened by a tap on its label, never by walking past: Ash, 23 November 2026, "I only want the letterbox to come up if I tap on it")
     // (its icon sits on the pier's street face at the slot, 1.3 m up, and the green mail mark just over the pier's cap: Ash, 23 November
-    // 2026, "Move that icon much closer to the real mailbox. Further back and lower so it's right on it")
-    { id: "letterbox", name: "\ud83d\udcec Your letterbox", x: -261.51, z: -990.8, draw: false, tap: true, tagY: 1.3, markY: 1.85 },
+    // 2026, "Move that icon much closer to the real mailbox. Further back and lower so it's right on it"; 25 November 2026, "slightly
+    // bigger and just slightly higher": 0.15 m up, the green mark with it)
+    { id: "letterbox", name: "\ud83d\udcec Your letterbox", x: -261.51, z: -990.8, draw: false, tap: true, tagY: 1.45, markY: 2.0 },
     // locals who pass on what they've heard, a different thing each time (Ash, 16 November 2026: "add some vendors that give information
     // like I heard of a love potion, I heard are helicopter around here (they don't know where) or similar, can you catch a possum for
     // me; I last saw it on kingwell street. I heard the chips from big boss are the best ever, that mechanic in town did some amazing
@@ -19886,7 +19887,7 @@ const handle = async (m, post) => {
     // the sticks' boxes on screen (16 px round them), looked up at most twice a second: a label you tap stays off them
     let joyR = [], joyT = 0; const overSticks = (x, y) => { const now = performance.now(); if (now - joyT > 500) { joyT = now; const b = box.getBoundingClientRect();
         joyR = [...document.querySelectorAll(".bs-joy")].map(e => e.getBoundingClientRect()).filter(r => r.width).map(r => [r.left - b.left - 16, r.top - b.top - 16, r.right - b.left + 16, r.bottom - b.top + 16]); }
-      return joyR.some(r => x + 14 > r[0] && x - 14 < r[2] && y + 14 > r[1] && y - 14 < r[3]); };
+      return joyR.some(r => x + 17 > r[0] && x - 17 < r[2] && y + 17 > r[1] && y - 17 < r[3]); };  // (17: half the icon, 33 px since 25 November 2026)
     const onScreen = (x, y, z) => { const cam = m.getCamera?.(); if (!cam) return null; const w = box.clientWidth, h = box.clientHeight, f = 1 / Math.tan(((m.fov ? m.fov() : 50) * Math.PI) / 360);
       const cp = Math.cos(cam.pitch), fx = -Math.sin(cam.yaw) * cp, fy = Math.sin(cam.pitch), fz = -Math.cos(cam.yaw) * cp, rx = Math.cos(cam.yaw), rz = -Math.sin(cam.yaw), ux = -fy * rz, uy = rz * fx - rx * fz, uz = fy * rx;
       const ax = x - cam.x, ay = y - cam.y, az = z - cam.z, depth = ax * fx + ay * fy + az * fz; if (depth < 1) return null;
@@ -20125,7 +20126,7 @@ const handle = async (m, post) => {
               q.parts.setMatrix(1, M.clone().multiply(S[0]).multiply(new THREE.Matrix4().makeRotationZ(-0.06)).multiply(new THREE.Matrix4().makeRotationX(toss ?? sw)).elements); q.parts.setMatrix(2, M.clone().multiply(S[1]).multiply(new THREE.Matrix4().makeRotationZ(0.06)).multiply(new THREE.Matrix4().makeRotationX(-sw)).elements); } } }
         // their name over their head while you're near enough to read it (Pandy's is townHome6's)
         if (q.id !== "pandy" && (q.id !== "letterbox" || isAsh())) { let s = d < 60 && up < 120 ? onScreen(q.x, g(q.x, q.z) + (q.tagY ?? 2.15), q.z) : null;
-          if (s && q.tap && overSticks(s[0], s[1] - 14)) s = null;  // (a label you tap never sits over a stick, where a thumb on the stick could catch it)
+          if (s && q.tap && overSticks(s[0], s[1] - 17)) s = null;  // (a label you tap never sits over a stick, where a thumb on the stick could catch it)
           q.tag.hidden = !s; if (s) q.tag.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; }
         // the green mark: they've news for you
         // (and Flick, near her, when she's pigeon food for you: Ash, 21 November 2026, "make flick have a little green icon if near her and
@@ -20173,22 +20174,27 @@ const handle = async (m, post) => {
       try { const r = await fetch(TOWN_MAIL, { method: "POST", body: JSON.stringify({ k: "mail", v: 1, id: Math.random().toString(36).slice(2, 12), to, from: playerName(), text }) }); if (!r.ok) throw 0; }
       catch { return "The post didn't go. Check your connection and try again."; }
       put("an3d-mail-sent", [...s, Date.now()]); return null; };
-    // the post office card: your letters, and a new one to send
-    P.card = (q, show, shut) => { const box = document.createElement("div"); box.className = "bs-mail"; const seen = read(), mine = P.letters.slice().sort((a, b) => b.t - a.t).slice(0, 6);
-      if (mine.length) { const h = document.createElement("small"); h.textContent = "Your letters"; box.append(h); for (const l of mine) { const p = document.createElement("p"); p.className = seen.has(l.id) ? "" : "new"; p.textContent = `${l.from}: “${l.text}”`; box.append(p); } markRead(mine.map(l => l.id)); }
+    // writing a letter: who it's to, the letter, and the Send it button (the post office's card and, since 25 November 2026, Ash's letterbox)
+    const write = (q, show, box) => {
       const to = Object.assign(document.createElement("input"), { placeholder: "Player name", maxLength: 16, autocomplete: "off" }), dl = document.createElement("datalist"); dl.id = "bsMailTo";
       (T.peers?.list?.() || []).forEach(v => dl.append(Object.assign(document.createElement("option"), { value: v.name }))); to.setAttribute("list", "bsMailTo");
       const text = Object.assign(document.createElement("textarea"), { placeholder: "Your letter", maxLength: 280, rows: 3 }), lt = document.createElement("label"), lx = document.createElement("label");
       lt.append("To", to, dl); lx.append("Letter", text); const note = document.createElement("small"); note.textContent = "Three letters every 5 minutes. Letters aren't private: keep it friendly."; box.append(lt, lx, note);
-      show(q, mine.length ? "Here's your mail. Sending one?" : "Sending a letter? Write the player's name and your note.", [["Send it", () => { P.send(to.value, text.value).then(err => { if (err) toast(err, 3200); else { const who = to.value.trim(); toast(`\ud83d\udcee Posted to ${who}. If they're not about, they'll hear there's a letter waiting.`, 3800);
+      return ["Send it", () => { P.send(to.value, text.value).then(err => { if (err) toast(err, 3200); else { const who = to.value.trim(); toast(`\ud83d\udcee Posted to ${who}. If they're not about, they'll hear there's a letter waiting.`, 3800);
           // then: share the app with them? (Ash, 16 November 2026: "after sending a letter ask if they want to share the app with the person")
           show(q, `Posted to ${who}! Want to send them the app too, so they can read it?`, [["Share the app", () => { const url = location.origin + location.pathname.replace(/[^/]*$/, ""), text = `I sent you a letter in 3D Moorooka! Open Awesome News, go to Explore and walk up to the Moorooka Post Office to read it.`;
-            if (navigator.share) navigator.share({ title: "Awesome News", text, url }).catch(() => {}); else navigator.clipboard?.writeText(`${text} ${url}`).then(() => toast("Link copied. Paste it to them.", 2600), () => {}); }, "ok"], ["No thanks", () => {}]]); } }); return "keep"; }, "ok"], ["Close", () => {}]], box); };
-    // your letterbox at number 6 (Ash): the same letters, to read; writing one is at the post office
+            if (navigator.share) navigator.share({ title: "Awesome News", text, url }).catch(() => {}); else navigator.clipboard?.writeText(`${text} ${url}`).then(() => toast("Link copied. Paste it to them.", 2600), () => {}); }, "ok"], ["No thanks", () => {}]]); } }); return "keep"; }, "ok"]; };
+    // the post office card: your letters, and a new one to send
+    P.card = (q, show, shut) => { const box = document.createElement("div"); box.className = "bs-mail"; const seen = read(), mine = P.letters.slice().sort((a, b) => b.t - a.t).slice(0, 6);
+      if (mine.length) { const h = document.createElement("small"); h.textContent = "Your letters"; box.append(h); for (const l of mine) { const p = document.createElement("p"); p.className = seen.has(l.id) ? "" : "new"; p.textContent = `${l.from}: “${l.text}”`; box.append(p); } markRead(mine.map(l => l.id)); }
+      show(q, mine.length ? "Here's your mail. Sending one?" : "Sending a letter? Write the player's name and your note.", [write(q, show, box), ["Close", () => {}]], box); };
+    // your letterbox at number 6 (Ash): the same letters to read, and a letter to send from there too (Ash, 25 November 2026: "Allow me
+    // to also send mail from my mailbox")
     P.box = (q, show) => { const box = document.createElement("div"); box.className = "bs-mail"; const seen = read(), mine = P.letters.slice().sort((a, b) => b.t - a.t).slice(0, 8);
+      if (mine.length) { const h = document.createElement("small"); h.textContent = "Your letters"; box.append(h); }
       for (const l of mine) { const p = document.createElement("p"); p.className = seen.has(l.id) ? "" : "new"; p.textContent = `${l.from}: “${l.text}”`; box.append(p); }
       const n = mine.filter(l => !seen.has(l.id)).length; markRead(mine.map(l => l.id));
-      return show(q, !mine.length ? "Nothing in the letterbox today. You can send a letter at the Moorooka Post Office." : n ? `${n === 1 ? "A new letter" : `${n} new letters`}!` : "Your letters.", [["Close", () => {}]], mine.length ? box : undefined); };
+      return show(q, !mine.length ? "Nothing in the letterbox today. Sending a letter? Write the player's name and your note." : n ? `${n === 1 ? "A new letter" : `${n} new letters`}! Sending one back?` : "Your letters. Sending one?", [write(q, show, box), ["Close", () => {}]], box); };
     P.dispose = () => { dead = true; clearInterval(poll); };
     return P;
   }
