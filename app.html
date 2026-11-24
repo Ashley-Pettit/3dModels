@@ -17107,22 +17107,22 @@ const handle = async (m, post) => {
   // how much each upgrade does. The speed ones (Turbo, Speedy paws, Strong wings) as they were; the rest made much stronger (Ash, 22
   // November 2026: "Increase the effect of non meta perks for vehicles and the animals. Like turning should make turning way better"):
   // Sports tyres turn 60% sharper, keep twice the lock at speed (the lock fades 0.7 not 1.2 as you go faster) and steer quicker
-  const PERK_X = { turbo: 1.25, launch: 2.6, nitro: 3, refill: 5, grip: 1.6, gripSlide: 1.6, gripFade: 0.7, gripSnap: 11,
+  const PERK_X = { turbo: 1.4, turboPush: 1.6, launch: 2.6, nitro: 3, refill: 5, grip: 1.6, gripSlide: 1.6, gripFade: 0.7, gripSnap: 11,
     speedy: 1.3, springy: 2.2, climber: 3, wings: 1.25, flap: 2.2, glide: 1, dive: 1.8 };
-  const CAR_UPS = [["turbo", "Turbo", "A quarter more top speed"], ["launch", "Launch control", "Gets up to speed more than two and a half times as fast"], ["nitro", "Bigger nitro tank", "Boost lasts three times as long"],
+  const CAR_UPS = [["turbo", "Turbo", "A much stronger Boost: 40% more top speed on boost, and it gets there faster. Off the boost, the car's as it was"], ["launch", "Launch control", "Gets up to speed more than two and a half times as fast"], ["nitro", "Bigger nitro tank", "Boost lasts three times as long"],
     ["refill", "Quick refill", "Boost fills back up five times faster"], ["grip", "Sports tyres", "Turns much sharper, holds its grip at speed, and spins quicker on the handbrake"]];
   // what each of the mechanic's upgrades does to your own car, worked out from its numbers in Settings, shown under the upgrade's name
   // (Ash, 20 November 2026: "Under sports tires show the effect this has on my vehicle"). The turning circle is at walking pace, at
   // full lock (0.55 rad), as the car turns: radius = 2.6 / (tan(lock) x turning%)
   const carUpEffect = id => { const r = rideSettings(), n = v => String(+v.toFixed(v < 10 ? 1 : 0)), to = (a, b, u = "") => `${n(a)}${u} \u2192 ${n(b)}${u}`;
     const zero = a => 100 / 3.6 / a, circle = k => 2 * 2.6 / (Math.tan(0.55) * k / 100), atSpeed = (k, fade) => { const v = 60 / 3.6; return v / 2.6 * Math.tan(0.55 / (1 + (v / 8) ** 2 * fade)) * k / 100 * 180 / Math.PI; };
-    return { turbo: `Your car: top speed ${to(r.carTop, r.carTop * PERK_X.turbo, " km/h")}, on boost ${to(r.carBoostTop, r.carBoostTop * PERK_X.turbo, " km/h")}`,
+    return { turbo: `Your car on boost: top speed ${to(r.carBoostTop, r.carBoostTop * PERK_X.turbo, " km/h")}, push ${to(100, 100 * PERK_X.turboPush, "%")}. Off the boost: ${n(r.carTop)} km/h, as it was`,
       launch: `Your car: 0 to 100 km/h in about ${to(zero(r.carAccel), zero(r.carAccel * PERK_X.launch), " s")}`,
       nitro: `Your car: boost lasts ${to(r.boostSecs, r.boostSecs * PERK_X.nitro, " s")}`,
       refill: `Your car: boost refills in ${to(r.boostBack, r.boostBack / PERK_X.refill, " s")}`,
       grip: `Your car: turning ${to(r.carTurn, r.carTurn * PERK_X.grip, "%")}, turning circle ${to(circle(r.carTurn), circle(r.carTurn * PERK_X.grip), " m")}, at 60 km/h ${to(atSpeed(r.carTurn, 1.2), atSpeed(r.carTurn * PERK_X.grip, PERK_X.gripFade), "\u00b0")} a second, handbrake spin ${to(r.slideTurn, r.slideTurn * PERK_X.gripSlide, "\u00b0")} a second` }[id] || ""; };
   // each upgrade in a few words, shown beside its name on the chip while you drive, run or fly (Ash, 21 November 2026)
-  const UP_SHORT = { turbo: "faster top speed", launch: "fast acceleration", nitro: "boost lasts 3x as long", refill: "boost refills 5x faster", grip: "much sharper turns",
+  const UP_SHORT = { turbo: "much stronger boost", launch: "fast acceleration", nitro: "boost lasts 3x as long", refill: "boost refills 5x faster", grip: "much sharper turns",
     speedy: "runs faster", springy: "jumps twice as high", climber: "climbs 3x as fast", glider: "floats down slowly",
     wings: "flies faster", flap: "climbs twice as fast", glide: "glides much further", dive: "dives much faster" };
   const POSSUM_UPS = [["speedy", "Speedy paws", "Runs 30% faster"], ["springy", "Spring legs", "Jumps more than twice as high"], ["climber", "Climbing claws", "Climbs three times as fast"],
@@ -17159,8 +17159,9 @@ const handle = async (m, post) => {
   // players be able to choose 4 car types that have the different upgrades that just last for the race. The same as from mechanic"; "I
   // want to be able to handicap players. This should decrease their speed by 5% acceleration by 7% and turning by 2% per factor. Up to 8")
   function townPerkRide(r) { const p = townPerks(), RR = BS.raceRide, c = RR ? RR.car : p.car, q = p.possum;
-    const X = PERK_X; r.lockFade = 1.2; r.steerSnap = 7;
-    if (c === "turbo") { r.carTop *= X.turbo; r.carBoostTop *= X.turbo; } else if (c === "launch") r.carAccel *= X.launch; else if (c === "nitro") { r.boostSecs *= X.nitro; r.goldBoostSecs *= X.nitro; }
+    const X = PERK_X; r.lockFade = 1.2; r.steerSnap = 7; r.boostPush = 1;
+    // (Turbo: only the Boost button, harder and faster; till 24 November 2026 it was a quarter more top speed all the time, boost or not)
+    if (c === "turbo") { r.carBoostTop *= X.turbo; r.boostPush = X.turboPush; } else if (c === "launch") r.carAccel *= X.launch; else if (c === "nitro") { r.boostSecs *= X.nitro; r.goldBoostSecs *= X.nitro; }
     else if (c === "refill") { r.boostBack /= X.refill; r.goldBoostBack /= X.refill; }
     else if (c === "grip") { r.carTurn *= X.grip; r.goldTurn *= X.grip; r.slideTurn *= X.gripSlide; r.goldSlideTurn *= X.gripSlide; r.lockFade = X.gripFade; r.steerSnap = X.gripSnap; }
     if (q === "speedy") r.possumTop *= X.speedy; else if (q === "springy") r.possumJump *= X.springy; else if (q === "climber") r.possumClimb *= X.climber;
@@ -18294,7 +18295,7 @@ const handle = async (m, post) => {
   // player should get better power ups ... really help the person catch up or overtake first place"). Short lines under the race card say
   // how the others are going ("Add lots of player interactions that aren't annoying but tell me about how my opponents are going"):
   // one at a time, a few seconds each, never more than one every couple of seconds.
-  const RACE_CARS = [["turbo", "Rocket", "🚀", "Turbo: a quarter more top speed"], ["launch", "Launcher", "⚡", "Launch control: off the mark 2.6 times as fast"],
+  const RACE_CARS = [["turbo", "Rocket", "🚀", "Turbo: a much stronger Boost button (40% more top speed on boost, pushing harder)"], ["launch", "Launcher", "⚡", "Launch control: off the mark 2.6 times as fast"],
     ["nitro", "Nitro", "🔥", "Bigger nitro tank: boost lasts 3 times as long"], ["grip", "Grip", "🛣️", "Sports tyres: much sharper turns"]];
   // the power-ups: [emoji, name, what it does]. No weapons: birds, weather and a banana peel
   const RACE_ITEMS = { turbo: ["🚀", "Turbo", "A huge burst of speed for 3.5 s"], star: ["⭐", "Golden star", "7 s of 80% more speed and 40% sharper steering, and nothing can touch you"],
@@ -18709,7 +18710,7 @@ const handle = async (m, post) => {
       x.type = "button"; x.className = "x"; x.setAttribute("aria-label", "Close"); x.textContent = "×"; x.onclick = () => { hostDone = true; hostShut(); };
       p.innerHTML = `<b>${HO.name}</b>: ${w ? `G'day! ${esc(w)}'s getting a race together. Want in? Pick your car and you'll be on the grid when they start.`
         : `G'day! Fancy a race round ${K.name}? One lap in a standard car, ${fmtD(TOT)}: west along Norman Road and round the backstreets, Toorak Road and Surf Parade, then back past me. Go through every gate. Boxes on the road give power-ups.`}`;
-      for (const [label, fn, cls] of [[w ? "Count me in" : "Let's race", () => R.open(), "ok"], ["Not now", () => {}]]) { const b = document.createElement("button"); b.type = "button"; b.textContent = label; if (cls) b.className = cls; b.onclick = () => { hostDone = true; hostShut(); fn(); }; row.append(b); }
+      for (const [label, fn, cls] of [[w ? "Count me in" : "Let's race", () => R.open(), "ok"], ...(w ? [] : [["Invite someone", () => { invite(); R.open(); }]]), ["Not now", () => {}]]) { const b = document.createElement("button"); b.type = "button"; b.textContent = label; if (cls) b.className = cls; b.onclick = () => { hostDone = true; hostShut(); fn(); }; row.append(b); }
       hostCard.replaceChildren(x, p, row); hostCard.hidden = false; };
     // to him from Jump to: on your feet, 3 m in front of him, facing him (mid-race, the race panel as before)
     R.fromJump = () => { if (!HO || race) return R.open(); hostDone = false; hostNear = false; T.standAt?.(HO.x + Math.sin(HO.yaw) * 3, HO.z + Math.cos(HO.yaw) * 3, HO.yaw, 0.05); };
@@ -20171,7 +20172,7 @@ const handle = async (m, post) => {
           const sh = document.createElement("span"), sw = UP_SHORT[u[0]] || ""; sh.className = "bs-upshort"; sh.textContent = sw ? sw[0].toUpperCase() + sw.slice(1) : ""; if (sw) b.append(":");
           upChip.append(b, sh, s); upChip.title = s.textContent; upChip.classList.add("open"); upT = setTimeout(() => upChip.classList.remove("open"), 6000); } }
       if (upChip.hidden === !!u) upChip.hidden = !u; };
-    const R = townPerkRide(rideSettings()), GOLD = 1 + R.gold / 100, VMAX = R.carTop / 3.6, VREV = 5.5, VBOOST = Math.max(R.carBoostTop, R.carTop) / 3.6, LIFT = R.planeLift / 3.6, CRUISE = Math.max(R.planeTop, R.planeLift * 1.4) / 3.6, JET = Math.max(R.planeBoostTop, R.planeTop) / 3.6, canBoost = P => !P.heli && (P.gold || !!R.planeBoost), touch = matchMedia("(pointer: coarse)").matches, snd = townSound(); T.snd = snd;
+    const R = townPerkRide(rideSettings()), GOLD = 1 + R.gold / 100, VREV = 5.5, LIFT = R.planeLift / 3.6, CRUISE = Math.max(R.planeTop, R.planeLift * 1.4) / 3.6, JET = Math.max(R.planeBoostTop, R.planeTop) / 3.6, canBoost = P => !P.heli && (P.gold || !!R.planeBoost), touch = matchMedia("(pointer: coarse)").matches, snd = townSound(); T.snd = snd;
     snd.level(R.volume / 100);
     let veh = null, car = null, last = null, off = null, camYaw = 0, idle = 0, at = 0, charge = 1, spent = false, auto = null, autoMark = null, want = null;  // (auto: the car driving itself; want: the car a click on the map picked)
     // whether something fits there: points along and across it (metres from its middle) clear of buildings, and out of deep water
@@ -20638,7 +20639,7 @@ const handle = async (m, post) => {
       document.body.classList.remove("bsheld"); document.body.classList.add(...H.cls); F.keys.clear(); F.drive = tick; snd.start(veh === "plane" && plane?.heli ? "heli" : veh); return true; };
     C.held = () => !!held;
     C.drop = () => { if (held) leave(false); };  // (a jump to a place from Explore mode: you get out of what you were in, where it stands)
-    let camOff = null;  // where the view is from what you're in
+    let camOff = null, camBack = 0;  // where the view is from what you're in (camBack: the race's start, metres further back)
     // (up in a plane, Moorooka's model stops fetching its sharpest ground and building backyards: window.anFast, moorooka-model.js patched)
     const tick = dt0 => { if ((upLook -= dt0) <= 0) { upLook = 0.5; upShow(veh === "car" && car && !car.bus ? "car" : veh === "possum" || veh === "pigeon" ? veh : null); } window.anFast = veh === "plane" && !!plane?.air; dt0Now = Math.min(dt0, 0.1); fxTick(dt0Now); if (veh !== "car") rockets(false); const dt = Math.min(dt0, 0.1), k = F.keys, has = (...c) => c.some(x => k.has(x));
       // flying the camera, a jump to a place or starting again has moved the view: that is getting out
@@ -20680,10 +20681,10 @@ const handle = async (m, post) => {
         if ((xNew || F.flip) && car.gold && !car.flip) { F.flip = false; car.flip = { t: 0, h0: car.h, d0: car.dir, way: str < -0.1 ? -1 : 1 }; snd.thud?.(0.3); }
         const gc = car.gold, bSecs = gc ? R.goldBoostSecs : R.boostSecs, bBack = gc ? R.goldBoostBack : R.boostBack, sTurn = gc ? R.goldSlideTurn : R.slideTurn, sSlow = gc ? R.goldSlideSlow : R.slideSlow;
         if (boosting) { charge = Math.max(0, charge - dt / bSecs); if (!charge) spent = true; } else { charge = Math.min(1, charge + dt / bBack); if (charge >= 0.2) spent = false; }
-        const K = (car.gold ? GOLD : car.bus ? 0.7 : 1) * (C.spdK || 1) * (C.slowTil > performance.now() ? 0.55 : 1) * (C.starTil > performance.now() ? 1.8 : 1) * (C.autoTil > performance.now() && auto ? 1.6 : 1), vboost = VBOOST * K, SHAPE = car.bus ? BUS : CAR;  // (spdK, slowTil: the race's car, handicap and storm cloud)
+        const K = (car.gold ? GOLD : car.bus ? 0.7 : 1) * (C.spdK || 1) * (C.slowTil > performance.now() ? 0.55 : 1) * (C.starTil > performance.now() ? 1.8 : 1) * (C.autoTil > performance.now() && auto ? 1.6 : 1), vTop = R.carTop / 3.6, vboost = Math.max(R.carBoostTop, R.carTop) / 3.6 * K, SHAPE = car.bus ? BUS : CAR;  // (spdK, slowTil: the race's car, handicap and storm cloud)
         if (C.starTil > performance.now() && Math.random() < dt * 18) fxSpray(car, true);  // a golden star: sparkling
         // a passenger's power-up: 2 km/h more, and half a boost's worth on top, for 3 seconds (Ash, 16 November 2026)
-        const tk = car.teamK || 1, vteam = VMAX * K + tk * (R.teamBoostExtra / 3.6 + R.teamBoostShare / 100 * (vboost - VMAX * K)), vmax = teamOn ? vteam : VMAX * K;
+        const tk = car.teamK || 1, vteam = vTop * K + tk * (R.teamBoostExtra / 3.6 + R.teamBoostShare / 100 * (vboost - vTop * K)), vmax = teamOn ? vteam : vTop * K;
         rockets(teamOn && tk > 1 || !!car.trick?.gold);
         // a passenger's jump (and with a possum's, a roll right round as it goes up): up off the road and down again, still driving
         // (a possum's: high up into the air, a 360 round at the top, landing facing the same way with a boost and sparks flying off it.
@@ -20699,7 +20700,7 @@ const handle = async (m, post) => {
         // drastically increases turning for burnouts"): it swings the car round fast while it carries on the way it was going
         const slide = brake && Math.abs(v) > 3;
         if (brake) v -= Math.sign(v) * Math.min(Math.abs(v), sSlow / 3.6 * dt);
-        if (go > 0.05) v += (v < -0.2 && !boosting ? 10 : boosting ? R.carAccel * 4 * K * (1 - Math.max(0, v) / vboost) : teamOn ? R.carAccel * (1 + 3 * tk * R.teamBoostShare / 100) * K * Math.max(0, 1 - Math.max(0, v) / vteam) : R.carAccel * K * (1 - Math.max(0, v) / vmax)) * go * dt * (brake ? 0.5 : 1);
+        if (go > 0.05) v += (v < -0.2 && !boosting ? 10 : boosting ? R.carAccel * 4 * (R.boostPush || 1) * K * (1 - Math.max(0, v) / vboost) : teamOn ? R.carAccel * (1 + 3 * tk * R.teamBoostShare / 100) * K * Math.max(0, 1 - Math.max(0, v) / vteam) : R.carAccel * K * (1 - Math.max(0, v) / vmax)) * go * dt * (brake ? 0.5 : 1);
         else if (back) v -= R.carAccel * 4 * K * (1 + Math.min(0, v) / vboost) * dt;  // boosting backwards: as hard as forwards
         else if (go < -0.05) v += (v > 0.2 ? -11 : -3 * (1 + Math.min(0, v) / VREV)) * -go * dt;
         else if (!brake) v -= Math.sign(v) * Math.min(Math.abs(v), (0.6 + Math.abs(v) * 0.08) * dt);
@@ -20733,7 +20734,8 @@ const handle = async (m, post) => {
         const a = Math.abs(car.v), G = [0, 7, 14, 21, 30, 44, 60], g = Math.max(0, G.findIndex(q => a < q) - 1), top = G[g + 1] ?? 60;  // the engine rises through each gear and drops into the next
         snd.set(0.18 + 0.82 * bsClamp((a - G[g]) / (top - G[g]), 0, 1), Math.abs(thr) > 0.05 && !brake ? 0.35 + 0.65 * Math.abs(thr) : 0.08, a, boosting || teamOn, slide ? 1 : Math.min(1, Math.abs(wrap(car.h - car.dir)) * 2.5));
         showRing(boosting || charge < 0.999, boosting);
-        o = car; D = (car.bus ? 15 : 7.5) + Math.min(5, a / 9); text = Math.round(a * 3.6) + " km/h" + autoText();
+        if (camBack && a > 2) camBack = Math.max(0, camBack - dt * 2.6);  // (off the line, it glides in to the usual view in a couple of seconds)
+        o = car; D = (car.bus ? 15 : 7.5) + Math.min(5, a / 9) + camBack; text = Math.round(a * 3.6) + " km/h" + autoText();
       } else if (veh === "possum") { findCarTops(pos.x, pos.z); const P = pos, run = !!P.gold && (has("ShiftLeft", "ShiftRight") || !!F.hand), top = R.possumTop / 3.6 * (run ? 1 + R.possumBoost / 100 : 1) * (C.hcK || 1) * (C.turboTil > performance.now() ? 1.9 : 1) * (C.slowTil > performance.now() ? 0.5 : 1), jump = has("Space") || !!F.boost, drop = has("KeyC");  // (Boost: the button over Jump, or Shift)  // walking is 11 m/s: three times that, less a fifth (Ash, 15 November 2026: "speed down by 20%"); no boost, the button is Jump
         P.t += dt;
         // riding on top of a car that moves (the traffic, or one of the app's own being driven): it goes where the car goes, turning
@@ -21222,7 +21224,7 @@ const handle = async (m, post) => {
       const [ax, az] = pt(10 * big), [bx, bz] = pt(24 * big), bend = rem > 12 ? Math.abs(wrap(Math.atan2(bx - ax, bz - az) - car.h)) : 0;
       let vt = Math.max(4.2, AUTO_V / (1 + 2.2 * bend)) / (car.bus ? 1.3 : 1), hoonB = false, hoonH = false;
       if (H) { // flat out, but slow enough at each corner coming to get round it: looked for up to 90 m ahead, braking at HOON_A
-        const top = VMAX * (car.gold ? GOLD : 1) * (C.autoTil > performance.now() ? 1.6 * (C.spdK || 1) : 1); vt = top; let worst = 0;  /* (the race's Autodrive cannon: aiming for its 60% more) */
+        const top = R.carTop / 3.6 * (car.gold ? GOLD : 1) * (C.autoTil > performance.now() ? 1.6 * (C.spdK || 1) : 1); vt = top; let worst = 0;  /* (the race's Autodrive cannon: aiming for its 60% more) */
         for (const d of [8, 20, 34, 50, 70, 90]) { if (d > rem - 6) break; const [px, pz] = pt(d), [qx, qz] = pt(d + 12), b = Math.abs(wrap(Math.atan2(qx - px, qz - pz) - car.h)); if (d <= 20) worst = Math.max(worst, b);
           vt = Math.min(vt, Math.sqrt((Math.max(6.5, top / (1 + 2.6 * b))) ** 2 + 2 * HOON_A * Math.max(0, d - 6))); }
         vt = Math.min(vt, Math.sqrt(2 * HOON_A * Math.max(0, rem - 3)) + 1.2); if (Math.abs(e) > 0.8) vt = Math.min(vt, 6.5);
@@ -21283,7 +21285,7 @@ const handle = async (m, post) => {
         if (pos?.grip) { const r = pos.grip.ref; if (r === c.own || (r && Math.hypot(r.x - car.x, r.z - car.z) < 1.5)) { pos.grip.ref = car; toast("You're holding on to the roof. Off you go!", 2600); } }
         veh = "car"; camYaw = car.h + Math.PI; document.body.classList.add("bsdrive"); showRing(charge < 0.999); }
       if (veh === "car" && gmDesk() && !BS.gmDriveTip) { BS.gmDriveTip = true; setTimeout(() => { if (veh === "car" && !auto) toast("Hold the left mouse button to drive, and move the mouse left or right to steer. Hold the right button to brake and reverse. Or click the road and the car drives you there.", 8000); }, 700); }
-      C.in = true; camOff = null; off = [wrap(F.yaw - camYaw), bsClamp(F.pitch + 0.2, -1, 0.55)]; idle = 0; last = [F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch];
+      C.in = true; camOff = null; camBack = 0; off = [wrap(F.yaw - camYaw), bsClamp(F.pitch + 0.2, -1, 0.55)]; idle = 0; last = [F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch];
       if (veh === "drone" && R6()?.floorAt(dr.x, dr.z, dr.y) != null) off = [0, 0.12];  // the drone indoors: seen from behind it, the front door ahead (not the way you were looking out on the path)
       F.stick.x = F.stick.y = F.lookStick.x = F.lookStick.y = 0; F.vert = 0; F.boost = false; F.keys.clear(); F.drive = tick;
       btn.textContent = veh === "drone" ? "Put the remote down" : veh === "possum" || veh === "pigeon" ? "Human" /* (Ash, 16 November 2026: "Make hop out say human") */ : veh === "ride" && ride?.local ? "Get off" : "Get out"; btn.hidden = false; handBtn.hidden = veh !== "car" && (veh !== "possum" || !pos?.gold) && veh !== "pigeon"; /* (no Boost for the plain possum: Ash, 23 November 2026, "Remove boost from the non golden possum") */ handBtn.textContent = veh === "possum" ? "Boost" : veh === "pigeon" ? "Dive" : "Handbrake"; handBtn.dataset.key = veh === "possum" ? "Shift" : veh === "pigeon" ? "C" : "Space"; flipBtn.hidden = !(veh === "car" && car?.gold); plantBtn.hidden = !(veh === "possum" && T.admin?.plant); gripBtn.hidden = true; cooBtn.hidden = veh !== "pigeon"; boostBtn.hidden = veh === "ride" || (veh === "plane" && !canBoost(plane));
@@ -21426,8 +21428,8 @@ const handle = async (m, post) => {
     C.where = () => veh === "ride" ? { kind: "ride", with: ride.name } : veh === "pigeon" ? { kind: "pigeon", x: pg.x, y: pg.y, z: pg.z, heading: pg.h, speed: pg.v } /* (it fell through to the plane's, and threw) */ : veh === "possum" ? { kind: "possum", x: pos.x, y: pos.y, z: pos.z, heading: pos.h, speed: pos.v, mode: pos.mode, up: pos.y - ground(pos.x, pos.z) } : veh === "car" ? { kind: "car", gold: !!car.gold, bus: !!car.bus, x: car.x, z: car.z, heading: car.h, dir: car.dir, speed: car.v, charge } : veh ? { kind: "plane", heli: !!plane.heli, x: plane.x, y: plane.y, z: plane.z, heading: plane.h, pitch: plane.p, speed: plane.v, air: plane.air } : null;  // for checking
     C.reread = () => { Object.assign(R, townPerkRide(rideSettings())); if (BS.raceRide && C.spdK) R.carAccel /= C.spdK; };
     // ---- for the race (townRace): its car and handicap, the power-ups, and changing to the plane and the possum on the way round
-    C.raceRide = RR => { BS.raceRide = RR || null; const own = townPerks().car === "turbo" ? PERK_X.turbo : 1, k = RR ? bsClamp(+RR.hc || 0, 0, 8) : 0;
-      C.spdK = RR ? (RR.car === "turbo" ? PERK_X.turbo : 1) * (1 - 0.05 * k) / own : 1; C.hcK = 1 - 0.05 * k; C.starTil = C.turboTil = C.slowTil = C.autoTil = 0; C.reread(); };
+    C.raceRide = RR => { BS.raceRide = RR || null; const k = RR ? bsClamp(+RR.hc || 0, 0, 8) : 0;
+      C.spdK = RR ? 1 - 0.05 * k : 1; C.hcK = 1 - 0.05 * k; C.starTil = C.turboTil = C.slowTil = C.autoTil = 0; C.reread(); };
     C.racePrep = () => { try { if (T.cfg?.place === "moo") { loadRoofs(); loadTrees(); } if (pos && !possumMesh) wake(); } catch {} };  // (on the grid: nothing heavy mid-race)
     C.raceFx = (kind, ms) => { const now = performance.now();
       if (kind === "turbo" || kind === "star") { if (kind === "star") C.starTil = now + ms; C.turboTil = now + ms;
@@ -21447,7 +21449,9 @@ const handle = async (m, post) => {
       racePlane = P; P.x = x; P.z = z; P.h = h; P.air = false; P.v = 0; P.spin = 0; const [y, p, r] = lie(P, 2, 1.2); P.y = y; P.p = p; P.r = r; showPlane(P); return true; };
     C.raceParkOk = () => !!racePlane && !racePlane.takenBy;
     C.raceSurf = (x, z) => surf(x, z);  // (what the possum would stand on there: where the race puts its gum leaves)
-    C.camReset = () => { const o = veh === "car" ? car : null; if (!o) return; camYaw = o.h + Math.PI; off = [0, 0.16]; camOff = null; idle = 0; };  // (the race's start: behind the car, up the road)
+    // (the race's start: 13 m behind the car and 5 m up, looking down the road over it and the cars ahead to the line; it settles to the
+    // usual view, 7.5 m back and 3 m up, as you drive off. Till 24 November 2026 it was low and level, 1.8 m up)
+    C.camReset = () => { const o = veh === "car" ? car : null; if (!o) return; camYaw = o.h + Math.PI; off = [0, -0.1]; camBack = 5.5; camOff = null; idle = 0; };
     C.upClose = () => { clearTimeout(upT); upChip.classList.remove("open"); };  // (the race's start: the upgrade chip folded down to its name)
     C.carPose = () => veh === "car" && car ? [car.x, car.y, car.z, car.h + (car.spinY || 0), car.p || 0, (car.r || 0) + (car.roll || 0)] : null;  // (as the model draws it: the race paints its logo on it)
     C.raceOut = (x, z, fx, fz) => { const was = veh; if (veh) leave(true); if (was === "possum") possumHome();
