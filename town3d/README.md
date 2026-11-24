@@ -327,6 +327,17 @@ These files are built, not written by hand. The source is the `ai-forge` reposit
 To update one, run its build there and copy its four files (and Moorooka's `detail/` folder) into its folder here. If the script changes, bump the
 `?v=` on it in `TOWNS` in `app.html` so phones fetch the new one.
 
+### Source for the proposed Inverloch terrain-tiling trial
+
+To reproduce the land renderer, contributors need the revision of `ai-forge` that matches the shipped Inverloch embed.
+Start with [the documented combined branch](../CLAUDE.md#inverlochs-3d-model-build-it-from-the-full-source-only), its shared
+`src/features/town3d/terrain.ts` and the Inverloch embed build above. Confirm any downstream bundle fixes with the maintainer before rebuilding.
+
+The proposed trial would split the existing land mesh into sections with their own bounds so a street-level camera can skip ground outside its view.
+At full detail the 800 × 690 grid contributes 1,101,022 land triangles. The trial would reuse the same height and tidal-exposure samples, ground
+textures and world-space texture coordinates. Compare triangles submitted, draw calls and GPU time on a street walk and a high aerial view to see
+whether the saved work outweighs the extra draws. The existing [ground-colour patch manifest](detail.json) serves a separate purpose.
+
 ## Credits
 
 Inverloch: map data © OpenStreetMap contributors (ODbL). Elevation © Commonwealth of Australia (Geoscience
