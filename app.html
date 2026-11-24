@@ -1572,6 +1572,7 @@ body.bstown:has(#bsKeys:not([hidden])) #bsFlyTip { display: none !important; }
 /* Unstick, over Boost when the car's stuck (placed by the app, from where Boost is) */
 .bs-fly-x.bs-unstick { right: auto; bottom: auto; transform: translate(-50%, -100%); z-index: 6; background: #ff9f1c; color: #1b1830; min-height: 52px; min-width: 112px; padding: 0 20px; font-size: 0.95rem; touch-action: none; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35); }
 .bs-fly-x.bs-unstick[hidden] { display: none; }
+.bs-fly-x.bs-unstick.walk { top: auto; bottom: calc(205px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); }
 /* Drive for me, and the next left and right (Ash, 22 November 2026: "simple keys for people to be able to drive without being a gamer"):
    three buttons under Get out, in a car, with Google Maps controls on a computer (the mouse is free to click them there). Their keys
    (G, < and >) work with the gamer's controls too, listed bottom left */
@@ -8707,7 +8708,7 @@ const handle = async (m, post) => {
         // Settings, Share and Flood on a keyboard (Ash, 15 November 2026: "Needs a btn to get into settings or share or flood"): M, P and
         // L, which free the mouse first when it is looking around
         if (e.code === "KeyG" && !e.ctrlKey && !e.metaKey && BS.town?.car?.plantMenu?.()) { e.preventDefault(); return; }  // the possum's Plant
-        if (e.code === "KeyU" && !e.ctrlKey && !e.metaKey && BS.town?.car?.unstick?.()) { e.preventDefault(); return; }  // a stuck car's Unstick
+        if (e.code === "KeyU" && !e.repeat && !e.ctrlKey && !e.metaKey && BS.town?.car?.unstick?.()) { e.preventDefault(); return; }  // Unstick on foot or in a car
         if (e.code === "KeyH" && !e.ctrlKey && !e.metaKey && BS.town?.arlo?.()) { e.preventDefault(); return; }  // Arlo, come (or home)
         if (e.code === "KeyY" && !e.ctrlKey && !e.metaKey && BS.town?.chick?.()) { e.preventDefault(); return; }
         if (e.code === "KeyX" && !e.ctrlKey && !e.metaKey && !e.repeat && BS.town?.race?.useItem?.()) { e.preventDefault(); return; }  // the race's power-up
@@ -9015,6 +9016,7 @@ const handle = async (m, post) => {
   // lets you step to (a wall, number 6's edges and glass: bsBlock), so you slide round a corner or along a rail rather than through it;
   // and if nothing lets you step anywhere at all, nothing takes a step back for the next 0.7 s
   function bsUnstick(F, dx, dz) { const T = BS.town, wall = (x, z) => !!(T?.solidWalk && T.solid?.(x, z)), now = performance.now(); F.unstuck = (F.unstuck || 0) + 1;
+    if (T?.car?.walkStuck?.()) return;
     if (wall(F.pos.x, F.pos.z)) { for (let r = 0.5; r <= 4; r += 0.5) for (let a = 0; a < 16; a++) { const x = F.pos.x + Math.sin(a * Math.PI / 8) * r, z = F.pos.z + Math.cos(a * Math.PI / 8) * r; if (!wall(x, z)) { F.pos.x = x; F.pos.z = z; return; } } return; }
     const free = (x, z) => { if (wall(x, z)) return false; const G = { pos: { x, z }, wv: null }; return !T?.bal6?.block?.(G, F.pos.x, F.pos.z); };
     const a0 = Math.atan2(dx || 0, dz || 0);
@@ -9597,6 +9599,7 @@ const handle = async (m, post) => {
           // admin things (New to check, the golden rides) are in Settings, under Admin (Ash: "Seperate the admin stuff out of jump")
           const top = [...(T.gps ? [item({ townGps: "1" }, "GPS", "Type an address, or pick a place to go")] : []),
             ...(T.race ? [item({ townRace: "1" }, `Race around ${T.race.name}`, T.race.active() ? "In a race now" : T.race.host ? `Talk to ${T.race.host.name}: ${T.race.host.what}` : "Everyone here, standard cars, one lap")] : [])];
+          if (T.car?.canUnstickWalk?.()) top.push(item({ townUnstick: "1" }, "Unstick on foot", "Move to a clear spot nearby (U)"));
           const who = T.peers?.list?.() || []; if (!who.length) { list.prepend(...top); return; }
           const near = who.map(q => ({ ...q, d: Math.hypot(q.x - F.pos.x, q.z - F.pos.z) })).sort((a, b) => a.d - b.d);
           const head = document.createElement("p"); head.className = "bs-town-group bs-town-players"; head.setAttribute("role", "presentation"); head.textContent = "Players in town";
@@ -9634,6 +9637,7 @@ const handle = async (m, post) => {
         list.onclick = e => { if (e.target.closest("[data-town-fly]")) { openList(false); flyTo(); jump.focus({ preventScroll: true }); return; }
           if (e.target.closest("[data-town-race]")) { openList(false); T.race?.fromJump ? T.race.fromJump() : T.race?.open(); return; }
           if (e.target.closest("[data-town-gps]")) { openList(false); T.gps?.open(); return; }
+          if (e.target.closest("[data-town-unstick]")) { openList(false); T.car?.unstick?.(); return; }
           const nw = e.target.closest("[data-town-new]"); if (nw) { const q = MOO_NEW[+nw.dataset.townNew]; openList(false); if (q) { T.tween = null; if (!T.walk) setMode(true);
             F.pos.set(q[2], ground(q[2], q[3]) + F.eye, q[3]); F.yaw = q[4]; F.pitch = q[5]; } return; }
           const gd = e.target.closest("[data-town-gold]"); if (gd) { openList(false); toGold(+gd.dataset.townGold); jump.focus({ preventScroll: true }); return; }
@@ -20666,7 +20670,7 @@ const handle = async (m, post) => {
       if (on && car) M.compose(V.set(car.x, car.y, car.z), Q.setFromEuler(E.set(-car.p, car.h, car.r, "YXZ")), BEAT.set(beat * (car.bus ? 2.1 : 1), 1, beat * (car.bus ? 2.1 : 1)));
       for (let i = 0; i <= RING; i++) { const show = !!on && !!car && (i === 0 || i <= full); if (show || lit[i]) { ring.setMatrix(i, show ? M.elements.slice() : NONE); lit[i] = show; } }
       const pc = Math.round(charge * 100) + "%"; if (boostBtn.style.getPropertyValue("--charge") !== pc) boostBtn.style.setProperty("--charge", pc); };
-    const leave = step => { if (!veh) return; if (auto) autoEnd(); const was = veh; if (was === "possum" && pos?.cling) { try { T.peers?.ride?.(pos.cling.id, false); } catch {} pos.cling = null; }  // (it stayed stuck to the driver: Ash, 18 November 2026)
+    const leave = (step, door) => { if (!veh) return; if (auto) autoEnd(); const was = veh; if (was === "possum" && pos?.cling) { try { T.peers?.ride?.(pos.cling.id, false); } catch {} pos.cling = null; }  // (it stayed stuck to the driver: Ash, 18 November 2026)
       // (the comment above once ran on over the rest of this line, so leaving never stopped the engine, the rockets or the sparks: Ash, 19 November
       // 2026, "when i use jump to often the sound of the car or something is still playing")
       if (held) { document.body.classList.remove("bsheld"); held = null; } rockets(false); if (sky) { skyEnd(); skyTried = false; } for (let i = 0; i < FXN; i++) if (sparks[i]) { sparks[i] = null; fx.setMatrix(i, NONE); } for (let i = 0; i < GFXN; i++) if (glit[i]) { glit[i] = null; gfx.setMatrix(i, NONE); } if (was !== "possum" && was !== "pigeon" && was !== "drone" && was !== "ride") snd.door(); snd.stop();
@@ -20688,7 +20692,7 @@ const handle = async (m, post) => {
           // you stand just behind it (on the ground below, if it's up on a roof), clear of any building, facing it
           let sx = P.x - Math.sin(P.h) * 1.4, sz = P.z - Math.cos(P.h) * 1.4; for (let k = 0; (solid(sx, sz) || !inside(sx, sz)) && k < 64; k++) { const r = 1.4 + Math.floor(k / 8) * 2.5, a = P.h + k * Math.PI / 4; sx = P.x + Math.sin(a) * r; sz = P.z + Math.cos(a) * r; }
           F.pos.x = sx; F.pos.z = sz; F.yaw = Math.atan2(F.pos.x - P.x, F.pos.z - P.z); F.pitch = -0.08; } }
-      else if (was === "car") { car.v = 0; car.flip = null; car.hop = 0; sit(0); showRing(false); if (step) { F.pos.x = car.x - Math.cos(car.h) * (car.bus ? 2.6 : 1.8); F.pos.z = car.z + Math.sin(car.h) * (car.bus ? 2.6 : 1.8); F.yaw = car.h + Math.PI; F.pitch = -0.04; } }  // out of the driver's door, on the right, facing the way the car does
+      else if (was === "car") { car.v = 0; car.flip = null; car.hop = 0; sit(0); showRing(false); if (step) { if (door) standClear(door); else { F.pos.x = car.x - Math.cos(car.h) * (car.bus ? 2.6 : 1.8); F.pos.z = car.z + Math.sin(car.h) * (car.bus ? 2.6 : 1.8); } F.yaw = car.h + Math.PI; F.pitch = -0.04; } }  // out of the driver's door, on the right, facing the way the car does
       else { const P = plane; if (P.air) { P.x = P.home.x; P.z = P.home.z; P.h = P.home.h; P.air = false; }  // left in the air (you flew off as the camera, or jumped somewhere): it is back where it lives
         P.v = 0; P.spin = 0; const [y, p, r] = lie(P, 2, 1.2); P.y = y; P.p = p; P.r = r;
         if (step) { F.pos.x = P.x + Math.cos(P.h) * 1.9; F.pos.z = P.z - Math.sin(P.h) * 1.9; F.yaw = P.h + Math.PI; F.pitch = -0.04; }  // out of the left door
@@ -21329,6 +21333,11 @@ const handle = async (m, post) => {
     C.enter = () => { if (!veh && F.drunk) { toast("You've had a few at the Willow. No driving till the doctor at the Moorooka Medical Hub (by Woolworths) has checked you.", 3800); return true; }  // (Ash, 16 November 2026: "you can get drunk")
       if (veh === "ride" && ride?.local && ride.local.v > 1.5) { toast("Wait for the next stop: the bus stops every few hundred metres.", 2600); return true; }
       if (veh && T.race?.locked?.()) { toast("You're racing: leave the race with \u00d7 on the race card to get out.", 2600); return true; }
+      if (veh === "car" && place === "inv") {
+        const door = findWalkSpot(car.x, car.z, car.h - Math.PI / 2, true);
+        if (door) leave(true, door); else toast("Both sides are blocked. Move the car and try again.", 2600);
+        return true;
+      }
       if (veh) { if (veh === "plane" && plane.heli && plane.air) return toast(touch ? "Land first: hold Down until it is on the ground." : "Land first: hold the up arrow (or C) until it is on the ground."), true;
       if (veh === "plane" && (plane.air || plane.v > 6)) return toast(touch ? "Land and stop first: pull the left stick back to slow down, and it comes down as it slows (or hold Dive)." : "Land and stop first: S slows the plane, and it comes down as it slows (or hold the up arrow)."), true; return leave(true), true; }
       if (!T.walk || T.tween) return false;
@@ -21358,6 +21367,7 @@ const handle = async (m, post) => {
         if (pos?.grip) { const r = pos.grip.ref; if (r === c.own || (r && Math.hypot(r.x - car.x, r.z - car.z) < 1.5)) { pos.grip.ref = car; toast("You're holding on to the roof. Off you go!", 2600); } }
         veh = "car"; camYaw = car.h + Math.PI; document.body.classList.add("bsdrive"); showRing(charge < 0.999); }
       if (veh === "car" && gmDesk() && !BS.gmDriveTip) { BS.gmDriveTip = true; setTimeout(() => { if (veh === "car" && !auto) toast("Hold the left mouse button to drive, and move the mouse left or right to steer. Hold the right button to brake and reverse. Or click the road and the car drives you there.", 8000); }, 700); }
+      if (place === "inv") { trail.length = 0; unReset(); }
       C.in = true; camOff = null; camBack = 0; off = [wrap(F.yaw - camYaw), bsClamp(F.pitch + 0.2, -1, 0.55)]; idle = 0; last = [F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch];
       if (veh === "drone" && R6()?.floorAt(dr.x, dr.z, dr.y) != null) off = [0, 0.12];  // the drone indoors: seen from behind it, the front door ahead (not the way you were looking out on the path)
       F.stick.x = F.stick.y = F.lookStick.x = F.lookStick.y = 0; F.vert = 0; F.boost = false; F.keys.clear(); F.drive = tick;
@@ -21369,6 +21379,7 @@ const handle = async (m, post) => {
       return true; };
     // the Get in button: there while something is in reach of where you are walking (looked for a few times a second)
     C.frame = () => { followGrip(); if (veh) return; const now = performance.now(); if (now - at < 300) return; at = now;
+      if (place === "inv") rememberWalk(now);
       if (pos) { const d = Math.hypot(pos.x - F.pos.x, pos.z - F.pos.z), dh = Math.hypot(PS.x - F.pos.x, PS.z - F.pos.z);
         if (!possumMesh && Math.min(d, dh) < 400) wake(); if (d < 80) { loadRoofs(); loadTrees(); }
         if ((pos.x !== PS.x || pos.z !== PS.z) && d > 150) possumHome(); }  // left behind, the possum goes home to number 16
@@ -21409,15 +21420,110 @@ const handle = async (m, post) => {
     const unBtn = document.createElement("button"); unBtn.type = "button"; unBtn.className = "bs-fly-x bs-unstick"; unBtn.textContent = "Unstick"; unBtn.dataset.key = "U"; unBtn.hidden = true;
     $("bsFly")?.append(unBtn);
     const un = { f: -1e9, b: -1e9, trail: [], at: null, placed: 0 };  // (never pushed yet, not "pushed when the page opened")
+    C.canUnstickWalk = () => place === "inv" && T.walk && !veh && !F.home && !T.tween;
+    // A relocation must be clear before it is applied. Use a conservative circle around the
+    // destination car. These checks run on a placement attempt, never on ordinary driving frames.
+    const vacant = (x, z, h, length, width) => {
+      if (T.invStatic?.depth(x, z, h, length, width) > 0) return false;
+      const radius = Math.hypot(length, width);
+      const overlapsCar = actor => {
+        if (actor.away || actor.takenBy || actor.x == null || actor.z == null) return false;
+        const dx = x - actor.x, dz = z - actor.z, s = Math.sin(actor.h), c = Math.cos(actor.h);
+        const along = Math.max(0, Math.abs(dx * s + dz * c) - (actor.bus ? 6 : 2.25));
+        const across = Math.max(0, Math.abs(dx * c - dz * s) - (actor.bus ? 1.25 : 0.95));
+        return along * along + across * across <= radius * radius;
+      };
+      if (owns.some(a => !(length && a === car?.own) && overlapsCar(a))) return false;
+      if (T.traffic?.occupied) {
+        if (T.traffic.occupied(length ? (car?.bus ? "bus" : "car") : "walk", x, z, h, ground(x, z))) return false;
+      } else if (T.traffic?.cars?.some(overlapsCar)) return false;
+      const reach = radius + 2.6;  // covers the longest native ute, in any orientation
+      const near = parked(x, z, reach);
+      if (!near) return true;
+      const isOurs = p => car?.id && p?.id[0] === car.id[0] && p.id[1] === car.id[1];
+      if (!isOurs(near) || (!length && overlapsCar(car))) return false;
+      // The embed only returns the closest parked car. If our car is closest at every corner
+      // of this square, it is closest throughout it: each pairwise bisector is a straight line.
+      // This lets us ignore our own car without concealing another car at the landing spot.
+      for (const dx of [-reach, reach]) for (const dz of [-reach, reach]) {
+        const px = x + dx, pz = z + dz, distance = Math.hypot(px - near.x, pz - near.z);
+        if (!isOurs(parked(px, pz, distance + 0.01))) return false;
+      }
+      return true;
+    };
+    const dryInside = (x, z) => {
+      if (!inside(x, z)) return false;
+      const surface = ground(x, z), water = m.waterAt ? m.waterAt(x, z) : m.waterLevel();
+      return Number.isFinite(surface) && !(water >= surface && water - m.groundAt(x, z) >= 0.35);
+    };
+    const walkRadius = 0.35;
+    const walkClear = (x, z) => {
+      for (const [dx, dz] of [[0, 0], [walkRadius, 0], [-walkRadius, 0], [0, walkRadius], [0, -walkRadius]]) {
+        const px = x + dx, pz = z + dz;
+        if (!dryInside(px, pz) || solid(px, pz)) return false;
+      }
+      return vacant(x, z, 0, 0, walkRadius);
+    };
+    const trail = [];
+    let walkPromptUntil = 0;
+    const hideWalkPrompt = () => {
+      walkPromptUntil = 0;
+      if (unBtn.classList.contains("walk")) { unBtn.hidden = true; unBtn.classList.remove("walk"); }
+    };
+    const rememberWalk = now => {
+      if (!C.canUnstickWalk()) { trail.length = 0; hideWalkPrompt(); return; }
+      if (now > walkPromptUntil && walkPromptUntil) hideWalkPrompt();
+      const { x, z } = F.pos, previous = trail[trail.length - 1];
+      if (previous) {
+        const d = Math.hypot(x - previous.x, z - previous.z);
+        if (d < 1.5) return;
+        if (d > 12) trail.length = 0;  // Jump to, a mode change or a different part of town
+      }
+      trail.push({ x, z });
+      if (trail.length > 8) trail.shift();
+    };
+    const standClear = p => {
+      F.pos.set(p.x, ground(p.x, p.z) + F.eye, p.z);
+      F.wv = F.goTo = F.stk = null; F.jumpH = F.jumpV = F.noBlockTil = 0;
+      trail.length = 0; hideWalkPrompt();
+    };
+    const findWalkSpot = (x, z, heading, door = false, short = false) => {
+      if (!door) for (let i = trail.length - 1; i >= 0; i--) {
+        const p = trail[i], d = Math.hypot(p.x - x, p.z - z);
+        if (d >= 1.25 && d <= (short ? 4 : 12) && walkClear(p.x, p.z)) return p;
+      }
+      const radii = door ? [car.bus ? 2.6 : 1.8, 3.25, 4.5] : short ? [1.5, 3] : [1.5, 3, 5, 8, 12, 20, 32];
+      for (const r of radii) for (const turn of [0, Math.PI, Math.PI / 2, -Math.PI / 2, 0.78, -0.78, 2.36, -2.36]) {
+        const px = x + Math.sin(heading + turn) * r, pz = z + Math.cos(heading + turn) * r;
+        if (walkClear(px, pz)) return { x: px, z: pz };
+      }
+      return null;
+    };
+    const recoverWalk = () => {
+      const spot = findWalkSpot(F.pos.x, F.pos.z, F.yaw);  // behind the direction of view first
+      if (spot) { standClear(spot); toast("You're back on clear ground.", 2000); }
+      else toast("Couldn't find clear ground nearby.", 2500);
+    };
+    C.walkStuck = () => {
+      if (!C.canUnstickWalk()) return false;
+      const { x, z } = F.pos;
+      if (!inside(x, z) || solid(x, z) || T.invStatic?.depth(x, z, 0, 0, walkRadius) > 0) {
+        const p = findWalkSpot(x, z, F.yaw, false, true);
+        if (p) { standClear(p); return true; }
+      }
+      walkPromptUntil = performance.now() + 10000;
+      unBtn.classList.add("walk"); unBtn.hidden = false;
+      return true;
+    };
     const unPlace = () => { const o = $("bsFly")?.getBoundingClientRect(), r = boostBtn.getBoundingClientRect(); if (!o || !r.width) return; unBtn.style.left = Math.round(r.left + r.width / 2 - o.left) + "px"; unBtn.style.top = Math.round(r.top - o.top - 10) + "px"; };
-    const unReset = () => { un.f = un.b = -1e9; un.trail = []; un.at = null; unBtn.hidden = true; };
+    const unReset = () => { un.f = un.b = -1e9; un.trail = []; un.at = null; unBtn.hidden = true; unBtn.classList.remove("walk"); unBtn.style.left = unBtn.style.top = ""; };
     const unTick = (now, thr) => { if (thr > 0.4) un.f = now; else if (thr < -0.4) un.b = now;
       if (!un.trail.length || now - un.trail[un.trail.length - 1][0] > 400) { un.trail.push([now, car.x, car.z]); while (now - un.trail[0][0] > UN_MS + 200) un.trail.shift(); }
       const t0 = un.trail[0], still = now - t0[0] > UN_MS - 500 && un.trail.every(q => Math.hypot(q[1] - car.x, q[2] - car.z) < 6);
       const show = un.at ? Math.hypot(car.x - un.at[0], car.z - un.at[1]) < 12 && now - un.at[2] < 20000 : still && now - un.f < UN_MS && now - un.b < UN_MS && !!T.roadsAll;
       if (show && !un.at) un.at = [car.x, car.z, now]; else if (!show) un.at = null;
       if (unBtn.hidden === show) { unBtn.hidden = !show; if (show) { un.placed = now; unPlace(); } } else if (show && now - un.placed > 500) { un.placed = now; unPlace(); } };
-    unBtn.onclick = e => { e.stopPropagation(); unBtn.blur(); const roads = T.roadsAll; if (veh !== "car" || !car || !roads) return;
+    const recover = () => { if (C.canUnstickWalk()) { recoverWalk(); return; } const roads = T.roadsAll; if (veh !== "car" || !car || !roads) return;
       let best = null;
       for (const r of roads) { if (r.cls > 5) continue; const p = r.pts;
         for (let k = 0; k + 3 < p.length; k += 2) { const ax = p[k], az = p[k + 1], dx = p[k + 2] - ax, dz = p[k + 3] - az, L = dx * dx + dz * dz; if (!L) continue;
@@ -21431,14 +21537,21 @@ const handle = async (m, post) => {
         const dx = p[k + 2] - p[k], dz = p[k + 3] - p[k + 1], ah = Math.atan2(dx, dz), h = best.r.one || Math.abs(wrap(ah - car.h)) <= Math.PI / 2 ? ah : wrap(ah + Math.PI);
         const x = p[k] + dx * t + Math.cos(h) * lane, z = p[k + 1] + dz * t - Math.sin(h) * lane;  // (in the left-hand lane)
         if (!inside(x, z) || !fits(SH, x, z, h)) continue;
-        car.x = x; car.z = z; car.h = car.dir = h; car.v = 0; car.steer = 0; unReset(); snd.whoosh?.(); toast("Back on the road.", 2000); return; }
+        if (place === "inv") {
+          const s = Math.sin(h), c = Math.cos(h);
+          if (!SH.every(([a, b]) => dryInside(x + s * a - c * b, z + c * a + s * b))) continue;
+          if (!vacant(x, z, h, car.bus ? 5.4 : 2.25, car.bus ? 1.2 : 0.95)) continue;
+        }
+        if (place === "inv") { if (auto) autoEnd(); car.flip = car.trick = car.face = null; car.hop = car.roll = car.spinY = car.teamTil = 0; }
+        car.x = x; car.z = z; car.h = car.dir = h; car.v = 0; car.steer = 0; if (place === "inv") sit(0); unReset(); snd.whoosh?.(); toast("Back on the road.", 2000); return; }
       toast("Couldn't find a clear bit of road near here.", 2500); };
+    unBtn.onclick = e => { e.stopPropagation(); unBtn.blur(); recover(); };
     // on a phone it goes on the finger touching it, not on the click after (Ash, 23 November 2026: "With unstuck some users on phone are
     // struggling to press it"): a phone sends no click while another finger is down, and the other thumb is usually on the stick. Boost
     // and the handbrake work the same way
     let unDown = 0; unBtn.addEventListener("pointerdown", e => { if (e.pointerType === "mouse") return; e.preventDefault(); unDown = performance.now(); unBtn.onclick(e); });
     { const tap = unBtn.onclick; unBtn.onclick = e => { if (e.type === "click" && performance.now() - unDown < 800) return; tap(e); }; }
-    C.unstick = () => { if (unBtn.hidden) return false; unBtn.click(); return true; };
+    C.unstick = () => { if (!C.canUnstickWalk() && (veh !== "car" || unBtn.hidden)) return false; recover(); return true; };
     C.unTest = () => { if (car) un.at = [car.x, car.z, performance.now()]; };  // (for tests: shows Unstick as if the car were stuck)
     // ---- powers for the one along for the ride (Ash, 16 November 2026: "Whilst someone else is driving as the passenger give me access
     // to a boost with charge to power up my teammates car or plane with a tiny extra of 2kmph plus a 50% of a normal boost; the ability
