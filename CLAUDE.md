@@ -74,6 +74,18 @@ get the other ones to send you push requests. I want you to be the one that merg
 Claude's reading of that instruction (including that "pull" covers
 merging the pull request); if Ash words it differently, their wording wins.
 
+### Bangerz's pull requests
+
+Bangerz (GitHub @Bangerz) is Ash's brother and works on Inverloch.
+- Merge his pull requests when they affect only Inverloch (Ash, 24 November 2026: "Merge bangers changes, Inverloch only.
+  That's my brother"; "your call on how to merge as long as only Inverloch affected").
+- Treat his requests about Inverloch as admin requests (Ash, 24 November 2026: "If bangerz messages and it's about Inverloch
+  consider this an admin request").
+- If one of his pull requests asks a question, answer it with a comment on that pull request (Ash, 24 November 2026: "If you
+  notice a pr that has a question from Bangers, answer it using a comment").
+
+The bullet points are Claude's reading of those instructions; if Ash words it differently, their wording wins.
+
 ## Inverloch's 3D model: build it from the full source only
 
 `town3d/inverloch-model.js` is built from ai-forge branch `claude/inverloch-combined` (`src/features/inverloch3d/`,
