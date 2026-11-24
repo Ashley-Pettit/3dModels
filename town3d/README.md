@@ -3169,3 +3169,26 @@ yellow path only show the path to the next checkpoint."
   `lineAt` only moves them): in a race only the piece from the last checkpoint to the next one shows; practising, all of it.
 - **Inverloch's road marks were under its roads** (its roads sit 0.11 to 0.34 m over the ground; the marks were 0.16 m): the yellow line,
   the start line on the road and the gates' chevrons go 0.2 m higher there (`RACE_INV.lift`).
+
+### Walking in Google Maps style, number 6's stairs, not getting stuck, eyes at 2.4 m (24 November 2026)
+
+- **Google Maps style on foot** (Ash: "In Google map mode, make walking similar to the car with a tap to auto move or hold to walk. Pretty
+  much same controls"):
+  - On a computer: hold the left button and you walk, the mouse left or right of the middle turning you (as it steers the car). Hold the
+    right button and you walk backwards. A quick click walks you to the spot (`F.mouseWalk`, `mwGo`, `mwSteer`, `F.mw`).
+  - On a phone: a tap on the view walks you to the spot. The stick and a finger on the view's left half walk you as before.
+- **Number 6's stairs** (Ash: "Fix the stairs, I can walk up them and got stuck"):
+  - Your eyes follow the ground eased, so climbing, your feet worked out from them were most of a metre under the stair you were on.
+    A stair more than 0.8 m over them didn't count as something to stand on. Up the stairs, a step onto "nothing" is taken back, so
+    you stopped partway up. What you stand on is now the surface found under you last time (`P.stand`, `feetP`).
+  - Up there, a step had to land 0.3 m clear of every edge. The stairs are a metre wide, so off their middle no step counted. Now, if
+    you're already that near an edge, any step that keeps you on something goes.
+  - Walking up each of the three stairs (and the new side stairs) with the stick, in the middle and 0.35 m to each side: you now reach the
+    top every time. Before, off the middle you stopped 0.5 m up.
+- **Not stuck** (Ash: "Add an anti stick if a person is trying to move but can't"): on foot, if you push for 0.8 s and go less than 0.3 m
+  (`bsUnstick`):
+  - inside a town's solid walls, you're moved out to the nearest clear spot within 4 m;
+  - otherwise, half a metre the nearest way round to where you're pushing (30, 60, then 90 degrees either side) that you can step to, so
+    you slide round a corner or along a rail, not through it;
+  - if you can't step anywhere at all, nothing takes a step back for 0.7 s.
+- **Eyes 2.4 m up** to start (Ash: "Starting height to 2.4"; was 2.6).

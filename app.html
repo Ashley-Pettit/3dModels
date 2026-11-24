@@ -8742,25 +8742,29 @@ const handle = async (m, post) => {
         if (e.code === "KeyR") { if (F.hot?.r) F.hot.r(); else { F.pos.copy(F.start.pos); F.yaw = F.start.yaw; F.pitch = F.start.pitch; } }
       },
       keyup: e => F.keys.delete(e.code),
-      blur: () => { F.keys.clear(); F.held?.clear(); F.rmb = false; },
+      blur: () => { F.keys.clear(); F.held?.clear(); F.rmb = false; F.mw = 0; },
       mousemove: e => { if (document.pointerLockElement === canvas) look(e.movementX, e.movementY, 0.0024); },
       pointerdown: e => {
         // desktop: drag to look (no mouse capture, so the buttons can always be clicked)
-        if (e.pointerType === "mouse" && F.mix && e.button === 2) { F.rmb = true; try { canvas.setPointerCapture(e.pointerId); } catch {} if (document.pointerLockElement === canvas) return; }
+        if (e.pointerType === "mouse" && F.mix && e.button === 2) { F.rmb = !F.mouseWalk?.(); /* (Google Maps style on foot: the right button walks you back, below) */ try { canvas.setPointerCapture(e.pointerId); } catch {} if (document.pointerLockElement === canvas) return; }
         if (e.pointerType === "mouse") { F.drag = { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, t: performance.now(), ts: e.timeStamp, b: e.button }; try { canvas.setPointerCapture(e.pointerId); } catch {} canvas.style.cursor = "grabbing";
           // driving a car with only the mouse (Google Maps style on a computer; Ash, 23 November 2026: "I want a person on desktop to be able
           // to control a car using only the mouse"): hold the left button to go, the mouse left or right of where you pressed steers; hold
           // the right button to brake, then reverse. A quick click still drives you to the spot (clickDrive)
-          { const k = F.mouseRide?.(); if (k && (e.button === 0 || e.button === 2)) { const D = F.drag; D.car = k; clearTimeout(F.mdT); if (k === "car") F.mdT = setTimeout(() => { if (F.drag === D) mdGo(D); }, 180); else mdGo(D); } }
+          { const k = F.mouseRide?.(); if (k && (e.button === 0 || e.button === 2)) { const D = F.drag; D.car = k; clearTimeout(F.mdT); if (k === "car") F.mdT = setTimeout(() => { if (F.drag === D) mdGo(D); }, 180); else mdGo(D); }
+            // (and on foot the same: held, you walk, the mouse left or right of the middle turning you; the right button walks you back; a
+            // quick click walks you to the spot)
+            else if (!k && F.mouseWalk?.() && (e.button === 0 || e.button === 2)) { const D = F.drag; D.walk = true; clearTimeout(F.mdT); F.mdT = setTimeout(() => { if (F.drag === D) mwGo(D); }, 180); } }
           return; }
         try { canvas.setPointerCapture(e.pointerId); } catch {}
         // a finger on the view's left half moves you, unless you're already holding the move stick: then it looks round like one on the
         // right half (Ash, 23 November 2026, on his iPhone: "I use right hand to drag right - only works intermittently". A drag to the
         // right often starts left of the middle, and was taken as a second move finger and ignored)
-        F.touches.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, move: e.clientX < innerWidth / 2 && !F.joys?.some(j => j.move && j.held()) }); tip.classList.add("dim"); },
+        F.touches.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, t0: performance.now(), move: e.clientX < innerWidth / 2 && !F.joys?.some(j => j.move && j.held()) }); tip.classList.add("dim"); },
       pointermove: e => {
         if (e.pointerType === "mouse") { const D = F.drag;
           if (D?.car) { D.x = e.clientX; D.y = e.clientY; if (!D.on && Math.hypot(D.x - D.sx, D.y - D.sy) > 6) mdGo(D); if (D.on) mdSteer(D); return; }  // (driving with the mouse: no looking round)
+          if (D?.walk) { D.x = e.clientX; D.y = e.clientY; if (!D.on && Math.hypot(D.x - D.sx, D.y - D.sy) > 6) mwGo(D); if (D.on) mwSteer(D); return; }  // (and walking)
           if (!D && F.mouseRide?.() === "plane") { mdAim(e.clientX, e.clientY, "plane"); return; }  // (flying: the mouse aims it even with no button down)
           if (D && document.pointerLockElement !== canvas && (e.buttons & 3)) { look(e.clientX - D.x, e.clientY - D.y, 0.005); D.x = e.clientX; D.y = e.clientY; } return; }
         const t = F.touches.get(e.pointerId); if (!t) return;
@@ -8773,10 +8777,13 @@ const handle = async (m, post) => {
         t.x = e.clientX; t.y = e.clientY; e.preventDefault(); },
       pointerup: e => { if (e.button === 2 || !(e.buttons & 2)) F.rmb = false; const D = F.drag; F.drag = null; canvas.style.cursor = F.simple ? "pointer" : "";
         if (D?.car) { clearTimeout(F.mdT); if (D.on) { F.stick.x = 0; F.stick.y = 0; F.mdOn = false; if (D.car !== "car") { F.boost = false; if (D.car === "possum") F.vert = 0; } return; } }
-        if (D && F.simple && e.pointerType === "mouse" && D.b === 0 && Math.hypot(e.clientX - D.sx, e.clientY - D.sy) < 6 && performance.now() - D.t < 450) F.on.clickGo?.(e.clientX, e.clientY);
+        if (D?.walk) { clearTimeout(F.mdT); if (D.on) { F.mw = 0; F.lookStick.x = 0; F.mdOn = false; return; } }
+        if (D && (F.simple || D.walk) && e.pointerType === "mouse" && D.b === 0 && Math.hypot(e.clientX - D.sx, e.clientY - D.sy) < 6 && performance.now() - D.t < 450) F.on.clickGo?.(e.clientX, e.clientY);
         // (with Google Maps controls, a click on the road while you're in a car: it drives there. Ash, 22 November 2026)
         else if (D && F.drive && e.pointerType === "mouse" && D.b === 0 && Math.hypot(e.clientX - D.sx, e.clientY - D.sy) < 6 && e.timeStamp - D.ts < 800) BS.town?.car?.clickDrive?.(e.clientX, e.clientY);
-        const t = F.touches.get(e.pointerId); if (t?.move && !F.joys?.some(j => j.move && j.held())) { F.stick.x = 0; F.stick.y = 0; } F.touches.delete(e.pointerId); },
+        const t = F.touches.get(e.pointerId); if (t?.move && !F.joys?.some(j => j.move && j.held())) { F.stick.x = 0; F.stick.y = 0; }
+        if (t && e.pointerType !== "mouse" && F.touches.size === 1 && document.body.classList.contains("bsgmap") && BS.town?.walk && !BS.town?.car?.in && Math.hypot(e.clientX - t.sx, e.clientY - t.sy) < 10 && performance.now() - (t.t0 || 0) < 350) F.on.clickGo?.(e.clientX, e.clientY);
+        F.touches.delete(e.pointerId); },
     };
     F.on.pointercancel = e => F.on.pointerup(e);
     // (the mouse as the car's pedals and wheel: the left button full ahead, the right one back; steering from how far left or right of
@@ -8793,6 +8800,10 @@ const handle = async (m, post) => {
     F.mouseRide = () => { if (!desk || !BS.town?.car?.in || !document.body.classList.contains("bsgmap") || !document.body.classList.contains("bsdrive") || /\bbs(ride|held)\b/.test(document.body.className) || BS.town?.admin?.tool) return null;
       let k = null; try { k = BS.town.car.where?.()?.kind; } catch {} if (k === "plane" && BS.town.car.where().heli) return null; return k === "car" || k === "plane" || k === "possum" ? k : null; };
     F.mouseCar = () => F.mouseRide() === "car";
+    // on foot in Google Maps style on a computer: the mouse walks you as it drives the car (mwGo, mwSteer: F.mw is 1 ahead, -1 back)
+    F.mouseWalk = () => desk && document.body.classList.contains("bsgmap") && !!BS.town?.walk && !BS.town?.car?.in && !BS.town?.admin?.tool && !/\bbsheld\b/.test(document.body.className);
+    const mwSteer = D => { F.lookStick.x = mdAxis((D.x ?? D.sx) - innerWidth / 2, innerWidth * 0.25) * 0.75; F.mw = D.b === 2 ? -1 : 1; };
+    const mwGo = D => { D.on = true; F.mdOn = true; F.rmb = false; F.goTo = null; canvas.style.cursor = "crosshair"; mwSteer(D); };
     // a short tutorial (Ash, 17 November 2026: "At the start offer players a short tutorial to learn the controls"): a card at the top, one
     // thing at a time, each step ticked off by doing it (or Next); Skip ends it. Finished once, it isn't offered again
     F.on.tutorial = () => { F.on.tutEnd?.(); const T = BS.town; if (!T?.on) return;
@@ -8995,16 +9006,27 @@ const handle = async (m, post) => {
     if (open("bsAdmin")) { $("bsEditBtn")?.click(); return true; }
     return false; }
   // on foot where a town makes its walls solid (Logan's council precinct): a step into one slides along it instead
-  function bsBlock(F, ox, oz) { const T = BS.town; if (T?.bal6?.block(F, ox, oz)) return;  // (up on number 6's balcony: no stepping off it)
+  function bsBlock(F, ox, oz) { const T = BS.town; if (F.noBlockTil > performance.now()) return;  // (just unstuck: let through)
+    if (T?.bal6?.block(F, ox, oz)) return;  // (up on number 6's balcony: no stepping off it)
     if (!T?.solidWalk || !T.solid || !T.solid(F.pos.x, F.pos.z) || T.solid(ox, oz)) return;
     if (!T.solid(F.pos.x, oz)) F.pos.z = oz; else if (!T.solid(ox, F.pos.z)) F.pos.x = ox; else { F.pos.x = ox; F.pos.z = oz; } if (F.wv) F.wv = [0, 0]; }
+  // stuck on foot (see bsFlyTick), pushing one way and not getting anywhere: inside a town's solid walls, out to the nearest clear spot
+  // within 4 m; otherwise half a metre the nearest way round to where you're pushing (30, 60, then 90 degrees either side) that something
+  // lets you step to (a wall, number 6's edges and glass: bsBlock), so you slide round a corner or along a rail rather than through it;
+  // and if nothing lets you step anywhere at all, nothing takes a step back for the next 0.7 s
+  function bsUnstick(F, dx, dz) { const T = BS.town, wall = (x, z) => !!(T?.solidWalk && T.solid?.(x, z)), now = performance.now(); F.unstuck = (F.unstuck || 0) + 1;
+    if (wall(F.pos.x, F.pos.z)) { for (let r = 0.5; r <= 4; r += 0.5) for (let a = 0; a < 16; a++) { const x = F.pos.x + Math.sin(a * Math.PI / 8) * r, z = F.pos.z + Math.cos(a * Math.PI / 8) * r; if (!wall(x, z)) { F.pos.x = x; F.pos.z = z; return; } } return; }
+    const free = (x, z) => { if (wall(x, z)) return false; const G = { pos: { x, z }, wv: null }; return !T?.bal6?.block?.(G, F.pos.x, F.pos.z); };
+    const a0 = Math.atan2(dx || 0, dz || 0);
+    if (dx || dz) for (const da of [0.52, -0.52, 1.05, -1.05, 1.57, -1.57]) { const x = F.pos.x + Math.sin(a0 + da) * 0.5, z = F.pos.z + Math.cos(a0 + da) * 0.5; if (free(x, z)) { F.pos.x = x; F.pos.z = z; if (F.wv) F.wv = [0, 0]; return; } }
+    if (![0, 1, 2, 3, 4, 5, 6, 7].some(k => free(F.pos.x + Math.sin(k * Math.PI / 4) * 0.5, F.pos.z + Math.cos(k * Math.PI / 4) * 0.5))) F.noBlockTil = now + 700; }
   function bsFlyTick(dt) {
     const F = BS.fly, k = F.keys, has = (...c) => c.some(x => k.has(x));
     if (F.drive) return F.drive(dt);  // driving a car in a town model (townCar): the car moves, and the view follows it
     // on foot, the gym makes you 10% quicker and Pandy's lime cordial lets you sprint half as fast again (Shift, or the Sprint button)
     const legs = F.walk ? (F.fit ? 1.1 : 1) * ((F.cordial && (F.sprint || has("ShiftLeft", "ShiftRight"))) || F.wheelRun ? 1.5 : 1) * (F.drunk ? 0.8 : 1) * (F.giant ? 2 : 1) : 1;
     const sp = (has("ShiftLeft", "ShiftRight") ? 34 : 11) * (F.speed ? F.speed() : 1) * Math.min(dt, 0.1) * (F.walk && has("ShiftLeft", "ShiftRight") ? 11 / 34 : 1) * legs;  // the whole-town model flies faster the higher you are
-    const f = (has("KeyW", "ArrowUp") || (F.rmb && F.walk) ? 1 : 0) - (has("KeyS", "ArrowDown") ? 1 : 0) + F.stick.y;
+    const f = (has("KeyW", "ArrowUp") || (F.rmb && F.walk) ? 1 : 0) - (has("KeyS", "ArrowDown") ? 1 : 0) + F.stick.y + (F.walk && F.mw ? F.mw : 0);
     const r = (has("KeyD", "ArrowRight") ? 1 : 0) - (has("KeyA", "ArrowLeft") ? 1 : 0) + F.stick.x;
     const u = (F.walk ? 0 : (has("Space") ? 1 : 0) - (has("KeyC") ? 1 : 0)) + F.vert;  // Space up, C down (flying; on foot Space jumps: Ash, 16 November 2026, "On pc remove c and space for up down when walking. Make space bar for jump")
     const lk = Math.min(dt, 0.1);  // the look stick turns you, faster the further it's pushed
@@ -9013,7 +9035,7 @@ const handle = async (m, post) => {
     const lim = F.lim || [-420, 420, -420, 200];  // the area you can fly in (Norman Road has its own)
     // on foot with the keys (a computer): a walk, Shift to run, easing in and out, and a little bob of the head (Ash, 15 November 2026:
     // "On pc make the game feel more natural when walking"); on a phone, the stick, as before
-    const kb = F.walk && !F.stick.x && !F.stick.y && (F.rmb || has("KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"));
+    const kb = F.walk && !F.stick.x && !F.stick.y && (F.rmb || F.mw || has("KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"));
     // a click to walk there (simple controls): any key or the stick takes over; there, or stuck against something, it stops
     let go = null; if (F.goTo) { const G = F.goTo, gx = G.x - F.pos.x, gz = G.z - F.pos.z, gd = Math.hypot(gx, gz);
       if (!F.walk || kb || F.stick.x || F.stick.y || gd < 0.5) F.goTo = null;
@@ -9026,6 +9048,10 @@ const handle = async (m, post) => {
       const ox = F.pos.x, oz = F.pos.z; F.pos.x = bsClamp(F.pos.x + F.wv[0] * lk, lim[0], lim[1]); F.pos.z = bsClamp(F.pos.z + F.wv[1] * lk, lim[2], lim[3]); bsBlock(F, ox, oz); F.bob = (F.bob || 0) + Math.hypot(...F.wv) * lk * 1.9; }
     else { const ox = F.pos.x, oz = F.pos.z; F.pos.x = bsClamp(F.pos.x + (-sy * f + cy * r) * sp, lim[0], lim[1]);
       F.pos.z = bsClamp(F.pos.z + (-cy * f - sy * r) * sp, lim[2], lim[3]); if (F.walk) bsBlock(F, ox, oz); }
+    // on foot, pushing to move for 0.8 s and gone less than 0.3 m: helped round what's in the way (bsUnstick)
+    if (F.walk) { const now = performance.now(), want = kb || go || Math.hypot(F.stick.x, F.stick.y) > 0.3;
+      if (!want) F.stk = null; else if (!F.stk) F.stk = { t: now, x: F.pos.x, z: F.pos.z };
+      else if (now - F.stk.t > 800) { if (Math.hypot(F.pos.x - F.stk.x, F.pos.z - F.stk.z) < 0.3) bsUnstick(F, go ? go[0] : -sy * f + cy * r, go ? go[1] : -cy * f - sy * r); F.stk = { t: now, x: F.pos.x, z: F.pos.z }; } }
     // Sue's bread: on foot, Space (or Jump) jumps, rather than raising your eyes (Ash, 16 November 2026: "Make sues bread give me the
     // ability to jump rather than be big"); C and Down still lower them
     if (F.walk && (F.canJump || has("Space") || F.jumpH > 0)) { const want = has("Space") || F.jumpBtn; if (want && !F.jumpWas && !(F.jumpH > 0.01)) { F.jumpV = 7.2; F.jumpH = 0.001; } F.jumpWas = want;
@@ -9401,7 +9427,7 @@ const handle = async (m, post) => {
           onError: msg => fail(msg) });
       return m.ready.then(() => {
         if (T.dead || BS.fly !== F) { try { m.dispose(); } catch {} return; }
-        const EYE = 2.6,  /* (Ash, 16 November 2026: "Set starting height to 2.6m") */ touch = matchMedia("(pointer: coarse)").matches;  // walking: your eyes 2.8 m up to start (Ash, 16 November 2026: "Set my start height to 2.8"; was 3), for a clear view over the cars and fences (Up and Down change it)
+        const EYE = 2.4,  /* (Ash, 24 November 2026: "Starting height to 2.4"; 2.6 till then: Ash, 16 November 2026, "Set starting height to 2.6m") */ touch = matchMedia("(pointer: coarse)").matches;  // walking: your eyes 2.8 m up to start (Ash, 16 November 2026: "Set my start height to 2.8"; was 3), for a clear view over the cars and fences (Up and Down change it)
         F.eye = EYE;
         // the ground, or the water over it: the sea and the inlet (Inverloch), or a flood that's on the map (Logan)
         // the ground: the model's, the water's, or a flat pad the app has laid (11 Norman Road's lot sits on one, a little above the
@@ -15408,7 +15434,10 @@ const handle = async (m, post) => {
     const list = o => [...o.both, ...o[P.mode]];
     const surfAt = (x, z, feet, gl) => { let best = null; for (const f of list(SURF)) { const h = f(x, z); if (h !== null && h <= feet + 0.8 && h > gl + 0.05 && (best === null || h > best)) best = h; } return best; };
     const feetY = () => { const F = BS.fly; return F ? F.pos.y - (P.eyeNow ?? F.eye ?? 2.6) - y0 : 0; };
-    P.top = (X0, Z0, g) => { if (!P.near) return g; const [x, z] = toLocal(X0, Z0); if (x < WS - 4 || x > SD.out + 2 || z < ZF - 3 || z > 4) return g; const s = surfAt(x, z, feetY(), g - y0); return s === null ? g : Math.max(g, y0 + s); };
+    const feetP = () => Math.max(feetY(), P.stand ?? -1e9);  // (what you're standing on: see P.top)
+    P.top = (X0, Z0, g) => { const F = BS.fly, mine = !!F && Math.abs(X0 - F.pos.x) < 1e-6 && Math.abs(Z0 - F.pos.z) < 1e-6; if (!P.near) { if (mine) P.stand = null; return g; }
+      const [x, z] = toLocal(X0, Z0); if (x < WS - 4 || x > SD.out + 2 || z < ZF - 3 || z > 4) { if (mine) P.stand = null; return g; }
+      const s = surfAt(x, z, mine ? feetP() : feetY(), g - y0); if (mine) P.stand = s ?? g - y0; return s === null ? g : Math.max(g, y0 + s); };  // (where you are: P.stand, what's under you)
     // eyes: no higher than the room over you allows
     P.eye = e => { P.eyeNow = e; const F = BS.fly; if (!P.near || !F) return e; const [x, z] = toLocal(F.pos.x, F.pos.z); if (x < WS - 1 || x > SD.out + 1 || z < ZF - 2 || z > 3) return e;
       const feet = feetY(), gl = gL(x, z), s = surfAt(x, z, feet, gl), base = s ?? gl; let room = Infinity;
@@ -15416,9 +15445,12 @@ const handle = async (m, post) => {
       else for (const [f, top] of list(ROOF)) if (f(x, z)) room = Math.min(room, top - base);
       return P.eyeNow = Math.max(1.4, Math.min(e, room - 0.25)); };
     // on a raised surface, a step to where there's none (over the balustrade, or out of a wall) is taken back: slide along it instead
-    P.block = (F, ox, oz) => { if (!P.near) return false; const [x0, z0] = toLocal(ox, oz), feet = feetY(), gl0 = gL(x0, z0); if (feet < gl0 + 1.2 || surfAt(x0, z0, feet, gl0) === null) return false;
-      const ok = (X1, Z1) => { const [x, z] = toLocal(X1, Z1), gl = gL(x, z); return [[0, 0], [0.3, 0], [-0.3, 0], [0, 0.3], [0, -0.3]].every(([a, b]) => surfAt(x + a, z + b, feet, gl) !== null); };  // (and a step back from the glass)
+    P.block = (F, ox, oz) => { if (!P.near) return false; const [x0, z0] = toLocal(ox, oz), feet = feetP(), gl0 = gL(x0, z0); if (feet < gl0 + 1.2 || surfAt(x0, z0, feet, gl0) === null) return false;
+      const ok = (X1, Z1, w = 0.3) => { const [x, z] = toLocal(X1, Z1), gl = gL(x, z); return [[0, 0], [w, 0], [-w, 0], [0, w], [0, -w]].every(([a, b]) => surfAt(x + a, z + b, feet, gl) !== null); };  // (and a step back from the glass)
       if (ok(F.pos.x, F.pos.z)) return false;
+      // (already within 0.3 m of an edge, as on the stairs, which are a metre wide: any step that keeps you on something goes. It took back
+      // every step that didn't land 0.3 m clear of every edge, so off the stairs' middle you couldn't move)
+      if (!ok(ox, oz) && ok(F.pos.x, F.pos.z, 0)) return false;
       if (ok(F.pos.x, oz)) F.pos.z = oz; else if (ok(ox, F.pos.z)) F.pos.x = ox; else { F.pos.x = ox; F.pos.z = oz; } if (F.wv) F.wv = [0, 0]; return true; };
 
     // ---- tapping the balcony button (by the front stairs): an unlabelled spot over it, there when you're within 30 m on foot (Ash, 22
