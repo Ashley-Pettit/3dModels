@@ -9387,7 +9387,7 @@ const handle = async (m, post) => {
       const v = cur[k]; if (typeof v !== "function") return v;
       return (...a) => { const r = v.apply(cur, a);
         if (k === "setRemoved" && T.invStatic) T.invStatic.hideCars(a[0]?.cars || []);
-        if (k === "addParts") { const H = handle(r); handles.push(H); log.push(["addParts", a, H]); return H.proxy; }
+        if (k === "addParts" || k === "addTrafficCar") { const H = handle(r); handles.push(H); log.push([k, a, H]); return H.proxy; }
         if (k === "addPad" || k === "addCars") log.push([k, a]); else if (LAST.includes(k)) last[k] = a;
         if ((k === "setCamera" || k === "setMinutes") && next) try { next[k](...a); } catch {}  // the one being built out of sight looks the same way
         return r; }; } });
@@ -9397,7 +9397,7 @@ const handle = async (m, post) => {
     // frames a second over a short while
     const fps = ms => new Promise(ok => { let n = 0, t0 = 0; const f = t => { if (dead) return ok(0); if (!t0) t0 = t; n++; if (t - t0 < ms) requestAnimationFrame(f); else ok(n * 1000 / (t - t0)); }; requestAnimationFrame(f); });
     const swapTo = async (to, q) => { bsNote("sharper model swapped in");
-      for (const [name, a, H] of log) { if (name === "addParts") H.real = to.addParts(...a); else to[name]?.(...a); }
+      for (const [name, a, H] of log) { if (H) H.real = to[name](...a); else to[name]?.(...a); }
       for (const H of handles) for (const [ck, a] of H.calls) { const fn = ck.split(":")[0]; try { H.real[fn](...a); } catch {} }
       T.invStatic?.restoreCars(to);
       for (const k of LAST) if (last[k]) { try { const r = to[k](...last[k]); if (r?.then) await r; } catch {} }
@@ -17681,7 +17681,10 @@ const handle = async (m, post) => {
         if (R2.length < 3) return false; roads = R2; nodes = new Map(); for (const r of roads) for (let j = 0; j < r.n; j++) { const k = key(r.p[j * 2], r.p[j * 2 + 1]); let a = nodes.get(k); if (!a) nodes.set(k, a = []); a.push([r, j]); } return true; };
       if (!reroad()) return;
       for (let i = 0; i < N; i++) { const C = { col: COLS[i % COLS.length], top: 8 + Math.random() * 6 }; if (!start(C)) continue;
-        C.parts = m.addParts(townPlaneParts(C.col, "sedan").map(q => ({ ...q, matrix: M.identity().elements.slice() }))); P.cars.push(C); }
+        C.parts = contact && m.addTrafficCar
+          ? m.addTrafficCar(i % 3, parseInt(C.col.slice(1), 16), ...townTrafficBodies.car)
+          : m.addParts(townPlaneParts(C.col, "sedan").map(q => ({ ...q, matrix: M.identity().elements.slice() })));
+        P.cars.push(C); }
       // Moorooka's bus drives itself (Ash, 16 November 2026: "I want the bus to actually move by itself and stop every now again so I can
       // get on. Drives without me moving it. I'm a passenger"): round the main roads like the traffic, a bit slower, stopping every few
       // hundred metres for 12 seconds. Walk up while it's stopped and Get on; Get off at a stop

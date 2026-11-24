@@ -14,7 +14,7 @@ class MatrixStub {
   makeScale() { return this; } set() { return this; } identity() { return this; }
   compose() { return this; } setFromEuler() { return this; }
 }
-async function world(place="inv") {
+async function world(place="inv", model={}, roads=[-100,0,100].map(x=>({cls:0,pts:[x,-100,x,100]}))) {
   let now=5000, startup;
   const F={pos: at(0,0,0,2), keys:new Set(), stick:{x:0,y:0}, lookStick:{x:0,y:0}, vert:0, yaw:0, pitch:0, eye:2, walk:()=>2};
   const T={cfg:{place}, walk:true};
@@ -22,11 +22,12 @@ async function world(place="inv") {
   const BS={B,town:T,fly:F};
   const ctx=vm.createContext({BS, setTimeout: f=>{startup=f;}, performance:{now:()=>now}, matchMedia:()=>({matches:false}), townLaneOf:()=>0,
     bsClamp:(x,lo,hi)=>Math.max(lo,Math.min(x,hi)), bsBlock:()=>{}, bsUnstick:()=>{throw Error("unexpected sidestep into traffic");},
-    townPlaneParts:()=>[], townStreetData:async()=>({names:[],roads:[-100,0,100].map(x=>({cls:0,pts:[x,-100,x,100]}))})});
+    townPlaneParts:()=>[], townStreetData:async()=>({names:[],roads})});
+  vm.runInContext("let seed=37; Math.random=()=>((seed=(Math.imul(1664525, seed)+1013904223)>>>0)/4294967296)",ctx);
   vm.runInContext(mechanics+walkCode+"; globalThis.sweep=townTrafficSweep; globalThis.shape=townTrafficBodies;",ctx);
   const parts=()=>({setMatrix(){},remove(){}});
-  const P=ctx.townTraffic(T,{addParts:parts},F,()=>0,T.cfg);
-  T.traffic=P; await startup(); P.cars.length=0;
+  const P=ctx.townTraffic(T,{addParts:parts,...model},F,()=>0,T.cfg);
+  T.traffic=P; await startup(); const initial=P.cars.splice(0);
   const tick=()=>{now+=100; P.frame();};
   function npc(x,z,v=0) {
     const road={p:[x,-100,x,100],n:2,one:false,lane:0};
@@ -38,8 +39,29 @@ async function world(place="inv") {
       SHAPE:[],inside:()=>true,fits:()=>true,wrap:n=>Math.atan2(Math.sin(n),Math.cos(n)),snd:{thud(){}}};
     Object.assign(ctx,locals); vm.runInContext("{"+normalDrive+"}",ctx); return car;
   }
-  return {ctx,T,F,P,tick,npc,drive};
+  return {ctx,T,F,P,tick,npc,drive,initial};
 }
+test("Inverloch traffic keeps its assigned body, paint and visual handle on takeover",async()=>{
+  const streets=[];
+  for(let x=-210;x<=210;x+=70) for(let z=-140;z<=140;z+=70) streets.push({cls:0,pts:[x,z,x,z+50]});
+  const model={addTrafficCar:(kind,colour,...envelope)=>({kind,colour,envelope,setMatrix(){},remove(){}})};
+  const {P,initial}=await world("inv",model,streets);
+  assert.equal(initial.length,7);
+  const colours=[0xf2f2ee,0xb8bcc2,0x1d1f24,0x2d5ea8,0xa8262c,0x5c6670,0xe4e1d6];
+  for(const [slot,car] of initial.entries()){
+    assert.equal(car.parts.kind,slot%3); assert.equal(car.parts.colour,colours[slot]);
+    assert.deepEqual(car.parts.envelope,[0.98,2.22,1.4]);
+    P.cars.push(car);
+    assert.equal(P.take(car).parts,car.parts);
+    assert.equal(P.take(car),null);
+  }
+  for(const place of ["moo","logan"]){
+    const {initial:others}=await world(place,model,streets);
+    assert.ok(others.length>0 && others.every(car=>car.parts.kind===undefined));
+  }
+  const {initial:older}=await world("inv",{},streets);
+  assert.equal(older.length,7); assert.ok(older.every(car=>car.parts.kind===undefined));
+});
 test("sweeps cover fast opposed travel and a rotating corner while separated paths stay clear", async()=>{
   const {ctx:{sweep,shape}}=await world();
   const s=(a,A,ka,b,B,kb)=>sweep(a,A,shape[ka],b,B,shape[kb]);
