@@ -3192,3 +3192,22 @@ yellow path only show the path to the next checkpoint."
     you slide round a corner or along a rail, not through it;
   - if you can't step anywhere at all, nothing takes a step back for 0.7 s.
 - **Eyes 2.4 m up** to start (Ash: "Starting height to 2.4"; was 2.6).
+
+## Bohain Street at Beaudesert Road: kerbs, verge and footpath (24 November 2026)
+
+Ash, 24 November 2026: "Fix up the grass, path and road here" (a screenshot of Bohain Street where it leaves Beaudesert Road, beside
+number 6). The ground there came out of the aerial-photo sorting with a wavy north kerb (grass stuck up to 3 m into the road), a lumpy
+corner into Beaudesert Road, and the footpath in two pieces at the corner (one running to the kerb, the other starting beside it).
+
+Fixed with twelve painted strokes in `town3d/moorooka/edits.json` (added with `tools/town/add_edits.py`, so they show and can be undone
+like any admin-mode edit). How they were worked out: the model's own ground was measured from a top view (each pixel's true place
+from `groundUnder`), and the design drawn as a street would be built:
+- Bohain Street's kerbs as two straight lines (10 m apart), as measured east of the junction;
+- the corner into Beaudesert Road's east kerb a true 16 m arc, and the corner lot's kerb into the slip lane an 18 m arc (the radii that
+  fit what was there within half a metre);
+- on the corner lot's side, a 2.3 m grass verge and a 1.2 m footpath, unbroken from Bohain Street round into the slip lane, joining
+  the footpath that was there at both ends.
+- the driveway of the lot east of the corner carried across the new verge to the kerb, 3 m wide and square.
+
+The strokes only touch grass, road and footpath: none falls on the islands' gardens or kerbs. They show where the sharper ground is
+drawn (the phones that draw it, and computers).
