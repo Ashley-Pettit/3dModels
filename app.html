@@ -2710,9 +2710,10 @@ body.bsfly .toast.show { transform: translate(-50%, 0); }
   // A link straight into Explore: start fetching everything the model needs now, side by side, not one after another as each
   // script finds out what it wants (three.js, then the model's script, then its data: each used to wait for the one before)
   if (pendingExplore) setTimeout(() => { try { const cfg = TOWNS[pendingExplore]; if (!cfg) return;
+      if (cfg.place === "inv" && document.getElementById("inv-model-preload")) return;
       const hint = (href, as) => { const l = document.createElement("link"); l.rel = "preload"; l.as = as; l.href = href; if (as !== "script") l.crossOrigin = "anonymous"; document.head.appendChild(l); };
       hint("https://cdnjs.cloudflare.com/ajax/libs/three.js/0.152.2/three.min.js", "script"); hint(cfg.src, "script");
-      for (const f of cfg.pre || []) hint(cfg.assets + (f === "ground.webp" && (cfg.place === "logan" || cfg.place === "moo") && window.anSmallGround ? "ground-1k.webp" : f), /\.webp$/.test(f) && cfg.place !== "logan" ? "image" : "fetch"); } catch {} }, 0);
+      for (const f of cfg.pre || []) hint(cfg.assets + (f === "ground.webp" && window.anSmallGround ? (cfg.place === "inv" ? "ground-2k.webp" : "ground-1k.webp") : f), /\.webp$/.test(f) && cfg.place !== "logan" ? "image" : "fetch"); } catch {} }, 0);
   const hash = pendingStory || pendingTV || pendingExplore ? "" : rawHash;
   const state = {
     tab: hash || store.get("brief.tab3", "foryou"),

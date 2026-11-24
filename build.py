@@ -84,6 +84,30 @@ img{{max-width:100%}}
 <body>
 """
 
+def inverloch_preloads():
+    # Use the version that townModelLib will request, including on a renderer-only update.
+    model = re.search(r'lib: "InverlochModel", src: TOWN3D \+ "(inverloch-model\.js\?v=\d+)"', body)
+    if not model:
+        raise ValueError("Cannot find the Inverloch renderer URL for the Explore head")
+    return """<script>
+(() => {
+  // A reload after switching towns restores the other town even on the Inverloch URL.
+  try {
+    if (performance.getEntriesByType("navigation")[0]?.type === "reload" &&
+        ["moo", "logan"].includes(sessionStorage.getItem("an-ex-town"))) return;
+  } catch {}
+  const ground = matchMedia("(pointer: coarse)").matches ? "ground-2k.webp" : "ground.webp";
+  for (const [file, type] of [[MODEL, "script"], ["town.json", "fetch"], ["height.png", "fetch"], [ground, "image"]]) {
+    const hint = document.createElement("link");
+    hint.rel = "preload"; hint.as = type; hint.href = "town3d/" + file;
+    if (type !== "script") hint.crossOrigin = "anonymous";
+    if (type === "script") hint.id = "inv-model-preload";
+    document.head.appendChild(hint);
+  }
+})();
+</script>""".replace("MODEL", json.dumps(model[1]))
+
+
 # A build stamp: the app checks version.json against it and reloads itself when the site has a newer app
 # (phones keep a home-screen app open for days without reloading).
 def stamped(hd, bd, folder):
@@ -227,6 +251,8 @@ if os.path.exists(os.path.join(here, "local", "brands.json")):
                           .replace(f'name="apple-mobile-web-app-title" content="{nm}"', f'name="apple-mobile-web-app-title" content="{sub} 3D"')
                           .replace("<head>\n", f'<head>\n<meta name="an-explore" content="{slug}">\n', 1))
             assert "explore-share.jpg" in ehead and "an-explore" in ehead and '<base href="../../">' in ehead, "explore page head"
+            if slug == "inv":
+                ehead = ehead.replace('<base href="../../">', '<base href="../../">\n' + inverloch_preloads(), 1)
             with open(os.path.join(ex, "index.html"), "w", encoding="utf-8") as f:
                 f.write(stamped(ehead, lbody, ex) + lbody.strip() + "\n</body>\n</html>\n")
             # its own home-screen app (Ash, 15 November 2026: "In settings show how someone can make this explore an app on their
