@@ -3113,3 +3113,13 @@ Ash: "Add a car race with similar rules to Inverloch. Just car only. It should s
   Road") puts you on your feet 3 m in front of him (`T.standAt`). His name over him within 70 m. Drawn only within 300 m, made the first
   time you're that close; checked each frame from the race's own frame.
 - Moorooka's race is as it was.
+
+### Jump to the bakery and the library after the A'Beckett Street rebuild (24 November 2026)
+
+After [#221](https://github.com/Ashley-Pettit/3dModels/pull/221) split the bakery from Alex Scott's and moved the library's round window
+and "Library" glass to its entrance corner (Ash: "your call on how to merge as long as only Inverloch affected"):
+- **The bakery:** Jump to put you inside the chemist's new corner (the middle of the bakery's own, shorter front is 5.5 m east of the
+  whole frontage's). You stand where you did before, out from the whole frontage, and look at the bakery's own front.
+- **The library:** you stand out in front of its entrance corner (6 m along, 13 m out from it) looking at the doors, so the round window,
+  the "Library" glass, the Hub's sign and the Open flag are all in view (it looked at plain glass).
+- The hotel's window-making function is `sash`, not `window` (which hid the browser's own `window` in that block).
