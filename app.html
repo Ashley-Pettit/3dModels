@@ -7238,7 +7238,7 @@ const handle = async (m, post) => {
         TG.add(new THREE.Mesh(geo, W.invShopWin)); }
       done(roofEdge, { roughness: .6 });
       // ---- verandahs: corrugated iron sloping to a white fascia, on teal posts with little brackets
-      const vb = bag();
+      const vb = bag(), civicPosts = W.invCivicPosts = [];
       const replacedAwnings = new Set(["42.8,28.5","66.8,28.8","82.7,33.4","42.2,51.6","27.6,49.9","10.5,47.7","56.5,52.8"]);
       D.v.forEach(([x1, z1, x2, z2, nx, nz]) => {
         if (replacedAwnings.has([x1,z1].join(","))) return;
@@ -7248,6 +7248,7 @@ const handle = async (m, post) => {
         for (let s = 0.3; s < 3.2; s += 0.45) put(vb, new THREE.BoxGeometry(0.05, 0.05, L), 0xa3a9ad, mtx(mx + nx * (0.35 + s), G0 + 3.42 - s * 0.1, mz + nz * (0.35 + s), r));  // the corrugations
         put(vb, new THREE.BoxGeometry(0.08, 0.38, L), 0xf4f2ec, mtx(mx + nx * 3.5, G0 + 3.05, mz + nz * 3.5, r));  // fascia
         for (let s = 1.2; s < L - 0.5; s += 3.6) { const x = x1 + (x2 - x1) * s / L + nx * 3.35, z = z1 + (z2 - z1) * s / L + nz * 3.35;
+          civicPosts.push([x,z,0.07]);
           put(vb, new THREE.CylinderGeometry(0.06, 0.07, 2.95, 8), 0x2f7a72, mtx(x, G0 + 1.48, z, 0));
           put(vb, new THREE.BoxGeometry(0.05, 0.4, 0.6), 0x2f7a72, mtx(x - nx * 0.3, G0 + 2.8, z - nz * 0.3, r + Math.PI / 2, 1, 1, 1)); }
         lights(mx + nx * 2, G0 + 2.9, mz + nz * 2); });
@@ -7272,7 +7273,9 @@ const handle = async (m, post) => {
         const mx=(p[0]+q[0])/2, mz=(p[1]+q[1])/2, h=shop.face || .36, y=3.12+h/2;
         put(vb,new THREE.BoxGeometry(.15,h,w),shop.trim,mtx(mx,G0+y,mz,yaw));
         const post = shop.fabric === "brick" ? 0x624336 : shop === agent ? shop.trim : 0xa2a299;
-        put(vb,new THREE.BoxGeometry(.105,3.14,.105),post,mtx(p[0]+.14*dx/w,G0+1.58,p[1]+.14*dz/w,yaw));
+        const px = p[0]+.14*dx/w, pz = p[1]+.14*dz/w;
+        civicPosts.push([px,pz,.06]);
+        put(vb,new THREE.BoxGeometry(.105,3.14,.105),post,mtx(px,G0+1.58,pz,yaw));
         if (shop.label) printedFronts.push({pos:[mx+nx*.09,mz+nz*.09], nx,nz,y,w:w-.12,h:h-.02,text:shop.label,bg:shop.sign || shop.trim,ink:shop.ink || "#fbf5e7"});
       }
       done(vb, { roughness: .6, metalness: .25 });
@@ -7662,6 +7665,7 @@ const handle = async (m, post) => {
       if (ab) ab.pts.forEach((p, i) => { if (i === ab.pts.length - 1) return; const [ax, az] = p, [bx, bz] = ab.pts[i + 1], L = Math.hypot(bx - ax, bz - az), ux = (bx - ax) / L, uz = (bz - az) / L;
         for (let s = 8; s < L; s += 24) [-1, 1].forEach(sd => { const x = ax + ux * s - uz * 10.6 * sd, z = az + uz * s + ux * 10.6 * sd;
           if (Math.hypot(x - D.c[0], z - D.c[1]) > 140 || nearOther(x, z, ab, 1)) return;
+          civicPosts.push([x,z,.11]);
           put(fu, new THREE.CylinderGeometry(0.08, 0.11, 6.2, 8), 0x2f7a72, mtx(x, G0 + 3.1, z, 0));
           put(fu, new THREE.TorusGeometry(0.55, 0.06, 6, 12, Math.PI / 2), 0x2f7a72, mtx(x + uz * 0.55 * sd, G0 + 6.2, z - ux * 0.55 * sd, Math.atan2(ux, uz) + (sd > 0 ? Math.PI / 2 : -Math.PI / 2)));
           put(fu, new THREE.CylinderGeometry(0.22, 0.3, 0.3, 10), 0x24584f, mtx(x + uz * 1.1 * sd, G0 + 6.05, z - ux * 1.1 * sd, 0));
@@ -7669,6 +7673,7 @@ const handle = async (m, post) => {
       if (ab) {
         for (const [x, side] of [[-2.4, -10], [.1, -10], [35, 8.3], [37.0, 8.7], [44, 8.25], [46.2, 8.55], [43.2, -7.5], [46.5, -7.8]]) {
           const p = streetAt(x, side);
+          civicPosts.push([p.x,p.z,.085]);
           put(fu, new THREE.CylinderGeometry(.045, .085, 7.9, 7), 0xb8b7b0, mtx(p.x, G0 + 4.2, p.z, 0));
           // Printed event banners on silver masts. Vary the folds and use broad bands that read at street distance.
           const yaw = side > 0 ? p.yaw - .30 : p.yaw - .72;
@@ -7679,6 +7684,7 @@ const handle = async (m, post) => {
         }
         for (const [x, side] of [[43, 6.85], [38.2, -7.1]]) {
           const p = streetAt(x, side), sign = mtx(p.x, G0 + 2.35, p.z, p.yaw);
+          civicPosts.push([p.x,p.z,.042]);
           put(fu, new THREE.CylinderGeometry(.033, .042, 2.2, 7), 0x93968b, mtx(p.x, G0 + 1.3, p.z, 0));
           put(fu, new THREE.CylinderGeometry(.34, .34, .045, 22).rotateX(Math.PI / 2), 0xe4bc30, sign);
           for (const face of [-1, 1]) for (const [xoff, tilt] of [[-.07, -.43], [.065, .42]]) {
@@ -9006,7 +9012,9 @@ const handle = async (m, post) => {
     if (open("bsAdmin")) { $("bsEditBtn")?.click(); return true; }
     return false; }
   // on foot where a town makes its walls solid (Logan's council precinct): a step into one slides along it instead
-  function bsBlock(F, ox, oz) { const T = BS.town; if (F.noBlockTil > performance.now()) return;  // (just unstuck: let through)
+  function bsBlock(F, ox, oz) { const T = BS.town;
+    T?.invStatic?.slide(F.pos, ox, oz);
+    if (F.noBlockTil > performance.now()) return;  // (just unstuck: let through)
     if (T?.bal6?.block(F, ox, oz)) return;  // (up on number 6's balcony: no stepping off it)
     if (!T?.solidWalk || !T.solid || !T.solid(F.pos.x, F.pos.z) || T.solid(ox, oz)) return;
     if (!T.solid(F.pos.x, oz)) F.pos.z = oz; else if (!T.solid(ox, F.pos.z)) F.pos.x = ox; else { F.pos.x = ox; F.pos.z = oz; } if (F.wv) F.wv = [0, 0]; }
@@ -9016,7 +9024,7 @@ const handle = async (m, post) => {
   // and if nothing lets you step anywhere at all, nothing takes a step back for the next 0.7 s
   function bsUnstick(F, dx, dz) { const T = BS.town, wall = (x, z) => !!(T?.solidWalk && T.solid?.(x, z)), now = performance.now(); F.unstuck = (F.unstuck || 0) + 1;
     if (wall(F.pos.x, F.pos.z)) { for (let r = 0.5; r <= 4; r += 0.5) for (let a = 0; a < 16; a++) { const x = F.pos.x + Math.sin(a * Math.PI / 8) * r, z = F.pos.z + Math.cos(a * Math.PI / 8) * r; if (!wall(x, z)) { F.pos.x = x; F.pos.z = z; return; } } return; }
-    const free = (x, z) => { if (wall(x, z)) return false; const G = { pos: { x, z }, wv: null }; return !T?.bal6?.block?.(G, F.pos.x, F.pos.z); };
+    const free = (x, z) => { if (wall(x, z) || T?.invStatic?.depth(x,z,0,0,.35)) return false; const G = { pos: { x, z }, wv: null }; return !T?.bal6?.block?.(G, F.pos.x, F.pos.z); };
     const a0 = Math.atan2(dx || 0, dz || 0);
     if (dx || dz) for (const da of [0.52, -0.52, 1.05, -1.05, 1.57, -1.57]) { const x = F.pos.x + Math.sin(a0 + da) * 0.5, z = F.pos.z + Math.cos(a0 + da) * 0.5; if (free(x, z)) { F.pos.x = x; F.pos.z = z; if (F.wv) F.wv = [0, 0]; return; } }
     if (![0, 1, 2, 3, 4, 5, 6, 7].some(k => free(F.pos.x + Math.sin(k * Math.PI / 4) * 0.5, F.pos.z + Math.cos(k * Math.PI / 4) * 0.5))) F.noBlockTil = now + 700; }
@@ -9356,6 +9364,7 @@ const handle = async (m, post) => {
       if (k === "dispose") return () => { dead = true; hiBox.hidden = true; try { cur.dispose(); } catch {} try { next?.dispose(); } catch {} };
       const v = cur[k]; if (typeof v !== "function") return v;
       return (...a) => { const r = v.apply(cur, a);
+        if (k === "setRemoved" && T.invStatic) T.invStatic.hideCars(a[0]?.cars || []);
         if (k === "addParts") { const H = handle(r); handles.push(H); log.push(["addParts", a, H]); return H.proxy; }
         if (k === "addPad" || k === "addCars") log.push([k, a]); else if (LAST.includes(k)) last[k] = a;
         if ((k === "setCamera" || k === "setMinutes") && next) try { next[k](...a); } catch {}  // the one being built out of sight looks the same way
@@ -9368,6 +9377,7 @@ const handle = async (m, post) => {
     const swapTo = async (to, q) => { bsNote("sharper model swapped in");
       for (const [name, a, H] of log) { if (name === "addParts") H.real = to.addParts(...a); else to[name]?.(...a); }
       for (const H of handles) for (const [ck, a] of H.calls) { const fn = ck.split(":")[0]; try { H.real[fn](...a); } catch {} }
+      T.invStatic?.restoreCars(to);
       for (const k of LAST) if (last[k]) { try { const r = to[k](...last[k]); if (r?.then) await r; } catch {} }
       await new Promise(ok => requestAnimationFrame(() => requestAnimationFrame(ok)));
       if (dead || BS.town !== T) return;
@@ -15956,6 +15966,8 @@ const handle = async (m, post) => {
         return (flat ? top > 0.102 && (d < 2.6 || (d < 14 && top < 0.1285)) : d < 7) || (flat && (townOnPlaza(x, z) || (top > 0.132 && Math.hypot(x - 15, z - 35.5) < 5.5))) || (!flat && Math.hypot(x - D.c[0], z - D.c[1]) < 9.5); } }); } catch (e) { console.warn("Town model: the town centre couldn't be added", e); }
       if (block) T.block = { parts: block.parts, corners: block.corners, ms: Math.round(performance.now() - t0) }; }
     if (block) { const [cx, cz] = block.at(D.c[0], D.c[1]);
+      const collision = T.invStatic = invCivicCollision(block.at, block.inPilot);
+      for (const [x,z,r] of W.invCivicPosts || []) if (townInBlock(x,z) && Math.hypot(x-D.c[0],z-D.c[1]) >= 9.5 && Math.hypot(x-TOWN_OLD_MEMORIAL[0],z-TOWN_OLD_MEMORIAL[1]) >= 7) collision.post(x,z,r);
       const [kx, kz] = block.at(TOWN_CLOCK[0], TOWN_CLOCK[1]), clockPlace = new THREE.Matrix4().makeTranslation(kx, block.place(TOWN_CLOCK[0], TOWN_CLOCK[1]).elements[13] + 2.15, kz)
         .multiply(new THREE.Matrix4().makeRotationY(TOWN_CLOCK[2] - D.c[2])).multiply(new THREE.Matrix4().makeScale(TOWN_CLOCK_SIZE, TOWN_CLOCK_SIZE, TOWN_CLOCK_SIZE))
         .multiply(new THREE.Matrix4().makeTranslation(-D.c[0], -2.15, -D.c[1]));  // lifted from where the weather's stands, turned, brought to its real size and set down
@@ -15963,8 +15975,9 @@ const handle = async (m, post) => {
       flags.forEach(f => { v.setFromMatrixPosition(f.matrixWorld).applyMatrix4(toTG); if (Math.hypot(v.x - TOWN_OLD_MEMORIAL[0], v.z - TOWN_OLD_MEMORIAL[1]) > 7) whole(f, block.place(v.x, v.z)); });  // (the memorial has its own two)
       // somewhere to stand for the bakery (out in the mouth of Reilly Street, across from it) and for the war memorial (in front of it)
       const standAt = (name, fx, fz, tx, tz, pitch) => { const [x, z] = block.at(fx, fz), [ax, az] = block.at(tx, tz); jumps.push({ name, target: [ax, az], walk: { x, z, yaw: Math.atan2(x - ax, z - az), pitch } }); };
-      if (ownCars) try { m.addCars(W.invParked.filter(([x, z]) => townInBlock(x, z) && !townOnPlaza(x, z) && Math.hypot(x - TOWN_CLOCK[0], z - TOWN_CLOCK[1]) > 5.5)
-        .map(([x, z, yaw, colour, kind]) => { const [X, Z] = block.at(x, z); return { x: X, z: Z, heading: yaw, colour, kind }; })); } catch (e) { console.warn("Town model: the town centre's parked cars couldn't be added", e); }
+      if (ownCars) try { const cars = W.invParked.filter(([x, z]) => townInBlock(x, z) && !townOnPlaza(x, z) && Math.hypot(x - TOWN_CLOCK[0], z - TOWN_CLOCK[1]) > 5.5)
+        .map(([x, z, yaw, colour, kind]) => { const [X, Z] = block.at(x, z); return { x: X, z: Z, heading: yaw, colour, kind }; });
+        m.addCars(cars); collision.addCars(cars); } catch (e) { console.warn("Town model: the town centre's parked cars couldn't be added", e); }
       standAt("the clock", 11.5, 33.5, TOWN_CLOCK[0], TOWN_CLOCK[1], 0.16);  // from beside the car park, as in Street View: the clock in front, the memorial to the left
       // (where to stand from the whole bakery frontage, as the town's map has it: since the bakery and Alex Scott's were split, the
       // middle of the bakery's own front put the spot 5.5 m east, inside the chemist's corner. Looking at the bakery's own front)
@@ -15982,11 +15995,13 @@ const handle = async (m, post) => {
           const sd = [1, -1].sort((a, b) => Math.hypot(best.x + best.ux * 42 * a - D.c[0], best.z + best.uz * 42 * a - D.c[1]) - Math.hypot(best.x + best.ux * 42 * b - D.c[0], best.z + best.uz * 42 * b - D.c[1])).find(k => townInBlock(best.x + best.ux * 42 * k, best.z + best.uz * 42 * k)) || 1;
           standAt("the shops", best.x + best.ux * 42 * sd, best.z + best.uz * 42 * sd, best.x - best.ux * 30 * sd, best.z - best.uz * 30 * sd, 0.03); } }
       // the block's buildings are solid to a car or a plane, as the model's own are (their outlines, in the model's metres)
-      { const polys = D.b.map(([, , f]) => { const q = []; let cx = 0, cz = 0; for (let i = 0; i < f.length; i += 2) { cx += f[i]; cz += f[i + 1]; } cx /= f.length / 2; cz /= f.length / 2; if (!townInBlock(cx, cz)) return null;
+      { const polys = D.b.map(([, kind, f]) => { if (kind === 5) return null; // OSM building=roof (open shelter)
+          const q = []; let cx = 0, cz = 0; for (let i = 0; i < f.length; i += 2) { cx += f[i]; cz += f[i + 1]; } cx /= f.length / 2; cz /= f.length / 2; if (!townInBlock(cx, cz)) return null;
           let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (let i = 0; i < f.length; i += 2) { const [X, Z] = block.at(f[i], f[i + 1]); q.push(X, Z); x0 = Math.min(x0, X); x1 = Math.max(x1, X); z0 = Math.min(z0, Z); z1 = Math.max(z1, Z); } return { q, x0, x1, z0, z1 }; }).filter(Boolean);
+        for (const {q} of polys) collision.polygon(Array.from({ length: q.length / 2 }, (_,i) => [q[2*i],q[2*i+1]]));
         T.solid = (x, z) => polys.some(({ q, x0, x1, z0, z1 }) => { if (x < x0 || x > x1 || z < z0 || z > z1) return false; let c = false;
           for (let a = 0, b = q.length - 2; a < q.length; b = a, a += 2) if ((q[a + 1] > z) !== (q[b + 1] > z) && x < (q[b] - q[a]) * (z - q[a + 1]) / (q[b + 1] - q[a + 1]) + q[a]) c = !c; return c; }); }
-      try { townModelExtras(m, block, THREE, W); } catch (e) { console.warn("Town model: the clock's plaza, café tables and signs couldn't be added", e); } }
+      try { townModelExtras(m, block, THREE, W, collision); } catch (e) { console.warn("Town model: the clock's plaza, café tables and signs couldn't be added", e); } }
     // without it, the Rotary clock alone, on a garden bed at the corner of A'Beckett and Reilly Streets
     else if (W.invClock) { const [x, z] = m.fromLatLon(...townLL(D.c[0], D.c[1])), top = m.addPad({ x, z, radius: 2.7, color: [0.19, 0.3, 0.12], lift: 0.3 });
       const place = new THREE.Matrix4().makeTranslation(x - D.c[0], top - G0, z - D.c[1]);
@@ -16112,13 +16127,145 @@ const handle = async (m, post) => {
         ...look(b.mat), matrix: new THREE.Matrix4().elements, onGround: true }); used.push(b.mat); }
     if (!parts.length) return null;
     glows(m.addParts(parts), used);
-    return { at, place, parts: parts.length, corners: parts.reduce((n, p) => n + p.positions.length / 3, 0) };
+    const inPilot = (x,z) => townInBlock((x-o0[0])/kx, (z-o0[1])/kz);
+    return { at, place, inPilot, parts: parts.length, corners: parts.reduce((n, p) => n + p.positions.length / 3, 0) };
   }
+  // Ground-level collision for the A'Beckett guest block. Actor poses and shapes use model metres.
+  function invCivicCollision(at, inPilot) {
+    const cells = new Map(), parked = new Map(), moved = new Map(), cell = v => Math.floor(v / 16), key = (a, b) => a * 65536 + b;
+    let stamp = 0, minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+    const nearby = (x,z,r) => x+r >= minX && x-r <= maxX && z+r >= minZ && z-r <= maxZ;
+    const eachCell = (x0, z0, x1, z1, fn) => {
+      for (let i = cell(x0); i <= cell(x1); i++)
+        for (let j = cell(z0); j <= cell(z1); j++) fn(key(i, j));
+    };
+    function polygon(points) {
+      const edges = [], xs = points.map(p => p[0]), zs = points.map(p => p[1]);
+      const shape = { edges, x0: Math.min(...xs), z0: Math.min(...zs), x1: Math.max(...xs), z1: Math.max(...zs), stamp: 0 };
+      minX = Math.min(minX,shape.x0); maxX = Math.max(maxX,shape.x1);
+      minZ = Math.min(minZ,shape.z0); maxZ = Math.max(maxZ,shape.z1);
+      for (let i = 0; i < points.length; i++) {
+        const [x, z] = points[i], [bx, bz] = points[(i + 1) % points.length];
+        const dx = bx - x, dz = bz - z, len = Math.hypot(dx, dz);
+        if (len) edges.push({ x, z, bx, bz, dx, dz, inv2: 1 / (len * len), nx: -dz / len, nz: dx / len });
+      }
+      eachCell(shape.x0, shape.z0, shape.x1, shape.z1, k => {
+        if (!cells.has(k)) cells.set(k, new Set());
+        cells.get(k).add(shape);
+      });
+      return shape;
+    }
+    function rectangle(x, z, h, width, length, transform) {
+      const c = Math.cos(h), s = Math.sin(h);
+      return polygon([[-1,-1], [1,-1], [1,1], [-1,1]].map(([i,j]) =>
+        transform(x + i * width / 2 * c + j * length / 2 * s, z - i * width / 2 * s + j * length / 2 * c)));
+    }
+    const box = (x,z,h,w,l) => rectangle(x,z,h,w,l,at);
+    function post(x,z,r) {
+      polygon(Array.from({ length: 12 }, (_,i) => { const a = i * Math.PI / 6; return at(x + r * Math.cos(a), z + r * Math.sin(a)); }));
+    }
+    // For circles use signed distance to the real boundary (including concave recesses). For a
+    // rectangle, test every boundary segment against both body axes and the segment normal.
+    function contact(x,z,h,hl,hw,normal) {
+      if (!nearby(x,z,hl+hw)) return 0;
+      const c = Math.cos(h), s = Math.sin(h), ex = hl ? Math.abs(c)*hw + Math.abs(s)*hl : hw, ez = hl ? Math.abs(s)*hw + Math.abs(c)*hl : hw;
+      let deepest = 0;
+      const id = ++stamp;
+      eachCell(x-ex,z-ez,x+ex,z+ez,k => {
+        const bucket = cells.get(k);
+        if (!bucket) return;
+        for (const B of bucket) {
+          if (B.stamp === id || B.hidden || x+ex < B.x0 || x-ex > B.x1 || z+ez < B.z0 || z-ez > B.z1) continue;
+          B.stamp = id;
+          let inside = false, distance2 = Infinity, vx = 0, vz = 0, rim = 0;
+          for (const e of B.edges) {
+            const dx = x-e.x, dz = z-e.z;
+            if ((e.z > z) !== (e.bz > z) && dx < e.dx * dz / e.dz) inside = !inside;
+            const t = Math.max(0, Math.min(1, (dx*e.dx + dz*e.dz)*e.inv2));
+            const rx = dx - t*e.dx, rz = dz - t*e.dz, d2 = rx*rx + rz*rz;
+            if (d2 < distance2) { distance2 = d2; vx = rx; vz = rz; }
+            if (!hl) continue;
+            const ax = -dx*c+dz*s, az = -dx*s-dz*c, bx = ax+e.dx*c-e.dz*s, bz = az+e.dx*s+e.dz*c;
+            const support = hw*Math.abs(c*e.nx-s*e.nz) + hl*Math.abs(s*e.nx+c*e.nz);
+            rim = Math.max(rim, Math.min(hw-Math.min(ax,bx), hw+Math.max(ax,bx), hl-Math.min(az,bz), hl+Math.max(az,bz), support-Math.abs(dx*e.nx+dz*e.nz)));
+          }
+          const d = Math.sqrt(distance2);
+          const push = hl ? Math.max(rim, inside ? d + Math.min(hl,hw) : 0) : hw + (inside ? d : -d);
+          if (push <= deepest) continue;
+          deepest = push;
+          if (normal) { const sign = (inside ? -1 : 1) / (d || 1); normal.x = vx*sign; normal.z = vz*sign; }
+        }
+      });
+      return deepest;
+    }
+    const depth = (x,z,h,hl,hw) => contact(x,z,h,hl,hw);
+    // Bound the entire rotating body during a step. Only subdivide when its conservative
+    // midpoint box touches something; centimetre-scale uncertainty stops the step.
+    function canDrive(x,z,h,tx,tz,th,hl,hw) {
+      if (!nearby(x,z,hl+hw+Math.abs(tx-x)+Math.abs(tz-z))) return true;
+      const dh = Math.atan2(Math.sin(th-h),Math.cos(th-h)), dx = tx-x, dz = tz-z;
+      const old = depth(x,z,h,hl,hw), next = depth(tx,tz,h+dh,hl,hw);
+      if (next > 0 && (!old || next >= old - 1e-7)) return false;
+      function clear(t0,t1,start,end) {
+        const t = (t0+t1)/2, span = (t1-t0)/2, a = h+dh*t, c = Math.cos(a), s = Math.sin(a);
+        const rot = 2*Math.hypot(hl,hw)*Math.sin(Math.abs(dh)*span/2);
+        const side = Math.abs(dx*c-dz*s)*span + rot, along = Math.abs(dx*s+dz*c)*span + rot;
+        if (!depth(x+dx*t,z+dz*t,a,hl+along,hw+side)) return true;
+        const mid = depth(x+dx*t,z+dz*t,a,hl,hw);
+        if (start > 0) {
+          if (mid > start + 1e-7 || end > mid + 1e-7) return false;
+        } else if (mid || end) return false;
+        if (Math.max(side,along) < 0.01) return start > 0;
+        return clear(t0,t,start,mid) && clear(t,t1,mid,end);
+      }
+      return clear(0,1,old,next);
+    }
+    function slide(pos,x,z) {
+      const dx = pos.x-x, dz = pos.z-z;
+      if ((!dx && !dz) || !nearby(x,z,.35+Math.abs(dx)+Math.abs(dz))) return;
+      const n = Math.ceil(Math.hypot(dx,dz)/0.16), sx = dx/n, sz = dz/n, normal = {};
+      for (let i=0; i<n; i++) {
+        const hit = contact(x+sx,z+sz,0,0,0.35,normal);
+        if (!hit || hit < depth(x,z,0,0,0.35)-1e-7) { x+=sx; z+=sz; continue; }
+        // Remove the inward component; retain movement parallel to an angled facade or rail.
+        const inward = Math.min(0,sx*normal.x+sz*normal.z), tx = x+sx-inward*normal.x, tz = z+sz-inward*normal.z;
+        if (depth(tx,tz,0,0,0.35) > 1e-7) break;
+        x=tx; z=tz;
+      }
+      pos.x=x; pos.z=z;
+    }
+    const carKey = (x,z) => Math.round(x*4) + ',' + Math.round(z*4);
+    function take(id) {
+      const k = carKey(...id), B = parked.get(k);
+      moved.delete(k);
+      if (!B) return;
+      eachCell(B.x0,B.z0,B.x1,B.z1,k => { const bucket = cells.get(k); bucket.delete(B); if (!bucket.size) cells.delete(k); });
+      parked.set(k, null);
+    }
+    function park(id,x,z,h,y,pitch,roll) {
+      const k = carKey(...id);
+      if (!parked.has(k)) return;
+      if (y != null) moved.set(k,[...id,x,y,z,h,pitch,roll]);
+      if (!inPilot(x,z)) return;
+      parked.set(k, rectangle(x,z,h,1.85,4.55,(px,pz) => [px,pz]));
+    }
+    function addCars(cars) {
+      for (const {x,z,heading} of cars) { const id=[x,z]; take(id); parked.set(carKey(x,z),null); park(id,x,z,heading); }
+    }
+    function hideCars(ids) {
+      const hidden = new Set(ids.map(([x,z]) => carKey(x,z)));
+      for (const [key,B] of parked) if (B) B.hidden = hidden.has(key);
+    }
+    // A quality swap reconstructs the renderer (including the cars in their original bays).
+    const restoreCars = model => { for (const pose of moved.values()) model.driveCar?.(...pose); };
+    return { polygon, box, post, depth, slide, canDrive, take, park, addCars, hideCars, restoreCars };
+  }
+
   // Things made for the model's town centre alone. The foot of the Rotary clock as in photos of it: brick paving, a planted
   // bed of tussock grasses and low shrubs round the two poles, their broad teal bases, and the four mosaic blocks in a row out
   // the front, towards the library (their pictures are the weather's own). Then tables and chairs outside the bakery and The
   // Larder, a sandwich board out the front of each named shop, and the signs either side of the zebra crossing.
-  function townModelExtras(m, block, THREE, W) {
+  function townModelExtras(m, block, THREE, W, collision) {
     const D = INV_TOWN, FOOT = 0.26, v = new THREE.Vector3(), M = new THREE.Matrix4(), N = new THREE.Matrix3(), c = new THREE.Color(), parts = [];
     // a mesh to fill: plain colours for each shape, or one picture over all of it
     const mesh = spec => { const b = { pos: [], nor: [], col: spec.map ? null : [], uv: spec.map ? [] : null, spec }; parts.push(b); return b; };
@@ -16269,6 +16416,7 @@ const handle = async (m, post) => {
     const crown = new THREE.IcosahedronGeometry(1, 1), spray = new THREE.IcosahedronGeometry(1, 0);
     const greens = [0x586d52, 0x657654, 0x77845b, 0x6b805e, 0x4f6852];
     const streetTree = (x, z, size, seed, inland = 0) => {
+      collision.post(x,z,.29*size);
       const piece = (g, colour, dx, y, dz, ry, rx, sx = 1, sy = 1, sz = 1) =>
         add(bits, g, colour, x + dx * size, y * size + .23, z + dz * size, ry, rx, 0, sx * size, sy * size, sz * size);
       const limb = (a, y, b, dx, dy, dz, radius) => piece(rod(radius, Math.hypot(dx, dy, dz), 7, radius * .52), 0x898574,
@@ -16293,6 +16441,7 @@ const handle = async (m, post) => {
     streetTree(45.8, 30.4, .87, 5); streetTree(66.1, 31.8, .74, 8); streetTree(82.1, 33.9, .63, 3);
     // Paired litter bins against the north footpath. The dark openings sit under a light metal hood.
     for (const x of [47.5, 48.14]) {
+      collision.box(x,30.6,-.12,.59,.56);
       add(bits, box(.59, .91, .56), 0xa19a87, x, .69, 30.6, -.12);
       add(bits, box(.56, .16, .54), 0x474946, x, 1.18, 30.6, -.12);
       add(bits, box(.64, .095, .62), 0xc1c0b3, x, 1.30, 30.6, -.12);
@@ -16308,13 +16457,16 @@ const handle = async (m, post) => {
       const thing = (geo, colour, a, y, b, ry = 0, rx = 0, rz = 0, sx = 1, sy = 1, sz = 1) => { const [x, z] = pl(a, b); add(bits, geo, colour, x, y, z, -t + ry, rx, rz, sx, sy, sz); };
       // seats (one by the memorial, one on the kerb strip), a bin, and the kerb's row of bollards
       [[3.9, 1.6, -Math.PI / 2], [-3.6, 10.9, Math.PI]].forEach(([a, b, r]) => { const c = Math.cos(r), sn = Math.sin(r);
+        collision.box(...pl(a,b),r-t,1.8,.62);
         for (let k = 0; k < 4; k++) thing(box(1.8, 0.04, 0.11), 0x8a6a45, a + sn * (k * 0.13 - 0.2), PL + 0.46, b + c * (k * 0.13 - 0.2), r);
         for (let k = 0; k < 3; k++) thing(box(1.8, 0.1, 0.035), 0x8a6a45, a - sn * 0.3, PL + 0.6 + k * 0.14, b - c * 0.3, r, -0.12);
         [-0.8, 0.8].forEach(o => { thing(box(0.06, 0.46, 0.5), 0x2d3033, a + c * o, PL + 0.23, b - sn * o, r); thing(box(0.06, 0.5, 0.05), 0x2d3033, a + c * o - sn * 0.3, PL + 0.7, b - sn * o - c * 0.3, r, -0.12); }); });
+      collision.post(...pl(.9,5.2),.3);
       thing(rod(0.27, 0.9, 12, 0.3), 0x2f5a3a, 0.9, PL + 0.45, 5.2); thing(rod(0.31, 0.06, 12), 0x24452d, 0.9, PL + 0.93, 5.2);
       slab(-2.0, 5.0, 7.0, 2.0, bits, 0xbfb8a8, PL + 0.02);  // the concrete walk across the brick
       [[-0.15, 12.0, 11.5, 0.22], [-5.7, 9.55, 0.22, 5.1], [5.5, 9.9, 0.22, 4.4], [3.5, 7.8, 4.2, 0.22], [1.6, 9.9, 0.22, 4.2]].forEach(([a, b, w, d]) => slab(a, b, w, d, bits, 0xcfcac0, PL + 0.14));  // a raised kerb where the plaza and its garden meet the road
-      [[-4.9, 11.3], [1.0, 11.3]].forEach(([a, b]) => thing(box(0.16, 1.0, 0.16), 0x8a7a5e, a, PL + 0.5, b));        // timber posts at the kerb
+      [[-4.9, 11.3], [1.0, 11.3]].forEach(([a, b]) => { collision.box(...pl(a,b),-t,.16,.16);
+        thing(box(0.16, 1.0, 0.16), 0x8a7a5e, a, PL + 0.5, b); });        // timber posts at the kerb
       // planting: the mulched bed under the big tree in the plaza's corner, and a strip along its west side
       const blade = new THREE.ConeGeometry(0.07, 1, 3), bush = new THREE.IcosahedronGeometry(0.5, 1), GR = [0x6f8f3c, 0xb7a258, 0x587a34, 0xc2ad62];
       const bed = (a, b, w, d) => { thing(box(w, 0.12, d), 0x4a3a2c, a, 0.14, b); const n = Math.round(w * d / 1.3);
@@ -16342,6 +16494,7 @@ const handle = async (m, post) => {
       [[-1.5, -0.6, 0.8], [1.5, -0.5, 0.85], [-0.1, -1.3, 0.9]].forEach(([a, b, k], i) => put(bits, bush, [0x355a2b, 0x2f4f29, 0x40662f][i % 3], a, BED + 0.28 * k, b, i, 0, 0, 1.2 * k, 0.72 * k, 1.05 * k));
       // the poles' feet: a broad teal base with a collar round its top, on a flange
       const K = TOWN_CLOCK_SIZE;
+      for (const a of [-.452*K,.452*K]) collision.post(...at(a,0),.3*K);
       [-0.452 * K, 0.452 * K].forEach(a => { put(bits, rod(0.3 * K, 0.1, 14), 0x2c6f68, a, BED + 0.05, 0); put(bits, rod(0.22 * K, 1.25 * K, 14, 0.2 * K), 0x3b8f86, a, BED + 0.72 * K, 0);
         put(bits, rod(0.255 * K, 0.08, 14), 0x2c6f68, a, BED + 1.36 * K, 0); put(bits, rod(0.24 * K, 0.06, 14), 0x2c6f68, a, BED + 0.5 * K, 0); });
       // the four mosaic blocks: concrete wedges in a row running north-west from the poles towards the memorial, a picture on each sloping face
@@ -16350,6 +16503,7 @@ const handle = async (m, post) => {
       wedge.translate(0, 0, -0.48); wedge.rotateY(Math.PI / 2);
       const tilt = Math.atan2(0.24, 1.02), pane = new THREE.PlaneGeometry(0.76, 0.8), ry = -Math.PI / 4;
       for (let k = 0; k < 4; k++) { const x = TOWN_CLOCK[0] - 1.0 - k * 0.82, z = TOWN_CLOCK[1] - 1.0 - k * 0.82;
+        collision.box(x,z,ry,1.04,.82);
         add(bits, wedge, 0xcfcbc1, x, PL, z, ry); add(bits, box(1.0, 0.05, 0.3), 0xdedad0, x, PL + 1.045, z, ry); add(bits, box(1.04, 0.06, 0.82), 0xb9b4a8, x, PL + 0.03, z, ry);
         const pic = maps[k] ? mesh({ map: maps[k], roughness: 0.4, metalness: 0.1 }) : null;
         [1, -1].forEach(sd => { const off = (0.25 + 0.012) * sd, px = x + Math.sin(ry) * off, pz = z + Math.cos(ry) * off;
@@ -16364,6 +16518,7 @@ const handle = async (m, post) => {
     { const [MX, MZ, MR] = TOWN_MEMORIAL, at = (a, b) => [MX + Math.cos(MR) * a + Math.sin(MR) * b, MZ - Math.sin(MR) * a + Math.cos(MR) * b];
       const put = (bk, geo, colour, a, y, b, ry = 0, rx = 0, rz = 0, sx = 1, sy = 1, sz = 1) => { const [x, z] = at(a, b); add(bk, geo, colour, x, y, z, MR + ry, rx, rz, sx, sy, sz); };
       const CONC = 0xe6e5df, CONC2 = 0xd9d8d2, GRANITE = 0xcfcdd0, Q = Math.PI / 4;
+      collision.box(MX,MZ,MR,2.5,2.5);
       put(bits, box(4.1, 0.03, 4.1), 0xb9bcbc, 0, PL + 0.015, 0.1, Q);                     // the pad it stands on, set cornerwise
       // the plinth with its sloping shoulder, the shaft and its pyramid top
       // (old concrete: mottled, with dark streaks run down from the ledges)
@@ -16389,15 +16544,18 @@ const handle = async (m, post) => {
       plaque(0, 0, PL + 0.95, 1.162, 0, 0, 0.85); plaque(3, 0, PL + 3.0, 0.775, 0, -0.133, 1.2);
       // the bollards: little granite obelisks with a poppy, round the pad
       [[-1.9, 1.3], [-0.75, 2.2], [0.75, 2.2], [1.9, 1.3], [-2.2, -0.4], [2.2, -0.4]].forEach(([a, b]) => { put(bits, new THREE.CylinderGeometry(0.13, 0.2, 1.05, 4), GRANITE, a, PL + 0.525, b, Q);
+        collision.post(...at(a,b),.20);
         put(bits, new THREE.ConeGeometry(0.13, 0.2, 4), GRANITE, a, PL + 1.15, b, Q); put(bits, new THREE.SphereGeometry(0.05, 8, 6), 0xc21b2a, a, PL + 0.85, b + 0.13); });
       // the boulders: rough, dark basalt, a bronze plaque leaning on each
       const rock = new THREE.DodecahedronGeometry(0.6, 0);
       [[-1.7, 2.3, 0.5], [3.7, -2.5, -0.6]].forEach(([a, b, r], i) => { put(bits, rock, 0x5a5650, a, PL + 0.42, b, r + i * 1.3, 0.2, 0.15, 1.15, 0.95, 0.8);
+        collision.post(...at(a,b),.59);
         put(bits, new THREE.DodecahedronGeometry(0.3, 0), 0x4d4944, a + 0.35, PL + 0.2, b - 0.3, i, 0.4, 0, 1.2, 0.8, 1);
         put(bits, box(0.55, 0.36, 0.03), 0x7a6a3e, a, PL + 0.3, b + 0.62, r * 0.3, -0.3); });
       // the flagpoles either side in front, and the flags out on the breeze
       const flag = W.invAustr?.image ? mesh({ map: W.invAustr.image, roughness: 0.8, doubleSide: true }) : null;
       [[-2.6, 3.0, 0.5], [4.2, 0.0, 0.2]].forEach(([a, b, r]) => { put(bits, rod(0.06, 9.5, 10, 0.045), 0xf4f3ef, a, PL + 4.75, b); put(bits, new THREE.SphereGeometry(0.09, 10, 8), 0xf4f3ef, a, PL + 9.55, b); put(bits, rod(0.14, 0.12, 10), 0xdedad2, a, PL + 0.06, b);
+        collision.post(...at(a,b),.11);
         if (flag) put(flag, new THREE.PlaneGeometry(1.8, 0.9), 0, a + Math.cos(r) * 0.95, PL + 8.9, b - Math.sin(r) * 0.95, r); });
     }
 
@@ -16405,7 +16563,7 @@ const handle = async (m, post) => {
     // round-topped information post and the purple shrub by the clock, more shrubs along the kerb in front of it, and the
     // visitor information signs on the library's corner
     { const sign = (w, h, draw) => { const c = document.createElement("canvas"); c.width = Math.round(w * 220); c.height = Math.round(h * 220); draw(c.getContext("2d"), c.width, c.height); return mesh({ map: c, roughness: 0.6, doubleSide: true }); };
-      const [cx, cz] = TOWN_CLOCK, post = (x, z, h) => add(bits, rod(0.035, h), 0x9aa2a6, x, PL + h / 2, z);
+      const [cx, cz] = TOWN_CLOCK, post = (x, z, h) => { collision.post(x,z,.035); add(bits, rod(0.035, h), 0x9aa2a6, x, PL + h / 2, z); };
       post(cx + 2.6, cz + 2.0, 3.0);
       add(sign(0.6, 0.8, (g, w, h) => { g.fillStyle = "#ffffff"; g.fillRect(0, 0, w, h); g.strokeStyle = "#d21f26"; g.lineWidth = w * 0.1; g.beginPath(); g.arc(w / 2, h * 0.45, w * 0.36, 0, 7); g.stroke();
         g.fillStyle = "#111"; g.font = `700 ${w * 0.42}px system-ui, sans-serif`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("40", w / 2, h * 0.46); }), new THREE.PlaneGeometry(0.6, 0.8), 0, cx + 2.6, PL + 2.6, cz + 2.04, 0);
@@ -16416,6 +16574,7 @@ const handle = async (m, post) => {
       add(sign(0.45, 0.6, (g, w, h) => { g.fillStyle = "#ffffff"; g.fillRect(0, 0, w, h); g.fillStyle = "#1f7a3a"; g.font = `700 ${w * 0.6}px system-ui, sans-serif`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("2P", w / 2, h * 0.4);
         g.strokeStyle = "#1f7a3a"; g.lineWidth = 4; g.strokeRect(4, 4, w - 8, h - 8); }), new THREE.PlaneGeometry(0.45, 0.6), 0, cx - 2.4, PL + 2.25, cz - 3.56, 0);
       add(bits, box(0.2, 1.1, 0.2), 0x8a7a5e, cx + 1.3, PL + 0.55, cz + 1.6); add(bits, rod(0.09, 0.02, 12), 0x3f78c4, cx + 1.3, PL + 0.9, cz + 1.71, 0, Math.PI / 2);
+      collision.box(cx+1.3,cz+1.6,0,.2,.2);
       const bush = new THREE.IcosahedronGeometry(0.5, 1);
       add(bits, bush, 0x5a2f4a, cx - 1.6, PL + 0.55, cz - 3.2, 0, 0, 0, 1.5, 1.1, 1.4);
       [[-1.6, 0.9, 0.8], [-0.6, 1.25, 0.9], [0.5, 1.25, 0.8], [-2.0, 0.1, 0.8]].forEach(([dx, dz, k], i) => add(bits, bush, [0x355a2b, 0x40662f, 0x2f4f29][i % 3], cx + dx, PL + 0.3 * k, cz + dz, i, 0, 0, 1.3 * k, 0.8 * k, 1.1 * k));
@@ -16427,6 +16586,9 @@ const handle = async (m, post) => {
           add(batch, geo, color, x, y, z, face, pitch);
         };
         // The existing concrete path terminates at the eastern doorjamb. Widen its landing to the sliding doors.
+        collision.box(...at(-.98,4.8),face,.084,5.44);
+        collision.box(...at(-2.3,10.6),face,.69,.16);
+        collision.post(...at(-2.6,6.85),.023);
         fixture(bits, box(4.4, 0.08, 1.9), 0xd3c6ac, -1.9, 0.96, 0.15);
         for (const out of [2.15, 4.80, 7.45]) fixture(bits, rod(0.042, 0.92), 0xa4a9a6, -0.98, out, 0.60);
         for (const y of [0.63, 1.04]) fixture(bits, rod(0.036, 5.44), 0xb4b8b4, -0.98, 4.8, y, Math.PI / 2);
@@ -16460,8 +16622,10 @@ const handle = async (m, post) => {
     // along a shop's front: `t` of the way along it, `out` metres from the wall
     const front = (u, t, out) => [u[0] + (u[2] - u[0]) * t + u[4] * out, u[1] + (u[3] - u[1]) * t + u[5] * out, Math.atan2(u[2] - u[0], u[3] - u[1])];
     const table = (u, t, out, chair) => { const [x, z, r] = front(u, t, out);
+      collision.post(x,z,.38);
       add(bits, rod(0.38, 0.04, 12), 0xe9e5db, x, FOOT + 0.74, z); add(bits, rod(0.035, 0.72), 0x3a3d40, x, FOOT + 0.36, z); add(bits, rod(0.2, 0.03, 10), 0x3a3d40, x, FOOT + 0.015, z);
       [-1, 1].forEach(sd => { const cx = x + Math.sin(r) * 0.66 * sd, cz = z + Math.cos(r) * 0.66 * sd, bx = x + Math.sin(r) * 0.85 * sd, bz = z + Math.cos(r) * 0.85 * sd;
+        collision.box(cx,cz,r,.4,.43);
         add(bits, box(0.4, 0.04, 0.4), chair, cx, FOOT + 0.46, cz, r); add(bits, box(0.4, 0.42, 0.04), chair, bx, FOOT + 0.7, bz, r);
         [[-0.17, -0.17], [0.17, -0.17], [-0.17, 0.17], [0.17, 0.17]].forEach(([a, b]) => add(bits, rod(0.018, 0.45, 5), 0x8d9396, cx + Math.cos(r) * a + Math.sin(r) * b, FOOT + 0.225, cz - Math.sin(r) * a + Math.cos(r) * b)); }); };
     const units = W.invRetailUnits || D.u, pie = units.find(u => /PIEMAN/.test(u[9] || "")), larder = units.find(u => /LARDER/.test(u[9] || ""));
@@ -16471,6 +16635,7 @@ const handle = async (m, post) => {
     const BOARD = [0x7a1f1f, 0x1f3f2c, 0xc7342c, 0x2e8b57, 0xd8312b, 0x1f3f7a, 0x15161a, 0x3a4a7a, 0x6b2d6b];
     units.forEach((u, i) => { const mx = (u[0] + u[2]) / 2, mz = (u[1] + u[3]) / 2; if (!u[9] || !townInBlock(mx, mz)) return;
       const [x, z] = front(u, /PIEMAN/.test(u[9]) ? 0.9 : 0.24, 2.2), a = Math.atan2(u[4], u[5]);
+      collision.box(x,z,a,.55,.5);
       [-1, 1].forEach(sd => { const ox = Math.sin(a) * 0.13 * sd, oz = Math.cos(a) * 0.13 * sd;
         add(bits, box(0.55, 0.85, 0.03), BOARD[i % BOARD.length], x + ox, FOOT + 0.42, z + oz, a, 0.3 * sd);
         add(bits, box(0.43, 0.6, 0.012), 0xf4f1e6, x + ox * 1.16, FOOT + 0.45, z + oz * 1.16, a, 0.3 * sd); }); });
@@ -20239,6 +20404,7 @@ const handle = async (m, post) => {
     // whether something fits there: points along and across it (metres from its middle) clear of buildings, and out of deep water
     const CAR = [[2.1, 0.8], [2.1, -0.8], [-2.1, 0.8], [-2.1, -0.8], [0, 0]], PLANE = [[2.7, 0], [0, 0], [-4.2, 0], [0.2, 5.2], [0.2, -5.2]], BUS = [[5.4, 1.2], [5.4, -1.2], [-5.4, 1.2], [-5.4, -1.2], [2.7, 1.2], [2.7, -1.2], [0, 0], [-2.7, 1.2], [-2.7, -1.2]];
     const fits = (pts, x, z, h) => { const s = Math.sin(h), c = Math.cos(h);
+      if (T.invStatic && (pts === CAR || pts === BUS) && T.invStatic.depth(x,z,h,pts[0][0],pts[0][1])) return false;
       for (const [a, b] of pts) if (solid(x + s * a - c * b, z + c * a + s * b)) return false;
       return ground(x, z) - m.groundAt(x, z) < 0.35; };
     const inside = (x, z) => x >= F.lim[0] && x <= F.lim[1] && z >= F.lim[2] && z <= F.lim[3];  // the edge of the model: nothing goes past it
@@ -20693,6 +20859,7 @@ const handle = async (m, post) => {
         P.v = 0; P.spin = 0; const [y, p, r] = lie(P, 2, 1.2); P.y = y; P.p = p; P.r = r;
         if (step) { F.pos.x = P.x + Math.cos(P.h) * 1.9; F.pos.z = P.z - Math.sin(P.h) * 1.9; F.yaw = P.h + Math.PI; F.pitch = -0.04; }  // out of the left door
         plane = null; showPlane(P); }
+      if (was === "car" && car.id) T.invStatic?.park(car.id,car.x,car.z,car.h,car.y,car.p,car.r);
       veh = null; car = null; plane = null; window.anFast = false; upShow(null); upLook = 0; showKeys(T.walk ? "walk" : null); C.in = false; F.drive = null; F.boost = false; F.hText = ""; F.vert = 0; F.stick.x = F.stick.y = F.lookStick.x = F.lookStick.y = 0; F.keys.clear();
       document.body.classList.remove("bsdrive", "bsplane", "bsheli", "bsdrone", "bspossum", "bsride", "bspowers"); pwBtn.hidden = tkBtn.hidden = true; cooBtn.hidden = true; boostBtn.hidden = true; boostBtn.textContent = "Boost"; handBtn.hidden = true; flipBtn.hidden = true; F.flip = false; plantBtn.hidden = plantMenu.hidden = true; gripBtn.hidden = true; unReset(); handBtn.classList.remove("on"); F.hand = false; at = 0; C.frame(); };
     // Explore mode from a car, plane, helicopter or the possum: you're kept in it, held still where it is (others see it there), and
@@ -21364,6 +21531,7 @@ const handle = async (m, post) => {
       else { if (c.own && !owns.includes(c.own)) { const G = T.traffic?.take?.(c.own); if (!G) return true; owns.push(G); c.own = G; }
         car = c.own ? { own: c.own, gold: c.own.gold, bus: c.own.bus, x: c.own.x, z: c.own.z, h: c.own.h, dir: c.own.h, y: c.own.y, p: c.own.p, r: c.own.r, v: 0, steer: 0 } : { id: c.id, bus: !!c.bus, x: c.x, z: c.z, h: c.heading, dir: c.heading, y: ground(c.x, c.z) + 0.05, p: 0, r: 0, v: 0, steer: 0 };
         if (!car.own && !m.driveCar(c.id[0], c.id[1], car.x, car.y, car.z, car.h, 0, 0)) { car = null; toast("That car won't start. Try another one."); return true; }
+        if (car.id) T.invStatic?.take(car.id);
         if (pos?.grip) { const r = pos.grip.ref; if (r === c.own || (r && Math.hypot(r.x - car.x, r.z - car.z) < 1.5)) { pos.grip.ref = car; toast("You're holding on to the roof. Off you go!", 2600); } }
         veh = "car"; camYaw = car.h + Math.PI; document.body.classList.add("bsdrive"); showRing(charge < 0.999); }
       if (veh === "car" && gmDesk() && !BS.gmDriveTip) { BS.gmDriveTip = true; setTimeout(() => { if (veh === "car" && !auto) toast("Hold the left mouse button to drive, and move the mouse left or right to steer. Hold the right button to brake and reverse. Or click the road and the car drives you there.", 8000); }, 700); }
