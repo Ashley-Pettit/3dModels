@@ -9606,7 +9606,7 @@ const handle = async (m, post) => {
         tideIn.min = m.tide.min; tideIn.max = m.tide.max; tideIn.value = m.tide.initial; tideOut.textContent = tideName(m.tide.initial);
         tideIn.oninput = () => { m.setTide(+tideIn.value); tideOut.textContent = tideName(+tideIn.value); };
 
-        // ---- Jump: a list of places. Walking, it stands you there; flying, it shows the place from above. First in it (Logan) is
+        // ---- Jump: a list of places. It stands you there in Explore (from Free view too); the water and the whole city show from above. First in it (Logan) is
         // "Fly to Browns Plains" (cfg.flyTo, the block drawn in detail): it flies you there, up and over, the higher and the longer
         // the further it is, and down to the view from above it. ----
         const go = (p, walk) => { T.tween = null; if (walk !== T.walk) setMode(walk);
@@ -9672,7 +9672,10 @@ const handle = async (m, post) => {
             F.pos.set(q[2], ground(q[2], q[3]) + F.eye, q[3]); F.yaw = q[4]; F.pitch = q[5]; } return; }
           const gd = e.target.closest("[data-town-gold]"); if (gd) { openList(false); toGold(+gd.dataset.townGold); jump.focus({ preventScroll: true }); return; }
           const pl = e.target.closest("[data-town-player]"); if (pl) { openList(false); toPlayer(pl.dataset.townPlayer); jump.focus({ preventScroll: true }); return; }
-          const bn = e.target.closest("[data-town-go]"); if (!bn) return; const p = places[+bn.dataset.townGo]; openList(false); go(p, T.walk && !p.water);  // the inlet and the strait are best seen from the air
+          // a place puts you in Explore there, on your feet, from Free view too (Ash, 25 November 2026: "If I use jump to, automatically
+          // switch to explore at that location"); only somewhere seen from the air (the inlet, the strait, Logan's whole city, a pinned
+          // lot) still shows from above
+          const bn = e.target.closest("[data-town-go]"); if (!bn) return; const p = places[+bn.dataset.townGo]; openList(false); go(p, !p.water && !!p.walk);
           jump.focus({ preventScroll: true }); };
 
         // ---- Flood (Logan, Moorooka): a list of floods to lay over the map, each with what it was. With one on, the button names it
