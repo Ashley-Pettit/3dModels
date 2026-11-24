@@ -3137,3 +3137,11 @@ and "Library" glass to its entrance corner (Ash: "your call on how to merge as l
 - **Inviting** (Ash: "I want invite people to race like in moorooka"): the race panel's Invite someone works in Inverloch as in Moorooka
   (the link puts them in a car on the grid by Ash, with "Ash is hosting"); Ash's card has it too: Invite someone shares the link and opens
   the race panel.
+
+### The car's logo on the roof only (24 November 2026)
+
+Ash: "Just one symbol on the car on top. ATM there is two". Your race car's sign is painted on the roof and nowhere else: the sticker on
+the back window and the two on the doors are gone (from the higher start view and the chase view the roof shows well). In Inverloch it
+never showed: that town's cars sit 0.25 m up and come in three heights (roofs 1.74, 1.88 and 1.92 m up), and the model doesn't say which
+you're in, so there it sits at 1.94 m over the part of the roof all three have (`RACE_INV.logo`); on the lowest (sedan) it's a hand's
+width over the roof.

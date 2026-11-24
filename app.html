@@ -18312,7 +18312,7 @@ const handle = async (m, post) => {
   // each town's race: its name, its lap, whether it's cars only (Inverloch's) or the car, the possum and the plane (Moorooka's), and who
   // starts it, where someone does (Ash, in a race-yellow shirt with a chequered flag, across the road from 11 Norman Road)
   const RACE_MOO = { name: "Moorooka", lap: MOO_RACE };
-  const RACE_INV = { name: "Inverloch", lap: INV_RACE, car: true, fin: "back past Ash", host: { name: "Ash", x: -1580.5, z: 388.1, yaw: -0.47, top: "#ffc93c", look: "-.short.brown", what: "across the road from 11 Norman Road" } };
+  const RACE_INV = { name: "Inverloch", lap: INV_RACE, car: true, fin: "back past Ash", logo: [1.94, 0.39, -0.34, 0.44] /* (your car's sign: up, half across, back, front) */, host: { name: "Ash", x: -1580.5, z: 388.1, yaw: -0.47, top: "#ffc93c", look: "-.short.brown", what: "across the road from 11 Norman Road" } };
   const raceCarPick = () => { try { const v = localStorage.getItem("an3d-race-car"); return RACE_CARS.some(c => c[0] === v) ? v : "turbo"; } catch { return "turbo"; } };
   function townRace(T, m, F, ground, box, K = RACE_MOO) {
     const R = { frame() {}, dispose() {}, got() {}, open() {}, active: () => false, useItem: () => false, name: K.name, host: K.host || null };
@@ -18415,23 +18415,19 @@ const handle = async (m, post) => {
     let parts = null, mark = null, boxes = null, leaves = null, puss = null, ringsP = null, badge = null; const clear = () => { for (const q of [parts, mark, boxes, leaves, puss, ringsP, badge]) try { q?.remove(); } catch {} parts = mark = boxes = leaves = puss = ringsP = badge = null; };
     // your car's logo (Ash, 24 November 2026: "During the race instead of showing launch control; hide that box and put a symbol on my car
     // instead based on the upgrade I've chosen"; then "I don't like the circle symbol on the car. I want it actually on the car itself like
-    // a logo on the car"): your race car's sign painted big on the roof, on the back window and on both front doors, moving with the car as
-    // the model draws it
-    // (its place, heading, pitch and roll: C.carPose); one part, one draw call
+    // a logo on the car"; then "Just one symbol on the car on top. ATM there is two"): your race car's sign painted big on the roof, and
+    // nowhere else (it was on the back window and the doors too), moving with the car as the model draws it (its place, heading, pitch and
+    // roll: C.carPose); one part, one draw call
     let badgeOn = false;
     const badgeMake = id => { try { badge?.remove(); } catch {} badge = null; const c = RACE_CARS.find(q => q[0] === id); if (!c || !m.addParts) return;
       const cv = document.createElement("canvas"); cv.width = cv.height = 128; const g = cv.getContext("2d");
       g.font = '92px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'; g.textAlign = "center"; g.textBaseline = "middle";
       g.shadowColor = "rgba(255, 255, 255, 0.95)"; g.shadowBlur = 10; g.fillText(c[2], 64, 70); g.shadowBlur = 0; g.fillText(c[2], 64, 70);
-      // in the car's own frame (its nose towards +z, the roof 1.45 m up, the doors 0.88 m out), each face read the right way round from
-      // outside: the roof from behind, a door from its own side
+      // in the car's own frame (its nose towards +z, the roof 1.45 m up), read the right way round from behind. Inverloch's cars sit
+      // 0.25 m up and come in three heights (roofs 1.74, 1.88 and 1.92 m up, and the model doesn't say which you're in): there it sits just
+      // over the tallest, on the part of the roof all three have (K.logo)
       const P = [], U = [], N = [], quad = (pts, uv, n) => { for (const k of [0, 1, 2, 0, 2, 3]) { P.push(...pts[k]); U.push(...uv[k]); N.push(...n); } };
-      { const y = 1.458, x0 = -0.52, x1 = 0.52, z0 = -0.85, z1 = 0.19; quad([[x1, y, z0], [x0, y, z0], [x0, y, z1], [x1, y, z1]], [[0, 0], [1, 0], [1, 1], [0, 1]], [0, 1, 0]); }
-      // and a sticker on the back window, the one you see from behind as you drive (the roof's too flat to see from there)
-      { const o = 0.012, ny = 0.676, nz = -0.737, zy = y => -1.42 + (y - 0.97) * 0.44 / 0.48, yb = 1.0, yt = 1.42, x0 = -0.28, x1 = 0.28, B = [yb + o * ny, zy(yb) + o * nz], Tt = [yt + o * ny, zy(yt) + o * nz];
-        quad([[x1, B[0], B[1]], [x0, B[0], B[1]], [x0, Tt[0], Tt[1]], [x1, Tt[0], Tt[1]]], [[0, 0], [1, 0], [1, 1], [0, 1]], [0, ny, nz]); }
-      for (const sd of [-1, 1]) { const x = sd * 0.893, zc = 0.34, w = 0.25, y0 = 0.44, y1 = 0.94, za = zc - w, zb = zc + w;
-        quad([[x, y0, za], [x, y0, zb], [x, y1, zb], [x, y1, za]], sd > 0 ? [[1, 0], [0, 0], [0, 1], [1, 1]] : [[0, 0], [1, 0], [1, 1], [0, 1]], [sd, 0, 0]); }
+      { const [y, x1, z0, z1] = K.logo || [1.458, 0.52, -0.85, 0.19], x0 = -x1; quad([[x1, y, z0], [x0, y, z0], [x0, y, z1], [x1, y, z1]], [[0, 0], [1, 0], [1, 1], [0, 1]], [0, 1, 0]); }
       badge = m.addParts([{ positions: new Float32Array(P), normals: new Float32Array(N), uvs: new Float32Array(U), map: cv, color: [1, 1, 1], unlit: true, doubleSide: true, opacity: 0.999 /* (see-through round the sign) */, matrix: new BS.B.THREE.Matrix4().makeScale(1e-4, 1e-4, 1e-4).elements }]); };
     const ME = new BS.B.THREE.Euler();
     const badgeAt = () => { if (!badge?.setMatrix) return; const q = T.car?.carPose?.(), on = !!q && !!race && race.state !== "done" && race.leg === 0;
