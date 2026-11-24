@@ -45,7 +45,7 @@ Several agents work on this repository at once, and their pushes into `main` col
 - Start from the latest `main` (`git fetch origin main && git checkout -b claude/<short-topic> origin/main`), one
   topic per pull request, and keep it small enough to review.
 - Open it with the REST API (GraphQL is blocked in these sessions):
-  `gh api -X POST repos/Ashley-Pettit/awesome-news/pulls -f title="..." -f head=<branch> -f base=main -f body="..."`.
+  `gh api -X POST repos/Ashley-Pettit/3dModels/pulls -f title="..." -f head=<branch> -f base=main -f body="..."`.
 - In the description say what changed and why, which files, how you tested it (which towns or pages, phone and
   desktop sizes) and anything unfinished or risky.
 - If the Awesome News chat asks you to bring your branch up to date with `main`, merge `main` into your branch and
@@ -60,7 +60,10 @@ comes in by pull request.
 
 ### For the Awesome News chat (the one that merges)
 
-For each open pull request, oldest first: read the diff and merge it. Only when it clashes with `main`: bring it up
+Process ready pull requests oldest first. Skip drafts and any PR with an explicit hold in its description, reviews or comments.
+Resume when the PR is ready and the person responsible for the hold records its clearance on the PR.
+This applies to Inverloch contributions from Bangerz too. Record device acceptance separately from browser checks.
+Wait for the Explore PR check to pass on the current revision, then read the diff and merge. Only when it clashes with `main`: bring it up
 to date, sort out the clashes (keeping both sides' work), then build it (`python3 build.py`), check the scripts
 still parse and try the changed pages at phone and desktop sizes before merging. A clean pull request needs no
 testing (Ash, 12 November 2026: "no need to test merge unless fixing conflict"). Then wait for the publish and tell
