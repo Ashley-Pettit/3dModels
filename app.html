@@ -7064,9 +7064,17 @@ const handle = async (m, post) => {
         const panel = (t,out,y,w,h,text,bg,ink,pattern) => printedFronts.push({ pos:at(t,out), nx,nz,y,w,h,text,bg,ink,pattern });
         if (shop.name) replacedSigns.add(shop.name);
         retailUnits.push([x1,z1,x2,z2,nx,nz,height,0,0,shop.name || ""]);
-        box(fac,.5,.04,height/2,.35,height,width,wall);
+        // A'Beckett's adjoining bakery and agency have deep framed displays beneath the verandah.
+        // Dalysporter, 17 Dec 2013, CC BY-SA 3.0: https://commons.wikimedia.org/wiki/File:Inverloch_Victoria.jpg
+        // Photo licence: https://creativecommons.org/licenses/by-sa/3.0/ . Jamb depths are estimated; the display artwork is original.
+        const recessed = shop === bake || shop === agent;
+        box(fac,.5,recessed ? -.13 : .04,height/2,.35,height,width,wall);
         const foot = shop.fabric === "stone" ? .55 : .4;
-        if (shop.fabric) panel(.5,.225,foot/2,width,foot,"",wall,"",shop.fabric);
+        if (shop.fabric) {
+          const sillWidth = shop === bake ? width-1.45 : width, sillAt = sillWidth/(2*width);
+          if (shop === bake) box(fac,sillAt,.11,foot/2,.22,foot,sillWidth,wall);
+          panel(sillAt,.225,foot/2,sillWidth,foot,"",wall,"",shop.fabric);
+        }
         if (shop.gable) {
           const span = (width-.1)/2, ridge = 1.02;
           const outline = new THREE.Shape([new THREE.Vector2(-span,0),new THREE.Vector2(span,0),new THREE.Vector2(0,ridge)]);
@@ -7076,10 +7084,19 @@ const handle = async (m, post) => {
         }
         const panes = Math.max(2,Math.round((width-1.4)/2.1)), display = width-1.7;
         const wt = (display/2+.18)/width, dt = (width-.75)/width;
-        box(glassB,wt,.23,1.6,.08,2.35,display,0x353d3e);
-        box(glassB,dt,.23,1.55,.08,2.35,1.08,0x2b3133);
-        shopWins.push([...at(wt,.275),nx,nz,display,shop.name || ""]); shopDoors.push([...at(dt,.275),nx,nz]);
-        for (let j=0;j<=panes;j++) box(frame,(.18+display*j/panes)/width,.29,1.62,.08,2.45,.065,frameCol);
+        const glassDepth = recessed ? .11 : .23, displayDepth = glassDepth + .045;
+        box(glassB,wt,glassDepth,1.6,.08,2.35,display,0x353d3e);
+        box(glassB,dt,glassDepth,1.55,.08,2.35,1.08,0x2b3133);
+        shopWins.push([...at(wt,displayDepth),nx,nz,display,shop.name || ""]); shopDoors.push([...at(dt,displayDepth),nx,nz]);
+        if (recessed) {
+          const timber = shop === bake ? 0x76543d : 0x47484a;
+          box(frame,wt,.21,.47,.36,.12,display+.14,timber);
+          box(frame,.5,.19,2.81,.33,.12,width-.14,frameCol);
+          for (const edge of [.16, .18+display, width-1.29, width-.21]) {
+            box(frame,edge/width,.19,1.6,.33,2.42,.105,timber);
+          }
+        }
+        for (let j=0;j<=panes;j++) box(frame,(.18+display*j/panes)/width,recessed ? .20 : .29,1.62,recessed ? .18 : .08,2.45,.065,frameCol);
         box(frame,.5,.29,2.86,.085,.09,width-.14,frameCol);
         if (shop === agent) {
           box(fac,.56,3.19,4.28,.10,.67,width*.67,shop.trim);
@@ -7234,6 +7251,18 @@ const handle = async (m, post) => {
           box(w - 26, 96, 6, 70, "#c9ced2"); const gl = g.createRadialGradient(w / 2, 70, 4, w / 2, 70, 90); gl.addColorStop(0, "rgba(255,222,160,.30)"); gl.addColorStop(1, "rgba(255,222,160,0)"); g.fillStyle = gl; g.fillRect(0, 0, w, 170);
           if (d % 2 === 0) { box(30, 74, 56, 24, "#c8202a"); g.fillStyle = "#ffffff"; g.font = "800 17px system-ui, sans-serif"; g.fillText("OPEN", 35, 92); }
           else { box(34, 70, 48, 40, "#f4f1ea"); for (let r = 0; r < 5; r++) box(40, 77 + r * 6, 36 - (r % 2) * 10, 2, "#3a3d40"); } }, 128, 2 * TW + d * 128);
+        // The agency's second bay uses a different board in the spare atlas tile.
+        // These rural and coastal thumbnails are original, fictional listings.
+        tile(11, "#414547", "#292d30", "#393733", () => {
+          box(36, 28, 440, 173, "#532f32");
+          for (let i = 0; i < 4; i++) {
+            const x = 50+i*106, y = 49+(i%2)*16;
+            box(x,y,88,117,"#ece9dd"); box(x+5,y+5,78,49,["#96b7bf","#afc6cc","#bdc8b7","#8eb0b9"][i]);
+            box(x+5,y+29,78,25,i%2 ? "#8b9a6b" : "#628e99");
+            box(x+5,y+42,78,12,i%2 ? "#516245" : "#d3c29b");
+            box(x+7,y+67,59,5,"#87444a"); box(x+7,y+79,72,3,"#6b6d69"); box(x+7,y+87,51,3,"#6b6d69");
+          }
+        });
         const map = new THREE.CanvasTexture(c); if ("colorSpace" in map) map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 8;
         const KIND = (n, i) => /PIEMAN|BAKERY/.test(n) ? 0 : /LARDER|CAFE|PIZZA|SLICE|BENNY|FISH|THAI|DEVOUR|LOCAL/.test(n) ? 1 : /CLOTH|BLISS|DOT|SUNNI|DRIFT|TEEPEES/.test(n) ? 2 : /BARRY|STOCKDALE|HOMES|ALEX/.test(n) ? 3 : /CHEM|PHARM/.test(n) ? 4
           : /SURF|BARGAIN|ECO/.test(n) ? 5 : /FOODWORKS/.test(n) ? 6 : /PAPER/.test(n) ? 7 : [2, 7, 1, 5, 3, 4, 2, 1][i % 8];
@@ -7241,7 +7270,12 @@ const handle = async (m, post) => {
         const pane = (x, z, nx, nz, w, y0, y1, u0, u1, v0, v1) => { const rx = nz, rz = -nx, a = [x - rx * w / 2, z - rz * w / 2], b = [x + rx * w / 2, z + rz * w / 2];  // left to right as you face it
           for (const [p, y, u, v] of [[a, y0, u0, v0], [b, y0, u1, v0], [b, y1, u1, v1], [a, y0, u0, v0], [b, y1, u1, v1], [a, y1, u0, v1]]) { P3.push(p[0], y, p[1]); N3.push(nx, 0, nz); UV.push(u, v); } };
         shopWins.forEach(([x, z, nx, nz, w, name], i) => { const k = KIND(name, i), n = Math.max(1, Math.round(w / 5.2)), sw = w / n, u0 = (k & 3) / 4 + EU, u1 = (k & 3) / 4 + 0.25 - EU, v1 = 1 - (k >> 2) * ROW - EV, v0 = v1 - ROW + 2 * EV, mir = FLIP.includes(k) && i % 2;
-          for (let j = 0; j < n; j++) { const o = (j + 0.5) * sw - w / 2; pane(x + nz * o, z - nx * o, nx, nz, sw, G0 + 0.425, G0 + 2.775, mir ? u1 : u0, mir ? u0 : u1, v0, v1); } });
+          for (let j = 0; j < n; j++) {
+            const o = (j + 0.5) * sw - w / 2;
+            // Tiles 3 and 11 share a column; the latter sits in the bottom row.
+            const vShift = name === agent.name && j % 2 ? 2 * ROW : 0;
+            pane(x + nz * o, z - nx * o, nx, nz, sw, G0 + 0.425, G0 + 2.775, mir ? u1 : u0, mir ? u0 : u1, v0-vShift, v1-vShift);
+          } });
         shopDoors.forEach(([x, z, nx, nz], i) => { const d = i % 4, u0 = 0.5 + d / 16 + EU, u1 = 0.5 + (d + 1) / 16 - EU; pane(x, z, nx, nz, 1.05, G0 + 0.4, G0 + 2.7, u0, u1, EV, ROW - EV); });
         // the Hub's and the library's glass onto the street: books on the library's side, the foyer and the visitor information desk on the Hub's
         (D.g || []).forEach(([x1, z1, x2, z2, nx, nz, k], i) => { if (k !== 1 || hubEntryWall(x2, z2)) return;
@@ -7283,6 +7317,15 @@ const handle = async (m, post) => {
         const {x1,z1,x2,z2,shop} = b, p = eaveEnd(b,x1,z1), q = eaveEnd(b,x2,z2);
         const roof = new THREE.Shape([[x1,z1],[x2,z2],q,p].map(([x,z])=>new THREE.Vector2(x,-z)));
         const slab = new THREE.ExtrudeGeometry(roof,{depth:.11,bevelEnabled:false}); slab.applyMatrix4(flatDown);
+        if (shop === bake || shop === agent) {
+          // Pitch both adjoining sheets down to their existing shared fascia and posts.
+          const pos = slab.attributes.position;
+          for (let i = 0; i < pos.count; i++) {
+            const out = (pos.getX(i)-x1)*b.nx + (pos.getZ(i)-z1)*b.nz;
+            pos.setY(i,pos.getY(i)+.24*Math.max(0,1-out/3.2));
+          }
+          slab.computeVertexNormals();
+        }
         put(vb,slab,0xb6b4a6,mtx(0,G0+3.15,0,0),0xc6c5b8);
         const dx=q[0]-p[0], dz=q[1]-p[1], w=Math.hypot(dx,dz), yaw=Math.atan2(dx,dz), nx=-dz/w, nz=dx/w;
         const mx=(p[0]+q[0])/2, mz=(p[1]+q[1])/2, h=shop.face || .36, y=3.12+h/2;
@@ -7682,7 +7725,9 @@ const handle = async (m, post) => {
           if (Math.hypot(x - D.c[0], z - D.c[1]) > 140 || nearOther(x, z, ab, 1)) return;
           civicPosts.push([x,z,.11]);
           put(fu, new THREE.CylinderGeometry(0.08, 0.11, 6.2, 8), 0x2f7a72, mtx(x, G0 + 3.1, z, 0));
-          put(fu, new THREE.TorusGeometry(0.55, 0.06, 6, 12, Math.PI / 2), 0x2f7a72, mtx(x + uz * 0.55 * sd, G0 + 6.2, z - ux * 0.55 * sd, Math.atan2(ux, uz) + (sd > 0 ? Math.PI / 2 : -Math.PI / 2)));
+          // A semicircle in the vertical plane of the road normal joins the pole top to the shade.
+          const armYaw = Math.atan2(ux * sd, uz * sd);
+          put(fu, new THREE.TorusGeometry(0.55, 0.06, 6, 12, Math.PI), 0x2f7a72, mtx(x + uz * 0.55 * sd, G0 + 6.2, z - ux * 0.55 * sd, armYaw));
           put(fu, new THREE.CylinderGeometry(0.22, 0.3, 0.3, 10), 0x24584f, mtx(x + uz * 1.1 * sd, G0 + 6.05, z - ux * 1.1 * sd, 0));
           lights(x + uz * 1.1 * sd, G0 + 5.85, z - ux * 1.1 * sd); }); });
       if (ab) {
