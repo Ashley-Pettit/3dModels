@@ -15921,11 +15921,15 @@ const handle = async (m, post) => {
       if (ownCars) try { m.addCars(W.invParked.filter(([x, z]) => townInBlock(x, z) && !townOnPlaza(x, z) && Math.hypot(x - TOWN_CLOCK[0], z - TOWN_CLOCK[1]) > 5.5)
         .map(([x, z, yaw, colour, kind]) => { const [X, Z] = block.at(x, z); return { x: X, z: Z, heading: yaw, colour, kind }; })); } catch (e) { console.warn("Town model: the town centre's parked cars couldn't be added", e); }
       standAt("the clock", 11.5, 33.5, TOWN_CLOCK[0], TOWN_CLOCK[1], 0.16);  // from beside the car park, as in Street View: the clock in front, the memorial to the left
-      const pie = (W.invRetailUnits || D.u).find(u => /PIEMAN/.test(u[9] || ""));
-      if (pie) { const mx = (pie[0] + pie[2]) / 2, mz = (pie[1] + pie[3]) / 2; standAt("the bakery", mx + pie[4] * 27, mz + pie[5] * 27, mx, mz, 0.06); }
+      // (where to stand from the whole bakery frontage, as the town's map has it: since the bakery and Alex Scott's were split, the
+      // middle of the bakery's own front put the spot 5.5 m east, inside the chemist's corner. Looking at the bakery's own front)
+      const pie = D.u.find(u => /PIEMAN/.test(u[9] || "")), pie2 = (W.invRetailUnits || D.u).find(u => /PIEMAN/.test(u[9] || "")) || pie;
+      if (pie) { const mx = (pie[0] + pie[2]) / 2, mz = (pie[1] + pie[3]) / 2; standAt("the bakery", mx + pie[4] * 27, mz + pie[5] * 27, (pie2[0] + pie2[2]) / 2, (pie2[1] + pie2[3]) / 2, 0.06); }
       standAt("the war memorial", TOWN_MEMORIAL[0] + 1.5, TOWN_MEMORIAL[1] - 11, TOWN_MEMORIAL[0], TOWN_MEMORIAL[1], 0.05);
       // the library, from out the front of it; and the shops, from the middle of A'Beckett Street looking along both rows past the bakery
-      if (D.lib) { const [x1, z1, x2, z2, nx, nz] = D.lib, mx = (x1 + x2) / 2, mz = (z1 + z2) / 2; standAt("the library", mx + nx * 17 - nz * 5, mz + nz * 17 + nx * 5, mx, mz, 0.07); }
+      // (the library from in front of its entrance, where its round window and its "Library" glass are now, at its corner: a along the
+      // front from that corner, o out from it)
+      if (D.lib) { const [x1, z1, , , nx, nz] = D.lib, at = (a, o) => [x1 + nz * a + nx * o, z1 - nx * a + nz * o], [fx, fz] = at(6.0, 13.0), [tx, tz] = at(-3.0, 1.5); standAt("the library", fx, fz, tx, tz, 0.07); }
       { const ab = D.r.find(r => r[0] === 20 && r[1] !== 1), f = ab?.[2];
         if (f && pie) { const px = (pie[0] + pie[2]) / 2, pz = (pie[1] + pie[3]) / 2; let best = null;
           for (let i = 0; i + 3 < f.length; i += 2) { const ax = f[i], az = f[i + 1], dx = f[i + 2] - ax, dz = f[i + 3] - az, L = Math.hypot(dx, dz) || 1, t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / (L * L))), x = ax + dx * t, z = az + dz * t, d = Math.hypot(px - x, pz - z);
@@ -16166,15 +16170,15 @@ const handle = async (m, post) => {
       hotel.solid(Wd/2,.18,2.06,Wd,4.32,.45,cream);
       hotel.solid(Wd/2,.44,.66,Wd,1.34,.13,mustard);
       hotel.solid(Wd/2,.26,6.82,Wd+.5,.18,.72,0xd5d2bb);
-      const window=(front,s,out,y,w,h)=>{
+      const sash=(front,s,out,y,w,h)=>{  // (not "window": that would hide the browser's own here)
         front.solid(s,out,y,w+.14,h+.12,.10,0x575c55);
         front.solid(s,out+.07,y,w,h,.07,0x6e8385);
         front.solid(s,out+.11,y+h*.18,w,.075,.07,0x515653);
         front.solid(s,out+.11,y-h/2-.045,w+.22,.09,.18,cream);
       };
       [2.7,6.6,10.4,14.4,18.6,22.1,25.8,29.9,33.2].forEach((s,i)=>{
-        window(hotel,s,.50,5.30,1.08,1.71);
-        if(i!==4) window(hotel,s,.56,1.68,1.22,1.72);
+        sash(hotel,s,.50,5.30,1.08,1.71);
+        if(i!==4) sash(hotel,s,.56,1.68,1.22,1.72);
       });
       const door=18.6;
       hotel.solid(door,.54,1.42,2.35,2.84,.17,0x54514a);
