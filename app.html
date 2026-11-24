@@ -9064,7 +9064,9 @@ const handle = async (m, post) => {
         if (!G.keep && !F.drag) { const want = Math.atan2(-gx, -gz), dyaw = Math.atan2(Math.sin(want - F.yaw), Math.cos(want - F.yaw)); if (gd > 1.5) F.yaw += dyaw * Math.min(1, lk * 3); }
         const moved = Math.hypot(F.pos.x - G.last[0], F.pos.z - G.last[1]); G.stuck = moved < 0.3 * 5.5 * lk ? G.stuck + lk : 0; G.last = [F.pos.x, F.pos.z]; if (G.stuck > 0.5) F.goTo = null; } }
     const traffic = F.walk && BS.town?.traffic, beforeX = F.pos.x, beforeZ = F.pos.z;
-    if (F.walk && (kb || go || F.wv?.some(Math.abs))) { const run = has("ShiftLeft", "ShiftRight"), n = Math.hypot(f, r) || 1, want = kb ? (run ? 12 : 5.5) * legs : go ? (run ? 12 : 5.5) * legs * go[2] : 0;
+    // (a tap or click to walk there goes a quarter faster than a walk, and Shift or the Sprint button takes it up to a run, as when you
+    // walk yourself: Ash, 25 November 2026, "With autowalk(walk 25% faster), if I press sprint, get up to sprint speed")
+    if (F.walk && (kb || go || F.wv?.some(Math.abs))) { const run = has("ShiftLeft", "ShiftRight"), n = Math.hypot(f, r) || 1, want = kb ? (run ? 12 : 5.5) * legs : go ? (run || F.sprint ? 12 : 5.5 * 1.25) * legs * go[2] : 0;
       const tx = go && !kb ? go[0] * want : (-sy * f + cy * r) / n * want, tz = go && !kb ? go[1] * want : (-cy * f - sy * r) / n * want; F.wv ||= [0, 0]; const ease = Math.min(1, lk * (want ? 9 : 12));
       F.wv[0] += (tx - F.wv[0]) * ease; F.wv[1] += (tz - F.wv[1]) * ease; if (Math.hypot(...F.wv) < 0.05 && !want) F.wv = [0, 0];
       const ox = F.pos.x, oz = F.pos.z; F.pos.x = bsClamp(F.pos.x + F.wv[0] * lk, lim[0], lim[1]); F.pos.z = bsClamp(F.pos.z + F.wv[1] * lk, lim[2], lim[3]); bsBlock(F, ox, oz); F.bob = (F.bob || 0) + Math.hypot(...F.wv) * lk * 1.9; }
