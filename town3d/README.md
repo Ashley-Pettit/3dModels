@@ -3085,6 +3085,9 @@ remove that ... Make the camera angle start like this screenshot. I want to see 
   (`C.upClose`). The countdown is much bigger, with a dark edge, popping in on each number; Go! in green.
 - **The car's gates** a little more forgiving (Ash: "Slightly more forgiving on car objectives"): through within 10 m of a gate's middle
   (was 8 m), 12 m at the house (was 10 m).
-- **Your car's badge** (Ash: "During the race instead of showing launch control; hide that box and put a symbol on my car instead based
-  on the upgrade I've chosen"): the upgrade chip is hidden mid-race, and your race car's sign (🚀 Rocket, ⚡ Launcher, 🔥 Nitro, 🛣️ Grip) sits
-  on a round plate in its colour on the car's roof, facing back at you, while you drive (`badgeMake`, a canvas texture; one draw call).
+- **Your car's logo** (Ash: "During the race instead of showing launch control; hide that box and put a symbol on my car instead based
+  on the upgrade I've chosen"; then "I don't like the circle symbol on the car. I want it actually on the car itself like a logo on the
+  car"): the upgrade chip is hidden mid-race, and your race car's sign (🚀 Rocket, ⚡ Launcher, 🔥 Nitro, 🛣️ Grip) is painted big on the roof
+  (1 m), on the back window (what you see from behind as you drive) and on both front doors, moving with the car as the model draws it (`C.carPose`: place, heading, pitch, roll; `badgeMake`, a
+  canvas texture; one draw call). No plate.
+- **Some rings lower** (Ash: "Plane occasionally a bit closer to ground"): every third one 15 m up.

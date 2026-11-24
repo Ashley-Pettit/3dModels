@@ -17705,9 +17705,10 @@ const handle = async (m, post) => {
     TG.push({ D: AD, x: PLN.x, z: PLN.z, y: null, h: PLH, leg: 2, kind: "board" });
     // the rings: the first 320 m along (you're off the ground and climbing, straight down Mayfield Road), then one every 300 m (200 m till
     // Ash, 24 November 2026: "On the plane move the rings further apart"), low
-    // over the houses (18, 24, then 24 to 34 m up: a little higher, Ash, 24 November 2026, "The plane rings are slightly too low"); the last
+    // over the houses (18, 24, then 24 to 34 m up: a little higher, Ash, 24 November 2026, "The plane rings are slightly too low"; but every
+    // third one down at 15 m: "Plane occasionally a bit closer to ground"); the last
     // a big chequered one over the line
-    const RINGS = []; { let i = 0; for (let d = 320; d < AW.len - 200; d += 300, i++) { const p = AW.at(d); RINGS.push({ d, x: p.x, z: p.z, y: ground(p.x, p.z) + (i === 0 ? 18 : i === 1 ? 24 : 29 + 5 * Math.sin(i * 1.7)), h: AW.head(d), r: 8.7 }); }
+    const RINGS = []; { let i = 0; for (let d = 320; d < AW.len - 200; d += 300, i++) { const p = AW.at(d); RINGS.push({ d, x: p.x, z: p.z, y: ground(p.x, p.z) + (i === 0 ? 18 : i === 1 ? 24 : i % 3 === 2 ? 15 : 29 + 5 * Math.sin(i * 1.7)), h: AW.head(d), r: 8.7 }); }
       const p = AW.at(AW.len); RINGS.push({ d: AW.len, x: p.x, z: p.z, y: ground(p.x, p.z) + 18, h: AW.head(AW.len - 3), r: 13, fin: true }); }
     for (const q of RINGS) TG.push({ D: AD + q.d, x: q.x, z: q.z, y: q.y, h: q.h, leg: 2, kind: q.fin ? "finish" : "ring", r: q.r });
     const NT = TG.length, TOT = TG[NT - 1].D, NR = RINGS.length, FR = TG.findIndex(t => t.leg === 2 && t.y != null), LEG_ICON = ["🚗", "🐾", "✈️"];
@@ -17733,17 +17734,29 @@ const handle = async (m, post) => {
     // ---- what's drawn: the yellow line (the car's way) and the green one (the possum's), the chequered line and banner, the gates, the
     // giant possum house (a big possum on its roof), the rings, the boxes and the leaves
     let parts = null, mark = null, boxes = null, leaves = null, puss = null, ringsP = null, badge = null; const clear = () => { for (const q of [parts, mark, boxes, leaves, puss, ringsP, badge]) try { q?.remove(); } catch {} parts = mark = boxes = leaves = puss = ringsP = badge = null; };
-    // your car's badge (Ash, 24 November 2026: "During the race instead of showing launch control; hide that box and put a symbol on my car
-    // instead based on the upgrade I've chosen"): its sign on a round plate in its colour, standing on the roof and facing back at you
-    let badgeOn = false; const BADGE_COL = { turbo: "#ff7a2f", launch: "#ffc93c", nitro: "#ff4d5e", grip: "#3ddc84" };
+    // your car's logo (Ash, 24 November 2026: "During the race instead of showing launch control; hide that box and put a symbol on my car
+    // instead based on the upgrade I've chosen"; then "I don't like the circle symbol on the car. I want it actually on the car itself like
+    // a logo on the car"): your race car's sign painted big on the roof, on the back window and on both front doors, moving with the car as
+    // the model draws it
+    // (its place, heading, pitch and roll: C.carPose); one part, one draw call
+    let badgeOn = false;
     const badgeMake = id => { try { badge?.remove(); } catch {} badge = null; const c = RACE_CARS.find(q => q[0] === id); if (!c || !m.addParts) return;
       const cv = document.createElement("canvas"); cv.width = cv.height = 128; const g = cv.getContext("2d");
-      g.beginPath(); g.arc(64, 64, 60, 0, Math.PI * 2); g.fillStyle = "#1b1830"; g.fill(); g.beginPath(); g.arc(64, 64, 52, 0, Math.PI * 2); g.fillStyle = BADGE_COL[id] || "#ffc93c"; g.fill();
-      g.font = '64px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(c[2], 64, 70);
-      const w = 0.42, P = [-w, 0, 0, w, 0, 0, w, 2 * w, 0, -w, 0, 0, w, 2 * w, 0, -w, 2 * w, 0], U = [1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1];  /* (read the right way round from behind the car) */
-      badge = m.addParts([{ positions: new Float32Array(P), normals: new Float32Array(18).map((_, i) => i % 3 === 2 ? 1 : 0), uvs: new Float32Array(U), map: cv, color: [1, 1, 1], unlit: true, doubleSide: true, opacity: 0.999 /* (see-through round the plate) */, matrix: new BS.B.THREE.Matrix4().makeScale(1e-4, 1e-4, 1e-4).elements }]); };
-    const badgeAt = () => { if (!badge?.setMatrix) return; const w = where(), on = !!race && race.state !== "done" && race.leg === 0 && w?.kind === "car";
-      if (on) { const h = w.heading, x = w.x - Math.sin(h) * 0.5, z = w.z - Math.cos(h) * 0.5; MQ.setFromAxisAngle(MY, h); MM.compose(MV.set(x, ground(x, z) + 1.5, z), MQ, MS.setScalar(1)); }
+      g.font = '92px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'; g.textAlign = "center"; g.textBaseline = "middle";
+      g.shadowColor = "rgba(255, 255, 255, 0.95)"; g.shadowBlur = 10; g.fillText(c[2], 64, 70); g.shadowBlur = 0; g.fillText(c[2], 64, 70);
+      // in the car's own frame (its nose towards +z, the roof 1.45 m up, the doors 0.88 m out), each face read the right way round from
+      // outside: the roof from behind, a door from its own side
+      const P = [], U = [], N = [], quad = (pts, uv, n) => { for (const k of [0, 1, 2, 0, 2, 3]) { P.push(...pts[k]); U.push(...uv[k]); N.push(...n); } };
+      { const y = 1.458, x0 = -0.52, x1 = 0.52, z0 = -0.85, z1 = 0.19; quad([[x1, y, z0], [x0, y, z0], [x0, y, z1], [x1, y, z1]], [[0, 0], [1, 0], [1, 1], [0, 1]], [0, 1, 0]); }
+      // and a sticker on the back window, the one you see from behind as you drive (the roof's too flat to see from there)
+      { const o = 0.012, ny = 0.676, nz = -0.737, zy = y => -1.42 + (y - 0.97) * 0.44 / 0.48, yb = 1.0, yt = 1.42, x0 = -0.28, x1 = 0.28, B = [yb + o * ny, zy(yb) + o * nz], Tt = [yt + o * ny, zy(yt) + o * nz];
+        quad([[x1, B[0], B[1]], [x0, B[0], B[1]], [x0, Tt[0], Tt[1]], [x1, Tt[0], Tt[1]]], [[0, 0], [1, 0], [1, 1], [0, 1]], [0, ny, nz]); }
+      for (const sd of [-1, 1]) { const x = sd * 0.893, zc = 0.34, w = 0.25, y0 = 0.44, y1 = 0.94, za = zc - w, zb = zc + w;
+        quad([[x, y0, za], [x, y0, zb], [x, y1, zb], [x, y1, za]], sd > 0 ? [[1, 0], [0, 0], [0, 1], [1, 1]] : [[0, 0], [1, 0], [1, 1], [0, 1]], [sd, 0, 0]); }
+      badge = m.addParts([{ positions: new Float32Array(P), normals: new Float32Array(N), uvs: new Float32Array(U), map: cv, color: [1, 1, 1], unlit: true, doubleSide: true, opacity: 0.999 /* (see-through round the sign) */, matrix: new BS.B.THREE.Matrix4().makeScale(1e-4, 1e-4, 1e-4).elements }]); };
+    const ME = new BS.B.THREE.Euler();
+    const badgeAt = () => { if (!badge?.setMatrix) return; const q = T.car?.carPose?.(), on = !!q && !!race && race.state !== "done" && race.leg === 0;
+      if (on) { MQ.setFromEuler(ME.set(-q[4], q[3], q[5], "YXZ")); MM.compose(MV.set(q[0], q[1], q[2]), MQ, MS.setScalar(1)); }
       if (on || badgeOn) badge.setMatrix(0, (on ? MM : MM.makeScale(1e-4, 1e-4, 1e-4)).elements.slice()); badgeOn = on; };
     const showRings = on => { try { ringsP?.setMatrix?.(0, (on ? new BS.B.THREE.Matrix4() : new BS.B.THREE.Matrix4().makeScale(1e-4, 1e-4, 1e-4)).elements.slice()); } catch {} };
     const draw = () => { clear(); for (const q of [...BOX, ...LEAF]) q.shown = undefined; const pos = [], nor = [], col = [], Y = lin("#ffc93c"), K = lin("#18181f"), W = lin("#f2f2f2"), G = lin("#9aa0a8"), GR = lin("#58b947");
@@ -20708,6 +20721,7 @@ const handle = async (m, post) => {
     C.raceSurf = (x, z) => surf(x, z);  // (what the possum would stand on there: where the race puts its gum leaves)
     C.camReset = () => { const o = veh === "car" ? car : null; if (!o) return; camYaw = o.h + Math.PI; off = [0, 0.16]; camOff = null; idle = 0; };  // (the race's start: behind the car, up the road)
     C.upClose = () => { clearTimeout(upT); upChip.classList.remove("open"); };  // (the race's start: the upgrade chip folded down to its name)
+    C.carPose = () => veh === "car" && car ? [car.x, car.y, car.z, car.h + (car.spinY || 0), car.p || 0, (car.r || 0) + (car.roll || 0)] : null;  // (as the model draws it: the race paints its logo on it)
     C.raceOut = (x, z, fx, fz) => { const was = veh; if (veh) leave(true); if (was === "possum") possumHome();
       if (x != null) { F.pos.x = x; F.pos.z = z; F.pos.y = ground(x, z) + F.eye; if (fx != null) F.yaw = Math.atan2(-(fx - x), -(fz - z)); F.pitch = -0.04; } };  // (and you stand where the race says, facing the plane: not off at the possum's home when the view was in a hedge)  // (out of the possum at the plane, standing where it was; it goes home, so Get in is for the plane)
     C.raceWarp = (x, z, h, y) => { if (veh === "car" && car) { car.x = x; car.z = z; car.h = car.dir = h; car.y = ground(x, z) + 0.05; car.v = Math.max(car.v, 15); return true; }
