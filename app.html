@@ -6894,9 +6894,21 @@ const handle = async (m, post) => {
           put(A, new THREE.BoxGeometry(w, h, L), c, mtx((ax + bx) / 2, y, (az + bz) / 2, Math.atan2(bx - ax, bz - az))); }
         pts.forEach(([x, z]) => put(A, new THREE.CylinderGeometry(w / 2, w / 2, h, 14), c, mtx(x, y, z, 0))); };
       D.r.forEach(([w, k, f]) => { if (k === 1) ribbon(foot, pts2(f), w, G0 + 0.05, 0xcfc8ba); });  // paths through the parks
-      let ab = null;  // A'Beckett Street
+      const ab = STREET.find(st => st.w === 20), crossingX = 40.3, inRetail = x => x >= -55 && x <= 95;
+      // Metres east along the surveyed centreline, with a signed offset south. The line bends at Reilly.
+      const streetAt = (x, south) => {
+        const i = ab.pts.findIndex(([ax], i, p) => i + 1 < p.length && (x - ax) * (x - p[i + 1][0]) <= 0);
+        const [ax, az] = ab.pts[i], [bx, bz] = ab.pts[i + 1], slope = (bz - az) / (bx - ax);
+        const bearing = Math.atan(slope);
+        return { x: x - Math.sin(bearing) * south, z: az + (x - ax) * slope + Math.cos(bearing) * south, yaw: Math.PI / 2 - bearing };
+      };
+      const streetBox = (batch, x, south, length, width, bottom, height, colour, turn = 0) => {
+        const p = streetAt(x, south);
+        put(batch, new THREE.BoxGeometry(width, height, length), colour, mtx(p.x, G0 + bottom + height / 2, p.z, p.yaw + turn));
+      };
+      const paint = (x, south, l, w, colour = 0xe7e5db, turn = 0) => streetBox(mark, x, south, l, w, .115, .016, colour, turn);
+      const bays = [];
       STREET.forEach(st => { const { w, pts } = st; ribbon(road, pts, w, G0 + 0.05, w >= 10 ? 0x3a3d42 : 0x46484d);
-        if (w === 20) ab = st;
         if (w < 10) return;
         for (let i = 0; i < pts.length - 1; i++) { const [ax, az] = pts[i], [bx, bz] = pts[i + 1], L = Math.hypot(bx - ax, bz - az), ux = (bx - ax) / L, uz = (bz - az) / L, r = Math.atan2(ux, uz);
           // raised footpaths with a kerb, either side, broken where side streets come in
@@ -6906,18 +6918,74 @@ const handle = async (m, post) => {
               put(foot, new THREE.BoxGeometry(4, 0.18, l + 0.02), 0xc9c1b2, mtx(x, G0 + 0.09, z, r));
               put(foot, new THREE.BoxGeometry(0.25, 0.2, l + 0.02), 0xe3ded3, mtx(x + uz * 1.95 * sd, G0 + 0.1, z - ux * 1.95 * sd, r)); }); }
           // a dashed centre line
-          for (let s = 2; s < L - 2; s += 7) { const x = ax + ux * s, z = az + uz * s; if (!nearOther(x, z, st, 0)) put(mark, new THREE.BoxGeometry(0.15, 0.03, 3), 0xeeeadc, mtx(x, G0 + 0.115, z, r)); }
+          for (let s = 2; s < L - 2; s += 7) { const x = ax + ux * s, z = az + uz * s; if (!(st === ab && Math.abs(x - crossingX) < 5) && !nearOther(x, z, st, 0)) put(mark, new THREE.BoxGeometry(0.15, 0.03, 3), 0xeeeadc, mtx(x, G0 + 0.115, z, r)); }
           // angle parking bays along A'Beckett
           if (w === 20) for (let s = 1.5; s < L - 1; s += 2.9) [-1, 1].forEach(sd => { const x = ax + ux * s - uz * (w / 2 - 2.5) * sd, z = az + uz * s + ux * (w / 2 - 2.5) * sd;
-            if (!nearOther(x, z, st, 3) && Math.hypot(x - D.c[0], z - D.c[1]) > 13) put(mark, new THREE.BoxGeometry(0.12, 0.03, 5.6), 0xeeeadc, mtx(x, G0 + 0.115, z, r - sd * 1.07)); });
+            if (!inRetail(x) && !nearOther(x, z, st, 3) && Math.hypot(x - D.c[0], z - D.c[1]) > 13) put(mark, new THREE.BoxGeometry(0.12, 0.03, 5.6), 0xeeeadc, mtx(x, G0 + 0.115, z, r - sd * 1.07)); });
         } });
-      // the zebra crossing on A'Beckett, in front of the clock
-      if (ab) { let best = null; ab.pts.forEach((p, i) => { if (i === ab.pts.length - 1) return; const [ax, az] = p, [bx, bz] = ab.pts[i + 1], dx = bx - ax, dz = bz - az, L2 = dx * dx + dz * dz,
-          t = Math.max(0, Math.min(1, ((D.c[0] - ax) * dx + (D.c[1] - az) * dz) / L2)), x = ax + dx * t, z = az + dz * t, d = Math.hypot(D.c[0] - x, D.c[1] - z); if (!best || d < best.d) best = { d, x, z, r: Math.atan2(dx, dz) }; });
-        for (let k = -3; k <= 3; k++) { const x = best.x + Math.sin(best.r) * k * 1.0, z = best.z + Math.cos(best.r) * k * 1.0; put(mark, new THREE.BoxGeometry(9.6, 0.03, 0.5), 0xf4f1ea, mtx(x, G0 + 0.12, z, best.r)); }
+      // October 2025 Street View: zebra east of the T junction, kerb buildouts, north nose-in bays and south parallel bays.
+      if (ab) {
+        for (let k = -6; k <= 6; k++) paint(crossingX, k * .86, 3.45, .44);
+        for (const side of [-1, 1]) {
+          streetBox(foot, crossingX, side * 8.1, 4.4, 4.5, .10, .05, 0xbeb9ac);
+          for (const end of [-1, 1]) {
+            if (side < 0 && end < 0) continue; // keep the Reilly mouth open
+            const x = crossingX + end * 4.45;
+            streetBox(foot, x, side * 8.2, 4.5, 3.9, .10, .17, 0xcbc7ba);
+            if (side > 0) streetBox(foot, x, 8.25, 4.15, 3.45, .27, .04, 0x5e5344);
+            else streetBox(foot, x, -8.7, 2.0, 1.65, .27, .04, 0x5e5344);
+          }
+        }
+        const bayRun = (first, last, step, side) => {
+          let previousEnd;
+          for (let x = first; x + step <= last; x += step) {
+            const mid = x + step / 2, p = streetAt(mid, side < 0 ? -7.45 : 8.5);
+            if (nearOther(p.x, p.z, ab, .8)) continue;
+            if (side < 0) {
+              if (x !== previousEnd) paint(x, -7.45, .10, 4.8);
+              paint(x + step, -7.45, .10, 4.8);
+              paint(mid, -5.05, step, .10);
+            } else {
+              paint(mid, 7.4, step - .14, .09); paint(x, 7.85, .10, .95);
+            }
+            previousEnd = x + step;
+            bays.push({ ...p, yaw: p.yaw + (side < 0 ? Math.PI / 2 : Math.PI) });
+          }
+        };
+        bayRun(-54.5, 5.5, 2.72, -1); bayRun(49.5, 95, 2.72, -1);
+        bayRun(-54, 29, 6.4, 1); bayRun(50, 95, 6.4, 1);
+        // The end bay in front of the Hub has an adjoining yellow access aisle.
+        for (const x of [5.5, 8.25, 10.55]) paint(x, -7.45, .11, 4.8, 0xe6c45c);
+        paint(8.025, -5.05, 5.05, .11, 0xe6c45c);
+        for (let k = 0; k < 5; k++) paint(9.4, -9.25 + k * .84, 2.14, .10, 0xe6c45c, -.34);
+        paint(6.875, -7.8, 1.28, 1.45, 0x426a9d);
+        const p = streetAt(6.875, -7.8), chair = mtx(p.x, G0 + .138, p.z, p.yaw);
+        const symbol = (geo, right, forward) => put(mark, geo, 0xf4f1e7, chair.clone().multiply(new THREE.Matrix4().makeTranslation(right, 0, forward)));
+        symbol(new THREE.RingGeometry(.22, .29, 14, 1, .2, 5.5).rotateX(-Math.PI / 2), -.10, .10);
+        symbol(new THREE.CircleGeometry(.10, 10).rotateX(-Math.PI / 2), -.12, -.43);
+        symbol(new THREE.BoxGeometry(.09, .008, .42), -.12, -.15);
+        symbol(new THREE.BoxGeometry(.34, .008, .085), .01, .01);
+        symbol(new THREE.BoxGeometry(.085, .008, .30).rotateY(.38), .19, .14);
       }
 
-      done(road, { roughness: .95 }); done(foot, { roughness: 1 }); done(mark, { roughness: 1 });
+      // One repeating aggregate texture for the bitumen. World-space UVs keep it aligned through the junction.
+      const paving = done(road, { roughness: .95 });
+      if (paving) {
+        const canvas = document.createElement("canvas"); canvas.width = canvas.height = 128;
+        const g = canvas.getContext("2d"), pixels = g.createImageData(128, 128); let seed = 811;
+        for (let i = 0; i < pixels.data.length; i += 4) {
+          seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+          const value = 215 + (seed >>> 26) * .60;
+          pixels.data[i] = pixels.data[i + 1] = pixels.data[i + 2] = value; pixels.data[i + 3] = 255;
+        }
+        g.putImageData(pixels, 0, 0);
+        const tex = new THREE.CanvasTexture(canvas); tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+        const pos = paving.geometry.attributes.position, uv = new Float32Array(pos.count * 2);
+        for (let i = 0; i < pos.count; i++) { uv[i * 2] = pos.getX(i) / 3; uv[i * 2 + 1] = pos.getZ(i) / 3; }
+        paving.geometry.setAttribute("uv", new THREE.BufferAttribute(uv, 2)); paving.material.map = tex;
+        paving.material.name = "Inverloch bitumen";
+      }
+      done(foot, { roughness: 1 }); done(mark, { roughness: 1 });
       // ---- buildings. The Hub, library and hall: timber battens over charcoal, with a deep roof edge. Everything else in one mesh.
       const WALL = [[0xe9dcc0, 0x9b5743, 0xf2efe6, 0xc9b79a, 0xd8cdb5, 0xa86a52], [0x8e9498], [0xece4d6, 0xe3dccd, 0xd9d2c0, 0xf2ece0], [0xc9b08a], [0xe8c35a], [0xd8d6cf], [0xeee2c2]];
       const bld = bag(), roofEdge = bag(), ROOFS = [0x7a8085, 0x8f969b, 0xa9adaf, 0x6c767d, 0x9c968b, 0x84908f, 0xb7b9b6, 0x737b86];  // sheeting colours, building by building
@@ -6944,7 +7012,87 @@ const handle = async (m, post) => {
       // ---- shopfronts: each its own parapet and colour, a cornice, shop window and door, a sign above the verandah
       const FAC = [0xefe6d2, 0xa4573f, 0xf6f4ee, 0xb9c8cf, 0x9fb09a, 0xe0c99a, 0xc0674a, 0x4a4f55, 0xf0d98a, 0xc8102e], glassB = bag(), frame = bag();
       const fac = bag(), signsUp = [], shopWins = [], shopDoors = [];
-      D.u.forEach(([x1, z1, x2, z2, nx, nz, h, c, style, name]) => { const L = Math.hypot(x2 - x1, z2 - z1), r = Math.atan2(x2 - x1, z2 - z1), mx = (x1 + x2) / 2, mz = (z1 + z2) / 2, colr = FAC[c];
+      // October 2025 Street View at 7 and 11 A'Beckett. Register the visible tenants against physical
+      // wall ends; unmapped streets keep their generated fronts. Dimensions between corners are estimated.
+      const frontage = new Map(), awningBays = [], printedFronts = [], replacedSigns = new Set();
+      const retailUnits = W.invRetailUnits = [];
+      const registerFront = (start, finish, shops) => frontage.set(start.join(",") + "/" + finish.join(","), shops);
+      const bake = { name: "PAUL THE PIEMAN", label: "PRIZE WINNING PIES & PASTRIES", trim: 0x343438, ink: "#efede1", fabric: "stone", height: 4.7, face: 0.87 };
+      const agent = { name: "ALEX SCOTT & STAFF", label: "Real Estate     ALEX SCOTT AND STAFF", trim: 0xb72936, wall: 0xe4dfd6, height: 4.6, face: 1.05 };
+      const pharma = { name: "TERRYWHITE CHEMMART", label: "TerryWhite Chemmart", trim: 0xf0e6cc, sign: 0x23774d, wall: 0x925d48, fabric: "brick", height: 5.15 };
+      const sawtooth = { gable: true, wall: 0xb2634d, trim: 0xcacac1, height: 5.15 };
+      registerFront([42.2,51.6],[19.1,48.8], [[0.52,bake],[1,agent]]);
+      registerFront([19.1,48.8],[10.5,47.7], [[1,{name:"BENNY'S", label:"BENNY'S", trim:0x414449, wall:0xd4c8b4}]]);
+      registerFront([10.5,47.7],[3.4,46.8], [[1,{...sawtooth, name:"SOUTHERN BAZAAR", label:"Southern Bazaar", sign:0x292824, ink:"#e0c99c"}]]);
+      registerFront([3.4,46.8],[-3.8,45.8], [[1,{...sawtooth, name:"BEACHSIDE BARGAINS", label:"BEACHSIDE BARGAINS", sign:0x6c9693}]]);
+      registerFront([-3.8,45.8],[-10.9,44.9], [[1,{...sawtooth, name:"TREAT TIME", label:"Treat Time", sign:0xf1e7d4, ink:"#9d3976"}]]);
+      registerFront([-10.9,44.9],[-18.0,44.0], [[1,sawtooth]]);
+      registerFront([-18.0,44.0],[-25.2,43.0], [[1,sawtooth]]);
+      registerFront([-25.2,43.0],[-32.3,42.1], [[1,{name:"TEEPEES", label:"TEEPEES", trim:0x434745, wall:0xc9bda4}]]);
+      registerFront([49.4,52.2],[42.2,51.6], [[1,{name:"SALT & SAND CLOTHING", label:"Salt & Sand", trim:0x8f8a85, wall:0xe1dacf}]]);
+      registerFront([56.5,52.8],[49.4,52.2], [[1,{name:"THAT ECO PLACE",label:"THAT ECO PLACE",trim:0x37383c,sign:0xf0ece4,ink:"#52706b",wall:0xd8d0c7}]]);
+      registerFront([39.7,17.5],[38.6,24.8], [[1,pharma]]);
+      registerFront([42.8,28.5],[49.4,29.4], [[1,pharma]]);
+      registerFront([49.4,29.4],[55.9,30.3], [[1,{...pharma, name:"", label:""}]]);
+      registerFront([55.9,30.3],[62.5,31.2], [[1,{name:"HOMES & ACREAGE", label:"Homes & Acreage", trim:0xe4dbc7, sign:0x51483c, wall:0x905d49}]]);
+      const arcade = { trim:0xddd4be, wall:0x9d7059, fabric:"brick", height:5.05 };
+      registerFront([66.8,28.8],[75.2,29.8], [[1,arcade]]);
+      registerFront([75.2,29.8],[83.5,30.8], [[1,arcade]]);
+      registerFront([82.7,33.4],[90.3,35.4], [[1,{...arcade,name:"PAPERPLAY",label:"Paperplay",sign:0x474443}]]);
+      const renderFront = (x1,z1,x2,z2,nx,nz,shop) => {
+        const width = Math.hypot(x2-x1,z2-z1), yaw = Math.atan2(x2-x1,z2-z1), height = shop.height || 4.7;
+        const wall = shop.wall || 0xb9aaa0, frameCol = shop.fabric === "brick" ? 0x523c36 : 0x515353;
+        const at = (t,out) => along(x1,z1,x2,z2,t,out,nx,nz);
+        const box = (bag,t,out,y,depth,h,w,tint) => {
+          const [x,z] = at(t,out); put(bag,new THREE.BoxGeometry(depth,h,w),tint,mtx(x,G0+y,z,yaw));
+        };
+        const panel = (t,out,y,w,h,text,bg,ink,pattern) => printedFronts.push({ pos:at(t,out), nx,nz,y,w,h,text,bg,ink,pattern });
+        if (shop.name) replacedSigns.add(shop.name);
+        retailUnits.push([x1,z1,x2,z2,nx,nz,height,0,0,shop.name || ""]);
+        box(fac,.5,.04,height/2,.35,height,width,wall);
+        const foot = shop.fabric === "stone" ? .55 : .4;
+        if (shop.fabric) panel(.5,.225,foot/2,width,foot,"",wall,"",shop.fabric);
+        if (shop.gable) {
+          const span = (width-.1)/2, ridge = 1.02;
+          const outline = new THREE.Shape([new THREE.Vector2(-span,0),new THREE.Vector2(span,0),new THREE.Vector2(0,ridge)]);
+          const [x,z] = at(.5,-.35);
+          put(fac,new THREE.ExtrudeGeometry(outline,{depth:.18,bevelEnabled:false}),wall,mtx(x,G0+height,z,yaw-Math.PI/2));
+          panel(.5,.226,height-.36,width-.18,.71,"",wall,"","ribs");
+        }
+        const panes = Math.max(2,Math.round((width-1.4)/2.1)), display = width-1.7;
+        const wt = (display/2+.18)/width, dt = (width-.75)/width;
+        box(glassB,wt,.23,1.6,.08,2.35,display,0x353d3e);
+        box(glassB,dt,.23,1.55,.08,2.35,1.08,0x2b3133);
+        shopWins.push([...at(wt,.275),nx,nz,display,shop.name || ""]); shopDoors.push([...at(dt,.275),nx,nz]);
+        for (let j=0;j<=panes;j++) box(frame,(.18+display*j/panes)/width,.29,1.62,.08,2.45,.065,frameCol);
+        box(frame,.5,.29,2.86,.085,.09,width-.14,frameCol);
+        if (shop === agent) {
+          box(fac,.56,3.19,4.28,.10,.67,width*.67,shop.trim);
+          panel(.56,3.26,4.28,width*.65,.58,"ALEX SCOTT & STAFF",shop.trim,"#fff4e6");
+        }
+        if (shop.fabric === "brick") {
+          panel(.5,.226,4.43,width,1.13,"",wall,"","brick");
+          box(fac,.5,.04,height+.12,.35,.24,width*.5,wall);
+        }
+        awningBays.push({x1,z1,x2,z2,nx,nz,shop});
+        const [lx,lz] = at(.45,1); lights(lx,G0+1.6,lz);
+      };
+      const corner = [38.6,24.8,42.8,28.5], cornerL = Math.hypot(corner[2]-corner[0],corner[3]-corner[1]);
+      renderFront(...corner,-(corner[3]-corner[1])/cornerL,(corner[2]-corner[0])/cornerL,{...pharma,label:"OPEN 7 DAYS"});
+      D.u.forEach(([x1, z1, x2, z2, nx, nz, h, c, style, name]) => {
+        if (x1 === 65.1 && z1 === 53.5 && name === "THAT ECO PLACE") name = "BUTCHER";
+        const fronts = frontage.get([x1,z1].join(",") + "/" + [x2,z2].join(","));
+        if (fronts) {
+          if (name) replacedSigns.add(name);
+          let from = 0;
+          for (const [end,shop] of fronts) {
+            renderFront(...along(x1,z1,x2,z2,from,0,nx,nz),...along(x1,z1,x2,z2,end,0,nx,nz),nx,nz,shop);
+            from=end;
+          }
+          return;
+        }
+        retailUnits.push([x1,z1,x2,z2,nx,nz,h,c,style,name]);
+        const L = Math.hypot(x2 - x1, z2 - z1), r = Math.atan2(x2 - x1, z2 - z1), mx = (x1 + x2) / 2, mz = (z1 + z2) / 2, colr = FAC[c];
         const at = (t, out) => along(x1, z1, x2, z2, t, out, nx, nz);
         let [x, z] = at(0.5, 0.2); put(fac, new THREE.BoxGeometry(0.4, h, L - 0.12), colr, mtx(x, G0 + h / 2, z, r));                     // the front wall up to the parapet
         [x, z] = at(0.5, 0.32); put(fac, new THREE.BoxGeometry(0.62, 0.22, L - 0.02), c === 7 ? 0xd9d6cf : 0xfaf8f2, mtx(x, G0 + h - 0.12, z, r));  // cornice
@@ -6960,11 +7108,42 @@ const handle = async (m, post) => {
         [x, z] = at(0.5, 0.47); put(frame, new THREE.BoxGeometry(0.08, 0.08, L - 0.5), 0x3a3d40, mtx(x, G0 + 2.8, z, r));
         if (name) signsUp.push([...at(0.5, 0.5), nx, nz, /PIEMAN/.test(name) ? L - 1 : Math.min(L - 1, 6.5), name, c, h]);  // the bakery's sign runs right across its wide front
         { const [lx, lz] = at(0.4, 0.9); lights(lx, G0 + 1.4, lz); } });
-      done(fac, { roughness: .85 }); done(frame, { roughness: .5, metalness: .4 });
-      // glass elsewhere: the Hub's and library's big windows onto the street (shops have theirs above)
-      (D.g || []).forEach(([x1, z1, x2, z2, nx, nz, k]) => { if (k !== 1) return; const L = Math.hypot(x2 - x1, z2 - z1), r = Math.atan2(x2 - x1, z2 - z1);
-        put(glassB, new THREE.BoxGeometry(0.08, 3.6, L * 0.8), 0x2c3a48, mtx((x1 + x2) / 2 + nx * 0.06, G0 + 2.7, (z1 + z2) / 2 + nz * 0.06, r));
-        for (let s = 0.1; s < 0.92; s += 0.1) put(frame, new THREE.BoxGeometry(0.1, 3.6, 0.1), 0x2b2e31, mtx(x1 + (x2 - x1) * s + nx * 0.1, G0 + 2.7, z1 + (z2 - z1) * s + nz * 0.1, r)); });
+      done(fac, { roughness: .85 });
+      // The south entry in the Hub plan separates the library's long window wall (west) from visitor information (east).
+      const hubEntryWall = (x2, z2) => D.lib && Math.hypot(x2 - D.lib[0], z2 - D.lib[1]) < 0.2;
+      const libraryWindows = (x2, z2, nz) => D.lib && nz > 0.9 && x2 < D.lib[0] - 3 && Math.abs(z2 - D.lib[1]) < 4;
+      (D.g || []).forEach(([x1, z1, x2, z2, nx, nz, k]) => {
+        if (k !== 1 || hubEntryWall(x2, z2)) return;
+        const L = Math.hypot(x2 - x1, z2 - z1), r = Math.atan2(x2 - x1, z2 - z1), lib = libraryWindows(x2, z2, nz);
+        const width = L * (lib ? 0.96 : 0.8), h = lib ? 3.85 : 3.6, y = lib ? 2.42 : 2.7;
+        const mx = (x1 + x2) / 2, mz = (z1 + z2) / 2;
+        put(glassB, new THREE.BoxGeometry(0.08, h, width), 0x2c3a48, mtx(mx + nx * 0.06, G0 + y, mz + nz * 0.06, r));
+        if (lib) {
+          for (let i = 0; i <= 12; i++) {
+            const t = 0.02 + 0.96 * i / 12;
+            put(frame, new THREE.BoxGeometry(0.095, h, 0.085), 0x35414b, mtx(x1 + (x2 - x1) * t + nx * 0.15, G0 + y, z1 + (z2 - z1) * t + nz * 0.15, r));
+          }
+          for (const level of [0.52, 2.6, 4.34]) put(frame, new THREE.BoxGeometry(0.10, 0.074, width), 0x5a6269, mtx(mx + nx * 0.15, G0 + level, mz + nz * 0.15, r));
+          put(roofEdge, new THREE.BoxGeometry(0.55, 1.0, L), 0x293f53, mtx(mx + nx * 0.10, G0 + 4.94, mz + nz * 0.10, r));
+          put(roofEdge, new THREE.BoxGeometry(0.64, 0.075, L), 0x617583, mtx(mx + nx * 0.10, G0 + 5.47, mz + nz * 0.10, r));
+        }
+      });
+      if (D.lib) {
+        const [x, z, , , nx, nz] = D.lib, face = Math.atan2(nx, nz);
+        const position = (s, out, y, angle = face) => mtx(x + nz * s + nx * out, G0 + y, z - nx * s + nz * out, angle);
+        const panel = (batch, color, w, h, d, s, out, y) => put(batch, new THREE.BoxGeometry(w, h, d), color, position(s, out, y));
+        // A sheltered pair of glazed sliding doors fills the recessed 4.45 m bay at the end of the mapped path.
+        panel(glassB, 0x354751, 3.85, 2.9, 0.08, -2.15, 0.09, 1.60);
+        for (const s of [-4.06, -3.35, -2.15, -0.95, -0.24]) panel(frame, 0x52616a, 0.065, 2.9, 0.07, s, 0.17, 1.60);
+        for (const y of [0.20, 2.58, 3.04]) panel(frame, 0x63727a, 3.90, 0.075, 0.07, -2.15, 0.17, y);
+        panel(frame, 0xabae9e, 3.72, 0.07, 0.025, -2.15, 0.19, 1.13);
+        panel(roofEdge, 0x253747, 4.44, 0.29, 1.36, -2.21, 0.64, 3.43);
+        // The round window belongs to the east-facing return of the projecting library wing.
+        panel(frame, 0x253743, 0.10, 4.48, 3.02, -4.40, 1.55, 2.37);
+        put(frame, new THREE.TorusGeometry(0.94, 0.065, 6, 32), 0xaebac1, position(-4.31, 1.57, 2.05, face + Math.PI / 2));
+        put(glassB, new THREE.CircleGeometry(0.90, 32), 0x26343b, position(-4.33, 1.57, 2.05, face + Math.PI / 2));
+      }
+      done(frame, { roughness: .5, metalness: .4 });
       W.invGlass = done(glassB, { roughness: .2, metalness: .4, emissive: 0xffc98a, emissiveIntensity: 0 }).material;  // lit from inside at night
       // ---- what's in the shop windows and doors (Ash, 15 November 2026: "Make it higher res but always consider open time and
       // lag"): one small picture of seven window displays, the library's shelves, the Hub's foyer and four doors, cut up across every
@@ -7050,17 +7229,21 @@ const handle = async (m, post) => {
           for (let j = 0; j < n; j++) { const o = (j + 0.5) * sw - w / 2; pane(x + nz * o, z - nx * o, nx, nz, sw, G0 + 0.425, G0 + 2.775, mir ? u1 : u0, mir ? u0 : u1, v0, v1); } });
         shopDoors.forEach(([x, z, nx, nz], i) => { const d = i % 4, u0 = 0.5 + d / 16 + EU, u1 = 0.5 + (d + 1) / 16 - EU; pane(x, z, nx, nz, 1.05, G0 + 0.4, G0 + 2.7, u0, u1, EV, ROW - EV); });
         // the Hub's and the library's glass onto the street: books on the library's side, the foyer and the visitor information desk on the Hub's
-        (D.g || []).forEach(([x1, z1, x2, z2, nx, nz, k], i) => { if (k !== 1) return; const L = Math.hypot(x2 - x1, z2 - z1) * 0.8, n = Math.max(1, Math.round(L / 5.5)), sw = L / n, ux = (x2 - x1) / (L / 0.8), uz = (z2 - z1) / (L / 0.8);
-          const lib = D.lib && Math.hypot((x1 + x2) / 2 - (D.lib[0] + D.lib[2]) / 2, (z1 + z2) / 2 - (D.lib[1] + D.lib[3]) / 2) < 20;
+        (D.g || []).forEach(([x1, z1, x2, z2, nx, nz, k], i) => { if (k !== 1 || hubEntryWall(x2, z2)) return;
+          const lib = libraryWindows(x2, z2, nz), wall = Math.hypot(x2 - x1, z2 - z1), L = wall * (lib ? 0.96 : 0.8), n = Math.max(1, Math.round(L / 5.5)), sw = L / n, ux = (x2 - x1) / wall, uz = (z2 - z1) / wall;
           for (let j = 0; j < n; j++) { const o = (j + 0.5) * sw - L / 2, t = lib ? 8 : 9, u0 = (t & 3) / 4 + EU, u1 = u0 + 0.25 - 2 * EU, mir = lib && (i + j) % 2;
-            pane((x1 + x2) / 2 + ux * o + nx * 0.105, (z1 + z2) / 2 + uz * o + nz * 0.105, nx, nz, sw, G0 + 0.9, G0 + 4.5, mir ? u1 : u0, mir ? u0 : u1, EV, ROW - EV); } });
+            pane((x1 + x2) / 2 + ux * o + nx * 0.105, (z1 + z2) / 2 + uz * o + nz * 0.105, nx, nz, sw, G0 + (lib ? 0.50 : 0.9), G0 + (lib ? 4.34 : 4.5), mir ? u1 : u0, mir ? u0 : u1, EV, ROW - EV); } });
         const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(P3, 3)); geo.setAttribute("normal", new THREE.Float32BufferAttribute(N3, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(UV, 2));
         W.invShopWin = new THREE.MeshStandardMaterial({ map, roughness: .28, metalness: .1, emissive: 0xffe0b0, emissiveMap: map, emissiveIntensity: 0 });
         TG.add(new THREE.Mesh(geo, W.invShopWin)); }
       done(roofEdge, { roughness: .6 });
       // ---- verandahs: corrugated iron sloping to a white fascia, on teal posts with little brackets
       const vb = bag();
-      D.v.forEach(([x1, z1, x2, z2, nx, nz]) => { const L = Math.hypot(x2 - x1, z2 - z1), r = Math.atan2(x2 - x1, z2 - z1), mx = (x1 + x2) / 2, mz = (z1 + z2) / 2, tilt = Math.atan2(nx, nz);
+      const replacedAwnings = new Set(["42.8,28.5","66.8,28.8","82.7,33.4","42.2,51.6","27.6,49.9","10.5,47.7","56.5,52.8"]);
+      D.v.forEach(([x1, z1, x2, z2, nx, nz]) => {
+        if (replacedAwnings.has([x1,z1].join(","))) return;
+        if (x1 === 44 && z1 === -11.5) { x2 = 39.7; z2 = 17.5; } // pharmacy takes over at the corner
+        const L = Math.hypot(x2 - x1, z2 - z1), r = Math.atan2(x2 - x1, z2 - z1), mx = (x1 + x2) / 2, mz = (z1 + z2) / 2, tilt = Math.atan2(nx, nz);
         const sx = Math.sign(nx * Math.cos(r) - nz * Math.sin(r)) || 1; put(vb, new THREE.BoxGeometry(3.2, 0.08, L), 0xb8bdc0, mtx(mx + nx * 1.95, G0 + 3.25, mz + nz * 1.95, r).multiply(new THREE.Matrix4().makeRotationZ(-0.1 * sx)));
         for (let s = 0.3; s < 3.2; s += 0.45) put(vb, new THREE.BoxGeometry(0.05, 0.05, L), 0xa3a9ad, mtx(mx + nx * (0.35 + s), G0 + 3.42 - s * 0.1, mz + nz * (0.35 + s), r));  // the corrugations
         put(vb, new THREE.BoxGeometry(0.08, 0.38, L), 0xf4f2ec, mtx(mx + nx * 3.5, G0 + 3.05, mz + nz * 3.5, r));  // fascia
@@ -7068,7 +7251,79 @@ const handle = async (m, post) => {
           put(vb, new THREE.CylinderGeometry(0.06, 0.07, 2.95, 8), 0x2f7a72, mtx(x, G0 + 1.48, z, 0));
           put(vb, new THREE.BoxGeometry(0.05, 0.4, 0.6), 0x2f7a72, mtx(x - nx * 0.3, G0 + 2.8, z - nz * 0.3, r + Math.PI / 2, 1, 1, 1)); }
         lights(mx + nx * 2, G0 + 2.9, mz + nz * 2); });
+      // Share the outer corner of each adjoining roof. The chamfer on the pharmacy returns onto Reilly.
+      const eaveEnds = new Map();
+      for (const b of awningBays) for (const [x,z] of [[b.x1,b.z1],[b.x2,b.z2]]) {
+        const key = x.toFixed(2)+","+z.toFixed(2);
+        if (!eaveEnds.has(key)) eaveEnds.set(key,[]);
+        eaveEnds.get(key).push(b);
+      }
+      function eaveEnd(b,x,z) {
+        const neighbours = eaveEnds.get(x.toFixed(2)+","+z.toFixed(2)), other = neighbours.find(n => n !== b) || b;
+        const scale = 3.2 / (1 + b.nx*other.nx + b.nz*other.nz);
+        return [x+(b.nx+other.nx)*scale, z+(b.nz+other.nz)*scale];
+      }
+      for (const b of awningBays) {
+        const {x1,z1,x2,z2,shop} = b, p = eaveEnd(b,x1,z1), q = eaveEnd(b,x2,z2);
+        const roof = new THREE.Shape([[x1,z1],[x2,z2],q,p].map(([x,z])=>new THREE.Vector2(x,-z)));
+        const slab = new THREE.ExtrudeGeometry(roof,{depth:.11,bevelEnabled:false}); slab.applyMatrix4(flatDown);
+        put(vb,slab,0xb6b4a6,mtx(0,G0+3.15,0,0),0xc6c5b8);
+        const dx=q[0]-p[0], dz=q[1]-p[1], w=Math.hypot(dx,dz), yaw=Math.atan2(dx,dz), nx=-dz/w, nz=dx/w;
+        const mx=(p[0]+q[0])/2, mz=(p[1]+q[1])/2, h=shop.face || .36, y=3.12+h/2;
+        put(vb,new THREE.BoxGeometry(.15,h,w),shop.trim,mtx(mx,G0+y,mz,yaw));
+        const post = shop.fabric === "brick" ? 0x624336 : shop === agent ? shop.trim : 0xa2a299;
+        put(vb,new THREE.BoxGeometry(.105,3.14,.105),post,mtx(p[0]+.14*dx/w,G0+1.58,p[1]+.14*dz/w,yaw));
+        if (shop.label) printedFronts.push({pos:[mx+nx*.09,mz+nz*.09], nx,nz,y,w:w-.12,h:h-.02,text:shop.label,bg:shop.sign || shop.trim,ink:shop.ink || "#fbf5e7"});
+      }
       done(vb, { roughness: .6, metalness: .25 });
+      // One daylight atlas for the printed fascias and sills; the existing emissive window atlas still serves the interiors.
+      {
+        const tiles = new Map(), cellW=512, cellH=48;
+        for (const p of printedFronts) {
+          const key = [p.text,p.bg,p.ink,p.pattern].join("|");
+          if (!tiles.has(key)) tiles.set(key,{...p,index:tiles.size});
+          p.index=tiles.get(key).index;
+        }
+        const canvas=document.createElement("canvas"); canvas.width=cellW*2;
+        canvas.height=2**Math.ceil(Math.log2(Math.max(1,Math.ceil(tiles.size/2))*cellH));
+        const ctx=canvas.getContext("2d"), css=n=>"#"+n.toString(16).padStart(6,"0");
+        for (const t of tiles.values()) {
+          const x=t.index%2*cellW, y=Math.floor(t.index/2)*cellH; ctx.save(); ctx.translate(x,y);
+          ctx.fillStyle=css(t.bg); ctx.fillRect(0,0,cellW,cellH);
+          if (t.pattern === "ribs") {
+            ctx.fillStyle="#9c5143"; for(let row=7;row<cellH;row+=6) ctx.fillRect(0,row,cellW,1);
+          } else if (t.pattern) {
+            const stone=t.pattern==="stone", rowH=stone?15:9;
+            for(let row=0; row*rowH<cellH; row++) {
+              let x0=-(row%2)*(stone?21:11), i=0;
+              while(x0<cellW) {
+                const n=(row*19+i*7)%13, width=stone?25+n*2:24;
+                ctx.fillStyle=stone?["#a79883","#c4b39b","#907e6c","#b4a38d"][n%4]:["#965c49","#995e4a","#805142","#a06550"][n%4];
+                ctx.fillRect(x0+1,row*rowH+1,width-1,rowH-1); x0+=width;i++;
+              }
+            }
+          } else {
+            const natural=cellH*t.w/t.h;
+            ctx.scale(cellW/natural,1); ctx.fillStyle=t.ink; ctx.textAlign="center"; ctx.textBaseline="middle";
+            ctx.font=(t.text==="Southern Bazaar"?"italic 600 32px Georgia":"bold 32px Arial, sans-serif");
+            ctx.fillText(t.text,natural/2,cellH/2,natural*.94);
+          }
+          ctx.restore();
+        }
+        const positions=[],normals=[],uv=[];
+        for (const p of printedFronts) {
+          const u0=(p.index%2*cellW+2)/canvas.width, u1=u0+(cellW-4)/canvas.width;
+          const v1=1-(Math.floor(p.index/2)*cellH+2)/canvas.height, v0=v1-(cellH-4)/canvas.height;
+          for (const [s,t] of [[-1,-1],[1,-1],[1,1],[-1,-1],[1,1],[-1,1]]) {
+            positions.push(p.pos[0]+s*p.nz*p.w/2,G0+p.y+t*p.h/2,p.pos[1]-s*p.nx*p.w/2);
+            normals.push(p.nx,0,p.nz); uv.push(s<0?u0:u1,t<0?v0:v1);
+          }
+        }
+        const map=new THREE.CanvasTexture(canvas); map.colorSpace=THREE.SRGBColorSpace; map.anisotropy=4;
+        const geometry=new THREE.BufferGeometry(); geometry.setAttribute("position",new THREE.Float32BufferAttribute(positions,3));
+        geometry.setAttribute("normal",new THREE.Float32BufferAttribute(normals,3)); geometry.setAttribute("uv",new THREE.Float32BufferAttribute(uv,2));
+        TG.add(new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({map,roughness:.84})));
+      }
       // ---- the Esplanade Hotel: cream, two storeys, an upstairs verandah, grey roof and a tall brick chimney
       const hs = bag(), ROOF = [0x55606a, 0x7a3e33, 0x3f4650, 0x8a8f93, 0x5d4a3e, 0x46505a, 0x6b2f2a];
       { const [hx, hz, hd] = D.ho, r = hd - Math.PI / 2, f = (a, b) => [hx + Math.cos(r) * a + Math.sin(r) * b, hz - Math.sin(r) * a + Math.cos(r) * b];
@@ -7411,13 +7666,40 @@ const handle = async (m, post) => {
           put(fu, new THREE.TorusGeometry(0.55, 0.06, 6, 12, Math.PI / 2), 0x2f7a72, mtx(x + uz * 0.55 * sd, G0 + 6.2, z - ux * 0.55 * sd, Math.atan2(ux, uz) + (sd > 0 ? Math.PI / 2 : -Math.PI / 2)));
           put(fu, new THREE.CylinderGeometry(0.22, 0.3, 0.3, 10), 0x24584f, mtx(x + uz * 1.1 * sd, G0 + 6.05, z - ux * 1.1 * sd, 0));
           lights(x + uz * 1.1 * sd, G0 + 5.85, z - ux * 1.1 * sd); }); });
-      if (ab) { const BAN = [[0xd23a5c, 0x2d4fa0], [0x2d4fa0, 0xd23a5c], [0xe8e4f0, 0xd23a5c]]; let k = 0;
-        ab.pts.forEach((p, i) => { if (i === ab.pts.length - 1) return; const [ax, az] = p, [bx, bz] = ab.pts[i + 1], L = Math.hypot(bx - ax, bz - az), ux = (bx - ax) / L, uz = (bz - az) / L;
-          for (let s = 4; s < L; s += 9) [-1, 1].forEach(sd => { const x = ax + ux * s - uz * 10.4 * sd, z = az + uz * s + ux * 10.4 * sd;
-            if (Math.hypot(x - D.c[0], z - D.c[1]) > 70 || Math.hypot(x - D.c[0], z - D.c[1]) < 18 || nearOther(x, z, ab, 1)) return;  // none near the clock: they'd stand in front of it
-            const [c1, c2] = BAN[k++ % 3]; put(fu, new THREE.CylinderGeometry(0.06, 0.07, 8.5, 6), 0xf2f2f2, mtx(x, G0 + 4.25, z, 0));
-            put(fu, new THREE.BoxGeometry(0.04, 1.4, 0.8), c1, mtx(x + ux * 0.45, G0 + 7.5, z + uz * 0.45, Math.atan2(ux, uz)));
-            put(fu, new THREE.BoxGeometry(0.04, 1.0, 0.8), c2, mtx(x + ux * 0.45, G0 + 6.3, z + uz * 0.45, Math.atan2(ux, uz))); }); }); }
+      if (ab) {
+        for (const [x, side] of [[-2.4, -10], [.1, -10], [35, 8.3], [37.0, 8.7], [44, 8.25], [46.2, 8.55], [43.2, -7.5], [46.5, -7.8]]) {
+          const p = streetAt(x, side);
+          put(fu, new THREE.CylinderGeometry(.045, .085, 7.9, 7), 0xb8b7b0, mtx(p.x, G0 + 4.2, p.z, 0));
+          // Printed event banners on silver masts. Vary the folds and use broad bands that read at street distance.
+          const yaw = side > 0 ? p.yaw - .30 : p.yaw - .72;
+          const cloth = (offset, y, w, h, colour, fold = 0, out = 0) => put(fu, new THREE.BoxGeometry(w, h, .028), colour,
+            mtx(p.x + Math.cos(yaw) * offset + Math.sin(yaw) * out, G0 + y, p.z - Math.sin(yaw) * offset + Math.cos(yaw) * out, yaw + fold));
+          cloth(-.31, 6.8, .62, 2.58, 0x2c3c55); cloth(-.77, 6.83, .36, 2.52, 0x414c63, -.29);
+          for (let j = 0; j < 4; j++) cloth(-.31, 6.11 + j * .11, .48 - (j % 2) * .09, .035, 0xc4ad78, 0, -.024);
+        }
+        for (const [x, side] of [[43, 6.85], [38.2, -7.1]]) {
+          const p = streetAt(x, side), sign = mtx(p.x, G0 + 2.35, p.z, p.yaw);
+          put(fu, new THREE.CylinderGeometry(.033, .042, 2.2, 7), 0x93968b, mtx(p.x, G0 + 1.3, p.z, 0));
+          put(fu, new THREE.CylinderGeometry(.34, .34, .045, 22).rotateX(Math.PI / 2), 0xe4bc30, sign);
+          for (const face of [-1, 1]) for (const [xoff, tilt] of [[-.07, -.43], [.065, .42]]) {
+            const leg = new THREE.BoxGeometry(.088, .32, .018).rotateZ(tilt);
+            put(fu, leg, 0x2d302d, sign.clone().multiply(new THREE.Matrix4().makeTranslation(xoff, .005, face * .03)));
+          }
+        }
+        const leaves = new THREE.IcosahedronGeometry(1, 1), blade = new THREE.ConeGeometry(.05, 1, 3);
+        for (const [x, side] of [[crossingX - 4.45, 1], [crossingX + 4.45, 1]]) {
+          for (let j = 0; j < 17; j++) {
+            const p = streetAt(x - 1.5 + (j % 4) * .94 + .15 * Math.sin(j), side * (7.12 + Math.floor(j / 4) * .51));
+            const h = .24 + .10 * Math.cos(j * 3.7);
+            if (j % 3) {
+              put(fu, leaves, [0x65794e, 0x768353, 0x526b4c, 0x899667][j % 4], mtx(p.x, G0 + .31 + h, p.z, j, .52, h * 1.1, .40));
+            } else {
+              for (let i = 0; i < 9; i++) { const a = i * 2.4 + j, len = .42 + .16 * Math.sin(a);
+                put(fu, blade, i % 3 ? 0x93965e : 0xb2aa77, mtx(p.x + Math.sin(a) * .13, G0 + .30 + len * .43, p.z + Math.cos(a) * .13, a, 1, len, 1, .58)); }
+            }
+          }
+        }
+      }
       done(fu, { roughness: .6, metalness: .2 });
       // ---- cars, parked nose-in along A'Beckett: proper shapes (bonnet, cabin with glass, boot), wheels, lights
       const cars = bag(), CARS = [0xf2f2f2, 0xb9bec4, 0x6f757c, 0x1f2226, 0x23365e, 0x8f1d22, 0x2b5d8a, 0xe8e4da, 0x50606b, 0x7a8a6a, 0xc9b28a];
@@ -7437,10 +7719,11 @@ const handle = async (m, post) => {
           put(cars, wheel, 0x17181a, mm); put(cars, hub, 0xa9adb1, mm); });
         [0.6, -0.6].forEach(b => { put(cars, new THREE.BoxGeometry(0.06, 0.14, 0.32), 0xf4f1e6, m.clone().multiply(new THREE.Matrix4().makeTranslation(2.27, 0.62, b)));
           put(cars, new THREE.BoxGeometry(0.06, 0.16, 0.3), 0xa3161c, m.clone().multiply(new THREE.Matrix4().makeTranslation(-2.29, 0.66, b))); }); };
-      if (ab) { let n = 0; ab.pts.forEach((p, i) => { if (i === ab.pts.length - 1) return; const [ax, az] = p, [bx, bz] = ab.pts[i + 1], L = Math.hypot(bx - ax, bz - az), ux = (bx - ax) / L, uz = (bz - az) / L, r = Math.atan2(ux, uz);
+      if (ab) { bays.forEach((bay, i) => { if ((i * 7 + 3) % 10 < 6) carAt(bay.x, bay.z, bay.yaw, CARS[(i * 31) % CARS.length], i % 6 === 0); });
+        let n = 0; ab.pts.forEach((p, i) => { if (i === ab.pts.length - 1) return; const [ax, az] = p, [bx, bz] = ab.pts[i + 1], L = Math.hypot(bx - ax, bz - az), ux = (bx - ax) / L, uz = (bz - az) / L, r = Math.atan2(ux, uz);
         for (let s = 2.9; s < L - 1; s += 2.9) [-1, 1].forEach(sd => { n++; if ((n * 7919) % 10 < 3) return;
           const x = ax + ux * (s + 1.4) - uz * (ab.w / 2 - 2.6) * sd, z = az + uz * (s + 1.4) + ux * (ab.w / 2 - 2.6) * sd;
-          if (Math.hypot(x - D.c[0], z - D.c[1]) > 140 || Math.hypot(x - D.c[0], z - D.c[1]) < 16 || nearOther(x, z, ab, 3)) return;
+          if (inRetail(x) || Math.hypot(x - D.c[0], z - D.c[1]) > 140 || Math.hypot(x - D.c[0], z - D.c[1]) < 16 || nearOther(x, z, ab, 3)) return;
           carAt(x, z, r - sd * (Math.PI / 2 - 0.5), CARS[(n * 31) % CARS.length], n % 6 === 0); }); }); }
       W.invParkedMesh = done(cars, { roughness: .35, metalness: .3 });
       // ---- two cars driving along A'Beckett, one each way, on the left as in Australia; they loop back round when they reach the end
@@ -7486,44 +7769,33 @@ const handle = async (m, post) => {
               place(d); }); }; } }
       // ---- the shop signs: on the verandah fascia, and painted on the parapet above
       const SIGN = [["#7a1f1f", "#ffffff"], ["#1f3f2c", "#f6c945"], ["#c7342c", "#ffffff"], ["#2e8b57", "#ffffff"], ["#d8312b", "#ffffff"], ["#1f3f7a", "#ffffff"], ["#15161a", "#ffffff"], ["#f2f2ee", "#1b1830"], ["#6b2d6b", "#ffffff"]];
-      const REAL = {  // as they really look (Street View, Travel Victoria): the bakery's gold on green with its red badges, Alex Scott's red
-        "PAUL THE PIEMAN": { text: "BAKERY CAFE", bg: "#1d4d32", fg: "#f2d58a", serif: true, badge: "#c8202a" }, "PAUL THE PIEMAN.f": { text: "BAKERY · Fresh Daily", bg: "#1d4d32", fg: "#f6efd8", serif: true },
-        "ALEX SCOTT & STAFF": { text: "ALEX SCOTT AND STAFF", bg: "#c8102e", fg: "#ffffff", edge: "#15161a" }, "ALEX SCOTT & STAFF.f": { text: "REAL ESTATE · RENTALS 5674 1602", bg: "#c8102e", fg: "#ffffff" } };
-      const signTex = (text0, bg0, fg0, w, h, fascia) => { const R = REAL[text0 + (fascia ? ".f" : "")] || {}, text = R.text || text0, bg = R.bg || bg0, fg = R.fg || fg0;
-        const c = document.createElement("canvas"); c.width = Math.min(2048, Math.max(512, Math.round(w * 90))); c.height = Math.max(40, Math.round(c.width / (w / h)));  // wide signs get a wider canvas, so they stay sharp
+      const signTex = (text, bg, fg, w, h) => {
+        const c = document.createElement("canvas"); c.width = Math.min(2048, Math.max(512, Math.round(w * 90))); c.height = Math.max(40, Math.round(c.width / (w / h)));
         const g = c.getContext("2d"); g.fillStyle = bg; g.fillRect(0, 0, c.width, c.height);
-        if (R.edge) { g.strokeStyle = R.edge; g.lineWidth = c.height * 0.08; g.strokeRect(c.height * 0.06, c.height * 0.06, c.width - c.height * 0.12, c.height * 0.88); }
-        if (R.badge) [c.height * 0.55, c.width - c.height * 0.55].forEach(x => { g.fillStyle = "#ffffff"; g.beginPath(); g.arc(x, c.height / 2, c.height * 0.38, 0, Math.PI * 2); g.fill();
-          g.fillStyle = R.badge; g.beginPath(); g.arc(x, c.height / 2, c.height * 0.32, 0, Math.PI * 2); g.fill(); });
-        g.fillStyle = fg; let fs = c.height * 0.6;
-        const font = () => R.serif ? `700 ${fs}px Georgia, "Times New Roman", serif` : `800 ${fs}px "Bricolage Grotesque", "Schibsted Grotesk", system-ui, sans-serif`; g.font = font();
-        while (g.measureText(text).width > c.width * (R.badge ? 0.68 : 0.9) && fs > 8) { fs -= 2; g.font = font(); }
-        g.textAlign = "center"; g.textBaseline = "middle";
-        const span = c.width * 0.66, tw = g.measureText(text).width;
-        if (R.badge && tw < span * 0.8) { g.textAlign = "left"; const sx = Math.min(1.7, span / tw), ws = [...text].map(ch => g.measureText(ch).width), gap = (span / sx - tw) / (ws.length - 1);  // a long sign: broad letters, spaced right across it
-          g.save(); g.translate((c.width - span) / 2, c.height / 2 + 1); g.scale(sx, 1); let x = 0; [...text].forEach((ch, i) => { g.fillText(ch, x, 0); x += ws[i] + gap; }); g.restore(); }
-        else g.fillText(text, c.width / 2, c.height / 2 + 1);
+        g.fillStyle = fg; g.textAlign = "center"; g.textBaseline = "middle";
+        let fs = c.height * .6;
+        const font = () => '800 ' + fs + 'px "Bricolage Grotesque", "Schibsted Grotesk", system-ui, sans-serif';
+        g.font = font(); while (g.measureText(text).width > c.width*.9 && fs>8) { fs-=2; g.font=font(); }
+        g.fillText(text, c.width / 2, c.height / 2 + 1);
         const t = new THREE.CanvasTexture(c); if ("colorSpace" in t) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };  // (8: a sign read from along the footpath stays sharp)
-      D.s.forEach(([x, z, a, w, text, pal, onV]) => { const [bg, fg] = SIGN[pal] || SIGN[6], fh = /PIEMAN/.test(text) ? 0.55 : 0.36;
-        const m = new THREE.Mesh(new THREE.PlaneGeometry(w, fh), new THREE.MeshStandardMaterial({ map: signTex(text, bg, fg, w, fh, true), roughness: .6 }));
+      D.s.forEach(([x, z, a, w, text, pal, onV]) => { if (replacedSigns.has(text)) return;
+        const [bg, fg] = SIGN[pal] || SIGN[6], fh = /PIEMAN/.test(text) ? 0.55 : 0.36;
+        const m = new THREE.Mesh(new THREE.PlaneGeometry(w, fh), new THREE.MeshStandardMaterial({ map: signTex(text, bg, fg, w, fh), roughness: .6 }));
         if (onV) { m.position.set(x + Math.sin(a) * 0.4, G0 + 3.05, z + Math.cos(a) * 0.4); } else m.position.set(x, G0 + 3.9, z);
         m.rotation.y = a; TG.add(m); });
       signsUp.forEach(([x, z, nx, nz, w, text, c, h]) => { const light = [0, 2, 3, 5, 8].includes(c) && !/PIEMAN/.test(text), fg = light ? "#1b1830" : "#ffffff", bg = "#" + new THREE.Color(FAC[c]).getHexString();
         const sh = Math.min(/PIEMAN/.test(text) ? 1.7 : 1.1, h - 4.1), m = new THREE.Mesh(new THREE.PlaneGeometry(w, sh), new THREE.MeshStandardMaterial({ map: signTex(text, bg, fg, w, sh), roughness: .7 }));
         m.position.set(x, G0 + 3.75 + sh / 2, z); m.rotation.y = Math.atan2(nx, nz); TG.add(m); });
-      // the library's front, as in Street View: tall glass with "Library" down it, the round porthole window, the Hub's sign over the
-      // door, and the Aboriginal and Australian flags out the front
-      if (D.lib) { const [x1, z1, x2, z2, nx, nz] = D.lib, L = Math.hypot(x2 - x1, z2 - z1), r = Math.atan2(nx, nz), at = (t, o) => [x1 + (x2 - x1) * t + nx * o, z1 + (z2 - z1) * t + nz * o];
+      // The library lettering faces the garden. The covered entrance faces the end of the path.
+      if (D.lib) { const [x1, z1, , , nx, nz] = D.lib, r = Math.atan2(nx, nz);
+        const at = (along, out) => [x1 + nz * along + nx * out, z1 - nx * along + nz * out];
         const tex = (w, h, draw) => { const c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); const t = new THREE.CanvasTexture(c); if ("colorSpace" in t) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; };
         const plane = (w, h, map, x, y, z, ry, extra) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial(Object.assign({ map, roughness: .5 }, extra || {}))); m.position.set(x, y, z); m.rotation.y = ry; TG.add(m); return m; };
         // the tall glass bay with "Library" reading down it
-        let [x, z] = at(0.22, 0.14); plane(1.3, 4.4, tex(128, 440, (g, w, h) => { g.fillStyle = "#1f2b38"; g.fillRect(0, 0, w, h); g.fillStyle = "rgba(160,190,215,.25)"; g.fillRect(8, 0, 4, h); g.fillRect(w - 12, 0, 4, h);
+        let [x, z] = at(-5.35, 3.36); plane(0.75, 3.66, tex(96, 440, (g, w, h) => { g.fillStyle = "#293b47"; g.fillRect(0, 0, w, h); g.fillStyle = "rgba(160,190,215,.25)"; g.fillRect(3, 0, 3, h); g.fillRect(w - 6, 0, 3, h);
           g.fillStyle = "#ffffff"; g.font = "600 52px system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; "Library".split("").forEach((ch, i) => g.fillText(ch, w / 2, 50 + i * 56)); }), x, G0 + 2.4, z, r, { emissive: 0xffffff, emissiveIntensity: 0 }); W.invLibGlow = TG.children[TG.children.length - 1].material; W.invLibGlow.emissiveMap = W.invLibGlow.map;
-        // the porthole: a white ring round a dark round window
-        [x, z] = at(0.5, 0.14); const ring = new THREE.Mesh(new THREE.TorusGeometry(1.15, 0.12, 10, 36), new THREE.MeshStandardMaterial({ color: 0xf2f2f0, roughness: .4 })); ring.position.set(x, G0 + 2.5, z); ring.rotation.y = r; TG.add(ring);
-        const port = new THREE.Mesh(new THREE.CircleGeometry(1.08, 36), W.invGlass); port.position.set(x - nx * 0.015, G0 + 2.5, z - nz * 0.015); port.rotation.y = r; TG.add(port);
         // the Hub's name over the entrance
-        [x, z] = at(0.82, 0.14); plane(3.2, 0.5, tex(512, 80, (g, w, h) => { g.fillStyle = "#26323f"; g.fillRect(0, 0, w, h); g.fillStyle = "#e8edf2"; g.font = "600 34px system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("Inverloch Community Hub", w / 2, h / 2 + 2); }), x, G0 + 3.3, z, r);
+        [x, z] = at(-2.21, 1.335); plane(3.1, 0.27, tex(384, 36, (g, w, h) => { g.fillStyle = "#26323f"; g.fillRect(0, 0, w, h); g.fillStyle = "#e8edf2"; g.font = "600 23px system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("Inverloch Community Hub", w / 2, h / 2); }), x, G0 + 3.43, z, r);
         // the flags: Aboriginal and Australian, on white poles out the front
         const aborig = tex(240, 160, (g, w, h) => { g.fillStyle = "#111111"; g.fillRect(0, 0, w, h / 2); g.fillStyle = "#c8102e"; g.fillRect(0, h / 2, w, h / 2); g.fillStyle = "#ffcd00"; g.beginPath(); g.arc(w / 2, h / 2, h * 0.27, 0, Math.PI * 2); g.fill(); });
         const austr = W.invAustr = tex(240, 120, (g, w, h) => { g.fillStyle = "#012169"; g.fillRect(0, 0, w, h); const q = w / 2, hq = h / 2;
@@ -7532,7 +7804,7 @@ const handle = async (m, post) => {
           g.fillStyle = "#ffffff"; g.fillRect(q / 2 - 10, 0, 20, hq); g.fillRect(0, hq / 2 - 10, q, 20); g.fillStyle = "#c8102e"; g.fillRect(q / 2 - 6, 0, 12, hq); g.fillRect(0, hq / 2 - 6, q, 12);
           const star = (cx, cy, R, n = 7) => { g.beginPath(); for (let k = 0; k < n * 2; k++) { const a = k * Math.PI / n - Math.PI / 2, rr = k % 2 ? R * 0.45 : R; g.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); } g.closePath(); g.fill(); };
           g.fillStyle = "#ffffff"; star(q / 2, h * 0.75, 15); star(w * 0.75, h * 0.8, 7); star(w * 0.62, h * 0.45, 7); star(w * 0.75, h * 0.15, 7); star(w * 0.88, h * 0.38, 7); star(w * 0.82, h * 0.52, 3.5, 5); });
-        [[0.9, aborig], [0.98, austr]].forEach(([t, map], k) => { const [px, pz] = at(t, 3.2);
+        [[-8.2, aborig], [-10.0, austr]].forEach(([along, map]) => { const [px, pz] = at(along, 11.6);
           const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 9, 8), new THREE.MeshStandardMaterial({ color: 0xf2f2f2, roughness: .4 })); pole.position.set(px, G0 + 4.5, pz); TG.add(pole);
           const fg = new THREE.Group(); fg.position.set(px, G0 + 8.2, pz); fg.rotation.y = r - Math.PI / 2;
           const fl = new THREE.Mesh(new THREE.PlaneGeometry(1.8, map === austr ? 0.9 : 1.2), new THREE.MeshStandardMaterial({ map, side: THREE.DoubleSide, roughness: .8 })); fl.position.set(0.92, 0, 0); fg.add(fl); TG.add(fg); W.invFlags.push(fg); });
@@ -15649,7 +15921,7 @@ const handle = async (m, post) => {
       if (ownCars) try { m.addCars(W.invParked.filter(([x, z]) => townInBlock(x, z) && !townOnPlaza(x, z) && Math.hypot(x - TOWN_CLOCK[0], z - TOWN_CLOCK[1]) > 5.5)
         .map(([x, z, yaw, colour, kind]) => { const [X, Z] = block.at(x, z); return { x: X, z: Z, heading: yaw, colour, kind }; })); } catch (e) { console.warn("Town model: the town centre's parked cars couldn't be added", e); }
       standAt("the clock", 11.5, 33.5, TOWN_CLOCK[0], TOWN_CLOCK[1], 0.16);  // from beside the car park, as in Street View: the clock in front, the memorial to the left
-      const pie = D.u.find(u => /PIEMAN/.test(u[9] || ""));
+      const pie = (W.invRetailUnits || D.u).find(u => /PIEMAN/.test(u[9] || ""));
       if (pie) { const mx = (pie[0] + pie[2]) / 2, mz = (pie[1] + pie[3]) / 2; standAt("the bakery", mx + pie[4] * 27, mz + pie[5] * 27, mx, mz, 0.06); }
       standAt("the war memorial", TOWN_MEMORIAL[0] + 1.5, TOWN_MEMORIAL[1] - 11, TOWN_MEMORIAL[0], TOWN_MEMORIAL[1], 0.05);
       // the library, from out the front of it; and the shops, from the middle of A'Beckett Street looking along both rows past the bakery
@@ -15770,6 +16042,10 @@ const handle = async (m, post) => {
           // gets its own: main streets on top, lanes (a lighter grey) just under, paths (paler still) under those.
           if (C && Math.abs(sh.y1 - G0 - 0.1) < 0.006) { const p = tri[0], lum = 0.2126 * p[6] + 0.7152 * p[7] + 0.0722 * p[8], sink = lum < 0.055 ? 0 : lum < 0.2 ? 0.02 : 0.04;
             if (sink) tri.forEach(q2 => { q2[1] -= sink; }); }
+          // The street photos show weathered grey bitumen. Keep the dark source colours above for junction layering.
+          if (mat.name === "Inverloch bitumen") {
+            for (const p of tri) { p[6] += .091; p[7] += .091; p[8] += .083; }
+          }
           for (const piece of TOWN_BLOCK) { const poly = trim(tri, piece); for (let k = 1; k + 1 < poly.length; k++) { put(bk, poly[0]); put(bk, poly[k]); put(bk, poly[k + 1]); } }
           continue; }
         if (drop?.(mx, mz, false, 0)) continue;  // (a piece of something the model builds afresh, joined to something it keeps)
@@ -15807,6 +16083,124 @@ const handle = async (m, post) => {
     const box = (w, h, d) => new THREE.BoxGeometry(w, h, d), rod = (r, h, n = 8, r2 = r) => new THREE.CylinderGeometry(r2, r, h, n);
     const bits = mesh({ roughness: 0.78 }), rnd = i => { const x = Math.sin(i * 127.1 + 3.7) * 43758.5453; return x - Math.floor(x); };
 
+    // The native OSM building includes the hotel, its bottle shop, and the businesses down Ramsey.
+    // Keep its footprint, collision and back tenancies. Apply only the north face and the hotel's upper floor.
+    // October 2025 Street View from 10, 8 and 2 A'Beckett; the split between shops is estimated.
+    {
+      const sheet = document.createElement("canvas"); sheet.width = 512; sheet.height = 256;
+      const pen = sheet.getContext("2d"), rowHeight = 32;
+      const signs = [
+        ["BUTCHER", "#211e1e", "#e5ba90"], ["BARRYPLANT", "#f2f1ed", "#28415b"],
+        ["THIRSTY CAMEL", "#42483b", "#ece8d7"], ["THE INVY ESPY", "#f1ebd9", "#554e40"],
+        ["", "#26363c", ""], ["", "#344147", ""], ["", "#344836", ""]
+      ];
+      signs.forEach(([text,bg,ink],i) => {
+        const y=i*rowHeight; pen.fillStyle=bg; pen.fillRect(0,y,512,rowHeight);
+        if (text) {
+          pen.fillStyle=ink; pen.font=i===0 ? "bold 25px Georgia" : "bold 23px Arial";
+          pen.textAlign="center"; pen.textBaseline="middle"; pen.fillText(text,256,y+16,475);
+        } else if (i===4) {
+          for (let j=0;j<13;j++) for (let k=0;k<2;k++) {
+            const x=7+j*39, v=y+3+k*14; pen.fillStyle="#d6d4c7"; pen.fillRect(x,v,31,12);
+            pen.fillStyle=["#718c94","#a0a296","#919d86"][j%3]; pen.fillRect(x+2,v+1,27,7);
+          }
+        } else if (i===5) {
+          pen.fillStyle="#cad3cc"; pen.fillRect(0,y+20,512,2);
+          for(let j=0;j<23;j++) { pen.fillStyle=["#b47d69","#a26454","#d4b79f"][j%3]; pen.fillRect(6+j*22,y+15-j%3,18,4); }
+        } else {
+          for (let j=0;j<6;j++) { const x=10+j*83; pen.fillStyle="#c5d49a"; pen.fillRect(x,y+3,60,25);
+            pen.fillStyle=["#928037","#809344","#bc7259"][j%3]; pen.fillRect(x+4,y+13,52,12); }
+        }
+      });
+      const print = mesh({map:sheet,roughness:.72});
+      // Street-facing distances along a mapped wall and out over the footpath, in metres.
+      function face(ax,az,bx,bz) {
+        const length=Math.hypot(bx-ax,bz-az), tx=(bx-ax)/length,tz=(bz-az)/length;
+        const yaw=-Math.atan2(tz,tx), point=(s,out)=>[ax+s*tx+out*tz,az+s*tz-out*tx];
+        const solid=(s,out,y,w,h,d,tint,rx=0,rz=0)=>{
+          const [x,z]=point(s,out); add(bits,box(w,h,d),tint,x,y,z,yaw,rx,rz);
+        };
+        const label=(s,out,y,w,h,row)=>{
+          const [x,z]=point(s,out), g=new THREE.PlaneGeometry(w,h), uv=g.attributes.uv;
+          const v1=1-(row*rowHeight+1)/sheet.height, v0=v1-(rowHeight-2)/sheet.height;
+          for(let j=0;j<uv.count;j++) uv.setXY(j,(uv.getX(j)*508+2)/512,v0+uv.getY(j)*(v1-v0));
+          add(print,g,0xffffff,x,y,z,yaw+Math.PI);
+        };
+        return {length,point,solid,label};
+      }
+      const row=face(56.5,52.8,82.2,54.9);
+      [[0,8.5,0,5,0x925239,0xbf653b],[8.5,16.7,1,4,0xe0ded6,0xd5d2c5],[16.7,25.8,2,6,0x505346,0xb4c751]].forEach(([start,end,sign,display,wall,trim])=>{
+        const width=end-start, mid=(start+end)/2, drive=sign===2, shop=drive?width*.61:width, centre=start+shop/2;
+        // The bottle-shop drive is a shaded recess in the native frontage; its existing collision stays in place.
+        row.solid(mid,.22,2.18,width,4.44,.40,wall);
+        row.solid(mid,1.63,3.14,width,.14,3.12,0xb4b4a9);
+        row.solid(mid,3.13,3.22,width,.35,.15,trim);
+        row.solid(start+.10,3.02,1.59,.11,3.18,.11,trim);
+        row.solid(centre,.46,1.47,shop-.42,2.46,.09,0x36403d);
+        row.label(centre,.52,1.49,shop-.52,1.68,display);
+        for(let j=1;j<3;j++) row.solid(start+shop*j/3,.55,1.55,.075,2.53,.075,0x524c45);
+        const w=sign===1?width*.84:width*.91;
+        row.label(mid,sign===1?3.23:.48,sign===1?3.28:3.98,w,sign===1?.53:.74,sign);
+        if(drive) {
+          const gap=width-shop; row.solid(end-gap/2,.46,1.38,gap-.1,2.8,.13,0x30312e);
+          row.solid(end-gap/2,.55,2.7,gap-.28,.18,.19,0x77766b);
+        }
+      });
+      const hotel=face(82.2,54.9,118.5,59.5), Wd=hotel.length, cream=0xe0d7bb, mustard=0xb28d4f, iron=0xbac1be;
+      // Draw the hotel above the existing one-storey footprint, set back at the corner arcade.
+      const plan=[[0,0],[Wd-.7,0],[Wd+.1,-4.3],[Wd-5.7,-13],[0,-13]];
+      const outline=new THREE.Shape(plan.map(([s,out])=>{const [x,z]=hotel.point(s,out);return new THREE.Vector2(x,-z);}));
+      const upper=new THREE.ExtrudeGeometry(outline,{depth:3.6,bevelEnabled:false}); upper.rotateX(-Math.PI/2);
+      add(bits,upper,cream,0,3.22,0);
+      // A long zincalume hipped roof with a short hip at the corner and tall rendered chimney at its west end.
+      const ridgeA=[4.8,-6.4,9.25], ridgeB=[Wd-6.8,-6.4,9.25];
+      const eaves=plan.map(([s,out])=>[s,out,6.82]);
+      const facet=(a,b,d)=>{
+        const P=[]; for (const [s,out,y] of [a,b,d]) {const [x,z]=hotel.point(s,out);P.push(x,y,z);}
+        const geo=new THREE.BufferGeometry(); geo.setAttribute("position",new THREE.Float32BufferAttribute(P,3));geo.computeVertexNormals();
+        add(bits,geo,iron,0,0,0);
+      };
+      const roofQuads=[[eaves[0],eaves[1],ridgeB,ridgeA],[eaves[1],eaves[2],ridgeB],[eaves[2],eaves[3],ridgeB],[eaves[3],eaves[4],ridgeA,ridgeB],[eaves[4],eaves[0],ridgeA]];
+      for(const poly of roofQuads) for(let j=1;j<poly.length-1;j++) facet(poly[0],poly[j+1],poly[j]);
+      hotel.solid(4.1,-6.1,9.16,.85,3.1,1.0,0x9d9d86);
+      hotel.solid(Wd/2,.18,2.06,Wd,4.32,.45,cream);
+      hotel.solid(Wd/2,.44,.66,Wd,1.34,.13,mustard);
+      hotel.solid(Wd/2,.26,6.82,Wd+.5,.18,.72,0xd5d2bb);
+      const window=(front,s,out,y,w,h)=>{
+        front.solid(s,out,y,w+.14,h+.12,.10,0x575c55);
+        front.solid(s,out+.07,y,w,h,.07,0x6e8385);
+        front.solid(s,out+.11,y+h*.18,w,.075,.07,0x515653);
+        front.solid(s,out+.11,y-h/2-.045,w+.22,.09,.18,cream);
+      };
+      [2.7,6.6,10.4,14.4,18.6,22.1,25.8,29.9,33.2].forEach((s,i)=>{
+        window(hotel,s,.50,5.30,1.08,1.71);
+        if(i!==4) window(hotel,s,.56,1.68,1.22,1.72);
+      });
+      const door=18.6;
+      hotel.solid(door,.54,1.42,2.35,2.84,.17,0x54514a);
+      for(const offset of [-1.56,1.56]) hotel.solid(door+offset,2.52,1.55,.14,3.1,.14,cream);
+      hotel.solid(door,1.50,3.1,3.55,.16,2.74,cream);
+      for(const sd of [-1,1]) hotel.solid(door+sd*.87,1.50,3.48,1.97,.12,2.74,iron,0,-sd*.41);
+      hotel.label(door,.55,4.09,2.32,.62,3);
+      // Faceted return verandah between A'Beckett and Ramsey: heavy cream piers and a solid balcony fascia.
+      const outer=[[Wd-6.8,2.55],[Wd+.4,2.55],[Wd+3.0,-1.8],[Wd+2.2,-6.1],[Wd-2.7,-13.9]];
+      for(let j=0;j<outer.length-1;j++) {
+        const a=hotel.point(...outer[j]), b=hotel.point(...outer[j+1]), f=face(...a,...b);
+        f.solid(f.length/2,-.85,3.31,f.length+.10,.22,1.94,cream);
+        f.solid(f.length/2,0,3.93,f.length+.10,1.16,.18,cream);
+        f.solid(f.length/2,.04,4.56,f.length+.12,.13,.25,0xece4d1);
+        f.solid(.15,-.05,1.69,.43,3.38,.44,cream);
+      }
+      // A few closed umbrellas and wooden planter boxes on the hotel terrace.
+      for(const s of [4.2,11.4,25.0]) {
+        hotel.solid(s,2.2,.32,2.75,.59,.64,0x896f53);
+        hotel.solid(s,2.2,.62,2.58,.13,.53,0x76804e);
+        const [x,z]=hotel.point(s,1.45);
+        add(bits,rod(.035,2.5,6),0x5a5349,x,1.26,z);
+        add(bits,new THREE.ConeGeometry(.24,1.58,6),0x484640,x,2.14,z);
+      }
+    }
+
     // red bricks laid in courses, for the paving
     const bc = document.createElement("canvas"); bc.width = bc.height = 256; { const g = bc.getContext("2d"); g.fillStyle = "#a8806f"; g.fillRect(0, 0, 256, 256);
       for (let r = 0; r < 16; r++) for (let k = -1; k < 8; k++) { const t = rnd(r * 17 + k * 5 + 1), x = k * 32 + (r % 2) * 16, y = r * 16;
@@ -15814,11 +16208,51 @@ const handle = async (m, post) => {
 
     // ---- the plaza: brick, edged with pale concrete; a broad piece by the lawn and a narrower one out to the street
     const PL = 0.2;
+    const pavement = mesh({ map: bc, roughness: .95 });
+    const brickPad = (x, z, w, d, h, yaw) => {
+      const g = box(w, h, d), { position, normal, uv } = g.attributes;
+      for (let i = 0; i < position.count; i++) if (normal.getY(i) > .9) uv.setXY(i, position.getX(i) / 1.6, position.getZ(i) / 1.6);
+      add(pavement, g, 0, x, h / 2, z, yaw);
+    };
+    // Red pavers mark the two pedestrian approaches in the October panorama.
+    brickPad(41.25, 30.35, 3.85, 4.35, .244, -.118); brickPad(39.35, 46.45, 3.85, 4.35, .244, -.118);
+    // Street trees seen above the parked cars. Keep the space beneath the crowns open to the shops and clock.
+    const crown = new THREE.IcosahedronGeometry(1, 1), spray = new THREE.IcosahedronGeometry(1, 0);
+    const greens = [0x586d52, 0x657654, 0x77845b, 0x6b805e, 0x4f6852];
+    const streetTree = (x, z, size, seed, inland = 0) => {
+      const piece = (g, colour, dx, y, dz, ry, rx, sx = 1, sy = 1, sz = 1) =>
+        add(bits, g, colour, x + dx * size, y * size + .23, z + dz * size, ry, rx, 0, sx * size, sy * size, sz * size);
+      const limb = (a, y, b, dx, dy, dz, radius) => piece(rod(radius, Math.hypot(dx, dy, dz), 7, radius * .52), 0x898574,
+        a + dx / 2, y + dy / 2, b + dz / 2, Math.atan2(dx, dz), Math.atan2(Math.hypot(dx, dz), dy));
+      limb(0, 0, 0, -.24, 2.75, .22, .29);
+      for (let j = 0; j < 7; j++) {
+        const angle = j * 2.4 + seed, reach = 1.25 + 1.4 * rnd(j + seed + 3);
+        const dx = Math.cos(angle) * reach, dz = Math.sin(angle) * reach - inland, y = 4.95 + 2.25 * rnd(j + seed + 11);
+        limb(-.24, 2.75, .22, dx * .57, 1.02, dz * .57, .17);
+        limb(-.24 + dx * .57, 3.77, .22 + dz * .57, dx * .43, y - 3.77, dz * .43, .115);
+        const a = dx - .24, b = dz + .22;
+        piece(crown, greens[(seed + j) % 5], a, y + .6, b, angle, .14, 1.32, 1.1, 1.25);
+        for (let i = 0; i < 24; i++) {
+          const n = seed + j * 29 + i, v = rnd(n + 43) * 2 - 1, spread = Math.sqrt(1 - v * v), t = i * 2.4 + angle;
+          const s = .23 + .32 * rnd(n + 70);
+          piece(spray, greens[(n * 7) % 5], a + Math.cos(t) * spread * 1.5, y + .6 + v * 1.25,
+            b + Math.sin(t) * spread * 1.38, t, v * .45, s * 1.26, s * .76, s);
+        }
+      }
+    };
+    streetTree(20.95, 24.62, 1, 0, .9);
+    streetTree(45.8, 30.4, .87, 5); streetTree(66.1, 31.8, .74, 8); streetTree(82.1, 33.9, .63, 3);
+    // Paired litter bins against the north footpath. The dark openings sit under a light metal hood.
+    for (const x of [47.5, 48.14]) {
+      add(bits, box(.59, .91, .56), 0xa19a87, x, .69, 30.6, -.12);
+      add(bits, box(.56, .16, .54), 0x474946, x, 1.18, 30.6, -.12);
+      add(bits, box(.64, .095, .62), 0xc1c0b3, x, 1.30, 30.6, -.12);
+    }
     { const [ox, oz, t] = TOWN_PLAZA, pl = (a, b) => [ox + Math.cos(t) * a - Math.sin(t) * b, oz + Math.sin(t) * a + Math.cos(t) * b];
       const slab = (a, b, w, d, bk, colour, h = PL) => { const [x, z] = pl(a, b); add(bk, box(w, h, d), colour, x, h / 2, z, -t); };
       // (an L: the broad piece by the lawn, a leg down the west side to the street, and a strip along the kerb; the corner
       // between them is the bed under the big tree)
-      const brick = (a, b, w, d) => slab(a, b, w, d, mesh({ map: bc, mapRepeat: [w / 1.6, d / 1.6], roughness: 0.95 }), 0);
+      const brick = (a, b, w, d) => { const [x, z] = pl(a, b); brickPad(x, z, w, d, PL, -t); };
       brick(-0.35, -0.25, 10.3, 7.3); brick(-2.0, 7.6, 7.0, 8.4);
       [[-0.35, -4.05, 10.9, 0.3], [-5.65, 3.9, 0.3, 16.2], [4.95, -0.25, 0.3, 7.3], [3.2, 3.55, 3.8, 0.3], [1.65, 5.7, 0.3, 4.6], [3.5, 7.85, 4.0, 0.3], [5.35, 9.85, 0.3, 4.3], [-0.15, 11.95, 11.3, 0.3],
         [-2.0, 3.55, 7.0, 0.24], [-0.6, 1.3, 1.5, 4.4]].forEach(([a, b, w, d]) => slab(a, b, w, d, bits, 0xd6c8a8, PL + 0.015));
@@ -15936,12 +16370,41 @@ const handle = async (m, post) => {
       const bush = new THREE.IcosahedronGeometry(0.5, 1);
       add(bits, bush, 0x5a2f4a, cx - 1.6, PL + 0.55, cz - 3.2, 0, 0, 0, 1.5, 1.1, 1.4);
       [[-1.6, 0.9, 0.8], [-0.6, 1.25, 0.9], [0.5, 1.25, 0.8], [-2.0, 0.1, 0.8]].forEach(([dx, dz, k], i) => add(bits, bush, [0x355a2b, 0x40662f, 0x2f4f29][i % 3], cx + dx, PL + 0.3 * k, cz + dz, i, 0, 0, 1.3 * k, 0.8 * k, 1.1 * k));
-      if (D.lib) { const [x1, z1, x2, z2, nx, nz] = D.lib, r = Math.atan2(nx, nz), at = (t, o) => [x1 + (x2 - x1) * t + nx * o, z1 + (z2 - z1) * t + nz * o];
-        const info = (w, h, big) => sign(w, h, (g, cw, ch) => { g.fillStyle = "#f2c81e"; g.fillRect(0, 0, cw, ch); const q = big ? cw * 0.7 : ch * 0.8; g.fillStyle = "#1f3f9a"; g.fillRect(big ? cw * 0.15 : ch * 0.1, big ? ch * 0.12 : ch * 0.1, q, q);
-          g.fillStyle = "#f2c81e"; g.font = `700 italic ${q * 0.85}px Georgia, serif`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("i", (big ? cw * 0.15 : ch * 0.1) + q / 2, (big ? ch * 0.12 : ch * 0.1) + q * 0.52);
-          if (!big) { g.fillStyle = "#1f3f9a"; g.font = `700 ${ch * 0.27}px system-ui, sans-serif`; g.textAlign = "left"; g.fillText("Visitor", ch * 1.05, ch * 0.34); g.fillText("Information", ch * 1.05, ch * 0.68); } });
-        let [x, z] = at(0.86, 0.22); add(info(3.0, 1.1, false), new THREE.PlaneGeometry(3.0, 1.1), 0, x, 0.08 + 3.9, z, r);
-        [x, z] = at(0.62, 0.22); add(info(1.5, 2.6, true), new THREE.PlaneGeometry(1.5, 2.6), 0, x, 0.08 + 1.9, z, r); }
+      if (D.lib) {
+        const [ex, ez, , , nx, nz] = D.lib, face = Math.atan2(nx, nz);
+        const at = (along, out) => [ex + nz * along + nx * out, ez - nx * along + nz * out];
+        const fixture = (batch, geo, color, along, out, y, pitch = 0) => {
+          const [x, z] = at(along, out);
+          add(batch, geo, color, x, y, z, face, pitch);
+        };
+        // The existing concrete path terminates at the eastern doorjamb. Widen its landing to the sliding doors.
+        fixture(bits, box(4.4, 0.08, 1.9), 0xd3c6ac, -1.9, 0.96, 0.15);
+        for (const out of [2.15, 4.80, 7.45]) fixture(bits, rod(0.042, 0.92), 0xa4a9a6, -0.98, out, 0.60);
+        for (const y of [0.63, 1.04]) fixture(bits, rod(0.036, 5.44), 0xb4b8b4, -0.98, 4.8, y, Math.PI / 2);
+
+        // The tourism centre photograph shows a freestanding yellow pylon and an Open feather flag beside the path.
+        const infoFace = (w, h, feather) => sign(w, h, (g, cw, ch) => {
+          const blue = "#163e90", yellow = "#ffd420", sq = cw * (feather ? 0.55 : 0.75);
+          g.fillStyle = yellow; g.fillRect(0, 0, cw, ch);
+          g.fillStyle = blue; g.fillRect((cw - sq) / 2, ch * 0.035, sq, sq);
+          g.fillStyle = yellow; g.textAlign = "center"; g.textBaseline = "middle";
+          g.font = `bold italic ${sq}px Georgia, serif`; g.fillText("i", cw / 2, ch * 0.035 + sq * 0.50);
+          g.translate(cw / 2, ch * (feather ? 0.55 : 0.93)); g.rotate(-Math.PI / 2);
+          g.fillStyle = blue; g.textAlign = feather ? "center" : "left";
+          g.font = `bold ${cw * (feather ? 0.58 : 0.35)}px system-ui, sans-serif`;
+          if (feather) g.fillText("Open", 0, 0);
+          else { g.fillText("Visitor", 0, -cw * 0.20); g.fillText("Information", 0, cw * 0.19); }
+        });
+        fixture(bits, box(0.69, 2.48, 0.16), 0xadb3b4, -2.3, 10.6, 1.24);
+        fixture(infoFace(0.63, 2.22, false), new THREE.PlaneGeometry(0.63, 2.22), 0, -2.3, 10.695, 1.31);
+        const blade = new THREE.PlaneGeometry(0.52, 1.72, 1, 10), p = blade.attributes.position;
+        for (let i = 0; i < p.count; i++) {
+          const t = p.getY(i) / 1.72 + 0.5, width = Math.min(1, t * 4.5, (1.02 - t) * 6);
+          p.setX(i, (p.getX(i) + 0.26) * width - 0.26 + 0.17 * t);
+        }
+        fixture(bits, rod(0.023, 1.96, 5), 0x5c6061, -2.6, 6.85, 1.00);
+        fixture(infoFace(0.52, 1.72, true), blade, 0, -2.4, 6.85, 1.35);
+      }
     }
 
     // ---- outside the shops
@@ -15952,12 +16415,12 @@ const handle = async (m, post) => {
       [-1, 1].forEach(sd => { const cx = x + Math.sin(r) * 0.66 * sd, cz = z + Math.cos(r) * 0.66 * sd, bx = x + Math.sin(r) * 0.85 * sd, bz = z + Math.cos(r) * 0.85 * sd;
         add(bits, box(0.4, 0.04, 0.4), chair, cx, FOOT + 0.46, cz, r); add(bits, box(0.4, 0.42, 0.04), chair, bx, FOOT + 0.7, bz, r);
         [[-0.17, -0.17], [0.17, -0.17], [-0.17, 0.17], [0.17, 0.17]].forEach(([a, b]) => add(bits, rod(0.018, 0.45, 5), 0x8d9396, cx + Math.cos(r) * a + Math.sin(r) * b, FOOT + 0.225, cz - Math.sin(r) * a + Math.cos(r) * b)); }); };
-    const pie = D.u.find(u => /PIEMAN/.test(u[9] || "")), larder = D.u.find(u => /LARDER/.test(u[9] || ""));
+    const units = W.invRetailUnits || D.u, pie = units.find(u => /PIEMAN/.test(u[9] || "")), larder = units.find(u => /LARDER/.test(u[9] || ""));
     if (pie) [0.12, 0.3, 0.5, 0.68].forEach(t => table(pie, t, 1.5, 0xc8202a));
     if (larder) [0.28, 0.7].forEach(t => table(larder, t, 1.5, 0x2f7a72));
     // sandwich boards: two leaning panels, each shop's own colour with a pale face
     const BOARD = [0x7a1f1f, 0x1f3f2c, 0xc7342c, 0x2e8b57, 0xd8312b, 0x1f3f7a, 0x15161a, 0x3a4a7a, 0x6b2d6b];
-    D.u.forEach((u, i) => { const mx = (u[0] + u[2]) / 2, mz = (u[1] + u[3]) / 2; if (!u[9] || !townInBlock(mx, mz)) return;
+    units.forEach((u, i) => { const mx = (u[0] + u[2]) / 2, mz = (u[1] + u[3]) / 2; if (!u[9] || !townInBlock(mx, mz)) return;
       const [x, z] = front(u, /PIEMAN/.test(u[9]) ? 0.9 : 0.24, 2.2), a = Math.atan2(u[4], u[5]);
       [-1, 1].forEach(sd => { const ox = Math.sin(a) * 0.13 * sd, oz = Math.cos(a) * 0.13 * sd;
         add(bits, box(0.55, 0.85, 0.03), BOARD[i % BOARD.length], x + ox, FOOT + 0.42, z + oz, a, 0.3 * sd);
