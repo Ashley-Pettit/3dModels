@@ -1506,6 +1506,15 @@ body.bstown.bsracing .bs-race { top: calc(16px + env(safe-area-inset-top)); max-
 body.bstown.bsracing .bs-race b { font-size: 1.02rem; } body.bstown.bsracing .bs-race span { font-size: 0.84rem; line-height: 1.3; } body.bstown.bsracing .bs-race button { width: 32px; height: 32px; font-size: 1rem; }
 @media (min-width: 1000px) { body.bstown.bsracing .bs-race { max-width: 420px; } }
 /* the countdown: big, with a dark edge, popping in on each number; Go! in green (Ash, 24 November 2026: "I want to see the 3 2 1 more obviously") */
+/* the race's Autodrive cannon: a glowing edge round the screen and a chip counting it down while it drives, then a green flash as it hands
+   back (Ash, 24 November 2026: "With autodrive make it more obvious when this starts and ends") */
+.bs-race-auto { pointer-events: none; position: absolute; inset: 0; z-index: 4; box-shadow: inset 0 0 0 5px #3fd0ff, inset 0 0 46px rgba(63, 208, 255, 0.55); animation: bsAutoGlow 0.8s ease-in-out infinite alternate; }
+.bs-race-auto[hidden] { display: none; }
+.bs-race-auto b { position: absolute; left: 50%; top: calc(64px + env(safe-area-inset-top)); transform: translateX(-50%); padding: 8px 16px; border-radius: 999px; background: #3fd0ff; color: #0b1e2b; font: 900 1.05rem/1 var(--ui); white-space: nowrap; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.35); }
+.bs-race-auto.over { box-shadow: inset 0 0 0 5px #3ddc84, inset 0 0 46px rgba(61, 220, 132, 0.55); animation: none; }
+.bs-race-auto.over b { background: #3ddc84; }
+@keyframes bsAutoGlow { from { opacity: 0.55; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .bs-race-auto { animation: none; } }
 .bs-race-n.cd { top: 34%; font-size: clamp(120px, 38vw, 230px); -webkit-text-stroke: 5px #1b1830; paint-order: stroke fill; text-shadow: 0 8px 28px rgba(0, 0, 0, 0.55); animation: bsCd 0.9s cubic-bezier(.2, 1.6, .4, 1) both; }
 .bs-race-n.cd.go { color: #7be36b; }
 @keyframes bsCd { 0% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; } 30% { transform: translate(-50%, -50%) scale(0.92); opacity: 1; } 55% { transform: translate(-50%, -50%) scale(1.05); } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
@@ -18610,7 +18619,7 @@ const handle = async (m, post) => {
     ["nitro", "Nitro", "🔥", "Bigger nitro tank: boost lasts 3 times as long"], ["grip", "Grip", "🛣️", "Sports tyres: much sharper turns"]];
   // the power-ups: [emoji, name, what it does]. No weapons: birds, weather and a banana peel
   const RACE_ITEMS = { turbo: ["🚀", "Turbo", "A huge burst of speed for 3.5 s"], star: ["⭐", "Golden star", "7 s of 80% more speed and 40% sharper steering, and nothing can touch you"],
-    auto: ["🤖", "Autodrive cannon", "Your car blasts itself along the course for 15 s, 60% faster"],
+    auto: ["🤖", "Autodrive cannon", "Your car blasts itself along the course for 10.5 s, 2.4 times as fast"],
     magpie: ["🐦", "Swooping magpie", "Swoops the racer just ahead: they spin out"], ibis: ["🪿", "Bin chicken", "Flies to whoever's in first and stops them dead"],
     storm: ["⛈️", "Storm cloud", "Rain on everyone ahead of you: they slow right down for 5 s"], peel: ["🍌", "Banana peel", "Dropped behind you: whoever drives over it spins"],
     warp: ["🌀", "Shortcut", "Jumps you 150 m further round the course"] };
@@ -18849,7 +18858,18 @@ const handle = async (m, post) => {
     const panel = document.createElement("div"); panel.className = "bs-race-ask"; panel.hidden = true; panel.setAttribute("role", "dialog"); panel.setAttribute("aria-label", `Race around ${K.name}`);
     const legBox = document.createElement("div"); legBox.className = "bs-race-leg"; legBox.hidden = true; legBox.setAttribute("aria-live", "assertive"); let legT = 0;  // (the banner at the end of a leg)
     const pracBtn = document.createElement("button"); pracBtn.type = "button"; pracBtn.className = "bs-race-prac"; pracBtn.hidden = true;  // (practising while you host: back to the panel, to start)
-    ($("bsFly") || box).append(card, big, panel, itemBtn, dir, legBox, pracBtn);  // over the town's own labels and buttons (number 6's balcony button sat on Start)
+    const autoEl = document.createElement("div"); autoEl.className = "bs-race-auto"; autoEl.hidden = true; autoEl.setAttribute("aria-live", "polite"); const autoTx = document.createElement("b"); autoEl.append(autoTx);
+    let autoIv = 0, autoOff = 0;
+    const autoHud = ms => { clearInterval(autoIv); clearTimeout(autoOff); autoEl.classList.remove("over");
+      if (!ms) { autoEl.hidden = true; return; }
+      const t1 = performance.now() + ms, tick = () => { const left = Math.max(0, Math.ceil((t1 - performance.now()) / 1000));
+        if (left > 0) { const tx = `🤖 Autodrive · ${left} s`; if (autoTx.textContent !== tx) autoTx.textContent = tx; return; }
+        clearInterval(autoIv); autoEl.classList.add("over"); autoTx.textContent = "Autodrive over: you're driving"; say("🙌", 1300, "Autodrive over: you're driving"); T.snd?.tone?.(440, 880, 0.35, 0.12, "triangle");
+        autoOff = setTimeout(() => { autoEl.hidden = true; autoEl.classList.remove("over"); }, 1800); };
+      autoEl.hidden = false; tick(); autoIv = setInterval(tick, 250);
+      // (just under the race card, which is up in the top row while racing)
+      try { const o = autoEl.getBoundingClientRect(), r = card.getBoundingClientRect(); autoTx.style.top = card.hidden || !r.height ? "" : Math.round(r.bottom - o.top + 10) + "px"; } catch {} };
+    ($("bsFly") || box).append(card, big, panel, itemBtn, dir, legBox, pracBtn, autoEl);  // over the town's own labels and buttons (number 6's balcony button sat on Start)
     let race = null, dead = false, hudT = 0, bigT = 0, lastN = "";
     const where = () => T.car?.in ? T.car.where?.() : null;
     const here = () => { const w = where(); return w && w.x != null ? [w.x, w.z, w.y ?? F.pos.y] : [F.pos.x, F.pos.z, F.pos.y]; };
@@ -18865,7 +18885,7 @@ const handle = async (m, post) => {
     const tell = (t, hi) => { if (!race) return; NEWS.push({ t, hi }); while (NEWS.length > 3) { const i = NEWS.findIndex(q => !q.hi); NEWS.splice(i < 0 ? 0 : i, 1); } };
     const newsTick = now => { if (now < newsT) return; const q = NEWS.shift(); news.textContent = q ? q.t : ""; news.classList.toggle("hi", !!q?.hi); newsT = now + (q ? 3200 : 400); };
     let prac = false; const pracEnd = () => { if (!prac) return; prac = false; pracBtn.hidden = true; if (!race) clear(); };
-    const end = () => { pracEnd(); if (T.car) T.car.wait = false; if (race) { T.car?.raceRide?.(null); if (race.names) T.streets?.set?.(true); } document.body.classList.remove("bsracing", "bsraceout"); race = null; clear(); card.hidden = true; big.hidden = true; panel.hidden = true; itemBtn.hidden = true; dir.hidden = true; NEWS.length = 0; };
+    const end = () => { pracEnd(); if (T.car) T.car.wait = false; if (race) { T.car?.raceRide?.(null); if (race.names) T.streets?.set?.(true); } document.body.classList.remove("bsracing", "bsraceout"); race = null; clear(); card.hidden = true; big.hidden = true; panel.hidden = true; itemBtn.hidden = true; dir.hidden = true; autoHud(0); NEWS.length = 0; };
     const leaveRace = () => { if (race && race.state !== "done") send(["out", race.id]); end(); };
     card.querySelector("button").onclick = e => { leaveRace(); e.currentTarget.blur(); };
     // everyone in it, in order: finished first (by time), then the furthest round
@@ -18969,7 +18989,9 @@ const handle = async (m, post) => {
       if (k === "turbo") { T.car?.raceFx?.("turbo", 3500); say("🚀", 700); }
       else if (k === "star") { T.car?.raceFx?.("star", 7000); say("⭐", 800); tell("Golden star: 80% faster, sharper steering, and nothing can touch you for 7 s", false); send(["fx", race.id, "star", ""]); }
       else if (k === "auto") { const s0 = race.m, s1 = race.leg === 0 ? Math.min(s0 + 900, sH - 4) : 0, pts = []; for (let s = s0 + 4; s <= s1; s += 4) { const p = at(s); pts.push(p.x, p.z); }
-        if (T.car?.raceAuto?.(pts, 15000)) { say("🤖", 1200, "Autodrive cannon: hands off!"); T.snd?.tone?.(110, 440, 0.6, 0.12, "sawtooth"); tell("Autodrive cannon: 15 s of the car blasting itself along the course", true); }
+        // (2.4 times as fast for 10.5 s: half as fast again as the 60% it was, for 30% less time. Ash, 24 November 2026: "Dial up car speed by
+        // a further 50% but make it 30% shorter in time length")
+        if (T.car?.raceAuto?.(pts, 10500)) { say("🤖", 1500, "Autodrive: hands off for 10 s!"); autoHud(10500); T.snd?.tone?.(110, 440, 0.6, 0.12, "sawtooth"); tell("Autodrive cannon: 10.5 s of the car blasting itself along the course", true); }
         else { T.car?.raceFx?.("turbo", 3500); say("🚀", 700); tell("No car to drive: a Turbo instead", false); } }
       else if (k === "warp") { const t = TG[race.ti]; let ok = false;  // (150 m on along your line, not past the house, the plane or a ring)
         if (race.leg === 0) { const s = Math.min(race.m + 150, t.D - 1), p = at(s); ok = !!T.car?.raceWarp?.(p.x, p.z, headAt(s)); if (ok) race.m = s; }
@@ -19187,7 +19209,7 @@ const handle = async (m, post) => {
         dirD.textContent = fmtD(dist); const vt = dy > 5 ? `\u25B2 Climb ${Math.round(dy)} m` : dy < -5 ? `\u25BC Dive ${Math.round(-dy)} m` : road?.turn || "";
         if (dirV.textContent !== vt) dirV.textContent = vt; dirV.hidden = !vt; dirV.classList.toggle("dn", dy < -5); dirV.classList.toggle("tn", Math.abs(dy) <= 5 && !!road?.turn); void el; } };
     pracBtn.onclick = e => { R.open(); e.currentTarget.blur(); };
-    R.dispose = () => { leaveRace(); dead = true; card.remove(); big.remove(); panel.remove(); itemBtn.remove(); dir.remove(); legBox.remove(); pracBtn.remove(); hostCard?.remove(); hostTag?.remove(); try { hostP?.remove(); } catch {} };
+    R.dispose = () => { leaveRace(); dead = true; card.remove(); big.remove(); autoHud(0); autoEl.remove(); panel.remove(); itemBtn.remove(); dir.remove(); legBox.remove(); pracBtn.remove(); hostCard?.remove(); hostTag?.remove(); try { hostP?.remove(); } catch {} };
     R.lap = { L, sH, TOT, NT, NR, TG, RINGS, BOX, LEAF, DOOR, PLN, PLH, PW, AW, slot, at };  // (for tests)
     R.test = () => race;  // (for tests)
     return R;
@@ -21013,7 +21035,7 @@ const handle = async (m, post) => {
         if ((xNew || F.flip) && car.gold && !car.flip) { F.flip = false; car.flip = { t: 0, h0: car.h, d0: car.dir, way: str < -0.1 ? -1 : 1 }; snd.thud?.(0.3); }
         const gc = car.gold, bSecs = gc ? R.goldBoostSecs : R.boostSecs, bBack = gc ? R.goldBoostBack : R.boostBack, sTurn = gc ? R.goldSlideTurn : R.slideTurn, sSlow = gc ? R.goldSlideSlow : R.slideSlow;
         if (boosting) { charge = Math.max(0, charge - dt / bSecs); if (!charge) spent = true; } else { charge = Math.min(1, charge + dt / bBack); if (charge >= 0.2) spent = false; }
-        const K = (car.gold ? GOLD : car.bus ? 0.7 : 1) * (C.spdK || 1) * (C.slowTil > performance.now() ? 0.55 : 1) * (C.starTil > performance.now() ? 1.8 : 1) * (C.autoTil > performance.now() && auto ? 1.6 : 1), vTop = R.carTop / 3.6, vboost = Math.max(R.carBoostTop, R.carTop) / 3.6 * K, SHAPE = car.bus ? BUS : CAR;  // (spdK, slowTil: the race's car, handicap and storm cloud)
+        const K = (car.gold ? GOLD : car.bus ? 0.7 : 1) * (C.spdK || 1) * (C.slowTil > performance.now() ? 0.55 : 1) * (C.starTil > performance.now() ? 1.8 : 1) * (C.autoTil > performance.now() && auto ? 2.4 : 1), vTop = R.carTop / 3.6, vboost = Math.max(R.carBoostTop, R.carTop) / 3.6 * K, SHAPE = car.bus ? BUS : CAR;  // (spdK, slowTil: the race's car, handicap and storm cloud)
         if (C.starTil > performance.now() && Math.random() < dt * 18) fxSpray(car, true);  // a golden star: sparkling
         // a passenger's power-up: 2 km/h more, and half a boost's worth on top, for 3 seconds (Ash, 16 November 2026)
         const tk = car.teamK || 1, vteam = vTop * K + tk * (R.teamBoostExtra / 3.6 + R.teamBoostShare / 100 * (vboost - vTop * K)), vmax = teamOn ? vteam : vTop * K;
@@ -21572,7 +21594,7 @@ const handle = async (m, post) => {
       const [ax, az] = pt(10 * big), [bx, bz] = pt(24 * big), bend = rem > 12 ? Math.abs(wrap(Math.atan2(bx - ax, bz - az) - car.h)) : 0;
       let vt = Math.max(4.2, AUTO_V / (1 + 2.2 * bend)) / (car.bus ? 1.3 : 1), hoonB = false, hoonH = false;
       if (H) { // flat out, but slow enough at each corner coming to get round it: looked for up to 90 m ahead, braking at HOON_A
-        const top = R.carTop / 3.6 * (car.gold ? GOLD : 1) * (C.autoTil > performance.now() ? 1.6 * (C.spdK || 1) : 1); vt = top; let worst = 0;  /* (the race's Autodrive cannon: aiming for its 60% more) */
+        const top = R.carTop / 3.6 * (car.gold ? GOLD : 1) * (C.autoTil > performance.now() ? 2.4 * (C.spdK || 1) : 1); vt = top; let worst = 0;  /* (the race's Autodrive cannon: aiming for 2.4 times as fast; 1.6 till 24 November 2026) */
         for (const d of [8, 20, 34, 50, 70, 90]) { if (d > rem - 6) break; const [px, pz] = pt(d), [qx, qz] = pt(d + 12), b = Math.abs(wrap(Math.atan2(qx - px, qz - pz) - car.h)); if (d <= 20) worst = Math.max(worst, b);
           vt = Math.min(vt, Math.sqrt((Math.max(6.5, top / (1 + 2.6 * b))) ** 2 + 2 * HOON_A * Math.max(0, d - 6))); }
         vt = Math.min(vt, Math.sqrt(2 * HOON_A * Math.max(0, rem - 3)) + 1.2); if (Math.abs(e) > 0.8) vt = Math.min(vt, 6.5);
@@ -21899,7 +21921,7 @@ const handle = async (m, post) => {
       else if (veh === "possum" && pos) { pos.v = 0; C.slowTil = now + 1500; }
       return true; };
     C.raceAuto = (pts, ms) => { if (!C.drivePath(pts, { hoon: true })) return false; const now = performance.now(); C.autoTil = now + ms; auto.t0 = now;
-      setTimeout(() => { if (auto && !auto.done) autoEnd(); }, ms); return true; };  // (the race's Autodrive: 10 s along the course, a quarter faster; then it's yours again)
+      setTimeout(() => { if (auto && !auto.done) autoEnd(); }, ms); return true; };  // (the race's Autodrive: 10.5 s along the course, 2.4 times as fast; then it's yours again)
     // the race's plane: parked for you at the end of the possum's run, on the ground, facing the way you take off (you get in it yourself)
     let racePlane = null;
     C.raceParkPlane = (x, z, h) => { if (racePlane && !racePlane.takenBy && racePlane !== plane && Math.hypot(racePlane.x - x, racePlane.z - z) < 1) return true;
