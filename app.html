@@ -21437,9 +21437,19 @@ const handle = async (m, post) => {
       if (T.traffic?.occupied) {
         if (T.traffic.occupied(length ? (car?.bus ? "bus" : "car") : "walk", x, z, h, ground(x, z))) return false;
       } else if (T.traffic?.cars?.some(overlapsCar)) return false;
-      // The embed returns only the nearest native car, which can be our old pose. Require a
-      // clear radius, so a second parked car hidden by that result cannot be overlooked.
-      return !parked(x, z, radius + 2.6);
+      const reach = radius + 2.6;  // covers the longest native ute, in any orientation
+      const near = parked(x, z, reach);
+      if (!near) return true;
+      const isOurs = p => car?.id && p?.id[0] === car.id[0] && p.id[1] === car.id[1];
+      if (!isOurs(near) || (!length && overlapsCar(car))) return false;
+      // The embed only returns the closest parked car. If our car is closest at every corner
+      // of this square, it is closest throughout it: each pairwise bisector is a straight line.
+      // This lets us ignore our own car without concealing another car at the landing spot.
+      for (const dx of [-reach, reach]) for (const dz of [-reach, reach]) {
+        const px = x + dx, pz = z + dz, distance = Math.hypot(px - near.x, pz - near.z);
+        if (!isOurs(parked(px, pz, distance + 0.01))) return false;
+      }
+      return true;
     };
     const dryInside = (x, z) => {
       if (!inside(x, z)) return false;
