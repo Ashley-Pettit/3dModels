@@ -2,7 +2,9 @@
 # 20 m bridged, one-way carriageways only the way they run), for working out the race's lap ahead of time.
 import json,math,heapq,collections,os
 HERE=os.path.dirname(os.path.abspath(__file__))
-t=json.load(open(os.path.join(HERE,'..','..','town3d','moorooka','town.json')));NM=t['names']
+# Moorooka's by default; RACE_TOWN=inverloch for Inverloch's (town3d/town.json)
+TOWN=os.environ.get('RACE_TOWN','moorooka')
+t=json.load(open(os.path.join(HERE,'..','..','town3d',*(['town.json'] if TOWN=='inverloch' else [TOWN,'town.json']))));NM=t['names']
 roads=[dict(cls=r[0],name=r[4],one=bool(r[2]&4),pts=[v/10 for v in r[5]]) for r in t['roads']]
 key=lambda x,z:(round(x*2),round(z*2)); ids={};X=[];Z=[];adj=[];names_at=collections.defaultdict(set)
 def node(x,z):

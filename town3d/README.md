@@ -3091,3 +3091,25 @@ remove that ... Make the camera angle start like this screenshot. I want to see 
   (1 m), on the back window (what you see from behind as you drive) and on both front doors, moving with the car as the model draws it (`C.carPose`: place, heading, pitch, roll; `badgeMake`, a
   canvas texture; one draw call). No plate.
 - **Some rings lower** (Ash: "Plane occasionally a bit closer to ground"): every third one 15 m up.
+
+### A race around Inverloch, started by Ash (24 November 2026)
+
+Ash: "Add a car race with similar rules to Inverloch. Just car only. It should start by speaking with ash who is opposite 11 Norman Rd"
+- **The same race, cars only:** `townRace` takes a course (`RACE_MOO`, `RACE_INV`: its name, its lap, whether it's cars only, and who
+  starts it). Inverloch's has no possum house, possum, gum leaves, plane or rings: gates about every 180 m all the way round (13), the last
+  one the line itself (12 m wide), and the rest as in Moorooka: the four cars, handicaps, the host and invites, practice, power-up boxes
+  (here each row on the straightest road within 50 m, not across a corner), the news line, the car's logo, missed gates turning you back.
+- **The lap** (`INV_RACE`, 2.6 km; `tools/race/inverloch.py`): from the line on Norman Road just west of Ash, west along Norman Road, up
+  Florida Avenue, east along Victoria Street, up Evergreen Avenue, east along Toorak Road, down Abbott Street, south-west along Ramsey
+  Boulevard and Surf Parade, west along Veronica Street, up Ebor Avenue and west along Norman Road, past Ash, to the line. Inverloch's
+  main roads don't share points with the streets that meet them, so it's each street's own line cut where the next one meets it, not the
+  network's shortest way (`tools/race/net.py` reads Inverloch's map too, with `RACE_TOWN=inverloch`). Nothing solid on it; every gate on
+  a straight.
+- **Ash** stands across Norman Road from number 11 (its house is at -1592.6, 411.6 in the model; he's at -1580.5, 388.1, on the far
+  verge), by the front of the grid, in a race-yellow shirt with a chequered flag in his right hand (`flagPart`, a fourth part on his arm).
+  He turns to you when you're close and waves the flag over his head while you're within 30 m, holds it up through the countdown and
+  brings it down at Go. Walk up to him (3.4 m, or 9 m in a car) and he asks if you're racing: "Let's race" opens the race panel (or, if
+  someone else is getting one together, "Count me in"). Jump to > Race around Inverloch ("Talk to Ash: across the road from 11 Norman
+  Road") puts you on your feet 3 m in front of him (`T.standAt`). His name over him within 70 m. Drawn only within 300 m, made the first
+  time you're that close; checked each frame from the race's own frame.
+- Moorooka's race is as it was.
