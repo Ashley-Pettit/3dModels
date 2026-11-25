@@ -1991,6 +1991,13 @@ body.bstown.bsgmap.bsheld .bs-joy, body.bstown.bsgmap.bsheld .bs-ud { display: n
   body.bstown .bs-fly-x.bs-coo { right: calc(max(18px, env(safe-area-inset-right)) + 146px) !important; bottom: calc(188px + env(safe-area-inset-bottom)) !important; }
   body.bstown.bspossum:has(#bsHandBtn[hidden]) .bs-fly-x.bs-boost { bottom: calc(26px + env(safe-area-inset-bottom)) !important; }  /* (the plain possum: down one each) */
   body.bstown.bspossum:has(#bsHandBtn[hidden]) .bs-fly-x.bs-grip { bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
+  /* (Explore and Free view move left, beside Settings and Share, so the GPS row up the right doesn't sit on Free view; and on foot the
+     middle column comes down to the bottom edge, Chat lowest, then Emote, then Get in the car: Ash, 25 November 2026, "Polish the
+     rotated phone look so that items don't overlap. Move emote down on horizontal view") */
+  body.bstown .bs-town-mode { left: calc(max(16px, env(safe-area-inset-left)) + 98px); transform: none; }
+  body.bstown .bs-fly-x.bs-chat { bottom: calc(10px + env(safe-area-inset-bottom)); }
+  body.bstown .bs-fly-x.bs-emote { bottom: calc(56px + env(safe-area-inset-bottom)); }
+  body.bstown:not(.bsdrive) .bs-fly-x.bs-car { bottom: calc(102px + env(safe-area-inset-bottom)); }
 }
 /* Desktop: the keys and the mouse move you, so no sticks or Up and Down buttons; the controls are listed bottom left instead */
 @media (hover: hover) and (pointer: fine) {
