@@ -1279,7 +1279,8 @@ body.bstown .bs-ud { top: auto; right: auto; left: 50%; bottom: calc(22px + env(
 .bs-upchip b { font-weight: 600; }
 .bs-upchip .bs-upshort { display: block; font-weight: 500; opacity: 0.86; }
 .bs-upchip[hidden], body.bsheld .bs-upchip { display: none; }
-#bsGpsBtn.bsflash { animation: bsGpsFlash 0.6s ease-in-out 3; }  /* getting into a car: the GPS flashes green three times (Ash, 25 November 2026: twice, then "one additional time") */
+#bsBoostBtn.bsmega { background: #ff5fb4; color: #2a0618; box-shadow: 0 0 0 3px rgba(255, 95, 180, .45), 0 0 18px 4px rgba(255, 95, 180, .75); }
+    #bsGpsBtn.bsflash { animation: bsGpsFlash 0.6s ease-in-out 3; }  /* getting into a car: the GPS flashes green three times (Ash, 25 November 2026: twice, then "one additional time") */
 @keyframes bsGpsFlash { 50% { background: #2fb34a; color: #fff; box-shadow: 0 0 12px #2fb34a; } }
 @media (prefers-reduced-motion: reduce) { #bsGpsBtn.bsflash { animation-duration: 0.9s; } }
 .bs-hires { position: absolute; top: calc(104px + env(safe-area-inset-top)); left: 16px; z-index: 2; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; pointer-events: none;
@@ -18740,7 +18741,7 @@ const handle = async (m, post) => {
   const RACE_CARS = [["turbo", "Rocket", "🚀", "Turbo: a much stronger Boost button (40% more top speed on boost, pushing harder)"], ["launch", "Launcher", "⚡", "Launch control: off the mark 2.6 times as fast"],
     ["nitro", "Nitro", "🔥", "Bigger nitro tank: boost lasts 3 times as long"], ["grip", "Grip", "🛣️", "Sports tyres: much sharper turns"]];
   // the power-ups: [emoji, name, what it does]. No weapons: birds, weather and a banana peel
-  const RACE_ITEMS = { turbo: ["🚀", "Turbo", "A huge burst of speed for 3.5 s"], star: ["⭐", "Golden star", "7 s of 80% more speed and 40% sharper steering, and nothing can touch you"],
+  const RACE_ITEMS = { turbo: ["🚀", "Turbo", "20 s of a mega Boost: twice the push and it refills twice as fast"], star: ["⭐", "Golden star", "7 s of 80% more speed and 40% sharper steering, and nothing can touch you"],
     auto: ["🤖", "Autodrive cannon", "Your car blasts itself along the course for 10.5 s, 2.4 times as fast"],
     magpie: ["🐦", "Swooping magpie", "Swoops the racer just ahead: they spin out"], ibis: ["🪿", "Bin chicken", "Flies to whoever's in first and stops them dead"],
     storm: ["⛈️", "Storm cloud", "Rain on everyone ahead of you: they slow right down for 5 s"], peel: ["🍌", "Banana peel", "Dropped behind you: whoever drives over it spins"],
@@ -19108,7 +19109,7 @@ const handle = async (m, post) => {
     const ahead = () => { const rows = standings(), i = rows.findIndex(r => r.you); return rows.slice(0, i).filter(r => !r.fin); };
     R.useItem = () => { if (!race || race.state !== "go" || !race.item) return false; const k = race.item, nm = RACE_ITEMS[k][1]; race.item = null; showItem();
       const rows = standings(), [x, z] = here();
-      if (k === "turbo") { T.car?.raceFx?.("turbo", 3500); say("🚀", 700); }
+      if (k === "turbo") { T.car?.raceFx?.("mega", 20000); say("🚀", 700); tell("Mega Boost for 20 s: twice the push, refills twice as fast", false); }
       else if (k === "star") { T.car?.raceFx?.("star", 7000); say("⭐", 800); tell("Golden star: 80% faster, sharper steering, and nothing can touch you for 7 s", false); send(["fx", race.id, "star", ""]); }
       else if (k === "auto") { const s0 = race.m, s1 = race.leg === 0 ? Math.min(s0 + 900, sH - 4) : 0, pts = []; for (let s = s0 + 4; s <= s1; s += 4) { const p = at(s); pts.push(p.x, p.z); }
         // (2.4 times as fast for 10.5 s: half as fast again as the 60% it was, for 30% less time. Ash, 24 November 2026: "Dial up car speed by
@@ -21133,7 +21134,7 @@ const handle = async (m, post) => {
         plane = null; showPlane(P); }
       if (was === "car" && car.id) T.invStatic?.park(car.id,car.x,car.z,car.h,car.y,car.p,car.r);
       veh = null; car = null; plane = null; window.anFast = false; upShow(null); upLook = 0; showKeys(T.walk ? "walk" : null); C.in = false; F.drive = null; F.boost = false; F.hText = ""; F.vert = 0; F.stick.x = F.stick.y = F.lookStick.x = F.lookStick.y = 0; F.keys.clear();
-      document.body.classList.remove("bsdrive", "bsplane", "bsheli", "bsdrone", "bspossum", "bsride", "bspowers", "bspow"); powShown = null; pwBtn.hidden = tkBtn.hidden = true; cooBtn.hidden = true; boostBtn.hidden = true; boostBtn.textContent = "Boost"; handBtn.hidden = true; flipBtn.hidden = true; F.flip = false; plantBtn.hidden = plantMenu.hidden = true; gripBtn.hidden = true; unReset(); handBtn.classList.remove("on"); F.hand = false; at = 0; C.frame(); };
+      document.body.classList.remove("bsdrive", "bsplane", "bsheli", "bsdrone", "bspossum", "bsride", "bspowers", "bspow"); powShown = null; pwBtn.hidden = tkBtn.hidden = true; cooBtn.hidden = true; boostBtn.hidden = true; boostBtn.textContent = "Boost"; boostBtn.classList.remove("bsmega"); handBtn.hidden = true; flipBtn.hidden = true; F.flip = false; plantBtn.hidden = plantMenu.hidden = true; gripBtn.hidden = true; unReset(); handBtn.classList.remove("on"); F.hand = false; at = 0; C.frame(); };
     // Explore mode from a car, plane, helicopter or the possum: you're kept in it, held still where it is (others see it there), and
     // back in it, the view where it was, when Explore mode goes off (Ash, 17 November 2026: "If I'm in a helicopter and I go to explore
     // mode, when I end explore mode go back in my helicopter")
@@ -21186,7 +21187,8 @@ const handle = async (m, post) => {
         // (the golden car has its own boost, handbrake spin and handbrake drag: Settings > Admin > Cars and planes)
         const xk = has("KeyX"), xNew = xk && !C.xWas; C.xWas = xk;
         if ((xNew || F.flip) && car.gold && !car.flip) { F.flip = false; car.flip = { t: 0, h0: car.h, d0: car.dir, way: str < -0.1 ? -1 : 1 }; snd.thud?.(0.3); }
-        const gc = car.gold, bSecs = gc ? R.goldBoostSecs : R.boostSecs, bBack = gc ? R.goldBoostBack : R.boostBack, sTurn = gc ? R.goldSlideTurn : R.slideTurn, sSlow = gc ? R.goldSlideSlow : R.slideSlow;
+        const mega = C.megaTil > performance.now(); boostBtn.classList.toggle("bsmega", mega);  // (the race's Turbo: the Boost button glows pink while it lasts)
+        const gc = car.gold, bSecs = gc ? R.goldBoostSecs : R.boostSecs, bBack = (gc ? R.goldBoostBack : R.boostBack) / (mega ? 2 : 1), sTurn = gc ? R.goldSlideTurn : R.slideTurn, sSlow = gc ? R.goldSlideSlow : R.slideSlow;
         if (boosting) { charge = Math.max(0, charge - dt / bSecs); if (!charge) spent = true; } else { charge = Math.min(1, charge + dt / bBack); if (charge >= 0.2) spent = false; }
         const K = (car.gold ? GOLD : car.bus ? 0.7 : 1) * (C.spdK || 1) * (C.slowTil > performance.now() ? 0.55 : 1) * (C.starTil > performance.now() ? 1.8 : 1) * (C.autoTil > performance.now() && auto ? 2.4 : 1), vTop = R.carTop / 3.6, vboost = Math.max(R.carBoostTop, R.carTop) / 3.6 * K, SHAPE = car.bus ? BUS : CAR;  // (spdK, slowTil: the race's car, handicap and storm cloud)
         if (C.starTil > performance.now() && Math.random() < dt * 18) fxSpray(car, true);  // a golden star: sparkling
@@ -21207,7 +21209,7 @@ const handle = async (m, post) => {
         // drastically increases turning for burnouts"): it swings the car round fast while it carries on the way it was going
         const slide = brake && Math.abs(v) > 3;
         if (brake) v -= Math.sign(v) * Math.min(Math.abs(v), sSlow / 3.6 * dt);
-        if (go > 0.05) v += (v < -0.2 && !boosting ? 10 : boosting ? R.carAccel * 4 * (R.boostPush || 1) * K * (1 - Math.max(0, v) / vboost) : teamOn ? R.carAccel * (1 + 3 * tk * R.teamBoostShare / 100) * K * Math.max(0, 1 - Math.max(0, v) / vteam) : R.carAccel * K * (1 - Math.max(0, v) / vmax)) * go * dt * (brake ? 0.5 : 1);
+        if (go > 0.05) v += (v < -0.2 && !boosting ? 10 : boosting ? R.carAccel * 4 * (R.boostPush || 1) * (mega ? 2 : 1) * K * (1 - Math.max(0, v) / vboost) : teamOn ? R.carAccel * (1 + 3 * tk * R.teamBoostShare / 100) * K * Math.max(0, 1 - Math.max(0, v) / vteam) : R.carAccel * K * (1 - Math.max(0, v) / vmax)) * go * dt * (brake ? 0.5 : 1);
         else if (back) v -= R.carAccel * 4 * K * (1 + Math.min(0, v) / vboost) * dt;  // boosting backwards: as hard as forwards
         else if (go < -0.05) v += (v > 0.2 ? -11 : -3 * (1 + Math.min(0, v) / VREV)) * -go * dt;
         else if (!brake) v -= Math.sign(v) * Math.min(Math.abs(v), (0.6 + Math.abs(v) * 0.08) * dt);
@@ -22074,9 +22076,13 @@ const handle = async (m, post) => {
     C.reread = () => { Object.assign(R, townPerkRide(rideSettings())); if (BS.raceRide && C.spdK) R.carAccel /= C.spdK; };
     // ---- for the race (townRace): its car and handicap, the power-ups, and changing to the plane and the possum on the way round
     C.raceRide = RR => { BS.raceRide = RR || null; const k = RR ? bsClamp(+RR.hc || 0, 0, 8) : 0;
-      C.spdK = RR ? 1 - 0.05 * k : 1; C.hcK = 1 - 0.05 * k; C.starTil = C.turboTil = C.slowTil = C.autoTil = 0; C.reread(); };
+      C.spdK = RR ? 1 - 0.05 * k : 1; C.hcK = 1 - 0.05 * k; C.starTil = C.turboTil = C.slowTil = C.autoTil = C.megaTil = 0; C.reread(); };
     C.racePrep = () => { try { if (T.cfg?.place === "moo") { loadRoofs(); loadTrees(); } if (pos && !possumMesh) wake(); } catch {} };  // (on the grid: nothing heavy mid-race)
     C.raceFx = (kind, ms) => { const now = performance.now();
+      // the race's Turbo in a car: 20 s of a mega Boost rather than a burst of speed, which got away from you (Ash, 25 November 2026:
+      // "too uncontrollably fast. It should instead give me mega stats to my standard boost. 100% more power from my boost, recharge
+      // 100% faster. Button glows pink while available for 20 seconds")
+      if (kind === "mega") { if (veh === "car" && car) { C.megaTil = now + ms; return true; } kind = "turbo"; ms = 3500; }
       if (kind === "turbo" || kind === "star") { if (kind === "star") C.starTil = now + ms; C.turboTil = now + ms;
         if (kind === "turbo") { if (veh === "car" && car) { car.teamTil = now + ms; car.teamK = 3; } else if (veh === "plane" && plane) { plane.teamTil = now + ms; plane.teamK = 3; } } return true; }
       if (C.starTil > now) return false;  // a golden star: nothing touches you
