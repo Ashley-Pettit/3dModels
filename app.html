@@ -21933,7 +21933,9 @@ const handle = async (m, post) => {
       // left alone, the view settles back behind; but not once you've turned it yourself (more than a nudge) since getting in: it then
       // keeps where you put it, round the car as it turns (Ash, 25 November 2026: "When I'm driving it keep moving my camera for me. I
       // don't like that. Not if I've purposely adjusted my camera to be different")
-      if (idle > 1.2 && o.v > 1 && camSet < 0.15) { const e = Math.min(1, dt * 2.5); off[0] -= off[0] * e; off[1] -= off[1] * e; }
+      // (the possum always settles back behind, as before: Ash, 26 November 2026, "we also accidentally hit the possum. Undo that re camera
+      // perspective for the possum")
+      if (idle > 1.2 && o.v > 1 && (camSet < 0.15 || veh === "possum" || (veh === "ride" && ride?.k === "possum"))) { const e = Math.min(1, dt * 2.5); off[0] -= off[0] * e; off[1] -= off[1] * e; }
       // the view: behind and above, swinging round after it; closer in where a building is behind, so it is not from inside one
       camYaw += wrap(o.h + Math.PI - camYaw) * Math.min(1, dt * 3.5);
       const critter = veh === "possum" || veh === "pigeon" || (veh === "ride" && ride.k === "possum"), high = critter && o.y - ground(o.x, o.z) > 1.2;  // (the possum: close behind it, looking up a wall it is climbing)
