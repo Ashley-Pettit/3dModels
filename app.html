@@ -1490,7 +1490,7 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 body .bs-race { top: calc(98px + env(safe-area-inset-top)); left: auto; right: 16px; transform: none; max-width: 300px; }
 @media (max-width: 999px) { body .bs-race { top: calc(106px + env(safe-area-inset-top)); right: 16px; left: auto; width: max-content; max-width: calc(50% - 22px); } }
 .bs-race-dir { pointer-events: none; position: absolute; z-index: 3; left: 50%; top: 24%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.45)); }
-.bs-race-dir[hidden] { display: none; } .bs-race-dir .tilt { width: 84px; height: 84px; transform: perspective(300px) rotateX(30deg); }  /* (flat, turning only: no rising or tipping for height, said under it instead) */  /* (less tilt, and a shaft on the arrow: Ash, 23 November 2026, "The arrow is hard to know which way it is facing") */
+.bs-race-dir[hidden] { display: none; } .bs-race-dir .tilt { width: 76px; height: 76px; transform: perspective(300px) rotateX(30deg); }  /* (flat, turning only: no rising or tipping for height, said under it instead) */  /* (less tilt, and a shaft on the arrow: Ash, 23 November 2026, "The arrow is hard to know which way it is facing") */
 .bs-race-dir svg { width: 100%; height: 100%; transition: transform 0.22s linear; opacity: 0.92; }
 .bs-race-dir small { margin-top: -6px; padding: 1px 8px; border-radius: 999px; background: rgba(27, 24, 48, 0.7); color: #ffe08a; font: 800 0.74rem/1.4 var(--ui); font-variant-numeric: tabular-nums; }
 .bs-race-item { pointer-events: auto; position: absolute; z-index: 4; right: 34px; bottom: calc(330px + env(safe-area-inset-bottom)); width: 72px; height: 72px; border: 3px solid #ffc93c; border-radius: 50%; background: rgba(27, 24, 48, 0.82); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; cursor: pointer; touch-action: manipulation; padding: 0; }
@@ -19453,7 +19453,10 @@ const handle = async (m, post) => {
       send(["at", race.id, Math.round(TOT), Math.round(race.fin), race.leg, race.leaves]); race.sentAt = now;
       const pl = standings().findIndex(r => r.you) + 1, key = "an3d-race-best-" + Math.round(TOT); let best = 0; try { best = +localStorage.getItem(key) || 0; } catch {}
       race.best = best; race.pb = !best || race.fin < best; if (race.pb) try { localStorage.setItem(key, String(Math.round(race.fin))); } catch {}
-      banner(race.others.size ? `🏁 ${ord(pl)} place!` : "🏁 Finished!", `${fmtT(race.fin)}${race.pb ? (best ? " · a new personal best!" : " · your first time on this course") : ` · your best is ${fmtT(best)}`}`, 3600); fanfare(true); results(); };
+      banner(race.others.size ? `🏁 ${ord(pl)} place!` : "🏁 Finished!", `${fmtT(race.fin)}${race.pb ? (best ? " · a new personal best!" : " · your first time on this course") : ` · your best is ${fmtT(best)}`}`, 3600); fanfare(true); results();
+      // (out of the plane and back on your feet at the start line, by the side of the road: Ash, 25 November 2026, "End the race out of the
+      // plane back at the starting point")
+      if (!CAR) setTimeout(() => { if (dead || !race || race.state !== "done") return; const p = at(0), h = headAt(0); T.standAt?.(p.x + Math.cos(h) * 6, p.z - Math.sin(h) * 6, h + Math.PI); }, 1800); };
     // a gum leaf: one towards the 15 you need (three for a golden one, and a burst of speed); quick ones in a row chime higher and higher
     const leafGot = (q, now) => { const had = race.leaves; race.leaves += q.gold ? 3 : 1; race.streak = now - race.leafAt < 2600 ? race.streak + 1 : 0; race.leafAt = now; send(["leaf", race.id, LEAF.indexOf(q)]);
       const f = 784 * Math.pow(2, Math.min(race.streak, 12) / 12); T.snd?.tone?.(f, f * 1.5, 0.12, 0.08, "triangle");
@@ -19544,7 +19547,7 @@ const handle = async (m, post) => {
         // (only once you're within 30 m of the leaf: Ash, 25 November 2026, "With the possum on race, don't show up unless I'm less than 30m
         // away from the object")
         const ly = tg.kind === "leaf" && tg.top != null && Math.hypot(tg.x - x, tg.z - z) < 30 ? tg.top - y : 0;
-        dirD.textContent = fmtD(dist); const vt = dy > 5 ? `\u25B2 Climb ${Math.round(dy)} m` : dy < -5 ? `\u25BC Dive ${Math.round(-dy)} m` : ly > 1.2 ? (tg.jump && ly < 4.5 ? `\u25B2 Up ${Math.round(ly)} m: jump for it` : `\u25B2 Up ${Math.round(ly)} m: climb`) : ly < -1.5 ? `\u25BC Down ${Math.round(-ly)} m` : road?.turn || "";
+        dirD.textContent = fmtD(dist); const vt = dy > 5 ? `\u25B2 Climb ${Math.round(dy)} m` : dy < -5 ? `\u25BC Dive ${Math.round(-dy)} m` : ly > 1.2 ? (tg.jump && ly < 4.5 ? `\u25B2 Up ${Math.round(ly)} m: jump for it` : `\u25B2 Up ${Math.round(ly)} m: climb`) : ly < -1.5 ? `\u25BC Down ${Math.round(-ly)} m` : "";  // (no turn words under the arrow: the arrow itself shows the turn. Ash, 25 November 2026: "Remove the 2nd turn indicator during a race")
         if (dirV.textContent !== vt) dirV.textContent = vt; dirV.hidden = !vt; dirV.classList.toggle("dn", dy < -5 || ly < -1.5); dirV.classList.toggle("tn", Math.abs(dy) <= 5 && !!road?.turn); void el; } };
     pracBtn.onclick = e => { R.open(); e.currentTarget.blur(); };
     R.dispose = () => { leaveRace(); dead = true; card.remove(); big.remove(); autoHud(0); autoEl.remove(); panel.remove(); itemBtn.remove(); dir.remove(); legBox.remove(); pracBtn.remove(); hostCard?.remove(); hostTag?.remove(); try { hostP?.remove(); } catch {} };
@@ -20931,7 +20934,7 @@ const handle = async (m, post) => {
       return [(yf + yb + yr + yl) / 4, Math.atan2(yf - yb, half * 2), Math.atan2(yl - yr, wide * 2)]; };
     const sit = (dt, signal = 0) => { const [y, p, r] = car.bus ? lie(car, 3.6, 1.1) : lie(car, 1.3, 0.8), e = dt ? Math.min(1, dt * 12) : 1; car.y += (y + 0.05 + (car.hop || 0) - car.y) * (car.flip || car.trick ? 1 : e); car.p += (p - car.p) * e; car.r += (r - car.r) * e; const rd = car.r + (car.roll || 0), hd = car.h + (car.spinY || 0);
       // (a golden star: the car flashes, gone and back about five times a second, sparkling: Ash, 25 November 2026, "Flash my car while active")
-      const now = performance.now(), cy = car.y + (C.starTil > now && Math.floor(now / 100) % 3 === 2 ? -1e5 : 0);
+      const now = performance.now(), cy = car.y + (C.starTil > now && Math.floor(now / 100) % 3 === 2 ? -60 : 0);  // (gone: 60 m under the ground)
       if (car.own) {
         Object.assign(car.own, { x: car.x, y: cy, z: car.z, h: hd, p: car.p, r: rd }); showOwn(car.own); car.own.y = car.y;
         if (signal !== (car.own.litSignal || 0)) { car.own.parts.setSignal?.(signal); car.own.litSignal = signal; }
