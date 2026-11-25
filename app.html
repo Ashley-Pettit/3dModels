@@ -18757,7 +18757,7 @@ const handle = async (m, post) => {
     [["star", 30], ["auto", 25], ["ibis", 15], ["storm", 15], ["warp", 15]]];
   // each town's race: its name, its lap, whether it's cars only (Inverloch's) or the car, the possum and the plane (Moorooka's), and who
   // starts it, where someone does (Ash, in a race-yellow shirt with a chequered flag, across the road from 11 Norman Road)
-  const RACE_MOO = { name: "Moorooka", lap: MOO_RACE };
+  const RACE_MOO = { name: "Moorooka", lap: MOO_RACE, logo: [1.51, 0.5, -0.64, 0.32] /* (the new sedan Moorooka drives: its roof 1.49 m up, 1.16 m across, from 0.7 m back to 0.38 m forward. The old car's roof was 1.4 m up, so the sign sat inside the new one: Ash, 25 November 2026, "With the new cars, the race symbols don't draw properly anymore") */ };
   const RACE_INV = { name: "Inverloch", lap: INV_RACE, car: true, fin: "back past Ash", logo: [1.94, 0.39, -0.34, 0.44] /* (your car's sign: up, half across, back, front) */, lift: 0.2 /* (its roads sit up to 0.34 m over the ground: the yellow line, the start line and the gates' chevrons on top of them, not under) */, host: { name: "Ash", x: -1580.5, z: 388.1, yaw: -0.47, top: "#ffc93c", look: "-.short.brown", what: "across the road from 11 Norman Road" } };
   const raceCarPick = () => { try { const v = localStorage.getItem("an3d-race-car"); return RACE_CARS.some(c => c[0] === v) ? v : "turbo"; } catch { return "turbo"; } };
   function townRace(T, m, F, ground, box, K = RACE_MOO) {
