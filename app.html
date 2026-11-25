@@ -20836,7 +20836,7 @@ const handle = async (m, post) => {
       if (upChip.hidden === !!u) upChip.hidden = !u; };
     const R = townPerkRide(rideSettings()), GOLD = 1 + R.gold / 100, VREV = 5.5, LIFT = R.planeLift / 3.6, CRUISE = Math.max(R.planeTop, R.planeLift * 1.4) / 3.6, JET = Math.max(R.planeBoostTop, R.planeTop) / 3.6, canBoost = P => !P.heli && (P.gold || !!R.planeBoost), touch = matchMedia("(pointer: coarse)").matches, snd = townSound(); T.snd = snd;
     snd.level(R.volume / 100);
-    let veh = null, car = null, last = null, off = null, camYaw = 0, idle = 0, at = 0, charge = 1, spent = false, auto = null, autoMark = null, want = null;  // (auto: the car driving itself; want: the car a click on the map picked)
+    let veh = null, car = null, last = null, off = null, camYaw = 0, idle = 0, camSet = 0, at = 0, charge = 1, spent = false, auto = null, autoMark = null, want = null;  // (auto: the car driving itself; want: the car a click on the map picked)
     // whether something fits there: points along and across it (metres from its middle) clear of buildings, and out of deep water
     const CAR = [[2.1, 0.8], [2.1, -0.8], [-2.1, 0.8], [-2.1, -0.8], [0, 0]], PLANE = [[2.7, 0], [0, 0], [-4.2, 0], [0.2, 5.2], [0.2, -5.2]], BUS = [[5.4, 1.2], [5.4, -1.2], [-5.4, 1.2], [-5.4, -1.2], [2.7, 1.2], [2.7, -1.2], [0, 0], [-2.7, 1.2], [-2.7, -1.2]];
     const fits = (pts, x, z, h) => { const s = Math.sin(h), c = Math.cos(h);
@@ -21345,7 +21345,7 @@ const handle = async (m, post) => {
       if (!T.walk || T.tween || BS.town !== T || Math.abs(F.pos.x - last[0]) + Math.abs(F.pos.y - last[1]) + Math.abs(F.pos.z - last[2]) > 1e-3) return leave(false);
       // looking round: the right stick, or a drag (which has already turned the view)
       F.yaw -= F.lookStick.x * Math.abs(F.lookStick.x) * 2.4 * dt; F.pitch += F.lookStick.y * Math.abs(F.lookStick.y) * 1.6 * dt;
-      const dy = wrap(F.yaw - last[3]), dp = F.pitch - last[4]; idle = Math.abs(dy) + Math.abs(dp) > 1e-4 ? 0 : idle + dt;
+      const dy = wrap(F.yaw - last[3]), dp = F.pitch - last[4]; idle = Math.abs(dy) + Math.abs(dp) > 1e-4 ? 0 : idle + dt; if (!idle) camSet += Math.abs(dy) + Math.abs(dp);
       off[0] = wrap(off[0] + dy); off[1] = bsClamp(off[1] + dp, -1, 0.55);
       // (in a plane the up and down arrows work the nose, not the power: see below)
       let fly = veh === "plane", thr = bsClamp((has("KeyW") || (!fly && has("ArrowUp")) ? 1 : 0) - (has("KeyS") || (!fly && has("ArrowDown")) ? 1 : 0) + F.stick.y, -1, 1), str = bsClamp((has("KeyD", "ArrowRight") ? 1 : 0) - (has("KeyA", "ArrowLeft") ? 1 : 0) + F.stick.x, -1, 1);
@@ -21734,7 +21734,10 @@ const handle = async (m, post) => {
         o = P; D = 13 + Math.min(16, P.v / 7); text = Math.round(P.v * 3.6) + " km/h"; }  // (the speed only, as the helicopter)
       }
       if (chip.textContent !== text) chip.textContent = text;
-      if (idle > 1.2 && o.v > 1) { const e = Math.min(1, dt * 2.5); off[0] -= off[0] * e; off[1] -= off[1] * e; }  // left alone, the view settles back behind
+      // left alone, the view settles back behind; but not once you've turned it yourself (more than a nudge) since getting in: it then
+      // keeps where you put it, round the car as it turns (Ash, 25 November 2026: "When I'm driving it keep moving my camera for me. I
+      // don't like that. Not if I've purposely adjusted my camera to be different")
+      if (idle > 1.2 && o.v > 1 && camSet < 0.15) { const e = Math.min(1, dt * 2.5); off[0] -= off[0] * e; off[1] -= off[1] * e; }
       // the view: behind and above, swinging round after it; closer in where a building is behind, so it is not from inside one
       camYaw += wrap(o.h + Math.PI - camYaw) * Math.min(1, dt * 3.5);
       const critter = veh === "possum" || veh === "pigeon" || (veh === "ride" && ride.k === "possum"), high = critter && o.y - ground(o.x, o.z) > 1.2;  // (the possum: close behind it, looking up a wall it is climbing)
@@ -22054,7 +22057,7 @@ const handle = async (m, post) => {
         if (!matchMedia("(pointer: coarse)").matches) { const sb = $("bsMeBtn"); if (sb) { sb.classList.remove("bsteal"); void sb.offsetWidth; sb.classList.add("bsteal"); setTimeout(() => sb.classList.remove("bsteal"), 2600); } } }
       if (veh === "car" && gmDesk() && !BS.gmDriveTip) { BS.gmDriveTip = true; setTimeout(() => { if (veh === "car" && !auto) toast("Hold the left mouse button to drive, and move the mouse left or right to steer. Hold the right button to brake and reverse. Or click the road and the car drives you there.", 8000); }, 700); }
       if (place === "inv") { trail.length = 0; unReset(); }
-      C.in = true; camOff = null; camBack = 0; off = [wrap(F.yaw - camYaw), bsClamp(F.pitch + 0.2, -1, 0.55)]; idle = 0; last = [F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch];
+      C.in = true; camOff = null; camBack = 0; off = [wrap(F.yaw - camYaw), bsClamp(F.pitch + 0.2, -1, 0.55)]; idle = 0; camSet = 0; last = [F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch];
       if (veh === "drone" && R6()?.floorAt(dr.x, dr.z, dr.y) != null) off = [0, 0.12];  // the drone indoors: seen from behind it, the front door ahead (not the way you were looking out on the path)
       F.stick.x = F.stick.y = F.lookStick.x = F.lookStick.y = 0; F.vert = 0; F.boost = false; F.keys.clear(); F.drive = tick;
       btn.textContent = veh === "drone" ? "Put the remote down" : veh === "possum" || veh === "pigeon" ? "Human" /* (Ash, 16 November 2026: "Make hop out say human") */ : veh === "ride" && ride?.local ? "Get off" : "Get out"; btn.hidden = false; handBtn.hidden = veh !== "car" && (veh !== "possum" || !pos?.gold) && veh !== "pigeon"; /* (no Boost for the plain possum: Ash, 23 November 2026, "Remove boost from the non golden possum") */ handBtn.textContent = veh === "possum" ? "Boost" : veh === "pigeon" ? "Dive" : "Handbrake"; handBtn.dataset.key = veh === "possum" ? "Shift" : veh === "pigeon" ? "C" : "Space"; flipBtn.hidden = !(veh === "car" && car?.gold); plantBtn.hidden = !(veh === "possum" && T.admin?.plant); gripBtn.hidden = true; cooBtn.hidden = veh !== "pigeon"; boostBtn.hidden = veh === "ride" || (veh === "plane" && !canBoost(plane));
@@ -22327,7 +22330,7 @@ const handle = async (m, post) => {
     C.raceSurf = (x, z) => surf(x, z);  // (what the possum would stand on there: where the race puts its gum leaves)
     // (the race's start: 13 m behind the car and 5 m up, looking down the road over it and the cars ahead to the line; it settles to the
     // usual view, 7.5 m back and 3 m up, as you drive off. Till 24 November 2026 it was low and level, 1.8 m up)
-    C.camReset = () => { const o = veh === "car" ? car : null; if (!o) return; camYaw = o.h + Math.PI; off = [0, -0.1]; camBack = 5.5; camOff = null; idle = 0; };
+    C.camReset = () => { const o = veh === "car" ? car : null; if (!o) return; camYaw = o.h + Math.PI; off = [0, -0.1]; camBack = 5.5; camOff = null; idle = 0; camSet = 0; };
     C.upClose = () => {};  // (the race's start; the chip has nothing open to fold down now)
     C.carPose = () => veh === "car" && car ? [car.x, car.y, car.z, car.h + (car.spinY || 0), car.p || 0, (car.r || 0) + (car.roll || 0)] : null;  // (as the model draws it: the race paints its logo on it)
     C.raceOut = (x, z, fx, fz) => { const was = veh; if (veh) leave(true); if (was === "possum") possumHome();
