@@ -1648,6 +1648,24 @@ body.bscam #bsTown .bs-review, body.bscam #bsTown .bs-ridecard { visibility: hid
 /* (a phone on its side: room for the card, and its buttons kept in sight at the bottom as the rest scrolls: Ash, 18 November 2026, the
    hairdresser's Do my hair was out of sight) */
 @media (max-height: 520px) { .bs-offer { max-height: calc(100% - 136px); } }
+/* (a phone held upright, a list to pick from: the card runs down to just above the sticks, with Boost and the Handbrake hidden while
+   it's open (they drew over it), its rows show the name and what it does to your car, and Not today moves up beside the title, so all
+   five upgrades fit without scrolling. The upgrade chip hides while it's open so it can't sit on the title. Ash, 25 November 2026, the mechanic on his iPhone: "I can't see all the options.
+   Fix and polish styling") */
+@media (max-width: 999px) and (min-height: 521px) {
+  .bs-review.bs-offer:has(.bs-opts) { max-height: calc(100% - 124px - env(safe-area-inset-top) - 200px - env(safe-area-inset-bottom)); background: #181a24; padding: 10px 10px 10px 12px; }
+  .bs-offer:has(.bs-opts) > p { margin: 2px 0 0; font-size: 0.8rem; line-height: 1.3; }
+  .bs-offer .bs-opts { gap: 5px; margin-top: 8px; }
+  .bs-offer .bs-opts button { padding: 6px 10px; min-height: 40px; border-radius: 10px; font-size: 0.84rem; line-height: 1.2; }
+  .bs-offer .bs-opts button small { font-size: 0.7rem; line-height: 1.25; margin-top: 1px; }
+  .bs-offer .bs-opts button:has(.bs-fx) small:not(.bs-fx) { display: none; }  /* (the numbers line says it plainly) */
+  .bs-offer:has(.bs-opts) > div:last-child:has(> button:only-child) { position: absolute; top: 8px; right: 10px; bottom: auto; margin: 0; padding: 0; background: none; box-shadow: none; }
+  .bs-offer:has(.bs-opts):has(> div:last-child > button:only-child) > p { padding-right: 96px; min-height: 36px; }
+  .bs-offer:has(.bs-opts) > div:last-child:has(> button:only-child) > button { min-height: 36px; padding: 0 12px; font-size: 0.78rem; }
+  .bs-offer:has(.bs-opts):has(> div:last-child > button:only-child) > button.x { display: none; }
+  body:has(.bs-review.bs-offer:not([hidden]) .bs-opts) :is(#bsBoostBtn, #bsHandBtn, .bs-race-item) { visibility: hidden; }
+}
+body:has(.bs-review.bs-offer:not([hidden])) .bs-upchip { display: none; }
 .bs-offer > div:last-child { position: sticky; bottom: -12px; margin-top: 8px; padding: 8px 0 12px; background: #181a24; box-shadow: 0 -10px 12px -6px #181a24; }  /* (solid: the list scrolled up behind it showed through) */
 .bs-offer .bs-opts { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
 .bs-offer .bs-opts button { display: block; text-align: left; padding: 7px 11px; min-height: 44px; line-height: 1.25; }
