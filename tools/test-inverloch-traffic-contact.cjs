@@ -62,6 +62,49 @@ test("Inverloch traffic keeps its assigned body, paint and visual handle on take
   const {initial:older}=await world("inv",{},streets);
   assert.equal(older.length,7); assert.ok(older.every(car=>car.parts.kind===undefined));
 });
+test("automatic indicators follow steering and genuine route turns", async () => {
+  const {ctx} = await world();
+  const car = {v: 3};
+  assert.equal(ctx.townManualIndicator(car, -0.45, 1), -1);
+  assert.equal(ctx.townIndicatorFlash(car, -1, 100), -1);
+  assert.equal(ctx.townManualIndicator(car, -0.25, 1), -1); // avoid flicker around the stick threshold
+  assert.equal(ctx.townIndicatorFlash(car, -1, 480), 0);
+  assert.equal(ctx.townIndicatorFlash(car, -1, 850), -1);
+  assert.equal(ctx.townIndicatorFlash(car, 0, 851), 0);
+  assert.equal(ctx.townManualIndicator(car, 0.25, 1), 0);
+  assert.equal(ctx.townIndicatorFlash(car, 1, 900), 1);
+  assert.equal(ctx.townManualIndicator({v: -1}, 1, -1), 0);
+  assert.equal(ctx.townManualIndicator({v: 0}, 1, -1), 0);
+  const corner = side => d => d <= 8 ? [0, d] : [side * (d - 8), 8];
+  assert.equal(ctx.townRouteIndicator(corner(1), 0, 23), -1);
+  assert.equal(ctx.townRouteIndicator(corner(-1), 0, 23), 1);
+  assert.equal(ctx.townRouteIndicator(d => [2, d], 0, 23), 0);
+  assert.equal(ctx.townIndicatorSide(Math.PI), 0); // a dead-end turnaround isn't a junction turn
+});
+test("a traffic car signals its chosen branch before turning, then cancels", async () => {
+  for (const side of [-1, 1, 0]) {
+    const incoming = [20, -80, 20, 0], outgoing = side ? [20, 0, 20 - side * 80, 0] : [20, 0, 20, 80];
+    const roads = [incoming, outgoing, [160, -100, 160, 100]].map(pts => ({cls: 0, pts}));
+    const {F, P, npc, tick} = await world("inv", {}, roads);
+    F.pos.x = 140; F.pos.z = -80;
+    const car = npc(20, -9, 8);
+    car.r = {p: incoming, n: 2, lane: 0}; car.s = 71;
+    const flashes = [];
+    car.parts.setSignal = value => flashes.push(value);
+    tick();
+    assert.equal(car.r.p, incoming);
+    assert.equal(flashes.at(-1) ?? 0, side);
+    for (let step = 0; step < 36; step++) tick();
+    assert.equal(car.r.p, outgoing);
+    assert.equal(flashes.at(-1) ?? 0, 0);
+    assert.ok(flashes.every(value => value === side || value === 0));
+    if (side) {
+      car.litSignal = side;
+      assert.equal(P.take(car).parts, car.parts);
+      assert.equal(flashes.at(-1), 0);
+    }
+  }
+});
 test("sweeps cover fast opposed travel and a rotating corner while separated paths stay clear", async()=>{
   const {ctx:{sweep,shape}}=await world();
   const s=(a,A,ka,b,B,kb)=>sweep(a,A,shape[ka],b,B,shape[kb]);
