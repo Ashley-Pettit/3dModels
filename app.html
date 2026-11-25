@@ -9347,7 +9347,7 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=29", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=30", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
     moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=74", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
@@ -9447,7 +9447,7 @@ const handle = async (m, post) => {
     // a handle Inverloch's town centre moves things with: always the one in the model that's showing
     const handle = real => { const H = { real, calls: new Map() };
       H.proxy = new Proxy(H, { get: (h, k) => { const v = h.real[k]; if (typeof v !== "function") return v;
-        return (...a) => { h.calls.set(k + ":" + a[0], a); return h.real[k](...a); }; } });
+        return (...a) => { h.calls.set(k + ":" + (k === "setSignal" ? "" : a[0]), a); return h.real[k](...a); }; } });
       return H; };
     const handles = [];
     let ids = 0; const tag = mm => { mm.id = ++ids; const el = box.lastElementChild; if (el) el.dataset.anModel = String(mm.id); };
@@ -17677,6 +17677,26 @@ const handle = async (m, post) => {
   // Half width, half length and height in metres. The sedan follows the traffic sedan in townPlaneParts.
   const townTrafficBodies = { walk: [0.32, 0.32, 1.75], car: [0.98, 2.22, 1.4], bus: [1.27, 5.55, 3.12] };
 
+  // Vehicle-relative sides: negative is left. Positive yaw turns a nose pointing along +Z to its left.
+  function townIndicatorSide(angle) {
+    return Math.abs(angle) >= Math.PI / 6 && Math.abs(angle) < 5 * Math.PI / 6 ? -Math.sign(angle) : 0;
+  }
+  function townIndicatorFlash(car, side, now) {
+    if (side !== car.indicatorSide) { car.indicatorSide = side; car.indicatorSince = now; }
+    return side && (now - car.indicatorSince) % 750 < 375 ? side : 0;
+  }
+  function townManualIndicator(car, steer, throttle) {
+    if (car.v < -0.2 || (car.v < 0.4 && throttle < -0.05)) return 0;
+    const side = Math.sign(steer);
+    return Math.abs(steer) >= (side === car.indicatorSide ? 0.22 : 0.38) ? side : 0;
+  }
+  function townRouteIndicator(pointAt, incoming, lead) {
+    const [ax, az] = pointAt(5), [bx, bz] = pointAt(lead);
+    if (Math.hypot(bx - ax, bz - az) < 3) return 0;
+    const delta = Math.atan2(bx - ax, bz - az) - incoming;
+    return townIndicatorSide(Math.atan2(Math.sin(delta), Math.cos(delta)));
+  }
+
   // First contact in [0,1] for two moving footprints. Straight travel is a swept
   // separating-axis test. On turns, enclose the turning corners and refine only
   // intervals that can touch, to a centimetre. Headings use +Z for the nose.
@@ -17769,22 +17789,34 @@ const handle = async (m, post) => {
         if (Math.hypot(x - home[0], z - home[1]) > R) continue;
         if (contact && Math.hypot(x - player.x, z - player.z) < 14) continue;  // leave room for the player and the lane offset on spawn
         if (P.cars.some(D => D !== C && D.x != null && Math.hypot(D.x - x, D.z - z) < 40)) continue;  // not on top of another
-        Object.assign(C, { r, i, d: r.one || Math.random() < 0.5 ? 1 : -1, s: 0, v: 0, y: null, p: null, rl: null, ln: null, still: 0, x, z }); if (C.d < 0) C.i = i + 1; C.h = null; return true; }
+        Object.assign(C, { r, i, d: r.one || Math.random() < 0.5 ? 1 : -1, s: 0, v: 0, y: null, p: null, rl: null, ln: null, still: 0, x, z }); if (C.d < 0) C.i = i + 1; C.h = null;
+        C.turnPlan = null; C.turnUntil = 0; showSignal(C, 0); return true; }
       return false; };
     const seg = C => { const r = C.r, a = C.i, b = C.i + C.d; return [r.p[a * 2], r.p[a * 2 + 1], r.p[b * 2], r.p[b * 2 + 1]]; };
     // Divided roads (Beaudesert, Ipswich and Fairfield Roads and the rest) are two one-way carriageways: a car drives each only the way it
     // runs, in its left lane (Ash, 19 November 2026: "Moorooka cars are definitely driving wrong. They are on the right side of the road.
     // Driving like in America": each carriageway had cars both ways, so half of them were on the far side of the road)
-    const next = C => { // reached vertex C.i + C.d: carry on, or turn into a street that meets here
+    const showSignal = (C, side) => {
+      if (side !== (C.litSignal || 0)) { C.parts?.setSignal?.(side); C.litSignal = side; }
+    };
+    const chooseTurn = C => { // the branch this car will actually take at its next vertex
       const r = C.r, at = C.i + C.d, x = r.p[at * 2], z = r.p[at * 2 + 1], here = nodes.get(key(x, z)) || [], end = at === 0 || at === r.n - 1;
       // the ways out: anything but straight back the way it came, mostly straight on, now and then a turn
       const hIn = Math.atan2(x - r.p[C.i * 2], z - r.p[C.i * 2 + 1]), ways = [];
       for (const [r2, j] of here) { if (r2 === r && j === at) continue; for (const d of r2.one ? [1] : [1, -1]) { const k = j + d; if (k < 0 || k >= r2.n) continue;
-        const turn = Math.abs(wrap(Math.atan2(r2.p[k * 2] - x, r2.p[k * 2 + 1] - z) - hIn)); if (turn < 2.4) ways.push([r2, j, d, turn]); } }
-      if (ways.length && (end || Math.random() < 0.3)) { ways.sort((a, b) => a[3] - b[3]); const w = end && Math.random() < 0.6 ? ways[0] : ways[Math.floor(Math.random() * ways.length)]; C.r = w[0]; C.i = w[1]; C.d = w[2]; return; }
+        const angle = wrap(Math.atan2(r2.p[k * 2] - x, r2.p[k * 2 + 1] - z) - hIn);
+        if (Math.abs(angle) < 2.4) ways.push({ road: r2, at: j, dir: d, angle }); } }
+      if (!ways.length || (!end && Math.random() >= 0.3)) return null;
+      ways.sort((a, b) => Math.abs(a.angle) - Math.abs(b.angle));
+      return end && Math.random() < 0.6 ? ways[0] : ways[Math.floor(Math.random() * ways.length)];
+    };
+    const next = C => { // use the same choice the indicator announced before reaching the junction
+      const r = C.r, at = C.i + C.d, end = at === 0 || at === r.n - 1;
+      const w = C.turnPlan?.road === r && C.turnPlan.at === at ? C.turnPlan.chosen : chooseTurn(C);
+      if (w) { C.r = w.road; C.i = w.at; C.d = w.dir; return townIndicatorSide(w.angle); }
       if (!end) { C.i = at; return; }
       if (r.one && start(C)) return;  // the end of a one-way carriageway with nowhere to go: start again elsewhere, never back up it
-      if (Math.hypot(x - F.pos.x, z - F.pos.z) > 150 && !C.rider && start(C)) return;  // a dead end with nobody near: start again elsewhere (turning round here is a spin on the spot onto the other side of the street)
+      if (Math.hypot(r.p[at * 2] - F.pos.x, r.p[at * 2 + 1] - F.pos.z) > 150 && !C.rider && start(C)) return;
       C.i = at; C.d = -C.d; };  // a dead end, and you are watching or riding: turn round
     setTimeout(async () => { if (dead) return;
       let d; try { d = await townStreetData(cfg); } catch { return; } if (dead) return;
@@ -17846,12 +17878,20 @@ const handle = async (m, post) => {
           if (same) want = Math.min(want, ahead < 7 ? 0 : Math.max(0, D.v * (ahead - 6) / 8)); else if (di < ci && ahead < 9) want = 0; }
         // slow down into a bend or a corner
         const rem = L - C.s, at = C.i + C.d, junction = (nodes.get(key(bx, bz)) || []).length > 1 || at === 0 || at === C.r.n - 1;
+        if (contact && C.parts.setSignal) {
+          if (!C.turnPlan && junction && rem <= bsClamp(C.v * 1.5, 8, 24)) {
+            C.turnPlan = { road: C.r, at, chosen: chooseTurn(C) };
+          }
+          const approach = townIndicatorSide(C.turnPlan?.chosen?.angle || 0);
+          showSignal(C, townIndicatorFlash(C, approach || (now < C.turnUntil ? C.turnSide : 0), now));
+        }
         if (Math.abs(wrap(h0 - fh)) > 0.3) want = Math.min(want, 6); else if (junction && rem < 16) want = Math.min(want, 5 + rem * 0.4);
         const oldRoad = C.r, oldI = C.i, oldD = C.d, oldS = C.s, oldH = C.h, oldLane = C.ln;
         C.v += Math.max(-8 * dt, Math.min(3 * dt, want - C.v)); C.s += C.v * dt;
         C.still = C.v < 0.2 && !(C.stopT > 0) && !waitingForPlayer ? (C.still || 0) + dt : 0;
         if (C.still > 10 && !C.rider) { start(C); return; }
-        for (let k = 0; k < 6 && C.s >= L; k++) { C.s -= L; next(C); [ax, az, bx, bz] = seg(C); L = Math.hypot(bx - ax, bz - az) || 0.01; }
+        let takenTurn = 0;
+        for (let k = 0; k < 6 && C.s >= L; k++) { C.s -= L; takenTurn = next(C) || takenTurn; [ax, az, bx, bz] = seg(C); L = Math.hypot(bx - ax, bz - az) || 0.01; }
         const h = Math.atan2(bx - ax, bz - az); C.h = C.h == null ? h : C.h + wrap(h - C.h) * Math.min(1, dt * 5);
         C.ln = C.ln == null ? C.r.lane : C.ln + bsClamp(C.r.lane - C.ln, -1.5 * dt, 1.5 * dt);  // (its place across the road: over to the next street's lane a bit at a time, not in one jump at the corner)
         const t = Math.min(1, C.s / L), lx = Math.cos(C.h), lz = -Math.sin(C.h)  /* (on the left of the road, as in Australia: Ash, 16 November 2026, "The cars should drive on the left side of the road"; then "the traffic is often on the wrong side of the roads ... all cars should drive on the left, and buses etc.": heading h runs (sin h, cos h) with z to the south, so the left is (cos h, -sin h); it had the right) */, x = ax + (bx - ax) * t + lx * C.ln, z = az + (bz - az) * t + lz * C.ln;
@@ -17864,6 +17904,8 @@ const handle = async (m, post) => {
             return;
           }
         }
+        if (C.r !== oldRoad || C.i !== oldI || C.d !== oldD) C.turnPlan = null;
+        if (takenTurn) { C.turnSide = takenTurn; C.turnUntil = now + 650; }
         const rolled = C.x == null ? 0 : Math.hypot(x - C.x, z - C.z); C.x = x; C.z = z;
         // on its four wheels, as the car you drive sits (the middle of the four, tipped to the slope), eased so it never jumps
         const sx = Math.sin(C.h), sz = Math.cos(C.h), g = (a, b) => ground(x + sx * a - sz * b, z + sz * a + sx * b), yf = g(1.3, 0), yb = g(-1.3, 0), yr = g(0, 0.8), yl = g(0, -0.8);
@@ -17872,7 +17914,7 @@ const handle = async (m, post) => {
         M.compose(V.set(x, C.y, z), Q.setFromEuler(E.set(-C.p, C.h, C.rl, "YXZ")), ONE); C.parts.setMatrix(0, M.elements.slice());
         if (!C.bus) { if (C.spin === undefined) C.spin = townSpinner(m, "new", contact && m.addTrafficCar ? 0.25 : 0); C.spin?.at(M.elements.slice(), rolled); } }); };  // (its hubcaps turning)
     // hand a car over to be driven: it leaves the traffic, and the driving code (townCar) keeps it as one of its own
-    P.take = C => { const i = P.cars.indexOf(C); if (i < 0) return null; P.cars.splice(i, 1);
+    P.take = C => { const i = P.cars.indexOf(C); if (i < 0) return null; P.cars.splice(i, 1); showSignal(C, 0);
       return { x: C.x, z: C.z, h: C.h ?? 0, y: C.y ?? ground(C.x, C.z), p: C.p || 0, r: C.rl || 0, gold: false, bus: false, parts: C.parts }; };
     P.dispose = () => { dead = true; for (const C of P.cars) try { C.parts.remove(); } catch {} P.cars = []; };
     return P;
@@ -20733,8 +20775,11 @@ const handle = async (m, post) => {
     // how the ground lies under something: its height, and how far the nose is up and the right side down
     const lie = (o, half, wide) => { const s = Math.sin(o.h), c = Math.cos(o.h), g = (a, b) => ground(o.x + s * a - c * b, o.z + c * a + s * b), yf = g(half, 0), yb = g(-half, 0), yr = g(0, wide), yl = g(0, -wide);
       return [(yf + yb + yr + yl) / 4, Math.atan2(yf - yb, half * 2), Math.atan2(yl - yr, wide * 2)]; };
-    const sit = dt => { const [y, p, r] = car.bus ? lie(car, 3.6, 1.1) : lie(car, 1.3, 0.8), e = dt ? Math.min(1, dt * 12) : 1; car.y += (y + 0.05 + (car.hop || 0) - car.y) * (car.flip || car.trick ? 1 : e); car.p += (p - car.p) * e; car.r += (r - car.r) * e; const rd = car.r + (car.roll || 0), hd = car.h + (car.spinY || 0);
-      if (car.own) { Object.assign(car.own, { x: car.x, y: car.y, z: car.z, h: hd, p: car.p, r: rd }); showOwn(car.own); } else m.driveCar(car.id[0], car.id[1], car.x, car.y, car.z, hd, car.p, rd);
+    const sit = (dt, signal = 0) => { const [y, p, r] = car.bus ? lie(car, 3.6, 1.1) : lie(car, 1.3, 0.8), e = dt ? Math.min(1, dt * 12) : 1; car.y += (y + 0.05 + (car.hop || 0) - car.y) * (car.flip || car.trick ? 1 : e); car.p += (p - car.p) * e; car.r += (r - car.r) * e; const rd = car.r + (car.roll || 0), hd = car.h + (car.spinY || 0);
+      if (car.own) {
+        Object.assign(car.own, { x: car.x, y: car.y, z: car.z, h: hd, p: car.p, r: rd }); showOwn(car.own);
+        if (signal !== (car.own.litSignal || 0)) { car.own.parts.setSignal?.(signal); car.own.litSignal = signal; }
+      } else m.driveCar(car.id[0], car.id[1], car.x, car.y, car.z, hd, car.p, rd, signal);
       // its hubcaps, turning (not a bus's): your own car is the older shape; a parked car you've taken is the new one (Inverloch's sit 0.25 m up)
       if (!car.bus) { const lay = car.own ? "old" : "new", lift = !car.own && T.cfg?.place === "inv" ? 0.25 : 0; if (mySpin && (mySpin.lay !== lay || mySpin.lift !== lift)) { mySpin.remove(); mySpin = null; }
         if (!mySpin) mySpin = townSpinner(m, lay, lift); if (mySpin) { M.compose(V.set(car.x, car.y, car.z), Q.setFromEuler(E.set(-car.p, hd, rd, "YXZ")), ONE); mySpin.at(M.elements.slice(), (car.v || 0) * (dt || 0)); } } };
@@ -21307,7 +21352,14 @@ const handle = async (m, post) => {
           if (inside(x, z) && (fits(SHAPE, x, z, h) || !fits(SHAPE, car.x, car.z, car.h))) { car.x = x; car.z = z; car.h = h; car.dir = d; }  // (a car parked inside a building's outline can still drive out)
           else { bump = Math.abs(car.v); car.v = bump > 2 ? -car.v * 0.2 : 0; car.dir = car.h; break; } }
         if (bump > 1.5) snd.thud(Math.min(1.6, 0.4 + bump / 14));
-        sit(dt); unTick(performance.now(), thr);
+        const now = performance.now();
+        let signal = 0;
+        if (place === "inv" && !car.bus && !car.gold) {
+          const side = C.wait || car.face || car.flip || car.trick || car.v < -0.2 ? 0
+            : auto ? auto.indicator || 0 : townManualIndicator(car, str, go);
+          signal = townIndicatorFlash(car, side, now);
+        }
+        sit(dt, signal); unTick(now, thr);
         const a = Math.abs(car.v), G = [0, 7, 14, 21, 30, 44, 60], g = Math.max(0, G.findIndex(q => a < q) - 1), top = G[g + 1] ?? 60;  // the engine rises through each gear and drops into the next
         snd.set(0.18 + 0.82 * bsClamp((a - G[g]) / (top - G[g]), 0, 1), Math.abs(thr) > 0.05 && !brake ? 0.35 + 0.65 * Math.abs(thr) : 0.08, a, boosting || teamOn, slide ? 1 : Math.min(1, Math.abs(wrap(car.h - car.dir)) * 2.5));
         showRing(boosting || charge < 0.999, boosting);
@@ -21800,6 +21852,7 @@ const handle = async (m, post) => {
     const HOON_A = 8.5;  // how hard it brakes for a corner, m/s every second (the car can do 11)
     // one step of it: what to do with the accelerator and the wheel, [go, steer]
     const autoStep = dt => { const A = auto, v = car.v; A.odo += Math.abs(v) * dt;
+      A.indicator = 0;
       if (A.cruise && !A.done) cruiseOn(A);
       const n = A.x.length;
       // where the car is along the way: the nearest point on the next few stretches, never back the way it came
@@ -21836,6 +21889,14 @@ const handle = async (m, post) => {
       // stuck against something: back off and try again, a few times, then leave it with the driver
       A.slow = Math.abs(v) < 0.5 && go > 0.2 ? A.slow + dt : 0;
       if (A.slow > 0.9) { A.slow = 0; A.triedAt = A.odo; if (++A.tries > 4) { autoEnd("The car can't find a way there. Click somewhere else, or drive it yourself."); return [0, 0]; } A.rev = 1.1 + 0.25 * A.tries; A.revE = Math.abs(e) > 0.15 ? e : (A.tries % 2 ? 0.6 : -0.6); return [-0.8, bsClamp(A.revE * 2.4, -1, 1)]; }
+      if (place === "inv" && v >= -0.2 && rem > 7) {
+        const lead = bsClamp(10 + v * 1.5, 12, 28);
+        const incoming = Math.atan2(A.x[bi + 1] - A.x[bi], A.z[bi + 1] - A.z[bi]);
+        const side = A.sign && Math.hypot(A.sign.x - car.x, A.sign.z - car.z) <= lead
+          ? -Math.sign(A.sign.turn) : townRouteIndicator(pt, incoming, lead);
+        if (side) { A.turnSignalSide = side; A.turnSignalUntil = at + 5; }
+        A.indicator = side || (at < A.turnSignalUntil ? A.turnSignalSide : 0);
+      }
       return [go, bsClamp(-e * (H ? 2.8 : 2.4), -1, 1), hoonB, hoonH]; };
     // what the speed chip adds while it drives itself
     const autoText = () => !auto ? "" : auto.done ? " · Stopping" : auto.cruise ? (auto.turn ? ` · Next ${auto.turn > 0 ? "left" : "right"}` : auto.sign ? ` · Turning ${auto.sign.turn > 0 ? "left" : "right"}` : " · Driving for you") : auto.hoon ? " · Autodrive" : " · Driving you there";
