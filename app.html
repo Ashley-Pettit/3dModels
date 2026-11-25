@@ -1279,6 +1279,10 @@ body.bstown .bs-ud { top: auto; right: auto; left: 50%; bottom: calc(22px + env(
 .bs-upchip b { font-weight: 600; }
 .bs-upchip .bs-upshort { display: block; font-weight: 500; opacity: 0.86; }
 .bs-upchip[hidden], body.bsheld .bs-upchip { display: none; }
+#bsMeBtn.bsteal { animation: bsTealFlash 0.6s ease-in-out 4; }  /* getting into a car: Settings flashes teal four times */
+@keyframes bsTealFlash { 50% { background: #14b8a6; color: #fff; box-shadow: 0 0 12px #14b8a6; } }
+.bs-keys dt.bs-key-teal kbd { background: #14b8a6; color: #fff; border-color: #0f9488; } .bs-keys dd.bs-key-teal { color: #5eead4; font-weight: 700; }
+body.bsgmap #bsLockBtn { display: none !important; }  /* Simple controls: no locking or unlocking the mouse */
 #bsBoostBtn.bsmega { background: #ff5fb4; color: #2a0618; box-shadow: 0 0 0 3px rgba(255, 95, 180, .45), 0 0 18px 4px rgba(255, 95, 180, .75); }
     #bsGpsBtn.bsflash { animation: bsGpsFlash 0.6s ease-in-out 3; }  /* getting into a car: the GPS flashes green three times (Ash, 25 November 2026: twice, then "one additional time") */
 @keyframes bsGpsFlash { 50% { background: #2fb34a; color: #fff; box-shadow: 0 0 12px #2fb34a; } }
@@ -8829,7 +8833,10 @@ const handle = async (m, post) => {
           { const k = F.mouseRide?.(); if (k && (e.button === 0 || e.button === 2)) { const D = F.drag; D.car = k; clearTimeout(F.mdT); if (k === "car") F.mdT = setTimeout(() => { if (F.drag === D) mdGo(D); }, 180); else mdGo(D); }
             // (and on foot the same: held, you walk, the mouse left or right of the middle turning you; the right button walks you back; a
             // quick click walks you to the spot)
-            else if (!k && F.mouseWalk?.() && (e.button === 0 || e.button === 2)) { const D = F.drag; D.walk = true; clearTimeout(F.mdT); F.mdT = setTimeout(() => { if (F.drag === D) mwGo(D); }, 180); } }
+            // (Simple on foot now: the mouse looks round only while a button is held and dragged, and a quick left click walks you to the
+            // spot. Ash, 25 November 2026: "The mouse should not move the camera unless the is holding down left click. A quick left click
+            // is the auto walk. A long left or right to pan the camera. Keep this seperate from the standard gamer controls")
+            else if (!k && F.mouseWalk?.() && (e.button === 0 || e.button === 2)) F.drag.gmLook = true; }
           return; }
         try { canvas.setPointerCapture(e.pointerId); } catch {}
         // a finger on the view's left half moves you, unless you're already holding the move stick: then it looks round like one on the
@@ -8853,7 +8860,7 @@ const handle = async (m, post) => {
       pointerup: e => { if (e.button === 2 || !(e.buttons & 2)) F.rmb = false; const D = F.drag; F.drag = null; canvas.style.cursor = F.simple ? "pointer" : "";
         if (D?.car) { clearTimeout(F.mdT); if (D.on) { F.stick.x = 0; F.stick.y = 0; F.mdOn = false; if (D.car !== "car") { F.boost = false; if (D.car === "possum") F.vert = 0; } return; } }
         if (D?.walk) { clearTimeout(F.mdT); if (D.on) { F.mw = 0; F.lookStick.x = 0; F.mdOn = false; return; } }
-        if (D && (F.simple || D.walk) && e.pointerType === "mouse" && D.b === 0 && Math.hypot(e.clientX - D.sx, e.clientY - D.sy) < 6 && performance.now() - D.t < 450) F.on.clickGo?.(e.clientX, e.clientY);
+        if (D && (F.simple || D.walk || D.gmLook) && e.pointerType === "mouse" && D.b === 0 && Math.hypot(e.clientX - D.sx, e.clientY - D.sy) < 6 && performance.now() - D.t < 450) F.on.clickGo?.(e.clientX, e.clientY);
         // (with Google Maps controls, a click on the road while you're in a car: it drives there. Ash, 22 November 2026)
         else if (D && F.drive && e.pointerType === "mouse" && D.b === 0 && Math.hypot(e.clientX - D.sx, e.clientY - D.sy) < 6 && e.timeStamp - D.ts < 800) BS.town?.car?.clickDrive?.(e.clientX, e.clientY);
         const t = F.touches.get(e.pointerId); if (t?.move && !F.joys?.some(j => j.move && j.held())) { F.stick.x = 0; F.stick.y = 0; }
@@ -8950,14 +8957,14 @@ const handle = async (m, post) => {
     F.goTo = null;
     // (never with Google Maps controls: you drag to look, and the mouse stays free for the menus. Ash, 21 November 2026, "the mouse unlock
     // kicks in so i cant use the menu easily")
-    F.on.lock = e => { const T = BS.town; if (!desk || F.simple || !T?.on || T.admin?.tool || F.userLocked || document.body.classList.contains("bsgmap") || e.pointerType !== "mouse" || e.button !== 0 || document.pointerLockElement) return;
+    F.on.lock = e => { const T = BS.town; if (!desk || F.simple || F.waitPlay || !T?.on || T.admin?.tool || F.userLocked || document.body.classList.contains("bsgmap") || e.pointerType !== "mouse" || e.button !== 0 || document.pointerLockElement) return;
       if (e.target.closest?.("button, a, input, select, textarea, label, [role=menu], [role=dialog], [role=toolbar], .bs-me, .bs-review, .bs-chatbar, .bs-keys, #bsTownList, #bsShareBox")) return;
       try { const r = canvas.requestPointerLock?.({ unadjustedMovement: true }); r?.catch?.(() => { try { canvas.requestPointerLock(); } catch {} }); } catch {} };
     // Lock and unlock, Ash's way round (16 November 2026: "Where the person can look around I consider that unlocked. They lock it to use
     // the menus if they want"): the mouse looking around is unlocked; locked, the pointer is yours for the menus. K or the button swaps
     // them, and once you've locked it, nothing but K or the button unlocks it again ("If I lock the mouse, check it doesn't Auto Unlock
     // when I move"). A menu opened by its key (M, P, L, J, Enter) frees the pointer for itself without locking, so walking on looks around again
-    const grab = () => { try { const r = canvas.requestPointerLock?.({ unadjustedMovement: true }); r?.catch?.(() => { try { canvas.requestPointerLock(); } catch {} }); } catch {} };
+    const grab = () => { try { const r = canvas.requestPointerLock?.({ unadjustedMovement: true }); r?.catch?.(() => { try { canvas.requestPointerLock()?.catch?.(() => {}); } catch {} }); } catch {} };
     F.userLocked = false; F.codeFree = false;
     F.on.freeFor = () => { if (document.pointerLockElement) { F.codeFree = true; document.exitPointerLock?.(); } };
     F.on.swapLock = () => { if (!BS.town?.on || !desk || F.simple) return; if (document.pointerLockElement) { F.userLocked = true; document.exitPointerLock?.(); } else { F.userLocked = false; grab(); } };
@@ -8968,7 +8975,7 @@ const handle = async (m, post) => {
     { const fb = $("bsFullBtn"), fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
       if (!document.documentElement.requestFullscreen && !document.documentElement.webkitRequestFullscreen) fb.hidden = true;
       fb.onclick = () => { try { if (fsEl()) (document.exitFullscreen || document.webkitExitFullscreen).call(document); else { const d = document.documentElement; (d.requestFullscreen || d.webkitRequestFullscreen).call(d, { navigationUI: "hide" })?.catch?.(() => {}); } } catch {} fb.blur(); };
-      F.on.fsChange = () => { fb.textContent = fsEl() ? "Exit full screen" : "Full screen"; if (fsEl()) document.querySelector(".bs-askfull")?.parentElement?.remove(); };
+      F.on.fsChange = () => { fb.textContent = fsEl() ? "Exit full screen" : "Full screen"; if (F.lookAfterFs) { F.lookAfterFs = false; if (fsEl() && !document.pointerLockElement && !F.userLocked && !document.body.classList.contains("bsgmap")) grab(); } if (fsEl()) document.querySelector(".bs-askfull")?.parentElement?.remove(); };
       // asked once at the start of a game on a computer (Ash, 16 November 2026: "On pc at the start of the game ask the player if they
       // want to go full screen"), after the name question if there is one
       // a short tutorial, offered at the start (after the name and full screen questions) until it's done or turned down for good
@@ -8978,24 +8985,27 @@ const handle = async (m, post) => {
       // one welcome card at the start, in place of three questions one after another (the player name, full screen, and the controls
       // tutorial or Rod's keys): Ash, 19 November 2026, "merge player name, full screen and the tutorial together so its not lots of constant
       // prompts at the start", and "on the same screen allow the user to toggle settings of standard vs google maps style"
-      if (!BS.welcomed) { BS.welcomed = true;
+      // until Play on the welcome card, the mouse is left for the card: no clicking the view into looking round (Ash, 25 November 2026:
+      // "When the game starts on desktop I can't use the menu as mouse moves the camera. Lock it until I press play")
+      if (!BS.welcomed) { BS.welcomed = true; F.waitPlay = true; setTimeout(() => { F.waitPlay = false; }, 125000);
         const ls = k => { try { return localStorage.getItem(k); } catch { return null; } };
         const needName = !(ls("an-player") || ls("an-player-asked")), needTut = !ls("an-tut") || !!F.rod?.offer, fsOk = desk && (document.fullscreenEnabled || document.webkitFullscreenEnabled);
         let onAt = 0; const t0 = performance.now(), wait = setInterval(() => { const T = BS.town, now = performance.now();
           if (!F.on || now - t0 > 120000) { clearInterval(wait); return; } if (!T?.on) return; if (!onAt) onAt = now;
           if (now - onAt < 1400 || document.querySelector(".bs-askwrap")) return; clearInterval(wait);
           const needFs = fsOk && !fsEl();
-          if (!needName && !needTut && !needFs) { BS.mapStyle?.(ls("an3d-style") === "gmaps", true); return; }  // nothing to ask: straight in, in your style
+          if (!needName && !needTut && !needFs) { F.waitPlay = false; BS.mapStyle?.(ls("an3d-style") === "gmaps", true); return; }  // nothing to ask: straight in, in your style
           const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
           const wrap = el("div", "bs-askwrap"), card = el("form", "bs-welcome"); card.setAttribute("role", "dialog"); card.setAttribute("aria-label", "Welcome");
           const place = { moo: "Moorooka", logan: "Logan", inv: "Inverloch" }[T.cfg?.place] || "the town";
           card.append(el("h2", "", `Welcome to ${place}`));
           let inp = null; if (needName) { const lab = el("label", "bs-wel-lbl", "Your player name"); inp = el("input"); inp.type = "text"; inp.maxLength = 16; inp.autocomplete = "off"; inp.placeholder = "So other players know you"; inp.id = "bsWelName"; lab.htmlFor = "bsWelName";
             inp.onkeydown = inp.onkeyup = e => e.stopPropagation(); inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); play(); } }); card.append(lab, inp); }
-          let gm = false; const seg = el("div", "bs-wel-seg"); seg.setAttribute("role", "radiogroup"); seg.setAttribute("aria-label", "Style");
+          let gm = false; const seg = el("div", "bs-wel-seg"); seg.setAttribute("role", "radiogroup"); seg.setAttribute("aria-label", "Controls style");
           const opt = (v, t, s) => { const b = el("button"); b.type = "button"; b.setAttribute("role", "radio"); b.append(el("b", "", t), el("span", "", s)); b.onclick = () => { gm = v; draw(); }; return b; };
-          const std = opt(false, "Play as explorer", touch ? "Walk the streets with the sticks" : "Walk the streets, game controls"), gmb = opt(true, "Google Maps controls", touch ? "Map from above: drag, pinch, twist" : "Drag to look, scroll to zoom, right-drag to turn. Mouse stays free");
-          seg.append(std, gmb); card.append(el("p", "bs-wel-lbl", "Style"), seg);
+          // (Ash, 25 November 2026: "Style - controls style. Gamer (play as atm) or simple (google maps)")
+          const std = opt(false, "Gamer", touch ? "Walk the streets with the sticks" : "Walk the streets, game controls"), gmb = opt(true, "Simple", touch ? "Like Google Maps: tap to walk there, drag to look" : "Like Google Maps: click to walk there, hold and drag to look. Mouse stays free");
+          seg.append(std, gmb); card.append(el("p", "bs-wel-lbl", "Controls style"), seg);
           const tick = (t, on) => { const l = el("label", "bs-wel-tick"), c = el("input"); c.type = "checkbox"; c.checked = on; l.append(c, el("span", "", t)); return [l, c]; };
           const [fsL, fsC] = needFs ? tick("Play full screen (O switches it any time)", true) : [null, null];
           const [tutL, tutC] = needTut ? tick(F.rod?.offer ? "Set up my keys first" : "Show me the controls (under a minute)", true) : [null, null];
@@ -9008,8 +9018,12 @@ const handle = async (m, post) => {
           const play = () => { if (!wrap.isConnected) return; ["keydown", "keyup"].forEach(t => removeEventListener(t, keys, true)); wrap.remove();
             if (needName) { const v = (inp.value || "").replace(/[<>]/g, "").trim().slice(0, 16); try { if (v) localStorage.setItem("an-player", v); localStorage.setItem("an-player-asked", "1"); } catch {} BS.town?.peers?.tellName?.(); }
             if (needTut) try { if (!ls("an-tut")) localStorage.setItem("an-tut", "offered"); } catch {}
-            if (fsC?.checked && !fsEl()) fb.click();
-            BS.mapStyle?.(gm, true);
+            BS.mapStyle?.(gm, true); F.waitPlay = false;
+            // Gamer on a computer: Play hands the mouse to the view, so moving it looks round straight away (Ash, 25 November 2026: "Once I
+            // press play unlock the mouse if I'm on standard controls"). Asked before full screen, which uses up the click (and again once
+            // full screen is on, in case going full screen let it go)
+            F.lookAfterFs = !gm && desk && !F.userLocked; if (F.lookAfterFs) grab();
+            if (fsC?.checked && !fsEl()) fb.click(); else F.lookAfterFs = false;
             const tut = tutC?.checked && !tutL.hidden;
             if (F.rod?.offer) { F.rod.offer = false; if (tut) setTimeout(() => F.rod?.setup?.(), 500); }
             else if (tut) setTimeout(() => F.on?.tutorial?.(), 500);
@@ -9609,7 +9623,10 @@ const handle = async (m, post) => {
         // Google Maps style (Ash, 19 November 2026: Standard or Google Maps, "Both" the controls and the look): the map from above (Explore
         // mode, with its drag, pinch and twist), in map colours; your player waits where you were, under the You are here pin
         BS.mapStyle = (on, start) => { try { localStorage.setItem("an3d-style", on ? "gmaps" : "std"); } catch {} document.body.classList.toggle("bsgmap", on);
-          if (!T.on || BS.town !== T) return; if (on && T.walk && !T.car?.in) toMode(false); else if (!on && !T.walk && !start) toMode(true); };
+          // (Simple no longer goes up to Free view by itself: Ash, 25 November 2026, "Google map style controls don't go to free view
+          // automatically". It drops the mouse look: Simple has no lock or unlock)
+          if (on && document.pointerLockElement) { try { document.exitPointerLock?.(); } catch {} }
+          if (!T.on || BS.town !== T) return; if (!on && !T.walk && !start) toMode(true); };
         try { document.body.classList.toggle("bsgmap", localStorage.getItem("an3d-style") === "gmaps"); } catch {}
 
         // ---- flying: drag the view to move, pinch (or scroll) to zoom, two fingers (or right-drag) to turn ----
@@ -18018,11 +18035,11 @@ const handle = async (m, post) => {
       // play as an explorer or a construction worker (who sees themselves from behind and can suggest changes to the ground)
       // Standard or Google Maps style, here too, for once the welcome card has gone (Ash, 19 November 2026). Standard is "Play as explorer"
       // now (Ash, 24 November 2026: "Make play as explorer - relabel standard. This should be the default"), and the welcome card starts on it
-      const st = el("div", "bs-me-sec"); { const sr = el("div", "bs-me-role"); sr.setAttribute("role", "group"); sr.setAttribute("aria-label", "Style");
+      const st = el("div", "bs-me-sec"); { const sr = el("div", "bs-me-role"); sr.setAttribute("role", "group"); sr.setAttribute("aria-label", "Controls style");
         const gmNow = (() => { try { return localStorage.getItem("an3d-style") === "gmaps"; } catch { return false; } })();
-        for (const [v, label] of [[false, "Play as explorer"], [true, "Google Maps"]]) { const bn = el("button", "", label); bn.type = "button"; bn.setAttribute("aria-pressed", String(gmNow === v));
-          bn.onclick = () => { if (gmNow === v) return; meClose(); BS.mapStyle?.(v); toast(v ? "Google Maps style: the map from above. Explore brings you back down to walk." : "Playing as explorer: on foot, with the game controls.", 2800); }; sr.append(bn); }
-        st.append(el("span", "bs-me-lbl", "Style"), sr); }
+        for (const [v, label] of [[false, "Gamer"], [true, "Simple"]]) { const bn = el("button", "", label); bn.type = "button"; bn.setAttribute("aria-pressed", String(gmNow === v));
+          bn.onclick = () => { if (gmNow === v) return; meClose(); BS.mapStyle?.(v); toast(v ? (touch ? "Simple controls: tap to walk there, drag to look." : "Simple controls: click to walk there, hold and drag to look.") : "Gamer controls: on foot, with the game controls.", 2800); }; sr.append(bn); }
+        st.append(el("span", "bs-me-lbl", "Controls style"), sr); }
       const as = el("div", "bs-me-sec"), rl = el("div", "bs-me-role"); rl.setAttribute("role", "group"); rl.setAttribute("aria-label", "Play as");
       for (const [v, label] of [["explorer", "Explorer"], ["builder", "Construction worker"]]) { const bn = el("button", "", label); bn.type = "button"; bn.setAttribute("aria-pressed", String(townRole() === v));
         bn.onclick = () => { if (townRole() === v) return; try { if (v === "builder") localStorage.setItem("an-player-role", "builder"); else localStorage.removeItem("an-player-role"); } catch {}
@@ -21056,8 +21073,11 @@ const handle = async (m, post) => {
     const showKeys = kind => { keysNow.textContent = ""; keysOff(false); keysBox.hidden = !kind || touch || kind === "possum" || kind === "pigeon";  // (no list for the possum: Ash, 16 November 2026, "I don't think any are needed")  // (on a phone it shows once there is something to say)
       const RODMAP = (() => { if (!townIsRod()) return null; const L = rodLayout(), cx = kind === "walk" ? "walk" : /^(car|bus|gold)$/.test(kind) ? "car" : null; if (!cx) return null;
         const by = { W: "KeyW", A: "KeyA", S: "KeyS", D: "KeyD", Shift: "ShiftLeft", Space: "Space" }, m = {}; for (const [id, def] of ROD_ACTIONS[cx]) { const lab = Object.keys(by).find(k => by[k] === def); if (lab && L[cx]?.[id]) m[lab] = keyName(L[cx][id]); } return m; })();
-      keysList.replaceChildren(...[...(KEYS_FEW[kind] || []), ...(/^(car|bus|gold)$/.test(kind) ? (gmDesk() ? [[["Click"], "The road, and the car drives you there"]] : [[["G"], "Drive for me, and stop"], [["<", ">"], "The next left, the next right"]]) : [])].map(([ks, what]) => [RODMAP ? ks.map(k => RODMAP[k] || k) : ks, what]).filter(([ks]) => !(kind === "plane" && plane && !canBoost(plane) && ks[0] === "Shift")).flatMap(([ks, what]) => { const dt = document.createElement("dt"), dd = document.createElement("dd");
+      keysList.replaceChildren(...[...(kind === "walk" && gmDesk() ? [[["W", "A", "S", "D"], "Walk"], [["Click"], "Walk there"], [["Hold and drag"], "Look around"], [["Scroll"], "Forwards and back"], [["Space"], "Jump"]] : KEYS_FEW[kind] || []), ...(/^(car|bus|gold)$/.test(kind) ? (gmDesk() ? [[["Click"], "The road, and the car drives you there"]] : [[["G"], "Drive for me, and stop"], [["<", ">"], "The next left, the next right"]]) : [])].map(([ks, what]) => [RODMAP ? ks.map(k => RODMAP[k] || k) : ks, what]).filter(([ks]) => !(kind === "plane" && plane && !canBoost(plane) && ks[0] === "Shift")).flatMap(([ks, what]) => { const dt = document.createElement("dt"), dd = document.createElement("dd");
         for (const key of ks) { const kb = document.createElement("kbd"); kb.textContent = key; dt.append(kb); } dd.textContent = what; return [dt, dd]; }));
+      // in a car, in teal: M for Settings, to change the controls style (Ash, 25 November 2026: "In the controls panel show in teal the user
+      // can click m to change to a different driving style")
+      if (/^(car|gold)$/.test(kind)) { const dt = document.createElement("dt"), dd = document.createElement("dd"), kb = document.createElement("kbd"); kb.textContent = "M"; dt.append(kb); dt.className = dd.className = "bs-key-teal"; dd.textContent = "Change the controls style (Gamer or Simple)"; keysList.append(dt, dd); }
       // the stick and the Up and Down buttons say what they do in it
       if (joyName) joyName.textContent = kind === "plane" ? "Fly: up, down, turn" : kind === "heli" ? "Go and turn" : kind === "car" ? "Drive" : kind === "possum" ? "Run and turn" : "Move";
       // (the plane's are Faster and Slower, its power: Ash, 24 November 2026, "I now can't adjust throttle". The helicopter's stay Up and Down)
@@ -21869,7 +21889,10 @@ const handle = async (m, post) => {
         veh = "car"; camYaw = car.h + Math.PI; document.body.classList.add("bsdrive"); showRing(charge < 0.999);
         // the GPS button flashes green three times, to say you can use it now (Ash, 25 November 2026: "If I get into a car flash gps green twice
         // to let the user know they can use it")
-        { const gb = $("bsGpsBtn"); if (gb) { gb.classList.remove("bsflash"); void gb.offsetWidth; gb.classList.add("bsflash"); setTimeout(() => gb.classList.remove("bsflash"), 2000); } } }
+        { const gb = $("bsGpsBtn"); if (gb) { gb.classList.remove("bsflash"); void gb.offsetWidth; gb.classList.add("bsflash"); setTimeout(() => gb.classList.remove("bsflash"), 2000); } }
+        // and Settings flashes teal four times, where the controls style is (Ash, 25 November 2026: "When a user gets in a car flash the
+        // settings button in teal 4 times")
+        { const sb = $("bsMeBtn"); if (sb) { sb.classList.remove("bsteal"); void sb.offsetWidth; sb.classList.add("bsteal"); setTimeout(() => sb.classList.remove("bsteal"), 2600); } } }
       if (veh === "car" && gmDesk() && !BS.gmDriveTip) { BS.gmDriveTip = true; setTimeout(() => { if (veh === "car" && !auto) toast("Hold the left mouse button to drive, and move the mouse left or right to steer. Hold the right button to brake and reverse. Or click the road and the car drives you there.", 8000); }, 700); }
       if (place === "inv") { trail.length = 0; unReset(); }
       C.in = true; camOff = null; camBack = 0; off = [wrap(F.yaw - camYaw), bsClamp(F.pitch + 0.2, -1, 0.55)]; idle = 0; last = [F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch];
