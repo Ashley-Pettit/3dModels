@@ -9348,7 +9348,7 @@ const handle = async (m, post) => {
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
     inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=30", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
-    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=75", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
+    moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=76", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
       // before the list opens, and a banner says the same while a flood is showing (Ash asked for both).
@@ -18721,7 +18721,7 @@ const handle = async (m, post) => {
     // (its icon sits on the pier's street face at the slot, 1.3 m up, and the green mail mark just over the pier's cap: Ash, 23 November
     // 2026, "Move that icon much closer to the real mailbox. Further back and lower so it's right on it"; 25 November 2026, "slightly
     // bigger and just slightly higher": 0.15 m up, the green mark with it)
-    { id: "letterbox", name: "\ud83d\udcec Your letterbox", x: -261.51, z: -990.8, draw: false, tap: true, tagY: 1.45, markY: 2.0 },
+    { id: "letterbox", name: "\ud83d\udcec Your letterbox", x: -261.51, z: -990.8, draw: false, tap: true, tagY: 1.31, tagMid: true, markY: 1.75 },
     // locals who pass on what they've heard, a different thing each time (Ash, 16 November 2026: "add some vendors that give information
     // like I heard of a love potion, I heard are helicopter around here (they don't know where) or similar, can you catch a possum for
     // me; I last saw it on kingwell street. I heard the chips from big boss are the best ever, that mechanic in town did some amazing
@@ -20354,15 +20354,19 @@ const handle = async (m, post) => {
               M.compose(V.set(q.x, g(q.x, q.z), q.z), Q.setFromEuler(E.set(0, q.look, 0, "YXZ")), q.scale ? V2S.set(q.scale, q.scale, q.scale) : ONE); q.parts.setMatrix(0, M.elements.slice());
               q.parts.setMatrix(1, M.clone().multiply(S[0]).multiply(new THREE.Matrix4().makeRotationZ(-0.06)).multiply(new THREE.Matrix4().makeRotationX(toss ?? sw)).elements); q.parts.setMatrix(2, M.clone().multiply(S[1]).multiply(new THREE.Matrix4().makeRotationZ(0.06)).multiply(new THREE.Matrix4().makeRotationX(-sw)).elements); } } }
         // their name over their head while you're near enough to read it (Pandy's is townHome6's)
-        if (q.id !== "pandy" && (q.id !== "letterbox" || isAsh())) { let s = d < 60 && up < 120 ? onScreen(q.x, g(q.x, q.z) + (q.tagY ?? 2.15), q.z) : null;
-          if (s && q.tap && overSticks(s[0], s[1] - 17)) s = null;  // (a label you tap never sits over a stick, where a thumb on the stick could catch it)
-          q.tag.hidden = !s; if (s) q.tag.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; }
+        // (the tags and marks are placed 10 times a second, not every frame: lag list item 7, Ash, 25 November 2026. The letterbox's
+        // icon is placed every frame and sits on the slot itself, so it stays put on the letterbox: Ash, 25 November 2026, "With the
+        // mailbox icon, fix this into the letterbox so it's static on the letterbox")
+        const tagNow = q.tap || performance.now() >= (q.tagT ?? 0); if (tagNow && !q.tap) q.tagT = performance.now() + 100;
+        if (tagNow && q.id !== "pandy" && (q.id !== "letterbox" || isAsh())) { let s = d < 60 && up < 120 ? onScreen(q.x, g(q.x, q.z) + (q.tagY ?? 2.15), q.z) : null;
+          if (s && q.tap && overSticks(s[0], s[1] - (q.tagMid ? 0 : 17))) s = null;  // (a label you tap never sits over a stick, where a thumb on the stick could catch it)
+          q.tag.hidden = !s; if (s) q.tag.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, ${q.tagMid ? -50 : -100}%)`; }
         // the green mark: they've news for you
         // (and Flick, near her, when she's pigeon food for you: Ash, 21 November 2026, "make flick have a little green icon if near her and
         // she's offering a pigeon upgrade")
         // (and the postie, and Ash's letterbox, while there's a letter you haven't read: Ash, 23 November 2026, "Show a green icon there
         // if I have new mail")
-        { const ml = (q.id === "post" || (q.id === "letterbox" && isAsh())) && !q.news && !!T.mail?.unread?.(); if (q.dot.classList.contains("mail") !== ml) q.dot.classList.toggle("mail", ml);
+        if (tagNow) { const ml = (q.id === "post" || (q.id === "letterbox" && isAsh())) && !q.news && !!T.mail?.unread?.(); if (q.dot.classList.contains("mail") !== ml) q.dot.classList.toggle("mail", ml);
           const s = (q.news || (q.id === "flick" && d < 60 && flickOffers()) || ml) && d < 220 && up < 150 ? onScreen(q.x, g(q.x, q.z) + (q.markY ?? (d < 60 && q.id !== "pandy" ? 3.1 : 2.4)), q.z) : null; if (q.dot.hidden === !!s) q.dot.hidden = !s; if (s) q.dot.style.transform = `translate(${s[0]}px, ${s[1]}px) translate(-50%, -100%)`; }
         // walk up (or drive up to the mechanic, or run up as the possum to the vet) and they talk to you, once a visit
         // (all 15% closer than they were: Ash, 25 November 2026, "Decrease vendor talk radius slightly". On foot that's 2.9 m, not 3.4)
