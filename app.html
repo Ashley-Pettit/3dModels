@@ -1279,7 +1279,7 @@ body.bstown .bs-ud { top: auto; right: auto; left: 50%; bottom: calc(22px + env(
 .bs-upchip b { font-weight: 600; }
 .bs-upchip .bs-upshort { display: block; font-weight: 500; opacity: 0.86; }
 .bs-upchip[hidden], body.bsheld .bs-upchip { display: none; }
-#bsGpsBtn.bsflash { animation: bsGpsFlash 0.6s ease-in-out 2; }  /* getting into a car: the GPS flashes green twice (Ash, 25 November 2026) */
+#bsGpsBtn.bsflash { animation: bsGpsFlash 0.6s ease-in-out 3; }  /* getting into a car: the GPS flashes green three times (Ash, 25 November 2026: twice, then "one additional time") */
 @keyframes bsGpsFlash { 50% { background: #2fb34a; color: #fff; box-shadow: 0 0 12px #2fb34a; } }
 @media (prefers-reduced-motion: reduce) { #bsGpsBtn.bsflash { animation-duration: 0.9s; } }
 .bs-hires { position: absolute; top: calc(104px + env(safe-area-inset-top)); left: 16px; z-index: 2; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; pointer-events: none;
@@ -21817,9 +21817,9 @@ const handle = async (m, post) => {
         if (car.id) T.invStatic?.take(car.id);
         if (pos?.grip) { const r = pos.grip.ref; if (r === c.own || (r && Math.hypot(r.x - car.x, r.z - car.z) < 1.5)) { pos.grip.ref = car; toast("You're holding on to the roof. Off you go!", 2600); } }
         veh = "car"; camYaw = car.h + Math.PI; document.body.classList.add("bsdrive"); showRing(charge < 0.999);
-        // the GPS button flashes green twice, to say you can use it now (Ash, 25 November 2026: "If I get into a car flash gps green twice
+        // the GPS button flashes green three times, to say you can use it now (Ash, 25 November 2026: "If I get into a car flash gps green twice
         // to let the user know they can use it")
-        { const gb = $("bsGpsBtn"); if (gb) { gb.classList.remove("bsflash"); void gb.offsetWidth; gb.classList.add("bsflash"); setTimeout(() => gb.classList.remove("bsflash"), 1400); } } }
+        { const gb = $("bsGpsBtn"); if (gb) { gb.classList.remove("bsflash"); void gb.offsetWidth; gb.classList.add("bsflash"); setTimeout(() => gb.classList.remove("bsflash"), 2000); } } }
       if (veh === "car" && gmDesk() && !BS.gmDriveTip) { BS.gmDriveTip = true; setTimeout(() => { if (veh === "car" && !auto) toast("Hold the left mouse button to drive, and move the mouse left or right to steer. Hold the right button to brake and reverse. Or click the road and the car drives you there.", 8000); }, 700); }
       if (place === "inv") { trail.length = 0; unReset(); }
       C.in = true; camOff = null; camBack = 0; off = [wrap(F.yaw - camYaw), bsClamp(F.pitch + 0.2, -1, 0.55)]; idle = 0; last = [F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch];
