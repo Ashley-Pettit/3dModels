@@ -8900,6 +8900,9 @@ const handle = async (m, post) => {
         else if (D && F.drive && e.pointerType === "mouse" && D.b === 0 && Math.hypot(e.clientX - D.sx, e.clientY - D.sy) < 6 && e.timeStamp - D.ts < 800) BS.town?.car?.clickDrive?.(e.clientX, e.clientY);
         const t = F.touches.get(e.pointerId); if (t?.move && !F.joys?.some(j => j.move && j.held())) { F.stick.x = 0; F.stick.y = 0; }
         if (t && e.pointerType !== "mouse" && F.touches.size === 1 && document.body.classList.contains("bsgmap") && BS.town?.walk && !BS.town?.car?.in && Math.hypot(e.clientX - t.sx, e.clientY - t.sy) < 10 && performance.now() - (t.t0 || 0) < 350) F.on.clickGo?.(e.clientX, e.clientY);
+        // (in a car on a phone, a quick tap on the road drives you there, as a quick click does on a computer, with no turning round at the
+        // end; not while a stick is held. Ash, 25 November 2026: "the mobile left tap to autodrive to that spot")
+        else if (t && e.pointerType !== "mouse" && F.touches.size === 1 && F.drive && BS.town?.car?.in && !F.joys?.some(j => j.held()) && Math.hypot(e.clientX - t.sx, e.clientY - t.sy) < 10 && performance.now() - (t.t0 || 0) < 350) BS.town.car.clickDrive?.(e.clientX, e.clientY, true);
         F.touches.delete(e.pointerId); },
     };
     F.on.pointercancel = e => F.on.pointerup(e);
@@ -22090,7 +22093,7 @@ const handle = async (m, post) => {
     C.faceTo = (x, z) => { if (veh === "car" && car) car.face = { x, z }; };  // (Autodrive's end: turn to face the place, once stopped)
     C.autoStop = () => { if (auto && !auto.done) { auto.done = true; ezShow(); } };  // (the GPS cancelled, or there: it brakes to a stop, a skid if it's hooning)
     // a click on the view while driving, with Google Maps controls: the ground under the mouse (or just short of the building there)
-    C.clickDrive = (sx, sy) => { if (veh !== "car" || !car || held || !gmDesk()) return false;
+    C.clickDrive = (sx, sy, tap = false) => { if (veh !== "car" || !car || held || !(tap || gmDesk())) return false;
       const hit = townClickAt(m, F, sx, sy, 700, true); if (!hit || !inside(hit.x, hit.z)) return false;
       return C.driveTo(hit.x, hit.z); };
     // Drive for me: off along the street the car is on, the way it points. The way ahead is laid out a little at a time (cruiseOn)
