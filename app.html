@@ -19556,7 +19556,7 @@ const handle = async (m, post) => {
       let turn = "", lean = 0; if (!off) for (let s = b + 8; s <= b + 160; s += 6) { const r = rb.find(([a, c]) => s >= a - 16 && s <= c + 16);
         if (r) { const td = Math.max(0, r[0] - b); if (td <= 40) turn = `\u2B06 Straight across the roundabout \u00b7 ${fmtD(td)}`; look = Math.max(look, r[1] + 10 - b); break; }
         if (inRb(s)) continue; const a = headAt(s - 10), c = headAt(s + 14), d = Math.atan2(Math.sin(c - a), Math.cos(c - a)); if (Math.abs(d) > 0.55) {
-        const td = s - b; if (td <= 40) turn = `${d > 0 ? "\u21B0 Left" : "\u21B1 Right"} turn \u00b7 ${fmtD(td)}`; lean = Math.sign(d) * 0.45 * bsClamp(1 - (td - 15) / 75, 0, 1); look = Math.min(look, Math.max(td + 16, 20)); break; } }
+        const td = s - b; if (td <= 40) turn = `${d > 0 ? "\u21B0 Left" : "\u21B1 Right"} turn \u00b7 ${fmtD(td)}`; lean = Math.sign(d) * 0.7 * bsClamp(1 - (td - 35) / 75, 0, 1);  /* (leans up to 40 degrees, from 110 m out and fully by 35 m, so the turn shows well before the corner: Ash, 25 November 2026, "Use just the big arrow but try to exaggerate a bit left or right the arrow so I know to turn. Before I'm already in the intersection") */ look = Math.min(look, Math.max(td + 16, 20)); break; } }
       const p = at(Math.min(b + look, t.kind === "park" ? t.D : Infinity));
       return { x: p.x, z: p.z, y: null, turn, lean }; };
     const finish = now => { race.fin = Math.max(1000, now - race.t0 + race.pen); race.state = "done"; race.free = false; document.body.classList.remove("bsracing", "bsraceout"); race.m = TOT; itemBtn.hidden = true;
