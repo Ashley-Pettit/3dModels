@@ -21315,7 +21315,10 @@ const handle = async (m, post) => {
         snd.set(0.18 + 0.82 * bsClamp((a - G[g]) / (top - G[g]), 0, 1), Math.abs(thr) > 0.05 && !brake ? 0.35 + 0.65 * Math.abs(thr) : 0.08, a, boosting || teamOn, slide ? 1 : Math.min(1, Math.abs(wrap(car.h - car.dir)) * 2.5));
         showRing(boosting || charge < 0.999, boosting);
         if (camBack && a > 2) camBack = Math.max(0, camBack - dt * 2.6);  // (off the line, it glides in to the usual view in a couple of seconds)
-        o = car; D = (car.bus ? 15 : 7.5) + Math.min(5, a / 9) + camBack; text = Math.round(a * 3.6) + " km/h" + autoText();
+        o = car; D = (car.bus ? 15 : 7.5) + Math.min(5, a / 9) + camBack;
+        // The model faces south at zero yaw. Compass bearings start at north and run clockwise.
+        const bearing = place === "inv" ? " \u00b7 " + compass(180 - car.h * 180 / Math.PI) : "";
+        text = Math.round(a * 3.6) + " km/h" + bearing + autoText();
       } else if (veh === "possum") { findCarTops(pos.x, pos.z); const P = pos, run = !!P.gold && (has("ShiftLeft", "ShiftRight") || !!F.hand), top = R.possumTop / 3.6 * (run ? 1 + R.possumBoost / 100 : 1) * (C.hcK || 1) * (C.turboTil > performance.now() ? 1.9 : 1) * (C.slowTil > performance.now() ? 0.5 : 1), jump = has("Space") || !!F.boost, drop = has("KeyC");  // (Boost: the button over Jump, or Shift)  // walking is 11 m/s: three times that, less a fifth (Ash, 15 November 2026: "speed down by 20%"); no boost, the button is Jump
         P.t += dt;
         // riding on top of a car that moves (the traffic, or one of the app's own being driven): it goes where the car goes, turning
