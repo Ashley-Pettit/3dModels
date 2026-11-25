@@ -40,7 +40,10 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0}
-html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;background:var(--bg);touch-action:manipulation}
+html.lock{overflow:hidden}
+button,.sug,.chip,.side-item,.cell{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+[tabindex="-1"]:focus{outline:none}
 body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15.5px;line-height:1.55;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;-webkit-tap-highlight-color:transparent;font-feature-settings:"ss01","cv11"}
 button,input,textarea,select{font:inherit;color:inherit;letter-spacing:inherit}
 button{cursor:pointer}
@@ -66,7 +69,7 @@ svg{flex:none}
 .side-item.new{border:1px solid var(--line-2);background:var(--card);color:var(--ink);font-weight:550;margin-bottom:8px;box-shadow:var(--sh-sm)}
 .side-item.new:hover{background:var(--surface)}
 .side-label{font-size:12px;font-weight:550;color:var(--ink-3);padding:14px 10px 4px;letter-spacing:.01em}
-.side-scroll{flex:1;overflow-y:auto;margin:0 -4px;padding:0 4px}
+.side-scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;margin:0 -4px;padding:0 4px}
 .recent span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .side-empty{font-size:13.5px;color:var(--ink-3);padding:4px 10px;margin:0}
 .promo{display:flex;align-items:center;gap:10px;width:100%;margin-top:10px;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px;text-align:left;color:var(--ink)}
@@ -75,7 +78,7 @@ svg{flex:none}
 .promo span{display:block;font-size:12.5px;color:var(--ink-3)}
 .promo:hover{background:var(--surface)}
 .side-foot{display:flex;align-items:center;gap:12px;padding:12px 8px 2px;margin-top:10px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3)}
-.linkbtn{border:0;background:none;padding:0;color:var(--ink-3);font-size:12.5px}
+.linkbtn{border:0;background:none;padding:10px 6px;margin:-10px -6px;color:var(--ink-3);font-size:12.5px}
 .linkbtn:hover{color:var(--ink)}
 .ver{border:0;background:none;padding:0;color:var(--ink-3);font-size:12px;cursor:default;margin-left:auto;font-variant-numeric:tabular-nums}
 .side-scrim{position:fixed;inset:0;z-index:35;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity var(--t)}
@@ -104,6 +107,7 @@ svg{flex:none}
 .discover-h span{font-size:13px;color:var(--ink-3)}
 .bento{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .d-feature{grid-column:1/-1;position:relative;display:block;border-radius:22px;overflow:hidden;aspect-ratio:16/9;background:var(--surface);text-decoration:none;color:#fff;isolation:isolate}
+.d-feature{transition:transform var(--t)}
 .d-feature img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform 700ms var(--ease)}
 .d-feature:hover img{transform:scale(1.03)}
 .d-feature::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(8,12,28,.84),rgba(8,12,28,.22) 48%,transparent 70%);z-index:1}
@@ -293,9 +297,10 @@ svg{flex:none}
 .progress b{display:block;font-size:15px;font-weight:600}
 .progress span{display:block;font-size:13px;color:var(--ink-3)}
 @media (max-width:520px){.progress{flex-wrap:wrap}.progress .btn{flex:1 1 100%}}
-.check{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line-2);flex:none;display:grid;place-items:center;background:none;color:transparent;padding:0;transition:background var(--t),border-color var(--t)}
-.check svg{width:14px;height:14px}
-.check[aria-checked=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.check{width:44px;height:44px;margin:-6px -9px -6px 0;flex:none;display:grid;place-items:center;border:0;background:none;padding:0;border-radius:50%}
+.check svg{width:27px;height:27px;padding:6px;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--line-2);color:transparent;transition:background var(--t),border-color var(--t),transform var(--t)}
+.check:active svg{transform:scale(.88)}
+.check[aria-checked=true] svg{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:10px 16px;font-weight:550;font-size:14.5px;min-height:44px;text-decoration:none;white-space:nowrap;transition:background var(--t),transform var(--t)}
 .btn svg{width:17px;height:17px}
 .btn:active{transform:scale(.985)}
@@ -314,7 +319,7 @@ svg{flex:none}
 .sheet{position:fixed;z-index:51;left:0;right:0;bottom:0;max-height:88vh;overflow:auto;background:var(--bg);border-radius:20px 20px 0 0;transform:translateY(100%);transition:transform 280ms var(--ease);padding-bottom:calc(env(safe-area-inset-bottom) + 10px);visibility:hidden;box-shadow:var(--sh-lg)}
 .sheet.on{transform:none;visibility:visible}
 .grab{width:36px;height:5px;border-radius:5px;background:var(--line-2);margin:8px auto 0}
-.sheet .close{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;border:0;background:var(--surface-2);color:var(--ink-2);display:grid;place-items:center}
+.sheet .close{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;border:0;background:var(--surface-2);color:var(--ink-2);display:grid;place-items:center}
 .sheet .close svg{width:15px;height:15px}
 .sheet .inner{padding:12px 20px 16px}
 .sh-top{display:flex;gap:13px;align-items:center;margin:6px 40px 14px 0}
@@ -395,19 +400,52 @@ svg{flex:none}
 }
 @media (max-width:699px){
   .side-item{min-height:44px;font-size:15px}
-  .chip{min-height:36px}
-  .chips{margin:0 -20px;padding:0 20px 14px}
+  .chip{min-height:40px;padding:5px 14px;font-size:14px}
+  .chips{margin:0 -20px;padding:0 20px 14px;scroll-padding:0 20px}
+  .sugs,.chips,.srcs,.places{overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+  .srcs{margin:0 -20px 14px;padding:0 20px 2px}
+  .src{min-height:36px;padding:5px 12px 5px 7px;font-size:13px}
+  .p-acts a,.p-acts button{min-height:40px;font-size:13.5px}
+  .acts{margin:12px -10px 0}
+  .acts button{min-height:40px;padding:6px 10px;font-size:13.5px}
+  .brand{min-height:40px}
+  .rel{min-height:48px}
+  .more{min-height:46px}
+  .sheet{overscroll-behavior:contain;border-radius:24px 24px 0 0}
+  .sheet .close::after{content:"";position:absolute;inset:-6px}
+  .grab{width:40px}
   .main.is-home .page-chat{padding-bottom:calc(128px + env(safe-area-inset-bottom))}
+}
+@media (max-width:359px){
+  .bento{grid-template-columns:1fr}
+  .d-card{flex-direction:row;align-items:center;gap:12px;min-height:0;padding:12px}
+  .d-card .d-top{order:0;gap:0}
+  .d-card > span:last-child{flex:1;min-width:0;order:1}
+  .d-card .d-n{display:none}
+  .hero .lede{font-size:15.5px}
+  .hero .lede span{display:none}
+}
+@media (max-width:699px) and (max-height:620px){
+  .hero{padding-top:calc(var(--top-h) + env(safe-area-inset-top) + 10px)}
+  .hero h2{font-size:40px;margin-top:6px}
+  .hero .lede{margin-top:10px;font-size:15px}
+  .hero .lede span{display:none}
+  .skyline{height:112px;margin-top:4px}
+  .hero[data-sky=dawn] .orb,.hero[data-sky=dusk] .orb{width:66px;height:66px;bottom:30px}
 }
 @media (hover:none){
   .d-feature:hover img,.cbtn.send:not(:disabled):hover{transform:none}
+  .sug:active,.chip:not([aria-pressed=true]):active,.cell:active,.side-item:active,.d-card:active,.more:active,.acts button:active,.icon-btn:active{background:var(--surface-2)}
+  .main.is-home .top:not(.scrolled) .icon-btn:active{background:rgba(255,255,255,.18)}
+  .rel:active{color:var(--accent-text)}
+  .d-feature:active{transform:scale(.99)}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 
-<aside class="side" id="side" aria-label="Menu">
+<aside class="side" id="side" aria-label="Menu" tabindex="-1">
   <div class="side-head">
     <button class="brand" data-home aria-label="Moorooka AI home"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#1F7A55"/><path d="M32 13c-8.5 6.5-13 14-13 21.5a13 13 0 0 0 26 0C45 27 40.5 19.5 32 13Z" fill="#fff"/><path d="M32 26v19" stroke="#1F7A55" stroke-width="3.2" stroke-linecap="round"/></svg><b>Moorooka AI</b></button>
     <button class="icon-btn close-side" id="closeSide" aria-label="Close menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
@@ -450,7 +488,7 @@ svg{flex:none}
       <div class="hero-in">
         <span class="when" id="when"></span>
         <h2 id="greet">G'day,<br>Moorooka.</h2>
-        <p class="lede">Ask about what's on, where to eat or who to call. Answers come from a live web search and link to their sources.</p>
+        <p class="lede">Ask about what's on, where to eat or who to call. <span>Answers come from a live web search and link to their sources.</span></p>
       </div>
       <div class="hero-gap" aria-hidden="true"></div>
       <svg class="skyline" id="skyline" viewBox="0 0 2400 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true"></svg>
@@ -519,7 +557,7 @@ svg{flex:none}
 </div>
 
 <div class="scrim" id="scrim"></div>
-<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" tabindex="-1"></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
@@ -632,10 +670,15 @@ function showPage(p){
   try{ history.replaceState(null, "", p==="chat" ? location.pathname + location.search : "#"+p); }catch(e){}
   setDrawer(false); window.scrollTo(0,0);
 }
+let viaKeys = false;
+addEventListener("keydown", e => { if(e.key==="Tab" || e.key==="Enter" || e.key===" ") viaKeys = true; }, true);
+addEventListener("pointerdown", () => { viaKeys = false; }, true);
+document.addEventListener("touchstart", () => {}, {passive:true});   // lets iOS show :active on tap
+const lockScroll = () => document.documentElement.classList.toggle("lock", !isDesktop() && ($("#side").classList.contains("open") || $("#sheet").classList.contains("on")));
 function setDrawer(open){
   const side=$("#side"); side.classList.toggle("open", open); $("#sideScrim").classList.toggle("on", open);
-  side.inert = !open && !isDesktop();
-  if(open) setTimeout(()=>$("#closeSide").focus(), 50);
+  side.inert = !open && !isDesktop(); lockScroll();
+  if(open) setTimeout(()=>(viaKeys ? $("#closeSide") : side).focus({preventScroll:true}), 50);
 }
 $("#menuBtn").onclick = () => setDrawer(true);
 $("#closeSide").onclick = () => setDrawer(false);
@@ -727,6 +770,7 @@ function buildSkyline(){
 function syncTheme(){
   const overSky = $("#main").classList.contains("is-home") && !$("#top").classList.contains("scrolled") && !isDesktop();
   document.querySelectorAll('meta[name="theme-color"]').forEach(m => { m.dataset.base ??= m.content; const c = overSky ? SKY_TOP[sky] : m.dataset.base; if(m.content !== c) m.content = c; });
+  const bg = overSky ? SKY_TOP[sky] : ""; if(syncTheme.bg !== bg){ syncTheme.bg = bg; document.documentElement.style.background = bg; }   // pulling down past the top shows more sky, not a white strip
 }
 function renderSky(){
   const d = brisNow(), h = d.getHours();
@@ -1019,6 +1063,8 @@ function updateSend(){
   send.disabled = !busy && !q.value.trim();
 }
 function grow(){ q.style.height = "auto"; q.style.height = Math.min(q.scrollHeight, 160) + "px"; }
+const fitHint = () => { q.placeholder = innerWidth < 360 ? "Ask about Moorooka" : "Ask anything about Moorooka"; };
+fitHint(); addEventListener("resize", fitHint);
 q.addEventListener("input", ()=>{ grow(); updateSend(); });
 q.addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey && !e.isComposing){ e.preventDefault(); if(!busy) $("#form").requestSubmit(); } });
 $("#form").addEventListener("submit", e=>{
@@ -1126,11 +1172,11 @@ let lastFocus = null;
 function showSheet(html){
   sheet.innerHTML = `<div class="grab" aria-hidden="true"></div>` + html; lastFocus = document.activeElement;
   sheet.inert = false; $("#scrim").classList.add("on"); sheet.classList.add("on"); sheet.scrollTop = 0;
-  $("#sheetClose").onclick = closeSheet; setTimeout(()=>$("#sheetClose")?.focus(), 60);
+  $("#sheetClose").onclick = closeSheet; lockScroll(); setTimeout(()=>(viaKeys ? $("#sheetClose") : sheet)?.focus({preventScroll:true}), 60);
 }
 function closeSheet(){
   if(!sheet.classList.contains("on")) return;
-  $("#scrim").classList.remove("on"); sheet.classList.remove("on"); sheet.inert = true;
+  $("#scrim").classList.remove("on"); sheet.classList.remove("on"); sheet.inert = true; lockScroll();
   if(lastFocus && document.contains(lastFocus)) lastFocus.focus?.({preventScroll:true});
 }
 function openSheet(kind, id){
@@ -1164,6 +1210,14 @@ function openSheet(kind, id){
     </div>`);
 }
 $("#scrim").onclick = closeSheet;
+/* On a phone, drag the sheet down to close it. */
+(function(){
+  let y0 = null, dy = 0;
+  sheet.addEventListener("touchstart", e => { y0 = (!isDesktop() && sheet.scrollTop <= 0 && e.touches.length === 1) ? e.touches[0].clientY : null; dy = 0; }, {passive:true});
+  sheet.addEventListener("touchmove", e => { if(y0 == null) return; dy = e.touches[0].clientY - y0; if(dy > 0 && sheet.scrollTop <= 0){ sheet.style.transition = "none"; sheet.style.transform = `translateY(${dy}px)`; } else if(dy < -6){ y0 = null; sheet.style.transition = ""; sheet.style.transform = ""; } }, {passive:true});
+  const end = () => { if(y0 == null) return; sheet.style.transition = ""; sheet.style.transform = ""; if(dy > 90) closeSheet(); y0 = null; };
+  sheet.addEventListener("touchend", end, {passive:true}); sheet.addEventListener("touchcancel", end, {passive:true});
+})();
 
 /* ================= global events ================= */
 document.addEventListener("click", e=>{
