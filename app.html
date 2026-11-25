@@ -9958,9 +9958,9 @@ const handle = async (m, post) => {
       shops: [{ plain: true, w: 5.4 }, { plain: true, w: 3.4 }, { n: "Cutting Master Barbershop", w: 4.5, c: ["#141414", "#ffffff"], what: "Barber", jump: true }, { n: "Moorooka Mall", sub: "Ethiopian Village", w: 3.5, c: ["#f4f1ea", "#2a2a2a"], arcade: true, what: "Arcade, with the Ethiopian Village restaurant at the back", jump: true },
         { n: "Culture Cuts Barber", t: "BARBER", w: 3.4, c: ["#141414", "#ffffff"], what: "Barber and hair salon (5/147)" }, { plain: true, w: 2.6, posters: true }, { n: "A La Mode Hair & Beauty", w: 5.0, c: ["#f1e2d6", "#8a2332"] }],
       tenants: { lines: ["Ethiopian Village", "Culture Cuts Barber", "Mitchells Solicitors", "Amal Express"], c: ["#f4f1ea", "#2a2a2a"], x: 16.95, o: 0.8, w: 1.5 } },
-    { kind: "strip", addr: "201 Beaudesert Road", a: [-97.6, -165.7], b: [-108.0, -182.3], n: [0.8474, -0.5309], kerb: 2.21, across: 13.21, eave: 50.6, wall: "#8f8678", awning: "#3a3a3a", windows: [3.7, 4.7, 3, "#2a3640", 4, 15.6],
+    { kind: "strip", addr: "201 Beaudesert Road", a: [-97.6, -165.7], b: [-108.0, -182.3], n: [0.8474, -0.5309], kerb: 2.21, across: 13.21, eave: 50.6, wall: "#8f8678", awning: "#3a3a3a", arcadeRoof: 52.6,
       shops: [{ n: "Afro Restaurant", w: 6, c: ["#ffffff", "#1a1a1a"], stripe: ["#1f8a3b", "#f2c230", "#d42a2a"], what: "African restaurant", jump: true },
-        { n: "Rannchhod Arcade", sub: "Made in Africa \u00b7 Arhibu \u00b7 Eliza", w: 7, c: ["#141414", "#ffffff"], arcade: true, checks: true, what: "Arcade, with Arhibu (Ethiopian) and Eliza (Eritrean) restaurants, the barbers K:B and Dufanda, and Anina Dubai", jump: true }, { n: "David Stephensen Optometrist", w: 6.6, c: ["#efe9d6", "#2e5d46"], what: "Optometrist", jump: true }],
+        { n: "Rannchhod Arcade", sub: "Made in Africa \u00b7 Arhibu \u00b7 Eliza", w: 7, c: ["#141414", "#ffffff"], arcade: true, checks: true, rearTenant: "Made in Africa", what: "Arcade, with Made in Africa and Arhibu (Ethiopian) and Eliza (Eritrean) restaurants, the barbers K:B and Dufanda, and Anina Dubai", jump: true }, { n: "David Stephensen Optometrist", w: 6.6, c: ["#efe9d6", "#2e5d46"], what: "Optometrist", jump: true }],
       tenants: { lines: ["Arhibu", "Eliza Eritrean", "Made in Africa", "Fathia Hair Studio", "Sulafa Beauty", "Seamstress & Tailor", "Juba Express", "Dahabshiil", "K:B Barbershop", "Dufanda Barber"], c: ["#141414", "#ffffff"], x: 7.4, o: 0.75, y: 0.3, lh: 0.195, w: 1.5 } },
     { kind: "strip", addr: "204 Beaudesert Road", a: [-73.8, -173.8], b: [-60.9, -151.3], n: [-0.8675, 0.4974], kerb: 1.22, across: 13.42, eave: 51.5, wall: "#e9e7e2", awning: "#2b2b2b",
       shops: [{ n: "Ho Choi", sub: "CHINESE RESTAURANT", w: 3.6, c: ["#c62828", "#ffffff"], what: "Chinese restaurant", jump: true }, { n: "Eddy's Barber Shop", t: "BARBER", w: 3.0, c: ["#f1e7e8", "#1d1d1d"], what: "Barber", jump: true }, { n: "Baba Burger", w: 3.4, c: ["#1d1d1d", "#ffffff"], what: "Burgers", jump: true },
@@ -10813,7 +10813,7 @@ const handle = async (m, post) => {
     { at: [-92.6, -243.68], kind: 2, flat: true, wall: [228, 216, 192] },    // 180 (Big Boss Pizzas, Kingz): cream render, two storeys
     { at: [-75.41, -218.78], kind: 2, hip: true, noShop: true, wall: [234, 233, 228] },    // Rooka Acai's corner (Mayfield Road): off-white under a low hipped roof (noShop: its front is drawn in MOO_FRONTS, and the model's own red awning showed through the new one)
     { at: [-131.77, -177.47], kind: 2, flat: true, wall: [238, 236, 230] },  // 193 (Roo Kitchen): white, a curved verandah
-    { at: [-122.05, -162.03], kind: 2, flat: true, wall: [130, 118, 104], eave: 52.6, ridge: 52.8 },  // 201 (Rannchhod Arcade): brown-grey brick, two storeys (eave raised to two storeys, as in Street View)
+    { at: [-122.05, -162.03], kind: 2, noShop: true, flat: true, wall: [130, 118, 104], eave: 52.6, ridge: 52.8 },  // 201 (Rannchhod Arcade): brown-grey brick, two storeys (eave raised to two storeys, as in Street View)
     { at: [-115.58, -143.52], kind: 2, flat: true, wall: [232, 226, 210] },  // 205 (Dinder Giftware): cream
     { at: [-180.8, -489.8], wall: [236, 233, 224] },                         // 102 (Macro Tax): a white Queenslander
     { at: [-235.32, -517.58], wall: [169, 177, 185], roof: [62, 68, 76], noShop: true, shift: [-6.89, 1.24] },
@@ -11217,6 +11217,66 @@ const handle = async (m, post) => {
         : /grocer|supermarket|butcher|store|op shop|tobacco|gift|pharmacy|chemist|market|bottle|biltong/.test(t) || s.post ? "shop"
         : /restaurant|cafe|café|pizza|burger|kebab|takeaway|dim sim|bakery|bakeries|sushi|fish|kitchen|coffee|acai|injera|cakes|food/.test(t) ? "food"
         : /solicitor|lawyer|tax|accountant|bank|optometr|chiro|physio|dental|medical|doctor|office|real estate/.test(t) ? "office" : "plain"; };
+    // Rannchhod Arcade seen from the footpath. Project the passage into its existing shop canvas.
+    // The glazing rhythm, colours and apparent depth are inferred. The atrium and shops are inside the block.
+    const arcadePassage = (g, left, right, Y, scale, tenant) => {
+      g.save();
+      g.translate(left * scale, Y(2.5));
+      g.scale((right - left) * scale, 2.5 * scale);
+      g.beginPath(); g.rect(0, 0, 1, 1); g.clip();
+      const project = (x, y, depth) => {
+        const k = 1 / (1 + depth);
+        return [0.5 + (x - 0.5) * k, 0.49 + (y - 0.49) * k];
+      };
+      const face = (colour, points) => {
+        g.fillStyle = colour; g.beginPath();
+        points.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y));
+        g.closePath(); g.fill();
+      };
+      g.fillStyle = "#d4baa0"; g.fillRect(0, 0, 1, 1);
+      // Looking through the street-level shops towards the bright circular atrium.
+      face("#c2b9a5", [[0,0], [1,0], project(1,0,3), project(0,0,3)]);
+      for (const z of [0.35, 0.95, 1.75, 2.65]) {
+        face("#fff4d9", [project(0.42,0,z), project(0.58,0,z),
+          project(0.58,0,z + 0.085), project(0.42,0,z + 0.085)]);
+      }
+      face("#88573f", [project(0,0,3), project(1,0,3), project(1,1,3), project(0,1,3)]);
+      for (let i = 0; i < 8; i++) {
+        const angle = i * Math.PI / 4, next = angle + Math.PI / 4;
+        face(i % 2 ? "#c6ddd9" : "#f3ecce", [[0.5,0.34],
+          [0.5 + 0.11 * Math.cos(angle), 0.37 + 0.045 * Math.sin(angle)],
+          [0.5 + 0.11 * Math.cos(next), 0.37 + 0.045 * Math.sin(next)]]);
+      }
+      for (let row = 0; row < 12; row++) {
+        for (let col = 0; col < 8; col++) {
+          const x = col / 8, z = row / 4;
+          face((row + col) % 2 ? "#67635f" : "#e5dcc8", [project(x,1,z), project(x + 0.125,1,z),
+            project(x + 0.125,1,z + 0.25), project(x,1,z + 0.25)]);
+        }
+      }
+      for (const side of [0, 1]) {
+        const pane = (z0, z1, top, bottom, colour) => face(colour, [project(side,top,z0), project(side,top,z1),
+          project(side,bottom,z1), project(side,bottom,z0)]);
+        for (let bay = 0; bay < 5; bay++) {
+          const z = bay * 0.6;
+          pane(z, z + 0.6, 0, 1, "#865c42");
+          pane(z + 0.04, z + 0.56, 0.09, 0.24, "#d4bc97");
+          pane(z + 0.04, z + 0.56, 0.28, 0.85, side ? "#3b4e51" : "#555f59");
+          // Reflected daylight over glazing, with a low display or counter behind each pane.
+          pane(z + 0.04, z + 0.56, 0.28, 0.39, side ? "#728f8f" : "#89938a");
+          pane(z + 0.1, z + 0.45, 0.7, 0.81, bay % 2 ? "#a57850" : "#9d886c");
+          pane(z + 0.27, z + 0.29, 0.28, 0.85, "#a38463");
+          pane(z + 0.04, z + 0.56, 0.6, 0.63, "#b69573");
+        }
+      }
+      g.fillStyle = "#f5e5ca"; g.textBaseline = "middle"; g.textAlign = "center";
+      g.font = "bold 0.086px sans-serif"; g.fillText(tenant, 0.5, 0.47, 0.24);
+      // The rail at the head of the stair, catching daylight below the tenant fascia.
+      g.fillStyle = "#c6b299";
+      g.fillRect(0.38, 0.55, 0.11, 0.013);
+      for (const x of [0.385, 0.415, 0.445, 0.48]) g.fillRect(x, 0.55, 0.006, 0.075);
+      g.restore();
+    };
     const fronts = (F, h, shops) => { const S = 40, c = document.createElement("canvas"); c.width = Math.round(F.len * S); c.height = Math.round(h * S);
       const g = c.getContext("2d"); g.fillStyle = F.wall; g.fillRect(0, 0, c.width, c.height);
       const Y = y => c.height - y * S; let x = 0, seed = 7;
@@ -11228,6 +11288,7 @@ const handle = async (m, post) => {
         if (s.arcade) { g.fillStyle = "#15171a"; R(x0 + 0.3, x1 - 0.3, 0, 2.5);  // the way in: dark, with a chequered floor
           for (let i = 0; i < 12; i++) { g.fillStyle = i % 2 ? "#e8e6e0" : "#1b1b1b"; g.fillRect((x0 + 0.3 + i * (x1 - x0 - 0.6) / 12) * S, Y(0.28), (x1 - x0 - 0.6) / 12 * S, 0.28 * S); }
           g.fillStyle = "rgba(255,236,200,0.75)"; for (let lx = x0 + 0.8; lx < x1 - 0.5; lx += 1.1) R(lx - 0.15, lx + 0.15, 2.38, 2.44);  // lights down the arcade
+          if (s.rearTenant) arcadePassage(g, x0 + 0.3, x1 - 0.3, Y, S, s.rearTenant);
           if (s.checks) for (const px of [x0, x1 - 0.3]) for (let k = 0, yy = 0.3; yy < 2.5; yy += 0.15, k++) for (let j = 0; j < 2; j++) { g.fillStyle = (k + j) % 2 ? "#f2f0ea" : "#151515"; R(px + j * 0.15, px + (j + 1) * 0.15, yy, Math.min(2.5, yy + 0.15)); } }  // (Rannchhod Arcade's black and white pillars)
         else { const kind = shopKind(s), dx = x0 + W * (s.post ? 0.5 : 0.62) - 0.5, free = (a, b) => b < dx - 0.08 || a > dx + 1.08;  // the door: 1 m wide
           g.fillStyle = { food: "#3a2e24", hair: "#2c3034", shop: "#2b3034", office: "#2c343b", wash: "#2e3438", plain: "#1f3340" }[kind]; R(x0, x1, 0.45, 2.5); R(dx, dx + 1, 0, 0.45);
@@ -11754,6 +11815,39 @@ const handle = async (m, post) => {
         // a fence of coloured pickets: [x0, x1, o, colours]
         if (f.fence) { const [x0, x1, o, cols] = f.fence; box(x0, x1, yg((x0 + x1) / 2, o) + 0.85, yg((x0 + x1) / 2, o) + 0.93, o - 0.03, o + 0.03, "#e8e8e4");
           for (let x = x0, k = 0; x < x1 - 0.1; x += 0.22, k++) { const y0 = yg(x, o); quad(at(x, y0, o), at(x + 0.12, y0, o), at(x + 0.12, y0 + 1.1, o), at(x, y0 + 1.1, o), rgb(cols[k % cols.length])); } }
+        // 201 Beaudesert Road. Council heritage citation (June 2025), street elevation and aerial on p.9 of
+        // the proposed citation. The skylight centre is about 33 m behind the surveyed front. Heights and
+        // bay spacing are estimates. All faces join the existing plain-colour shop mesh.
+        if (f.arcadeRoof) {
+          const roof = f.arcadeRoof - base, ridge = roof + 1.45;
+          const metal = rgb("#b3b4b0"), shadow = rgb("#888d8c");
+          const hip = at(3.8, ridge, -4.2), peak = at(len, ridge, -4.2);
+          quad(at(0,roof,0), at(len,roof,0), peak, hip, metal);
+          quad(at(len,roof,-8.4), at(0,roof,-8.4), hip, peak, shadow);
+          tri(at(0,roof,-8.4), at(0,roof,0), hip, shadow);
+          tri(at(len,roof,-8.4), peak, at(len,roof,0), rgb(f.wall));
+          const centre = 9.6, radius = 2.35, segments = 12;
+          const ring = (i, h) => {
+            const angle = i * 2 * Math.PI / segments;
+            return at(centre + radius * Math.cos(angle), roof + h, -33 + radius * Math.sin(angle));
+          };
+          const crown = at(centre, roof + 1.15, -33);
+          for (let i = 0; i < segments; i++) {
+            quad(ring(i,-0.12), ring(i+1,-0.12), ring(i+1,0.4), ring(i,0.4), shadow);
+            tri(ring(i,0.4), crown, ring(i+1,0.4), rgb(i % 2 ? "#91acb0" : "#afc4c2"));
+            tri(ring(i,0.41), ring(i+0.045,0.41), at(centre, roof + 1.17, -33), shadow);
+          }
+          // Five upper lights; the two projecting bays have metal sun hoods.
+          for (let i = 0; i < 5; i++) {
+            const x = len * (i + 0.5) / 5, bay = i === 1 || i === 3, o = bay ? 0.38 : 0.12;
+            const y = roof - 2.0;
+            box(x-1.05, x+1.05, y, y+1.16, 0.01, o, "#d4c9b9");
+            quad(at(x-0.96,y+0.08,o+0.012), at(x+0.96,y+0.08,o+0.012),
+              at(x+0.96,y+1.08,o+0.012), at(x-0.96,y+1.08,o+0.012), rgb("#40525a"));
+            box(x-0.035, x+0.035, y+0.08, y+1.08, o+0.013, o+0.04, "#d4c9b9");
+            if (bay) box(x-1.2, x+1.2, y+1.47, y+1.55, 0.02, 0.73, "#858d8c", 0.26);
+          }
+        }
         // windows along an upper floor: [y0, y1, how many, colour, x0, x1]
         if (f.windows) for (const [y0, y1, n, col = "#26333d", x0 = 0.6, x1 = len - 0.6] of Array.isArray(f.windows[0]) ? f.windows : [f.windows]) { const step = (x1 - x0) / n;
           for (let i = 0; i < n; i++) { const a0 = x0 + i * step + 0.25, a1 = x0 + (i + 1) * step - 0.25, ym = y0 + (y1 - y0) * 0.64, fr = "#e9e7e1";
