@@ -9976,6 +9976,9 @@ const handle = async (m, post) => {
         { n: "Rannchhod Arcade", sub: "Made in Africa \u00b7 Arhibu \u00b7 Eliza", w: 7, c: ["#141414", "#ffffff"], arcade: true, checks: true, rearTenant: "Made in Africa", what: "Arcade, with Made in Africa and Arhibu (Ethiopian) and Eliza (Eritrean) restaurants, the barbers K:B and Dufanda, and Anina Dubai", jump: true }, { n: "David Stephensen Optometrist", w: 6.6, c: ["#efe9d6", "#2e5d46"], what: "Optometrist", jump: true }],
       tenants: { lines: ["Arhibu", "Eliza Eritrean", "Made in Africa", "Fathia Hair Studio", "Sulafa Beauty", "Seamstress & Tailor", "Juba Express", "Dahabshiil", "K:B Barbershop", "Dufanda Barber"], c: ["#141414", "#ffffff"], x: 7.4, o: 0.75, y: 0.3, lh: 0.195, w: 1.5 } },
     { kind: "strip", addr: "204 Beaudesert Road", a: [-73.8, -173.8], b: [-60.9, -151.3], n: [-0.8675, 0.4974], kerb: 1.22, across: 13.42, eave: 51.5, wall: "#e9e7e2", awning: "#2b2b2b",
+      // (upstairs from Baba Burger along: cream render, a round bay with three slot windows at its end, white canvas hoods over a row of
+      // small windows; Ho Choi and the barber are single storey. Street View, September 2026)
+      upper: { h: 6.3, wall: "#f0e1cc", x0: 5.9, depth: 8, hoods: [5.2, 12, 8.4, 22.8], tower: { x: 7.6, r: 1.7, out: 1.1, y0: 3.5, h: 6.7, slots: 3 }, slotY: [4.1, 6.1] },
       shops: [{ n: "Ho Choi", sub: "CHINESE RESTAURANT", w: 3.6, c: ["#c62828", "#ffffff"], what: "Chinese restaurant", jump: true }, { n: "Eddy's Barber Shop", t: "BARBER", w: 3.0, c: ["#f1e7e8", "#1d1d1d"], what: "Barber", jump: true }, { n: "Baba Burger", w: 3.4, c: ["#1d1d1d", "#ffffff"], what: "Burgers", jump: true },
         { n: "Zeitoon", t: "zeitoon restaurant", w: 4.2, c: ["#161616", "#d9b24a"], what: "Persian and Afghan restaurant", jump: true }, { n: "Maywand", sub: "GROCERY", w: 3.8, c: ["#efe6cf", "#3a2a1a"], what: "Afghan grocery" }, { plain: true, w: 5.3, posters: true }, { n: "Snap Laundromat", t: "Laundromat", w: 2.6, c: ["#1f9d55", "#ffffff"], posters: true, what: "Laundromat (Shop 8/206)" }] },  // (north to south as they stand in Street View, October 2024 and September 2025: Ho Choi is at the corner end. The plain front was Kabul Bazar, closed for good on Google Maps)
     { kind: "pub", addr: "215 Beaudesert Road", a: [-94.9, -116.9], b: [-92.7, -136.9], n: [0.994, 0.1093], kerb: 11.08, across: 22.08, eave: 0, wall: "#f2f0ea",
@@ -10037,9 +10040,10 @@ const handle = async (m, post) => {
     { kind: "strip", addr: "152 Beaudesert Road", a: [-136.9, -274.4], b: [-130.2, -263.4], n: [-0.854, 0.5202], kerb: 2.06, across: 12.36, eave: 48.6, wall: "#f3f1ec", awning: "#7e1b1b",
       shops: [{ n: "Mim Halal Group", sub: "HALAL BUTCHER & GROCERY", w: 12.9, c: ["#f6d21c", "#c8102e"], posters: true, what: "Halal butcher (Google Maps, November 2026)", jump: true }] },
     { kind: "strip", addr: "160 Beaudesert Road", a: [-124.9, -257.6], b: [-120.9, -251.3], n: [-0.8442, 0.536], kerb: 2.96, across: 13.26, eave: 50.1, wall: "#d6d6d2", awning: "#1f4f9a",
+      gable: { x0: 4.5, x1: 7.3, h: 1.9, col: "#e3a382" },  // (a salmon pointed gable over King of Hong Kong: Street View, September 2026)
       shops: [{ n: "La Pupetta Store", w: 4.2, c: ["#1f4f9a", "#ffffff"], what: "Supermarket", jump: true },
         { n: "King of Hong Kong", sub: "DIM SIM & TAKEAWAY", w: 3.3, c: ["#f3e2b3", "#b3261e"], posters: true, what: "Dim sims and Chinese takeaway (162)", jump: true }] },
-    { kind: "strip", addr: "166-168 Beaudesert Road", a: [-120.6, -251.1], b: [-112.5, -238.8], n: [-0.8352, 0.55], kerb: 3.0, across: 13.3, eave: 51.5, wall: "#ece6d4", awning: "#3a3d42", windows: [3.9, 5.0, 4, "#2a3640"],
+    { kind: "strip", addr: "166-168 Beaudesert Road", a: [-120.6, -251.1], b: [-112.5, -238.8], n: [-0.8352, 0.55], kerb: 3.0, across: 13.3, eave: 51.5, wall: "#ece6d4", awning: "#3a3d42", windows: [3.9, 5.1, 4, "#2a3640", 0.6, 14.1, 1.7],  // (four windows, each in a deep white surround: Street View, September 2026)
       shops: [{ n: "Moorooka Chiropractic Centre", t: "CHIROPRACTOR", w: 5.8, c: ["#3a3d42", "#ffffff"], what: "Chiropractor", jump: true }, { plain: true, w: 3.9 }, { n: "Skye Therapy", sub: "OCCUPATIONAL THERAPY", w: 5.0, c: ["#ffffff", "#2a3640"], what: "Occupational therapy (Level 1/168)" }] },
     { kind: "strip", addr: "173-175 Beaudesert Road", a: [-126.9, -210.1], b: [-136.3, -225.4], n: [0.852, -0.5235], kerb: 3.68, across: 14.28, eave: 49.6, wall: "#efede8", awning: "#5d6874", windows: [3.8, 4.9, 6, "#1f2a33"],
       shops: [{ n: "Way Future", sub: "SUPPORT SERVICES", w: 3.4, c: ["#ffffff", "#1b8a8f"], what: "Disability support services (4/173)" }, { n: "Red Sea Grocery", w: 5.0, c: ["#b9bcc0", "#3a3d42"], what: "African grocery, through to Moorvale Lane" }, { n: "TOBACCONIST", w: 4.4, c: ["#f2c230", "#1d1d1d"], what: "Cigar Heaven, tobacconist (173; Google Maps, November 2026)" }, { n: "Habos Kitchen", sub: "CAFE & RESTAURANT", w: 5.2, c: ["#2a2c30", "#f3e6c8"], what: "Cafe and restaurant", jump: true }] },
@@ -10122,6 +10126,8 @@ const handle = async (m, post) => {
     // more of Moorooka (Ash, 16 November 2026: "Add more real moorooka businesses. Not too high res", "Add the bowls club and other missing
     // venues"): each placed by the Queensland address register (or the food list's point) on the wall of its building facing the street
     { kind: "strip", addr: "193 Beaudesert Road", a: [-108.4, -182.9], b: [-118.1, -198.5], n: [0.8492, -0.528], kerb: 2.75, across: 13.45, eave: 51.8, wall: "#ecebe6", awning: "#e6e4de",
+      // (above the awning: a skirt of grey roof tiles, and over it a tall charcoal panel to the top of the wall. Street View, October 2024)
+      upper: { h: 7.0, from: 4.5, wall: "#2a2c30", cap: "#3a3d42", x0: 1.7, x1: 14.7, depth: 0.35, skirt: { y: 3.55, h: 1.0, out: 1.25, col: "#7f858c", x0: 0, x1: 15.8 } },
       shops: [{ n: "Roo Kitchen & Bar", w: 7, c: ["#1f1f1f", "#e8b84a"], what: "Cafe and bar", jump: true }, { n: "H24 Gym", sub: "24/7 GYM", w: 11.4, c: ["#141414", "#d9b24a"], what: "Boutique 24/7 gym (2/193; Google Maps, November 2026)", jump: true }] },  // (two fronts under one awning, the gym's black sign on its edge (Street View, September 2025))
     // 201-207 (Street View, October 2024): the kebab shop by the Willow is now Cha Charcoal Grill, on the corner at 207 with its green
     // banners; next along, a barber, Dinder Giftware and Ariana Supermarket & Bakery
@@ -11861,9 +11867,39 @@ const handle = async (m, post) => {
             if (bay) box(x-1.2, x+1.2, y+1.47, y+1.55, 0.02, 0.73, "#858d8c", 0.26);
           }
         }
+        // an upper storey the survey left off (Street View): its front wall up from the awning, a few metres of its body behind, a cap
+        // along its parapet, white canvas hoods over its windows (hoods: [y of the window tops, how many, x0, x1]) and a round bay at one
+        // end (tower: { x, r, h, slots }). Heights in metres above the footpath; colours of the faces only, no pictures (Ash, 26 November
+        // 2026: "Do the buildings", the Beaudesert Road shops at the Made in Africa arcade's level of detail)
+        if (f.upper) { const U = f.upper, top = U.h, y0 = U.from ?? Math.min(wallH, 3.2), d = U.depth ?? 6, cap = U.cap || shade(U.wall, 0.9);
+          // (a sloping skirt of roof tiles along the front, under the upper wall: skirt { y, h, out, col, x0, x1 })
+          if (U.skirt) { const K2 = U.skirt, x0 = K2.x0 ?? 0, x1 = K2.x1 ?? len, c = rgb(K2.col), dk = rgb(shade(K2.col, 0.78)), yt = K2.y + K2.h;
+            quad(at(x0, yt, 0.05), at(x0, K2.y, K2.out), at(x1, K2.y, K2.out), at(x1, yt, 0.05), c);
+            for (const k of [0.3, 0.62]) { const yy = yt - K2.h * k, oo = 0.05 + (K2.out - 0.05) * k; quad(at(x0, yy, oo + 0.012), at(x0, yy - 0.05, oo + 0.06), at(x1, yy - 0.05, oo + 0.06), at(x1, yy, oo + 0.012), dk); }  // (courses of tiles)
+            tri(at(x0, yt, 0.05), at(x0, K2.y, 0.05), at(x0, K2.y, K2.out), dk); tri(at(x1, yt, 0.05), at(x1, K2.y, K2.out), at(x1, K2.y, 0.05), dk);
+            quad(at(x0, K2.y, K2.out), at(x0, K2.y - 0.1, K2.out), at(x1, K2.y - 0.1, K2.out), at(x1, K2.y, K2.out), rgb("#e9e7e1")); }
+          box(U.x0 ?? 0, U.x1 ?? len, y0, top, -d, 0.06, U.wall); box((U.x0 ?? 0) - 0.06, (U.x1 ?? len) + 0.06, top, top + 0.16, -d, 0.14, cap);
+          if (U.hoods) { const [hy, n, x0 = 1, x1 = len - 1] = U.hoods, step = (x1 - x0) / n, W = rgb("#f1f0ea"), Wd = rgb("#d9d8d0");
+            for (let i = 0; i < n; i++) { const a0 = x0 + i * step + 0.15, a1 = x0 + (i + 1) * step - 0.15;
+              quad(at(a0, hy + 0.25, 0.08), at(a0, hy - 0.45, 0.85), at(a1, hy - 0.45, 0.85), at(a1, hy + 0.25, 0.08), W);
+              tri(at(a0, hy + 0.25, 0.08), at(a0, hy - 0.45, 0.08), at(a0, hy - 0.45, 0.85), Wd); tri(at(a1, hy + 0.25, 0.08), at(a1, hy - 0.45, 0.85), at(a1, hy - 0.45, 0.08), Wd); } }
+          if (U.tower) { const { x: tx, r, h: th, slots = 0, y0: ty = y0, out = r * 0.6 } = U.tower, segs = 10, c = rgb(shade(U.wall, 1.03)), cs = rgb(cap), g = rgb("#33404a"), A0 = 0,
+              P = (a, y, rr = r) => at(tx + rr * Math.cos(a), y, rr * out / r * Math.sin(a));  // (over the awning, standing out less than it is wide)
+            for (let i = 0; i < segs; i++) { const a = A0 + Math.PI * i / segs, b2 = A0 + Math.PI * (i + 1) / segs;
+              quad(P(b2, ty), P(a, ty), P(a, th), P(b2, th), c); { const u = rgb(shade(U.wall, 0.7)); tri(P(a, ty), P(b2, ty), at(tx, ty, 0), u); tri(P(b2, ty), P(a, ty), at(tx, ty, 0), u); } tri(at(tx, th + 0.16, 0), P(b2, th + 0.16, r + 0.08), P(a, th + 0.16, r + 0.08), cs);
+              quad(P(b2, th), P(a, th), P(a, th + 0.16, r + 0.08), P(b2, th + 0.16, r + 0.08), cs); }
+            for (let k = 0; k < slots; k++) { const a = Math.PI * (k + 1) / (slots + 1), da = 0.11;
+              quad(P(a + da, U.slotY?.[0] ?? 4.2, r + 0.02), P(a - da, U.slotY?.[0] ?? 4.2, r + 0.02), P(a - da, U.slotY?.[1] ?? th - 0.6, r + 0.02), P(a + da, U.slotY?.[1] ?? th - 0.6, r + 0.02), g); } } }
+        // a pointed gable standing up over the parapet (gable: { x0, x1, h, col, y }: y the top of the wall unless given)
+        if (f.gable) { const G = f.gable, gy = G.y ?? wallH, xm = (G.x0 + G.x1) / 2, c = rgb(G.col), dk = rgb(shade(G.col, 0.8)), e = rgb(shade(G.col, 0.72)), t2 = 0.3;
+          tri(at(G.x0, gy - 0.1, 0.06), at(G.x1, gy - 0.1, 0.06), at(xm, gy + G.h, 0.06), c); tri(at(G.x1, gy - 0.1, 0.06 - t2), at(G.x0, gy - 0.1, 0.06 - t2), at(xm, gy + G.h, 0.06 - t2), dk);
+          quad(at(G.x0 - 0.08, gy - 0.12, 0.1), at(xm, gy + G.h + 0.1, 0.1), at(xm, gy + G.h + 0.1, 0.06 - t2 - 0.04), at(G.x0 - 0.08, gy - 0.12, 0.06 - t2 - 0.04), e);
+          quad(at(xm, gy + G.h + 0.1, 0.1), at(G.x1 + 0.08, gy - 0.12, 0.1), at(G.x1 + 0.08, gy - 0.12, 0.06 - t2 - 0.04), at(xm, gy + G.h + 0.1, 0.06 - t2 - 0.04), e); }
         // windows along an upper floor: [y0, y1, how many, colour, x0, x1]
-        if (f.windows) for (const [y0, y1, n, col = "#26333d", x0 = 0.6, x1 = len - 0.6] of Array.isArray(f.windows[0]) ? f.windows : [f.windows]) { const step = (x1 - x0) / n;
-          for (let i = 0; i < n; i++) { const a0 = x0 + i * step + 0.25, a1 = x0 + (i + 1) * step - 0.25, ym = y0 + (y1 - y0) * 0.64, fr = "#e9e7e1";
+        // (a seventh, the width of each window, sets each one in the middle of its share with a deep white surround: the chiropractor's)
+        if (f.windows) for (const [y0, y1, n, col = "#26333d", x0 = 0.6, x1 = len - 0.6, ww] of Array.isArray(f.windows[0]) ? f.windows : [f.windows]) { const step = (x1 - x0) / n;
+          for (let i = 0; i < n; i++) { const cx = x0 + (i + 0.5) * step, a0 = ww ? cx - ww / 2 : x0 + i * step + 0.25, a1 = ww ? cx + ww / 2 : x0 + (i + 1) * step - 0.25;
+            if (ww) { box(a0 - 0.22, a0 - 0.04, y0 - 0.16, y1 + 0.18, 0.0, 0.2, "#f2f1ec"); box(a1 + 0.04, a1 + 0.22, y0 - 0.16, y1 + 0.18, 0.0, 0.2, "#f2f1ec"); box(a0 - 0.22, a1 + 0.22, y1 + 0.04, y1 + 0.18, 0.0, 0.2, "#f2f1ec"); } ym = y0 + (y1 - y0) * 0.64, fr = "#e9e7e1";
             box(a0 - 0.07, a1 + 0.07, y0 - 0.02, y1 + 0.07, 0.02, 0.07, fr); quad(at(a0, y0, 0.075), at(a1, y0, 0.075), at(a1, y1, 0.075), at(a0, y1, 0.075), rgb(col));
             quad(at(a0, ym, 0.078), at(a1, ym, 0.078), at(a1, y1, 0.078), at(a0, y1, 0.078), rgb(shade(col, 1.45)));  // the sky in its top pane (Ash, 20 November 2026: "a little unpolished")
             box(a0, a1, ym - 0.03, ym + 0.03, 0.07, 0.1, fr); if (a1 - a0 > 1.4) box((a0 + a1) / 2 - 0.03, (a0 + a1) / 2 + 0.03, y0, y1, 0.07, 0.1, fr);
