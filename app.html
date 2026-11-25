@@ -18174,7 +18174,7 @@ const handle = async (m, post) => {
       return section;
     };
     const meClose = () => { meBox.hidden = true; meBtn.setAttribute("aria-expanded", "false"); };
-    const meDraw = () => { meBox.replaceChildren();
+    const meDraw = () => { meBox.replaceChildren(); const touch = matchMedia("(pointer: coarse)").matches;  // (it was used here with nothing called touch in reach, so Settings came up empty: Ash, 25 November 2026, "Settings is not loading")
       const head = el("div", "bs-me-head"), x = el("button", "bs-me-x", "\u00d7"); x.type = "button"; x.setAttribute("aria-label", "Close settings"); x.onclick = () => { meClose(); meBtn.focus(); }; head.append(el("h2", "", "Settings"), x);
       // your player: the name over you and the colour of your top
       const you = el("div", "bs-me-sec"), lab = el("label", "bs-me-lbl", "Player name"), inp = el("input"); inp.id = "bsMeName"; lab.htmlFor = "bsMeName"; inp.type = "text"; inp.maxLength = 16; inp.autocomplete = "off"; inp.placeholder = playerName(); try { inp.value = localStorage.getItem("an-player") || ""; } catch {}
