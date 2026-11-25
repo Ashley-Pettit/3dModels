@@ -3285,3 +3285,13 @@ Ash: "Make the letterbox icon slightly bigger and just slightly higher. Allow me
 Checked on a local build at phone size as Ash, standing at the pier: the icon before and after, the card, and a letter typed and sent
 (the post caught by the test, not sent: one message, to, from and text as typed). Explore's input and loading are not touched; the
 two-finger test in Moorooka is in the pull request.
+
+## One car family in every town (25 November 2026)
+
+Ash: "Push the new cars also into Logan and moorooka", then "Update the parked cars and such with these. Remove the other car
+models to save space". Bangerz's sedan, wagon and ute (ai-forge `src/features/inverloch3d/life.ts`, `drawCar`) are packed into
+`app.html` as `TOWN_CAR_SHAPES`. Moorooka's and Logan's traffic, the Magic Mile's car yards and the white ute in a drive use
+`townCarPart`; the models' parked and driven cars use `window.anCarShape`, patched into `moorooka-model.js` ?v=72 (`Du`, the
+parked car, tinted per car as before) and `logan-model.js` ?v=46 (`Rs`: a sedan, wagon or ute in turn; buses unchanged). The old
+box sedan, the car yard's car and both models' own car shapes are gone. When either model is rebuilt from ai-forge, make the same
+change there.
