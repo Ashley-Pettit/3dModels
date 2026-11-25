@@ -166,3 +166,21 @@ test("simultaneous perpendicular travel catches a crossing wholly between each e
   assert.equal(c.s,before); assert.equal(c.v,0); // at its new pose the walker also clears the end of the NPC route
   tick(); assert.ok(c.s>before);
 });
+
+test("Moorooka and Logan traffic get host-drawn indicators: added on first flash, left lenses on the car's left (+X)", async()=>{
+  for(const place of ["moo","logan"]){
+    const added=[];
+    const model={addParts:list=>{const h={list,mats:list.map(q=>q.matrix),setMatrix(i,e){h.mats[i]=e;},remove(){h.gone=true;}}; added.push(h); return h;}};
+    const {ctx}=await world(place,model);
+    const car=ctx.townSignalCar(model,1,"#2d5ea8",[1,0,0,0,0,1,0,0,0,0,1,0,5,0,7,1]);
+    const body=added.length; car.setSignal(0); assert.equal(added.length,body,"nothing added until a lens is lit");
+    car.setMatrix(0,[1,0,0,0,0,1,0,0,0,0,1,0,5,0,7,1]); car.setSignal(-1);
+    const lenses=added.at(-1); assert.equal(lenses.list.length,2);
+    const xs=i=>Array.from(lenses.list[i].positions).filter((_,k)=>k%3===0);
+    assert.ok(xs(0).every(x=>x>0) && xs(1).every(x=>x<0));
+    assert.equal(lenses.mats[0][12],5); assert.equal(lenses.mats[1][13],-1e5); // left lit at the car, right away below ground
+    car.setSignal(1); assert.equal(lenses.mats[0][13],-1e5); assert.equal(lenses.mats[1][14],7);
+    car.setMatrix(0,[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]); assert.equal(lenses.mats[1][13],-1e5); // a car not drawn takes its lenses with it
+    car.remove(); assert.ok(lenses.gone);
+  }
+});
