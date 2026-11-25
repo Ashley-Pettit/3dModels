@@ -9005,7 +9005,7 @@ const handle = async (m, post) => {
           const opt = (v, t, s) => { const b = el("button"); b.type = "button"; b.setAttribute("role", "radio"); b.append(el("b", "", t), el("span", "", s)); b.onclick = () => { gm = v; draw(); }; return b; };
           // (Ash, 25 November 2026: "Style - controls style. Gamer (play as atm) or simple (google maps)")
           const std = opt(false, "Gamer", touch ? "Walk the streets with the sticks" : "Walk the streets, game controls"), gmb = opt(true, "Simple", touch ? "Like Google Maps: tap to walk there, drag to look" : "Like Google Maps: click to walk there, hold and drag to look. Mouse stays free");
-          seg.append(std, gmb); card.append(el("p", "bs-wel-lbl", "Controls style"), seg);
+          seg.append(std, gmb); if (!touch) card.append(el("p", "bs-wel-lbl", "Controls style"), seg); else gm = true;  // (no choice on a phone: Simple)
           const tick = (t, on) => { const l = el("label", "bs-wel-tick"), c = el("input"); c.type = "checkbox"; c.checked = on; l.append(c, el("span", "", t)); return [l, c]; };
           const [fsL, fsC] = needFs ? tick("Play full screen (O switches it any time)", true) : [null, null];
           const [tutL, tutC] = needTut ? tick(F.rod?.offer ? "Set up my keys first" : "Show me the controls (under a minute)", true) : [null, null];
@@ -9622,12 +9622,14 @@ const handle = async (m, post) => {
         modeBox.onclick = e => { const bn = e.target.closest("[data-town-mode]"); if (!bn) return; toMode(bn.dataset.townMode === "walk"); bn.blur(); };  // (Explore or Free view: the side you tap)
         // Google Maps style (Ash, 19 November 2026: Standard or Google Maps, "Both" the controls and the look): the map from above (Explore
         // mode, with its drag, pinch and twist), in map colours; your player waits where you were, under the You are here pin
-        BS.mapStyle = (on, start) => { try { localStorage.setItem("an3d-style", on ? "gmaps" : "std"); } catch {} document.body.classList.toggle("bsgmap", on);
+        // (a phone is always Simple, which keeps the quick tap to walk there: Ash, 25 November 2026, "On mobile remove gamer and simple control
+        // toggle. On mobile just use simple so it keeps the quick tap auto move". Its sticks stay as they are)
+        BS.mapStyle = (on, start) => { if (matchMedia("(pointer: coarse)").matches) on = true; try { localStorage.setItem("an3d-style", on ? "gmaps" : "std"); } catch {} document.body.classList.toggle("bsgmap", on);
           // (Simple no longer goes up to Free view by itself: Ash, 25 November 2026, "Google map style controls don't go to free view
           // automatically". It drops the mouse look: Simple has no lock or unlock)
           if (on && document.pointerLockElement) { try { document.exitPointerLock?.(); } catch {} }
           if (!T.on || BS.town !== T) return; if (!on && !T.walk && !start) toMode(true); };
-        try { document.body.classList.toggle("bsgmap", localStorage.getItem("an3d-style") === "gmaps"); } catch {}
+        try { document.body.classList.toggle("bsgmap", matchMedia("(pointer: coarse)").matches || localStorage.getItem("an3d-style") === "gmaps"); } catch {}
 
         // ---- flying: drag the view to move, pinch (or scroll) to zoom, two fingers (or right-drag) to turn ----
         const look3 = () => { const cp = Math.cos(F.pitch); return [-Math.sin(F.yaw) * cp, Math.sin(F.pitch), -Math.cos(F.yaw) * cp]; };
@@ -18081,7 +18083,7 @@ const handle = async (m, post) => {
         const gmNow = (() => { try { return localStorage.getItem("an3d-style") === "gmaps"; } catch { return false; } })();
         for (const [v, label] of [[false, "Gamer"], [true, "Simple"]]) { const bn = el("button", "", label); bn.type = "button"; bn.setAttribute("aria-pressed", String(gmNow === v));
           bn.onclick = () => { if (gmNow === v) return; meClose(); BS.mapStyle?.(v); toast(v ? (touch ? "Simple controls: tap to walk there, drag to look." : "Simple controls: click to walk there, hold and drag to look.") : "Gamer controls: on foot, with the game controls.", 2800); }; sr.append(bn); }
-        st.append(el("span", "bs-me-lbl", "Controls style"), sr); }
+        st.append(el("span", "bs-me-lbl", "Controls style"), sr); if (touch) st.hidden = true; }  // (a phone is always Simple)
       const as = el("div", "bs-me-sec"), rl = el("div", "bs-me-role"); rl.setAttribute("role", "group"); rl.setAttribute("aria-label", "Play as");
       for (const [v, label] of [["explorer", "Explorer"], ["builder", "Construction worker"]]) { const bn = el("button", "", label); bn.type = "button"; bn.setAttribute("aria-pressed", String(townRole() === v));
         bn.onclick = () => { if (townRole() === v) return; try { if (v === "builder") localStorage.setItem("an-player-role", "builder"); else localStorage.removeItem("an-player-role"); } catch {}
@@ -21632,7 +21634,7 @@ const handle = async (m, post) => {
           const alt = Math.max(0, P.y - ground(P.x, P.z));
           hint(!P.air ? (!up ? "The rotor is spinning up" : touch ? "Hold Up to lift off" : "Hold \u2193 (or Space) to lift off") : "");  // in the air it is plain what to do (Ash, 15 November 2026)
           snd.set(0.3 + 0.6 * P.spin, 0.45 + 0.4 * Math.abs(climb), Math.abs(P.v), false, 0);
-          o = P; D = 14 + Math.min(8, Math.abs(P.v) / 6); text = Math.round(Math.abs(P.v) * 3.6) + " km/h" + (P.air ? " \u00b7 " + Math.round(alt) + " m" : "");
+          o = P; D = 14 + Math.min(8, Math.abs(P.v) / 6); text = Math.round(Math.abs(P.v) * 3.6) + " km/h";  // (the speed only, not the height: Ash, 25 November 2026, "Remove 5m up it clashes over Arlo. Leave just the speed")
         } else {
         // on the ground S brakes and then backs it up, slowly, so a plane nosed into a wall can get out again (Ash, 14 November
         // 2026: "the plane needs reverse when on the ground. Sometimes ive been stuck before and unable to fly again")
@@ -21668,7 +21670,7 @@ const handle = async (m, post) => {
         snd.set(0.25 + 0.75 * bsClamp(P.spin * (0.6 + 0.4 * P.v / CRUISE), 0, 1), thr > 0.05 ? 0.5 + 0.5 * thr : 0.2, P.v, jet && thr > 0.05, !P.air && thr < -0.05 && P.v > 4 ? 0.7 : 0);
         // the power shows as a bar beside Faster and Slower while it flies (the speed chip has no room for it on a phone)
         { const pw = pTouch && P.air ? Math.round(P.pow * 20) / 20 : null; if (pw !== powShown) { powShown = pw; document.body.classList.toggle("bspow", pw != null); if (pw != null) udBox?.style.setProperty("--pow", pw); } }
-        o = P; D = 13 + Math.min(16, P.v / 7); text = Math.round(P.v * 3.6) + " km/h" + (P.air ? " · " + Math.round(alt) + " m" : ""); }
+        o = P; D = 13 + Math.min(16, P.v / 7); text = Math.round(P.v * 3.6) + " km/h"; }  // (the speed only, as the helicopter)
       }
       if (chip.textContent !== text) chip.textContent = text;
       if (idle > 1.2 && o.v > 1) { const e = Math.min(1, dt * 2.5); off[0] -= off[0] * e; off[1] -= off[1] * e; }  // left alone, the view settles back behind
@@ -21988,7 +21990,7 @@ const handle = async (m, post) => {
         { const gb = $("bsGpsBtn"); if (gb) { gb.classList.remove("bsflash"); void gb.offsetWidth; gb.classList.add("bsflash"); setTimeout(() => gb.classList.remove("bsflash"), 2000); } }
         // and Settings flashes teal four times, where the controls style is (Ash, 25 November 2026: "When a user gets in a car flash the
         // settings button in teal 4 times")
-        { const sb = $("bsMeBtn"); if (sb) { sb.classList.remove("bsteal"); void sb.offsetWidth; sb.classList.add("bsteal"); setTimeout(() => sb.classList.remove("bsteal"), 2600); } } }
+        if (!matchMedia("(pointer: coarse)").matches) { const sb = $("bsMeBtn"); if (sb) { sb.classList.remove("bsteal"); void sb.offsetWidth; sb.classList.add("bsteal"); setTimeout(() => sb.classList.remove("bsteal"), 2600); } } }
       if (veh === "car" && gmDesk() && !BS.gmDriveTip) { BS.gmDriveTip = true; setTimeout(() => { if (veh === "car" && !auto) toast("Hold the left mouse button to drive, and move the mouse left or right to steer. Hold the right button to brake and reverse. Or click the road and the car drives you there.", 8000); }, 700); }
       if (place === "inv") { trail.length = 0; unReset(); }
       C.in = true; camOff = null; camBack = 0; off = [wrap(F.yaw - camYaw), bsClamp(F.pitch + 0.2, -1, 0.55)]; idle = 0; last = [F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch];
