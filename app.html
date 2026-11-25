@@ -1787,6 +1787,15 @@ body.bsme .bs-height, body.bstown.bsme .bs-height { left: 16px; top: calc(62px +
 .bs-me-new[open] summary { margin-bottom: 6px; }
 .bs-me-newi { display: block; width: 100%; text-align: left; margin: 0 0 4px; padding: 8px 12px; border: 0; border-radius: 10px; background: rgba(255, 255, 255, 0.07); color: #fff; font: 650 0.8rem/1.25 var(--ui); cursor: pointer; }
 .bs-me-newi small { display: block; margin-top: 2px; font-weight: 500; opacity: 0.72; }
+.bs-me-patches summary { box-sizing: border-box; min-height: 44px; padding: 11px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.12); font: 700 0.84rem/1.4 var(--ui); cursor: pointer; overflow-wrap: anywhere; }
+.bs-me .bs-me-patch-list { gap: 0; padding: 0; list-style: none; margin-top: 6px; }
+.bs-me-patch-list li + li { border-top: 1px solid rgba(255, 255, 255, 0.14); }
+.bs-me-patch-list summary { padding-inline: 8px; border-radius: 6px; background: none; font-weight: 600; }
+.bs-me-patch-detail { display: grid; gap: 8px; padding: 2px 10px 12px; overflow-wrap: anywhere; }
+.bs-me .bs-me-patch-message { white-space: pre-wrap; color: rgba(255, 255, 255, 0.86); font-size: 0.8rem; line-height: 1.5; }
+.bs-me-patch-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.bs-me-patch-meta a { color: #b8d3ff; text-underline-offset: 2px; }
+.bs-me .bs-me-patch-empty { margin: 8px; }
 .bs-me-lbl { font: 650 0.74rem/1.2 var(--ui); color: rgba(255, 255, 255, 0.7); }
 .bs-me input { width: 100%; box-sizing: border-box; height: 40px; padding: 0 12px; border: 0; border-radius: 10px; background: #fff; color: #1b1830; font: 600 16px var(--ui); }
 .bs-me-tops { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
@@ -2466,6 +2475,7 @@ body.bsfly .toast.show { transform: translate(-50%, 0); }
     <button class="bs-fly-x bs-me-btn" type="button" id="bsMeBtn" data-key="M" aria-expanded="false" aria-controls="bsMe" aria-label="Settings" title="Settings" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     <button class="bs-fly-x bs-share-btn" type="button" id="bsShareBtn" data-key="P" aria-label="Share a link to this 3D model" title="Share" aria-expanded="false" aria-controls="bsShareBox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></button>
     <div class="bs-me" id="bsMe" hidden></div>
+    <!-- EXPLORE_PATCH_NOTES -->
     <button class="bs-fly-x bs-emote" type="button" id="bsEmoteBtn" data-key="T" aria-expanded="false" aria-controls="bsEmotes" hidden>Emote</button>
     <div class="bs-emotes" id="bsEmotes" hidden></div>
     <button class="bs-fly-x bs-chat" type="button" id="bsChatBtn" data-key="Enter" aria-controls="bsChatBar" hidden>Chat</button>
@@ -18117,6 +18127,52 @@ const handle = async (m, post) => {
     const meBtn = $("bsMeBtn"), meBox = $("bsMe"), myColour = () => { let c = NaN; try { c = parseInt(localStorage.getItem("an-player-colour"), 10); } catch {} return c >= 0 && c < TOPS.length ? c : -1; };
     const tell = id => { if (off) return; try { sendName?.([playerName(), myColour()], id); } catch {} };  // hidden: your name isn't sent either
     const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+    const patchNotes = () => {
+      const section = el("details", "bs-me-patches");
+      section.append(el("summary", "", "Patch notes"));
+      section.ontoggle = () => {
+        if (!section.open) return;
+        section.ontoggle = null;
+        let commits;
+        try { commits = JSON.parse($("explore-patch-notes")?.textContent || "[]"); } catch { commits = []; }
+        if (!Array.isArray(commits) || !commits.length) {
+          section.append(el("p", "bs-me-patch-empty", "Patch notes are unavailable for this build."));
+          return;
+        }
+        const list = el("ol", "bs-me-patch-list");
+        list.setAttribute("role", "list");
+        const dates = new Intl.DateTimeFormat("en-AU", { dateStyle: "medium" });
+        for (const commit of commits) {
+          const entry = el("li"), details = el("details"), content = el("div", "bs-me-patch-detail");
+          details.append(el("summary", "", commit.subject), content);
+          if (commit.body) content.append(el("p", "bs-me-patch-message", commit.body));
+          const meta = el("div", "bs-me-patch-meta"), date = new Date(commit.date);
+          if (Number.isFinite(date.valueOf())) {
+            const time = el("time", "", dates.format(date));
+            time.dateTime = commit.date;
+            meta.append(time);
+          }
+          if (/^[0-9a-f]{40}$/.test(commit.sha)) {
+            const link = el("a", "", "View commit " + commit.sha.slice(0, 7));
+            link.href = "https://github.com/Ashley-Pettit/3dModels/commit/" + commit.sha;
+            link.target = "_blank";
+            link.rel = "noopener";
+            meta.append(link);
+          }
+          content.append(meta);
+          entry.append(details);
+          list.append(entry);
+        }
+        section.append(list);
+      };
+      // Let the browser handle disclosure keys without passing them into the game.
+      section.onkeydown = e => {
+        if (e.key === "Escape" || e.code === "KeyM") return;
+        F.held?.delete(e.code);
+        e.stopPropagation();
+      };
+      return section;
+    };
     const meClose = () => { meBox.hidden = true; meBtn.setAttribute("aria-expanded", "false"); };
     const meDraw = () => { meBox.replaceChildren();
       const head = el("div", "bs-me-head"), x = el("button", "bs-me-x", "\u00d7"); x.type = "button"; x.setAttribute("aria-label", "Close settings"); x.onclick = () => { meClose(); meBtn.focus(); }; head.append(el("h2", "", "Settings"), x);
@@ -18242,7 +18298,7 @@ const handle = async (m, post) => {
         for (const g of A.gold) sec.append(btn(g, "bs-me-go"));
         if (A.news.length) { const d = el("details", "bs-me-new"); d.append(el("summary", "", `New to check (${A.news.length})`)); for (const q of A.news) { const b = btn(q, "bs-me-newi"); b.append(el("small", "", q.what)); d.append(b); } sec.append(d); }
         return sec; };
-      meBox.append(head, you, st, as, sw, here, tm, app, ...(sug ? [sug] : []), ...(isAsh() && T.adminJumps ? [adminSec()] : []), ...(isAsh() ? exAshSecs(meDraw) : []), towns, ...(keysB ? [keysB] : []), tut, ...(wv ? [wv] : []), hi, priv, ver); };  // no Exit explore (Ash, 15 November 2026: "Remove exit explore"); Esc, or the browser's back, still leaves
+      meBox.append(head, patchNotes(), you, st, as, sw, here, tm, app, ...(sug ? [sug] : []), ...(isAsh() && T.adminJumps ? [adminSec()] : []), ...(isAsh() ? exAshSecs(meDraw) : []), towns, ...(keysB ? [keysB] : []), tut, ...(wv ? [wv] : []), hi, priv, ver); };  // no Exit explore (Ash, 15 November 2026: "Remove exit explore"); Esc, or the browser's back, still leaves
     // closes with its \u00d7, the gear again, or a tap anywhere else
     const meOut = e => { if (!meBox.hidden && !meBox.contains(e.target) && !meBtn.contains(e.target)) meClose(); }; document.addEventListener("pointerdown", meOut, true);
     document.body.classList.add("bsme"); meBtn.hidden = false; meBtn.onclick = () => { meBox.hidden = !meBox.hidden; meBtn.setAttribute("aria-expanded", String(!meBox.hidden)); if (!meBox.hidden) meDraw(); meBtn.blur(); };

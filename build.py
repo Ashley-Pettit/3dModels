@@ -11,6 +11,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 
 site = sys.argv[1] if len(sys.argv) > 1 else "_site"
@@ -39,6 +40,46 @@ _cams = os.path.join(here, "local", "wxcams.json")
 if os.path.exists(_cams):
     assert body.count("const WX_CAMS = {};") == 1
     body = body.replace("const WX_CAMS = {};", f"const WX_CAMS = {json.dumps(json.load(open(_cams, encoding='utf-8')), separators=(',', ':'))};")
+
+# AN_COMMIT can identify the checked-out files more accurately than the original
+# workflow trigger. Resolve it once for both the version label and patch notes.
+revision = os.environ.get("AN_COMMIT") or os.environ.get("GITHUB_SHA")
+if not revision:
+    try:
+        revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=here, stderr=subprocess.DEVNULL, text=True).strip()
+    except (OSError, subprocess.CalledProcessError):
+        revision = ""
+
+
+def patch_notes(commit):
+    if not re.fullmatch(r"[0-9a-fA-F]{7,64}", commit) or not os.path.exists(os.path.join(here, ".git")):
+        return []
+    try:
+        log = subprocess.check_output(
+            ["git", "log", "--no-merges", "-6", "-z", "--encoding=UTF-8", "--format=%H%x00%s%x00%b%x00%cI", commit, "--"],
+            cwd=here, stderr=subprocess.DEVNULL, encoding="utf-8", errors="replace",
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return []
+    notes = []
+    fields = log.split("\0")
+    for start in range(0, len(fields) - 3, 4):
+        sha, subject, message, date = fields[start:start + 4]
+        message = message.rstrip("\n")
+        description, _, last_paragraph = message.rpartition("\n\n")
+        if all(re.fullmatch(r"(?:Co-Authored-By|Claude-Session):[ \t]*\S.*", line, re.IGNORECASE)
+               for line in last_paragraph.split("\n")):
+            message = description.rstrip("\n")
+        notes.append({"sha": sha, "subject": subject, "body": message, "date": date})
+    return notes
+
+
+patch_notes_marker = "<!-- EXPLORE_PATCH_NOTES -->"
+patch_notes_script = ""
+if patch_notes_marker in body:
+    # Prevent a commit message from closing the script element inside the HTML parser.
+    notes = json.dumps(patch_notes(revision), separators=(",", ":")).replace("<", "\\u003c")
+    patch_notes_script = f'<script type="application/json" id="explore-patch-notes">{notes}</script>'
 
 head = f"""<!doctype html>
 <html lang="en-AU">
@@ -117,21 +158,13 @@ def stamped(hd, bd, folder):
     from datetime import datetime, timedelta, timezone
     now = datetime.now(timezone(timedelta(hours=10)))  # Brisbane time, shown to Rod and Ash
     built = f"{now.day} {now:%b %H:%M}"
-    # the git commit it was built from (shown to Ash next to the title, the same short id as GitHub and the update notes)
-    # (AN_COMMIT first: the news publish builds from main's newest files, which can be newer than the commit it started on)
-    commit = (os.environ.get("AN_COMMIT") or os.environ.get("GITHUB_SHA") or "")[:7]
-    if not commit:
-        try:
-            import subprocess
-            commit = subprocess.run(["git", "rev-parse", "--short=7", "HEAD"], capture_output=True, text=True, cwd=os.path.dirname(os.path.abspath(__file__))).stdout.strip()
-        except Exception:
-            commit = ""
-    return hd.replace("<head>\n", f'<head>\n<meta name="an-build" content="{build}">\n<meta name="an-built" content="{built}">\n<meta name="an-commit" content="{commit}">\n', 1)
+    return hd.replace("<head>\n", f'<head>\n<meta name="an-build" content="{build}">\n<meta name="an-built" content="{built}">\n<meta name="an-commit" content="{revision[:7]}">\n', 1)
 
 
 os.makedirs(site, exist_ok=True)
+index_body = body.replace(patch_notes_marker, patch_notes_script, 1)
 with open(os.path.join(site, "index.html"), "w", encoding="utf-8") as f:
-    f.write(stamped(head, body, site) + body.strip() + "\n</body>\n</html>\n")
+    f.write(stamped(head, index_body, site) + index_body.strip() + "\n</body>\n</html>\n")
 
 # The beta: beta/app.html, at /beta/, sharing the same news, voice and icons (everything resolves from the main folder).
 beta_src = os.path.join(here, "beta", "app.html")
@@ -210,6 +243,7 @@ if os.path.exists(os.path.join(here, "local", "brands.json")):
             assert lbody.count(a) == 1, a
             lbody = lbody.replace(a, z)
         lbody = re.sub(r'const APP_ICON = "data:image/png;base64,[^"]+";', lambda m: f'const APP_ICON = "{icon}";', lbody, count=1)
+        lbody = lbody.replace(patch_notes_marker, patch_notes_script, 1)
         lhead = (head.replace("<head>\n", '<head>\n<base href="../">\n', 1)
                      .replace(f"<title>{title}</title>", f"<title>{nm}</title>")
                      .replace(f'content="{title}"', f'content="{nm}"')
