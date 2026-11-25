@@ -20419,7 +20419,7 @@ const handle = async (m, post) => {
   function townWheelParts(lay, lift = 0) { const key = lay + "/" + lift; if (townWheelCache[key]) return townWheelCache[key];
     const L = TOWN_WHEELS[lay], K = 5, lin = h => { const v = parseInt(h.slice(1), 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255].map(c => Math.pow(c / 255, 2.2)); }, SIL = lin("#e2e6ea"), HUB = lin("#9aa1a8");
     const out = []; for (let f = 0; f < K; f++) { const P = [], N = [], C = [], a0 = f / K * Math.PI * 2 / 5;
-      for (const sx of [-1, 1]) for (const zc of L.z) { const x = sx * (L.x + 0.012), cy = L.y + lift, R = L.r * 0.78, pt = (a, r) => [x, cy + Math.cos(a) * r, zc + Math.sin(a) * r];
+      for (const sx of [-1, 1]) for (const zc of L.z) { const x = sx * (L.x + 0.004), cy = L.y + lift, R = L.r * 0.64,  /* (flush on the wheel and inside the tyre: Ash, 25 November 2026, "The hubcaps of the wheels stick out a bit, like not attached to wheels") */ pt = (a, r) => [x, cy + Math.cos(a) * r, zc + Math.sin(a) * r];
         const tri = (A, B, Cc, col) => { for (const q of [A, B, Cc]) { P.push(...q); N.push(sx, 0, 0); C.push(...col); } };
         const sp = (a, rr, w) => { const ca = Math.cos(a), sa = Math.sin(a); return [x, cy + ca * rr - sa * w, zc + sa * rr + ca * w]; };  // rr out along the spoke, w across it
         for (let k = 0; k < 5; k++) { const a = a0 + k * Math.PI * 2 / 5, A = sp(a, 0.05, -0.045), B = sp(a, 0.05, 0.045), Cc = sp(a, R, 0.03), D = sp(a, R, -0.03); tri(A, B, Cc, SIL); tri(A, Cc, D, SIL); }  // the spokes, 9 cm wide at the hub, 6 at the rim
