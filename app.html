@@ -1638,14 +1638,16 @@ body.bscam #bsTown .bs-review, body.bscam #bsTown .bs-ridecard { visibility: hid
 .bs-review button.x { position: absolute; top: 4px; right: 4px; min-height: 40px; width: 40px; padding: 0; background: none; font-size: 1.3rem; }
 .bs-review button:focus-visible { outline: 2px solid #ffd166; outline-offset: 2px; }
 /* Moorooka's locals: what each offers (the mechanic's and the vet's five upgrades as a list), and the post office's letters */
-.bs-offer { max-height: calc(100% - 300px); overflow-y: auto; }
+.bs-offer { max-height: calc(100% - 124px - env(safe-area-inset-top) - 300px); overflow-y: auto; overscroll-behavior: contain; }
+/* (it ends above the Boost and Handbrake buttons and the sticks, which drew over it and hid Not today: it was 300 px short of the whole
+   screen, but it starts 124 px down. Ash, 25 November 2026, the mechanic's list: "Polish this, off screen, check the vet and flick for similar") */
 /* (a phone on its side: room for the card, and its buttons kept in sight at the bottom as the rest scrolls: Ash, 18 November 2026, the
    hairdresser's Do my hair was out of sight) */
 @media (max-height: 520px) { .bs-offer { max-height: calc(100% - 136px); } }
-.bs-offer > div:last-child { position: sticky; bottom: -12px; padding-bottom: 2px; background: inherit; }
+.bs-offer > div:last-child { position: sticky; bottom: -12px; margin-top: 8px; padding: 8px 0 12px; background: #181a24; box-shadow: 0 -10px 12px -6px #181a24; }  /* (solid: the list scrolled up behind it showed through) */
 .bs-offer .bs-opts { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
-.bs-offer .bs-opts button { display: block; text-align: left; padding: 8px 12px; min-height: 48px; }
-.bs-offer .bs-opts button small { display: block; font-weight: 500; color: inherit; opacity: 0.85; }
+.bs-offer .bs-opts button { display: block; text-align: left; padding: 7px 11px; min-height: 44px; line-height: 1.25; }
+.bs-offer .bs-opts button small { display: block; font-weight: 500; font-size: 0.74rem; color: inherit; opacity: 0.85; }
 .bs-offer .bs-opts button small.bs-fx { font-weight: 700; opacity: 1; margin-top: 2px; }
 .bs-offer .bs-chips { display: flex; flex-wrap: wrap; gap: 6px; } .bs-offer .bs-chips button { min-height: 40px; padding: 0 12px; font-size: 0.8rem; }
 .bs-offer .bs-hairs > small { margin-top: 4px; }
@@ -5784,6 +5786,12 @@ const handle = async (m, post) => {
   let toastTimer;
   function toast(msg, ms = 3200) {
     const t = $("toast");
+    // in Explore, under whatever is across the top middle (the GPS's directions, the race's cards), not over it (Ash, 25 November 2026:
+    // "Try to make the toasts not over other text")
+    if (document.body.classList.contains("bsfly")) { let top = 0; const W = innerWidth, H = innerHeight;
+      for (const e of document.querySelectorAll(".bs-gps, .bs-race, .bs-race-dir, .bs-race-leg, .bs-race-auto, .bs-race-item, .bs-upchip, .bs-ridecard")) { if (e.hidden || e.closest("[hidden]")) continue;
+        const r = e.getBoundingClientRect(); if (!r.height || r.top < 70 || r.top > H * 0.45 || r.right < W * 0.3 || r.left > W * 0.7) continue; top = Math.max(top, r.bottom + 8); }
+      t.style.top = top ? Math.min(top, H * 0.55) + "px" : ""; } else t.style.top = "";
     t.textContent = msg;
     t.classList.add("show");
     clearTimeout(toastTimer);
