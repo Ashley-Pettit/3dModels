@@ -18872,8 +18872,8 @@ const handle = async (m, post) => {
   const RACE_CARS = [["turbo", "Rocket", "🚀", "Turbo: a much stronger Boost button (40% more top speed on boost, pushing harder)"], ["launch", "Launcher", "⚡", "Launch control: off the mark 2.6 times as fast"],
     ["nitro", "Nitro", "🔥", "Bigger nitro tank: boost lasts 3 times as long"], ["grip", "Grip", "🛣️", "Sports tyres: much sharper turns"]];
   // the power-ups: [emoji, name, what it does]. No weapons: birds, weather and a banana peel
-  const RACE_ITEMS = { turbo: ["🚀", "Turbo", "20 s of a mega Boost: twice the push and it refills twice as fast"], star: ["⭐", "Golden star", "7 s of 80% more speed and 40% sharper steering, and nothing can touch you"],
-    auto: ["🤖", "Autodrive cannon", "Your car blasts itself along the course for 10.5 s, 2.4 times as fast"],
+  const RACE_ITEMS = { turbo: ["🚀", "Turbo", "10 s of a mega Boost: three times the push and it refills three times as fast"], star: ["⭐", "Golden star", "7 s of 80% more speed and 40% sharper steering, and nothing can touch you"],
+    auto: ["🤖", "Autodrive cannon", "Your car blasts itself along the course for 8.5 s, 2.4 times as fast"],
     magpie: ["🐦", "Swooping magpie", "Swoops the racer just ahead: they spin out"], ibis: ["🪿", "Bin chicken", "Flies to whoever's in first and stops them dead"],
     storm: ["⛈️", "Storm cloud", "Rain on everyone ahead of you: they slow right down for 5 s"], peel: ["🍌", "Banana peel", "Dropped behind you: whoever drives over it spins"],
     warp: ["🌀", "Shortcut", "Jumps you 150 m further round the course"] };
@@ -18970,8 +18970,9 @@ const handle = async (m, post) => {
     // the power-up boxes: rows of three across the road, every 230 m along the car's way and twice on the possum's straight. Hit one and
     // that row is gone for you for 6 s
     const BOX = [], rowAt = (p, h, leg) => { const ux = Math.cos(h), uz = -Math.sin(h), r = { leg, h, back: 0, b: [] }; for (const u of [-2.6, 0, 2.6]) { const x = p.x + ux * u, z = p.z + uz * u; r.b.push({ x, z, y: ground(x, z) + 1.15 }); } BOX.push(r); };
-    for (let s = 170; s < sH - 120; s += 230) { const s2 = CAR ? pickS(s, 50) : s; rowAt(at(s2), headAt(s2), 0); }  // (Inverloch's on the straightest road within 50 m: not across a corner)
-    if (!CAR) for (const d of [70, 210]) rowAt(PW.at(d), PW.head(d), 1);
+    // (every 460 m and one on the possum's run, half what there were: Ash, 25 November 2026, "50% Less powerup boxes when racing")
+    for (let s = 170; s < sH - 120; s += 460) { const s2 = CAR ? pickS(s, 50) : s; rowAt(at(s2), headAt(s2), 0); }  // (Inverloch's on the straightest road within 50 m: not across a corner)
+    if (!CAR) for (const d of [140]) rowAt(PW.at(d), PW.head(d), 1);
     // the gum leaves (the possum's game, once its straight is done): up on the tops of trees, roofs and Kingwell Street's street lights, and
     // now and then on the ground (Ash, 24 November 2026: "I want the gum leaves to be more obvious and at the tops of trees houses and light
     // poles and occasionally on the ground"; where each goes: tools/race/legs.py). Every sixth one up high is golden. You need 15 to fly (a
@@ -19230,14 +19231,23 @@ const handle = async (m, post) => {
     const showItem = () => { const k = race?.item; itemBtn.hidden = !k || race.state !== "go"; if (!k) return; const [em, nm] = RACE_ITEMS[k];
       itemBtn.innerHTML = `<span aria-hidden="true">${em}</span><small>${nm}</small><kbd>X</kbd>`; itemBtn.setAttribute("aria-label", `Use ${nm} (X)`); };
     const ahead = () => { const rows = standings(), i = rows.findIndex(r => r.you); return rows.slice(0, i).filter(r => !r.fin); };
+    // the golden star's tune: a quick bright run of notes, round and round, till it ends (or the race does)
+    let starTimer = 0; const STAR_NOTES = [523, 659, 784, 1047, 784, 659, 523, 659, 784, 1047, 1319, 1047, 880, 1047, 1175, 1568];
+    const starTune = ms => { clearInterval(starTimer); const end = performance.now() + ms; let i = 0;
+      starTimer = setInterval(() => { if (dead || !race || race.state !== "go" || performance.now() > end) { clearInterval(starTimer); return; } const f = STAR_NOTES[i++ % STAR_NOTES.length]; T.snd?.tone?.(f, f, 0.09, 0.05, "square"); if (i % 4 === 1) T.snd?.tone?.(f / 2, f / 2, 0.12, 0.04, "triangle"); }, 115); };
     R.useItem = () => { if (!race || race.state !== "go" || !race.item) return false; const k = race.item, nm = RACE_ITEMS[k][1]; race.item = null; showItem();
       const rows = standings(), [x, z] = here();
-      if (k === "turbo") { T.car?.raceFx?.("mega", 20000); say("🚀", 700); tell("Mega Boost for 20 s: twice the push, refills twice as fast", false); }
-      else if (k === "star") { T.car?.raceFx?.("star", 7000); say("⭐", 800); tell("Golden star: 80% faster, sharper steering, and nothing can touch you for 7 s", false); send(["fx", race.id, "star", ""]); }
+      // (the pink Boost: stronger and shorter, 3 times the push and refill for 10 s, from twice for 20: Ash, 25 November 2026, "Make the pink
+      // boost more powerful but last less time")
+      if (k === "turbo") { T.car?.raceFx?.("mega", 10000); say("🚀", 700); tell("Mega Boost for 10 s: three times the push, refills three times as fast", false); }
+      // (a star goes off the moment you get it, flashes your car gold and plays a tune while it lasts: Ash, 25 November 2026, "Make star auto
+      // activate. Flash my car while active and play an exiting tune")
+      else if (k === "star") { T.car?.raceFx?.("star", 7000); say("⭐", 800); tell("Golden star: 80% faster, sharper steering, and nothing can touch you for 7 s", false); send(["fx", race.id, "star", ""]); starTune(7000); }
       else if (k === "auto") { const s0 = race.m, s1 = race.leg === 0 ? Math.min(s0 + 900, sH - 4) : 0, pts = []; for (let s = s0 + 4; s <= s1; s += 4) { const p = at(s); pts.push(p.x, p.z); }
         // (2.4 times as fast for 10.5 s: half as fast again as the 60% it was, for 30% less time. Ash, 24 November 2026: "Dial up car speed by
         // a further 50% but make it 30% shorter in time length")
-        if (T.car?.raceAuto?.(pts, 10500)) { say("🤖", 1500, "Autodrive: hands off for 10 s!"); autoHud(10500); T.snd?.tone?.(110, 440, 0.6, 0.12, "sawtooth"); tell("Autodrive cannon: 10.5 s of the car blasting itself along the course", true); }
+        // (8.5 s, 2 s less: Ash, 25 November 2026, "Make autodrive last 2 secs less")
+        if (T.car?.raceAuto?.(pts, 8500)) { say("🤖", 1500, "Autodrive: hands off for 8 s!"); autoHud(8500); T.snd?.tone?.(110, 440, 0.6, 0.12, "sawtooth"); tell("Autodrive cannon: 8.5 s of the car blasting itself along the course", true); }
         else { T.car?.raceFx?.("turbo", 3500); say("🚀", 700); tell("No car to drive: a Turbo instead", false); } }
       else if (k === "warp") { const t = TG[race.ti]; let ok = false;  // (150 m on along your line, not past the house, the plane or a ring)
         if (race.leg === 0) { const s = Math.min(race.m + 150, t.D - 1), p = at(s); ok = !!T.car?.raceWarp?.(p.x, p.z, headAt(s)); if (ok) race.m = s; }
@@ -19353,18 +19363,35 @@ const handle = async (m, post) => {
 
       else if (nx.kind === "finish") tell(CAR ? "Last gate done: now over the line to finish!" : "Through the big ring over the line to finish!", true); };
     const touch = () => matchMedia("(pointer: coarse)").matches;
+    // the roundabouts on the car's way round, as spans of the lap: [in, out] (from the streets marked as roundabouts, gathered into one
+    // circle each). The arrow and its words take the fast way, straight across the middle, not round it (Ash, 25 November 2026: "During
+    // the race, don't respect roundabouts for nav instructions. Go the fast way not around it")
+    let RB = null;
+    const rbSpans = () => { if (RB) return RB; const all = T.roadsAll; if (!all) return []; const cl = [];
+      for (const r of all) if (r.ring) for (let k = 0; k < r.pts.length; k += 2) { const x = r.pts[k], z = r.pts[k + 1]; let c = cl.find(c => Math.hypot(c.x / c.n - x, c.z / c.n - z) < 30); if (!c) cl.push(c = { x: 0, z: 0, n: 0, p: [] }); c.x += x; c.z += z; c.n++; c.p.push(x, z); }
+      RB = []; for (const c of cl) { const cx = c.x / c.n, cz = c.z / c.n; let rad = 0; for (let k = 0; k < c.p.length; k += 2) rad = Math.max(rad, Math.hypot(c.p[k] - cx, c.p[k + 1] - cz)); if (rad > 25) continue;
+        let a = Infinity, b = -Infinity; for (let s = 0; s < sH; s += 2) { const p = at(s); if (Math.hypot(p.x - cx, p.z - cz) < rad + 8) { a = Math.min(a, s); b = Math.max(b, s); } }
+        if (b > a && b - a < 120) RB.push([a, b]); }
+      return RB; };
     // where the arrow points while you drive: along the course ahead of where you are on it, further the faster you go (35 m, up to 120 m
     // at about 130 km/h), so it swings round before the corner does; and the next real corner ahead (over 30 degrees, within 160 m), which
     // way and how far, for the pill under it (Ash, 24 November 2026: "In the race I feel like the arrow is too late to show I need to turn.
     // I miss the road before realising I needed to turn"). More than 30 m off the course, it points back to the nearest bit of it
+    // (it looks no further than just round the next corner, so it never points across a block at a street two corners on; and a roundabout
+    // ahead points straight across it, to where you leave it: Ash, 25 November 2026, "Sometimes the arrows are a bit confusing while
+    // racing. I get lost")
     const roadAhead = (x, z) => { const t = TG[race.ti], s0 = race.ti ? TG[race.ti - 1].D : 0; let b = s0, bd = Infinity;
       for (let s = Math.max(0, s0 - 30); s <= t.D + 10; s += 3) { const p = at(s), d = (p.x - x) ** 2 + (p.z - z) ** 2; if (d < bd) { bd = d; b = s; } }
-      const off = Math.sqrt(bd) > 30, spd = Math.abs(where()?.speed || 0), look = off ? 8 : bsClamp(28 + spd * 2.6, 35, 120), p = at(Math.min(b + look, t.kind === "park" ? t.D : Infinity));
+      const off = Math.sqrt(bd) > 30, spd = Math.abs(where()?.speed || 0), rb = rbSpans(), inRb = s => rb.some(([a, c]) => s >= a - 16 && s <= c + 16);
+      let look = off ? 8 : bsClamp(28 + spd * 2.6, 35, 120);
       // (the words only within 40 m of the corner; further off the arrow leans into it a little, more the nearer it gets: Ash, 25 November
       // 2026, "During the race only show the turn right if I'm less than 40m from the turn. Try to make the main arrow slightly exaggerate a
       // turn so I know it's coming from main arrow")
-      let turn = "", lean = 0; if (!off) for (let s = b + 8; s <= b + 160; s += 6) { const a = headAt(s - 10), c = headAt(s + 14), d = Math.atan2(Math.sin(c - a), Math.cos(c - a)); if (Math.abs(d) > 0.55) {
-        const td = s - b; if (td <= 40) turn = `${d > 0 ? "\u21B0 Left" : "\u21B1 Right"} turn \u00b7 ${fmtD(td)}`; lean = Math.sign(d) * 0.45 * bsClamp(1 - (td - 15) / 75, 0, 1); break; } }
+      let turn = "", lean = 0; if (!off) for (let s = b + 8; s <= b + 160; s += 6) { const r = rb.find(([a, c]) => s >= a - 16 && s <= c + 16);
+        if (r) { const td = Math.max(0, r[0] - b); if (td <= 40) turn = `\u2B06 Straight across the roundabout \u00b7 ${fmtD(td)}`; look = Math.max(look, r[1] + 10 - b); break; }
+        if (inRb(s)) continue; const a = headAt(s - 10), c = headAt(s + 14), d = Math.atan2(Math.sin(c - a), Math.cos(c - a)); if (Math.abs(d) > 0.55) {
+        const td = s - b; if (td <= 40) turn = `${d > 0 ? "\u21B0 Left" : "\u21B1 Right"} turn \u00b7 ${fmtD(td)}`; lean = Math.sign(d) * 0.45 * bsClamp(1 - (td - 15) / 75, 0, 1); look = Math.min(look, Math.max(td + 16, 20)); break; } }
+      const p = at(Math.min(b + look, t.kind === "park" ? t.D : Infinity));
       return { x: p.x, z: p.z, y: null, turn, lean }; };
     const finish = now => { race.fin = Math.max(1000, now - race.t0 + race.pen); race.state = "done"; race.free = false; document.body.classList.remove("bsracing", "bsraceout"); race.m = TOT; itemBtn.hidden = true;
       send(["at", race.id, Math.round(TOT), Math.round(race.fin), race.leg, race.leaves]); race.sentAt = now;
@@ -19397,7 +19424,7 @@ const handle = async (m, post) => {
         if (!race.item && race.leg < 2) for (const r of BOX) if (r.leg === race.leg && r.back < now && r.b.some(b => Math.abs(b.x - x) < 2.6 && Math.abs(b.z - z) < 2.6)) { r.back = now + 6000; race.item = rollItem(); T.snd?.pop?.();
           // every one waits for you to use it (Ash, 24 November 2026: "The autodrive didn't seem to work, with the extreme boost move back
           // to manual activation": it started while your thumb was still driving, and that took it straight back off you)
-          if (race.item === "auto") R.useItem(); else { showItem(); tell(`${RACE_ITEMS[race.item][0]} ${RACE_ITEMS[race.item][1]}: ${RACE_ITEMS[race.item][2]}. ${touch() ? "Tap it to use it" : "Press X (or click it) to use it"}`, false); } break; }  // (the Autodrive cannon goes off by itself; the rest wait for you)
+          if (race.item === "auto" || race.item === "star") R.useItem(); else { showItem(); tell(`${RACE_ITEMS[race.item][0]} ${RACE_ITEMS[race.item][1]}: ${RACE_ITEMS[race.item][2]}. ${touch() ? "Tap it to use it" : "Press X (or click it) to use it"}`, false); } break; }  // (the Autodrive cannon goes off by itself; the rest wait for you)
         // a gum leaf: within 1.9 m and at its height (jump for the high ones)
         if (race.leg === 1) for (const q of LEAF) if (!q.got && !(q.gone > now) && Math.hypot(q.x - x, q.z - z) < (q.kind === 1 || q.kind === 2 ? 2.6 : 2) && Math.abs(y - (q.y - 1)) < 1.9) { q.got = now; leafGot(q, now); }
         // a peel: within 1.8 m (not your own for the first 2 s)
@@ -19465,7 +19492,7 @@ const handle = async (m, post) => {
         if (dirV.textContent !== vt) dirV.textContent = vt; dirV.hidden = !vt; dirV.classList.toggle("dn", dy < -5 || ly < -1.5); dirV.classList.toggle("tn", Math.abs(dy) <= 5 && !!road?.turn); void el; } };
     pracBtn.onclick = e => { R.open(); e.currentTarget.blur(); };
     R.dispose = () => { leaveRace(); dead = true; card.remove(); big.remove(); autoHud(0); autoEl.remove(); panel.remove(); itemBtn.remove(); dir.remove(); legBox.remove(); pracBtn.remove(); hostCard?.remove(); hostTag?.remove(); try { hostP?.remove(); } catch {} };
-    R.lap = { L, sH, TOT, NT, NR, TG, RINGS, BOX, LEAF, DOOR, PLN, PLH, PW, AW, slot, at };  // (for tests)
+    R.lap = { L, sH, TOT, NT, NR, TG, RINGS, BOX, LEAF, DOOR, PLN, PLH, PW, AW, slot, at, rbSpans, headAt };  // (for tests)
     R.test = () => race;  // (for tests)
     return R;
   }
@@ -20848,16 +20875,18 @@ const handle = async (m, post) => {
     const lie = (o, half, wide) => { const s = Math.sin(o.h), c = Math.cos(o.h), g = (a, b) => ground(o.x + s * a - c * b, o.z + c * a + s * b), yf = g(half, 0), yb = g(-half, 0), yr = g(0, wide), yl = g(0, -wide);
       return [(yf + yb + yr + yl) / 4, Math.atan2(yf - yb, half * 2), Math.atan2(yl - yr, wide * 2)]; };
     const sit = (dt, signal = 0) => { const [y, p, r] = car.bus ? lie(car, 3.6, 1.1) : lie(car, 1.3, 0.8), e = dt ? Math.min(1, dt * 12) : 1; car.y += (y + 0.05 + (car.hop || 0) - car.y) * (car.flip || car.trick ? 1 : e); car.p += (p - car.p) * e; car.r += (r - car.r) * e; const rd = car.r + (car.roll || 0), hd = car.h + (car.spinY || 0);
+      // (a golden star: the car flashes, gone and back about five times a second, sparkling: Ash, 25 November 2026, "Flash my car while active")
+      const now = performance.now(), cy = car.y + (C.starTil > now && Math.floor(now / 100) % 3 === 2 ? -1e5 : 0);
       if (car.own) {
-        Object.assign(car.own, { x: car.x, y: car.y, z: car.z, h: hd, p: car.p, r: rd }); showOwn(car.own);
+        Object.assign(car.own, { x: car.x, y: cy, z: car.z, h: hd, p: car.p, r: rd }); showOwn(car.own); car.own.y = car.y;
         if (signal !== (car.own.litSignal || 0)) { car.own.parts.setSignal?.(signal); car.own.litSignal = signal; }
-      } else m.driveCar(car.id[0], car.id[1], car.x, car.y, car.z, hd, car.p, rd, signal);
+      } else m.driveCar(car.id[0], car.id[1], car.x, cy, car.z, hd, car.p, rd, signal);
       // a parked car you've taken in Moorooka or Logan: the app draws its indicators (Moorooka's are all sedans; Logan's mix the three shapes)
       if (!car.bus && T.cfg?.place !== "inv" && (signal || mySig)) { if (!mySig) mySig = townSignals(m, car.own ? "own" : T.cfg?.place === "moo" ? 0 : -1);
-        M.compose(V.set(car.x, car.y, car.z), Q.setFromEuler(E.set(-car.p, hd, rd, "YXZ")), ONE); mySig.at(M.elements.slice()); mySig.set(signal); }
+        M.compose(V.set(car.x, cy, car.z), Q.setFromEuler(E.set(-car.p, hd, rd, "YXZ")), ONE); mySig.at(M.elements.slice()); mySig.set(signal); }
       // its hubcaps, turning (not a bus's): your own car is the older shape; a parked car you've taken is the new one (Inverloch's sit 0.25 m up)
       if (!car.bus) { const lay = car.own ? "old" : "new", lift = !car.own && T.cfg?.place === "inv" ? 0.25 : 0; if (mySpin && (mySpin.lay !== lay || mySpin.lift !== lift)) { mySpin.remove(); mySpin = null; }
-        if (!mySpin) mySpin = townSpinner(m, lay, lift); if (mySpin) { M.compose(V.set(car.x, car.y, car.z), Q.setFromEuler(E.set(-car.p, hd, rd, "YXZ")), ONE); mySpin.at(M.elements.slice(), (car.v || 0) * (dt || 0)); } } };
+        if (!mySpin) mySpin = townSpinner(m, lay, lift); if (mySpin) { M.compose(V.set(car.x, cy, car.z), Q.setFromEuler(E.set(-car.p, hd, rd, "YXZ")), ONE); mySpin.at(M.elements.slice(), (car.v || 0) * (dt || 0)); } } };
     let mySpin = null, mySig = null;
     // ---- the planes, each stood in the model as the app's own mesh where it lives (MOO_PLANES); `plane` is the one you are in
     const M = new THREE.Matrix4(), M2 = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), ONE = new THREE.Vector3(1, 1, 1);
@@ -21382,7 +21411,7 @@ const handle = async (m, post) => {
         const xk = has("KeyX"), xNew = xk && !C.xWas; C.xWas = xk;
         if ((xNew || F.flip) && car.gold && !car.flip) { F.flip = false; car.flip = { t: 0, h0: car.h, d0: car.dir, way: str < -0.1 ? -1 : 1 }; snd.thud?.(0.3); }
         const mega = C.megaTil > performance.now(); boostBtn.classList.toggle("bsmega", mega);  // (the race's Turbo: the Boost button glows pink while it lasts)
-        const gc = car.gold, bSecs = gc ? R.goldBoostSecs : R.boostSecs, bBack = (gc ? R.goldBoostBack : R.boostBack) / (mega ? 2 : 1), sTurn = gc ? R.goldSlideTurn : R.slideTurn, sSlow = gc ? R.goldSlideSlow : R.slideSlow;
+        const gc = car.gold, bSecs = gc ? R.goldBoostSecs : R.boostSecs, bBack = (gc ? R.goldBoostBack : R.boostBack) / (mega ? 3 : 1), sTurn = gc ? R.goldSlideTurn : R.slideTurn, sSlow = gc ? R.goldSlideSlow : R.slideSlow;
         if (boosting) { charge = Math.max(0, charge - dt / bSecs); if (!charge) spent = true; } else { charge = Math.min(1, charge + dt / bBack); if (charge >= 0.2) spent = false; }
         const K = (car.gold ? GOLD : car.bus ? 0.7 : 1) * (C.spdK || 1) * (C.slowTil > performance.now() ? 0.55 : 1) * (C.starTil > performance.now() ? 1.8 : 1) * (C.autoTil > performance.now() && auto ? 2.4 : 1), vTop = R.carTop / 3.6, vboost = Math.max(R.carBoostTop, R.carTop) / 3.6 * K, SHAPE = car.bus ? BUS : CAR;  // (spdK, slowTil: the race's car, handicap and storm cloud)
         if (C.starTil > performance.now() && Math.random() < dt * 18) fxSpray(car, true);  // a golden star: sparkling
@@ -21403,7 +21432,7 @@ const handle = async (m, post) => {
         // drastically increases turning for burnouts"): it swings the car round fast while it carries on the way it was going
         const slide = brake && Math.abs(v) > 3;
         if (brake) v -= Math.sign(v) * Math.min(Math.abs(v), sSlow / 3.6 * dt);
-        if (go > 0.05) v += (v < -0.2 && !boosting ? 10 : boosting ? R.carAccel * 4 * (R.boostPush || 1) * (mega ? 2 : 1) * K * (1 - Math.max(0, v) / vboost) : teamOn ? R.carAccel * (1 + 3 * tk * R.teamBoostShare / 100) * K * Math.max(0, 1 - Math.max(0, v) / vteam) : R.carAccel * K * (1 - Math.max(0, v) / vmax)) * go * dt * (brake ? 0.5 : 1);
+        if (go > 0.05) v += (v < -0.2 && !boosting ? 10 : boosting ? R.carAccel * 4 * (R.boostPush || 1) * (mega ? 3 : 1) * K * (1 - Math.max(0, v) / vboost) : teamOn ? R.carAccel * (1 + 3 * tk * R.teamBoostShare / 100) * K * Math.max(0, 1 - Math.max(0, v) / vteam) : R.carAccel * K * (1 - Math.max(0, v) / vmax)) * go * dt * (brake ? 0.5 : 1);
         else if (back) v -= R.carAccel * 4 * K * (1 + Math.min(0, v) / vboost) * dt;  // boosting backwards: as hard as forwards
         else if (go < -0.05) v += (v > 0.2 ? -11 : -3 * (1 + Math.min(0, v) / VREV)) * -go * dt;
         else if (!brake) v -= Math.sign(v) * Math.min(Math.abs(v), (0.6 + Math.abs(v) * 0.08) * dt);
