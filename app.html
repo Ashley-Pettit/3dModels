@@ -10611,8 +10611,8 @@ const handle = async (m, post) => {
     // more from Google Maps, each from Street View (19 November 2026): Billykart Kitchen on the corner of Eric Crescent and Glendale Grove
     // (a grey weatherboard shop under an iron verandah), Moorooka Automotive's white shed on Kensal Street, the two cafes in the charcoal
     // complex at 655 Toohey Road (with Anytime Fitness and My First Gym), and the appliance repairer at 449 Beaudesert Road
-    { kind: "sign", addr: "1 Eric Crescent, Annerley", a: [310.1, -1216.7], b: [314.1, -1204.2], n: [-0.9524, 0.3048], kerb: 8.13, across: 18.73, eave: 29.1, wall: "#8f9aa1", noBoard: true,
-      veranda: { deep: 2.2, col: "#a9b0b4", posts: "#eceae4", sign: [2.4, 10.7, 0.7] },
+    { kind: "sign", addr: "1 Eric Crescent, Annerley", a: [310.1, -1216.7], b: [314.1, -1204.2], n: [-0.9524, 0.3048], kerb: 8.13, across: 18.73, eave: 29.1, wall: "#c4ccd1", glass: "#33404a", noBoard: true,
+      veranda: { deep: 2.2, col: "#a9b0b4", posts: "#f2f0ea", sign: [2.4, 10.7, 0.7] },
       shops: [{ n: "Billykart Kitchen", w: 9, c: ["#ffffff", "#1d1d1d"], what: "Cafe", jump: true }] },
     { kind: "sign", addr: "6 Kensal Street", a: [-695.9, -626.8], b: [-707.8, -630.4], n: [0.2896, -0.9572], kerb: 19.98, across: 29.18, eave: 24.3, wall: "#eeede9", high: true,
       rollers: [[1.6, 5.2, 3.3, "#d2d4d6", true], [6.8, 10.4, 3.3, "#d2d4d6", true]],
@@ -10721,6 +10721,7 @@ const handle = async (m, post) => {
     "The Clubhouse Moorooka": { out: 3, top: "#e8e4da", chair: "#2f3134", brolly: "#efe8d6", src: "Bean on the Green's reviews: nice outdoor seating, dog and kid friendly" },
     "AMehdi": { decor: "rug", bench: "#7a1f2b", tables: "#5a3a26", warm: true, src: "Reviews: the old outdoor area built in, very cosy and comfy furniture, beautiful decor" },
     "Vizzeto Woodfire": { out: 2, top: "#3a2a20", chair: "#1f1f1f", decor: "oven", warm: true, src: "Street View (May 2024): tables in a glassed-in dining terrace out the front. Woodfired pizza; reviews: a very cozy place" },
+    "Billykart Kitchen": { tables: "#c9a77c", decor: "plants", warm: true, src: "Street View (May 2024): glass across the front under a grey iron awning on white posts, planter boxes at the corner. Its photos: turquoise chairs, timber tables, plants" },
     "Zeitoon": { tables: "#8a6a48", decor: "curtains", warm: true, src: "Street View (October 2024): wooden tables and chairs behind sheer white curtains tied back in each window" },
     "Habos Kitchen": { out: 2, top: "#3a2c22", chair: "#3a2c22", src: "Street View (October 2024): dark timber tables and chairs on the footpath" },
     "Ah-Nook Cafe": { out: 3, top: "#dcdcd8", chair: "#c9ccc8", brolly: "#1e1e1e", decor: "plants", warm: true, bench: "#a8865e", src: "Street View (May 2024): grey tables and chairs under two black umbrellas on the forecourt. Reviews: a cosy cafe" },
@@ -10764,7 +10765,9 @@ const handle = async (m, post) => {
     { at: [-1027.55, 14.15], kind: 2, wall: [47, 50, 54] },
     { at: [-1132.84, -13.54], kind: 2, wall: [58, 62, 68] },
     { at: [-576.75, 1048.78], kind: 2, wall: [238, 237, 233] },             // Brisbane Appliance Service Centre (449 Beaudesert Road): white
-    { at: [312.1, -1217.46], kind: 2, wall: [143, 154, 160] },              // Billykart Kitchen (1 Eric Crescent, Annerley): grey weatherboard
+    { at: [312.1, -1217.46], kind: 2, wall: [214, 221, 225] },              // Billykart Kitchen (1 Eric Crescent, Annerley): pale grey-blue cladding (Street View, May 2024; it came out dark slate)
+    { at: [320.35, -1225.65], wall: [238, 236, 230] },                       // behind it: the white weatherboard two storeys, blue and white striped awnings over its windows
+    { at: [334.38, -1228.42], kind: 2, wall: [214, 221, 225] },              // its low wing on Glendale Grove, the same pale cladding
     { at: [-701.73, -620.75], kind: 2, wall: [238, 237, 233] },             // Moorooka Automotive (6 Kensal Street): a white shed
     { at: [1250.9, 1139.97], kind: 2, wall: [84, 88, 94] },                 // 655 Toohey Road: a charcoal two-storey complex
     { at: [-1139.02, -695.64], wall: [58, 60, 64], roof: [52, 54, 58] },     // Sabor Cafe & Grill (49 Station Road): dark timber under a dark roof
