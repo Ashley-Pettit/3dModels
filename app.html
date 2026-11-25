@@ -21233,7 +21233,10 @@ const handle = async (m, post) => {
         const mine = Math.abs(thr) > 0.05 || Math.abs(str) > 0.05;  // (your own driving, before Autodrive's)
         let aHand = false; if (auto) { const rA = C.autoTil > performance.now();
           /* (the race's Autodrive: nothing you do stops it; it drives its 10 s and hands back. Ash, 24 November 2026: "The autodrive didn't seem to work"; "Autodrive on race disable hard steer to take control") */
-          if (!rA && (Math.abs(thr) > 0.05 || Math.abs(str) > 0.05 || has("Space") || F.hand || F.boost)) autoEnd(); else { const a = autoStep(dt); thr = a[0]; str = a[1]; boost = !!a[2]; aHand = !!a[3]; } }
+          if (!rA && (Math.abs(thr) > 0.05 || Math.abs(str) > 0.05 || has("Space") || F.hand || F.boost)) autoEnd(); else { const a = autoStep(dt); thr = a[0]; str = a[1]; boost = !!a[2]; aHand = !!a[3];
+            // (a click to drive there: the last 9 m straight on, no swinging round at the end. The GPS's Autodrive keeps its turn to face the
+            // place. Ash, 25 November 2026: "Keep this for the gps autodrive but for drive me there don't pivot at the end")
+            if (auto?.click && auto.rem < 9) { str = 0; aHand = false; } } }
         if (C.wait) { thr = 0; boost = false; car.v = 0; car.teamTil = 0; }  // on a race's grid: held still until Go (you can still look round)
         let v = car.v; const brake = has("Space") || !!F.hand || aHand;
         // the boost runs on a charge: about four seconds' worth, back in ten. Run right out, it waits until a fifth is back
@@ -21732,7 +21735,7 @@ const handle = async (m, post) => {
       // a spot off the street (a car park, a yard): the last bit straight to it, where nothing stands in the way; else it stops in the street beside it
       if (R) { cx.push(...R.cx); cz.push(...R.cz); cl.push(...R.cl); const n = R.cx.length; if (R.off > 3.5 && clearWay(R.cx[n - 1], R.cz[n - 1], gx, gz)) { cx.push(gx); cz.push(gz); cl.push(0); } }
       else { cx.push(gx); cz.push(gz); }
-      autoBegin(cx, cz, cl, {}); autoPin(auto.x[auto.x.length - 1], auto.z[auto.z.length - 1]); return true; };
+      autoBegin(cx, cz, cl, { click: true }); autoPin(auto.x[auto.x.length - 1], auto.z[auto.z.length - 1]); return true; };
     // Autodrive (the GPS): along the GPS's own line (already in the left lane), from its point nearest the car, like a hoon if asked
     C.drivePath = (pts, o = {}) => { if (veh !== "car" || !car || held || !pts || pts.length < 4) return false; const n = pts.length / 2; let k0 = 0, bd = Infinity;
       for (let i = 0; i < Math.min(n, 60); i++) { const d = Math.hypot(pts[i * 2] - car.x, pts[i * 2 + 1] - car.z); if (d < bd) { bd = d; k0 = i; } }
@@ -21807,7 +21810,7 @@ const handle = async (m, post) => {
       for (let i = A.i; i < Math.min(n - 1, A.i + (A.hoon ? 12 : 5)); i++) { const ax = A.x[i], az = A.z[i], dx = A.x[i + 1] - ax, dz = A.z[i + 1] - az, L2 = dx * dx + dz * dz || 1;
         const t = bsClamp(((car.x - ax) * dx + (car.z - az) * dz) / L2, i === A.i ? A.t : 0, 1), d = Math.hypot(car.x - ax - dx * t, car.z - az - dz * t); if (d < best - 0.01) { best = d; bi = i; bt = t; } }
       A.i = bi; A.t = bt;
-      const at = A.s[bi] + ((A.s[bi + 1] ?? A.s[bi]) - A.s[bi]) * bt, total = A.s[n - 1], rem = total - at, toEnd = Math.hypot(A.x[n - 1] - car.x, A.z[n - 1] - car.z);
+      const at = A.s[bi] + ((A.s[bi + 1] ?? A.s[bi]) - A.s[bi]) * bt, total = A.s[n - 1], rem = total - at, toEnd = Math.hypot(A.x[n - 1] - car.x, A.z[n - 1] - car.z); A.rem = rem;
       const pt = d => { const sd = Math.min(total, at + d); let i = bi; while (i < n - 2 && A.s[i + 1] < sd) i++; const L = (A.s[i + 1] ?? A.s[i]) - A.s[i] || 1, f = bsClamp((sd - A.s[i]) / L, 0, 1), j = Math.min(i + 1, n - 1); return [A.x[i] + (A.x[j] - A.x[i]) * f, A.z[i] + (A.z[j] - A.z[i]) * f]; };
       if (A.sign && Math.hypot(A.sign.x - car.x, A.sign.z - car.z) < 7) A.sign.near = true; else if (A.sign?.near) { A.sign = null; ezShow(); }  // the turn it was asked for is behind it now
       // there (or as near as the way goes), or told to stop: brake to a stop, and it is yours again
