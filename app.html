@@ -18848,12 +18848,15 @@ const handle = async (m, post) => {
     // golden one counts 3, and gives a burst of speed): the plane won't take you without them. Taking one takes it from the others too, for
     // 12 s (Ash, 24 November 2026: "Focus less on time trial and more on multiplayer. For example make the person have to get gum leaves as
     // time off is not relevant for multiplayer")
-    const NEED = 15, LEAF = []; if (!CAR) for (let i = 0; i < RACE_LEAVES.length; i += 4) { const x = RACE_LEAVES[i] / 10, z = RACE_LEAVES[i + 1] / 10, kind = RACE_LEAVES[i + 2], th = RACE_LEAVES[i + 3] / 10, g = ground(x, z), n = i / 4;
-      LEAF.push({ x, z, g, kind, y: g + 1 + (kind === 1 ? th * 0.97 : kind === 3 ? 8.24 : kind === 2 ? 6 : 0), high: kind !== 0, gold: kind !== 0 && n % 6 === 5, got: 0 }); }
+    const NEED = 15, JUMPH = 3.8, LEAF = []; if (!CAR) for (let i = 0; i < RACE_LEAVES.length; i += 4) { const x = RACE_LEAVES[i] / 10, z = RACE_LEAVES[i + 1] / 10, kind = RACE_LEAVES[i + 2], th = RACE_LEAVES[i + 3] / 10, g = ground(x, z), n = i / 4;
+      // the hard ones are gold: up in the air where there's no roof or tree to climb, so it takes a well-timed jump (3.8 m up, where a
+      // possum's jump just reaches: Ash, 25 November 2026, "For hard to get ones make them golden. These typically are not on roofs or
+      // trees and require a well timed jump")
+      LEAF.push({ x, z, g, kind, y: g + 1 + (kind === 1 ? th * 0.97 : kind === 3 ? 8.24 : kind === 2 ? 6 : JUMPH), high: true, gold: kind === 0, got: 0 }); void n; }
     const pwAlong = (x, z, from = 0, to = PW.len) => { let b = from, bd = Infinity; for (let d = Math.max(0, from); d <= Math.min(PW.len, to); d += 4) { const p = PW.at(d), e = Math.hypot(p.x - x, p.z - z); if (e < bd) { bd = e; b = d; } } return b; };
     for (const q of LEAF) q.d = pwAlong(q.x, q.z);
     // each one a metre over what it's on, as the possum finds it (the roofs and trees are in by the possum's turn: loaded on the grid)
-    const placeLeaves = () => { for (const q of LEAF) { const y = T.car?.raceSurf?.(q.x, q.z); if (y != null && Number.isFinite(y)) q.y = y + 1; q.shown = undefined; } };
+    const placeLeaves = () => { for (const q of LEAF) { const y = T.car?.raceSurf?.(q.x, q.z); if (y != null && Number.isFinite(y)) q.y = y + 1 + (q.kind === 0 ? JUMPH : 0); q.shown = undefined; } };
     // the grid: two by two behind the line, 7 m between rows, either side of the carriageway's middle
     const slot = i => { const row = i >> 1, side = i & 1 ? -1 : 1, s = L - 10 - row * 7, p = at(s), h = headAt(s); return { x: p.x + Math.cos(h) * 1.7 * side, z: p.z - Math.sin(h) * 1.7 * side, h }; };
     // ---- what's drawn: the yellow line (the car's way) and the green one (the possum's), the chequered line and banner, the gates, the
@@ -18906,20 +18909,10 @@ const handle = async (m, post) => {
           for (let f = 0; f < 4; f++) { const [a0, b0] = cs[f], [a1, b1] = cs[(f + 1) % 4]; quad(P(u0 + a0, b0, 0), P(u0 + a1, b1, 0), P(u0 + a1, b1, 3.6 * sm), P(u0 + a0, b0, 3.6 * sm), W); }
           const tip = P(u0 - sd * 1.5 * sm, 0, 3.0 * sm), top = P(u0, 0, 3.55 * sm), bot = P(u0, 0, 2.45 * sm); quad(top, tip, tip, bot, Y); }  // (the pennant: a triangle, both faces drawn)
         for (const v0 of [-1.8, 0, 1.8]) for (const sd of [-1, 1]) quad(P(sd * 1.5 * sm, (v0 - 0.6) * sm), P(0, (v0 + 0.4) * sm), P(0, (v0 - 0.1) * sm), P(sd * 1.5 * sm, (v0 - 1.1) * sm), t.leg === 1 ? GR : Y); }
-      // the giant possum house: cream weatherboard walls, a red roof, a green band under the eaves, two big windows and a tall door with a
-      // warm light inside. Low and blocky on purpose. A path leads from the road to the door
-      if (!CAR) { const gd = ground(DOOR.x, DOOR.z), P3 = (u, v, y) => [DOOR.x + lx * u + fx0 * v, gd + y, DOOR.z + lz * u + fz0 * v], o = P3(9, 0, 5);
-        const WALL = lin("#efe3c8"), TRIM = lin("#2f6b3a"), ROOF = lin("#b5402f"), ROOF2 = lin("#93352a"), DK = lin("#2a1a10"), GLOW = lin("#ffb547"), GLASS = lin("#8fc9e8"), PATH = lin("#c9b38a");
-        const U1 = 18, V0 = -13, V1 = 13, H = 10, R = 17, O = 1.4, UM = U1 / 2;
-        face(P3(0, V0, -3), P3(0, V1, -3), P3(0, V1, H), P3(0, V0, H), WALL, o); face(P3(U1, V1, -3), P3(U1, V0, -3), P3(U1, V0, H), P3(U1, V1, H), WALL, o);
-        face(P3(U1, V0, -3), P3(0, V0, -3), P3(0, V0, H), P3(U1, V0, H), WALL, o); face(P3(0, V1, -3), P3(U1, V1, -3), P3(U1, V1, H), P3(0, V1, H), WALL, o);
-        face(P3(0, V0, H), P3(U1, V0, H), P3(UM, V0, R), P3(UM, V0, R), WALL, o); face(P3(U1, V1, H), P3(0, V1, H), P3(UM, V1, R), P3(UM, V1, R), WALL, o);
-        face(P3(-O, V0 - O, H - 0.8), P3(-O, V1 + O, H - 0.8), P3(UM, V1 + O, R + 0.4), P3(UM, V0 - O, R + 0.4), ROOF, o);
-        face(P3(U1 + O, V1 + O, H - 0.8), P3(U1 + O, V0 - O, H - 0.8), P3(UM, V0 - O, R + 0.4), P3(UM, V1 + O, R + 0.4), ROOF2, o);
-        const fr = (u, va, vb, ya, yb, k) => face(P3(u, va, ya), P3(u, vb, ya), P3(u, vb, yb), P3(u, va, yb), k, o);
-        fr(-0.05, V0, V1, H - 1.2, H - 0.4, TRIM); fr(-0.05, -2.7, 2.7, 0, 7.6, TRIM); fr(-0.1, -2.1, 2.1, 0, 7, DK); fr(-0.14, -1.3, 1.3, 0, 5.4, GLOW);
-        for (const vc of [-8, 8]) { fr(-0.05, vc - 2.4, vc + 2.4, 3.2, 7.4, TRIM); fr(-0.1, vc - 2, vc + 2, 3.6, 7, GLASS); fr(-0.14, vc - 0.15, vc + 0.15, 3.6, 7, TRIM); fr(-0.14, vc - 2, vc + 2, 5.15, 5.45, TRIM); }
-        for (let u = -0.3; u > -9.6; u -= 1.2) { const a = P3(u, -1.4, 0), b = P3(u, 1.4, 0), c = P3(u - 1, 1.4, 0), d = P3(u - 1, -1.4, 0); for (const q of [a, b, c, d]) q[1] = ground(q[0], q[2]) + 0.14; quad(a, b, c, d, PATH); } }
+      // a path from the road to the giant possum (the house it sat on is gone: Ash, 25 November 2026, "Remove the big possum house in the
+      // race and just make it a huge possum")
+      if (!CAR) { const PATH = lin("#c9b38a"), P3 = (u, v) => [DOOR.x + lx * u + fx0 * v, 0, DOOR.z + lz * u + fz0 * v];
+        for (let u = 2.6; u > -9.6; u -= 1.2) { const a = P3(u, -1.4), b = P3(u, 1.4), c = P3(u - 1, 1.4), d = P3(u - 1, -1.4); for (const q of [a, b, c, d]) q[1] = ground(q[0], q[2]) + 0.14; quad(a, b, c, d, PATH); } }
       parts = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.6, doubleSide: true, matrix: new BS.B.THREE.Matrix4().elements }]);
       pos.length = nor.length = col.length = 0;
       // the yellow line in a piece for each of the car's checkpoints, from the one before it (or the line) to it: in the race only the piece to
@@ -18938,8 +18931,8 @@ const handle = async (m, post) => {
           for (let i = 0; i < nS; i++) for (let j = 0; j < nT; j++) { const A = V(i, j), B = V(i + 1, j), C = V(i + 1, j + 1), D = V(i, j + 1), k = q.fin ? CK[Math.floor(i / 4) % 2] : (A[2] + D[2]) / 2 < -0.45 ? LIP : GOLD;
             for (const P of [A, B, C, A, C, D]) tv(P[0], P[1], k); } } }
       if (pos.length) ringsP = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.35, emissive: [0.12, 0.08, 0.02], doubleSide: true, matrix: new BS.B.THREE.Matrix4().makeScale(1e-4, 1e-4, 1e-4).elements }]);
-      // a big possum on the ridge, looking down at the road
-      if (!CAR) try { const T3 = BS.B.THREE, Mx = new T3.Matrix4().compose(new T3.Vector3(DOOR.x + lx * 9 + fx0 * 7, ground(DOOR.x, DOOR.z) + 17.2, DOOR.z + lz * 9 + fz0 * 7), new T3.Quaternion().setFromEuler(new T3.Euler(0, Math.atan2(-lx, -lz), 0, "YXZ")), new T3.Vector3(7, 7, 7));
+      // the giant possum, about 10 m tall, sitting on the ground facing the road with its nose 3 m past where you walk up to it (DOOR)
+      if (!CAR) try { const T3 = BS.B.THREE, Mx = new T3.Matrix4().compose(new T3.Vector3(DOOR.x + lx * 12.5, ground(DOOR.x + lx * 12.5, DOOR.z + lz * 12.5) - 0.1, DOOR.z + lz * 12.5), new T3.Quaternion().setFromEuler(new T3.Euler(0, Math.atan2(-lx, -lz), 0, "YXZ")), new T3.Vector3(28, 28, 28));
         puss = m.addParts(townPlaneParts(undefined, "possum").map((q, i) => ({ ...q, matrix: (i === 1 ? Mx.clone().multiply(new T3.Matrix4().makeTranslation(0, 0, -0.27)) : Mx).elements.slice() }))); } catch {}
       // the next target's marker: a big yellow diamond turning over it (not lit by the sun, so it shows in the shade and at night)
       { const o = [], e = [[0.6, 0, 0], [0, 0, 0.6], [-0.6, 0, 0], [0, 0, -0.6]];
@@ -19059,7 +19052,7 @@ const handle = async (m, post) => {
       h.innerHTML = `Race around ${K.name} <small>${fmtD(TOT)}</small>`; p1.className = "small"; p1.textContent = "Boxes on the road give power-ups: the further back you are, the better they get.";
       const legs = document.createElement("div"); legs.className = "legs";
       for (const [em, b, sm] of CAR ? [["🚗", "Drive", "one lap, cars only"], ["🚩", "Gates", `all ${TG.length - 1}, in order`], ["🏁", "Finish", K.fin || "back at the line"]]
-        : [["🚗", "Drive", "to the giant possum house"], ["🐾", "Possum", `climb for ${NEED} gum leaves`], ["✈️", "Fly", "through the rings home"]]) { const d = document.createElement("div"); d.innerHTML = `<span aria-hidden="true">${em}</span><b>${b}</b><small>${sm}</small>`; legs.append(d); }
+        : [["🚗", "Drive", "to the giant possum"], ["🐾", "Possum", `climb for ${NEED} gum leaves`], ["✈️", "Fly", "through the rings home"]]) { const d = document.createElement("div"); d.innerHTML = `<span aria-hidden="true">${em}</span><b>${b}</b><small>${sm}</small>`; legs.append(d); }
       const inv = document.createElement("div"), ib = document.createElement("button"), it = document.createElement("span"); inv.className = "inv"; ib.type = "button"; ib.textContent = "Invite someone";
       it.textContent = "They get a link to the start line"; inv.append(ib, it);
       ib.onclick = () => { invite(); ib.blur(); };
@@ -19146,7 +19139,7 @@ const handle = async (m, post) => {
       if (!race || String(rid) !== race.id) return; const o = race.others.get(id); if (!o) return; o.last = performance.now(); o.name = T.peers?.nameOf?.(id) || o.name;
       if (k === "at") { const m0 = o.m, leg0 = o.leg, fin0 = o.fin; o.m = Math.max(0, Math.min(TOT, +raw[2] || 0)); o.fin = Math.max(0, +raw[3] || 0); o.leg = Math.max(0, Math.min(2, +raw[4] || 0)); o.leaves = Math.max(0, Math.min(99, Math.round(+raw[5] || 0)));
         if (o.fin && !fin0) { const pl = standings().findIndex(r => r.id === id) + 1; tell(`${o.name} finished ${ord(pl)} in ${fmtT(o.fin)}`, true); }
-        else if (o.leg !== leg0) tell(o.leg === 1 ? `${o.name} is at the possum house` : `${o.name} is at the plane`, false);
+        else if (o.leg !== leg0) tell(o.leg === 1 ? `${o.name} is at the giant possum` : `${o.name} is at the plane`, false);
         else if (!o.fin && TOT - o.m < 300 && TOT - m0 >= 300) tell(`${o.name} is ${fmtD(TOT - o.m)} from the line!`, true);
         if (race.state === "done" && !panel.hidden) results(); }
       else if (k === "leaf") { const q = LEAF[Math.round(+raw[2])]; if (q && !q.got) { q.gone = performance.now() + 12000; if (q.gold) tell(`${o.name} grabbed a golden leaf!`, false); } }  // (theirs now: gone for you for 12 s)
@@ -19220,7 +19213,7 @@ const handle = async (m, post) => {
     const parkPlane = () => T.car?.raceParkPlane?.(PLN.x, PLN.z, PLH);
     const stage = (t, now) => { const nx = TG[race.ti]; race.sentAt = 0;
       if (t.kind === "park") { race.leg = 1; onFoot(true); if (T.car) T.car.wait = true; fanfare();
-        banner("🏁 Car part over!", "Hop out (Get out) and run in the door of the giant possum house", 3600); tell("Get out, then run in the possum house's door", true); }
+        banner("🏁 Car part over!", "Hop out (Get out) and walk up to the giant possum", 3600); tell("Get out, then walk up to the giant possum", true); }
       else if (t.kind === "door") { onFoot(false); if (T.car) T.car.wait = false; const p = PW.at(10); let ok = !!T.car?.raceSwap?.("possum", p.x, p.z, PW.head(22));
         // (no possum to be: on in a car instead, along the green line)
         if (!ok) ok = !!T.car?.grid?.(p.x, p.z, PW.head(22)); race.noPossum = T.car?.where?.()?.kind !== "possum"; say("🐾", 1000); T.snd?.pop?.(); [1568, 1760, 1568, 2093].forEach((f, i) => setTimeout(() => T.snd?.tone?.(f, f * 0.9, 0.06, 0.05, "square"), 140 + i * 70));
@@ -19229,7 +19222,7 @@ const handle = async (m, post) => {
         if (!parkPlane()) { const ok = T.car?.raceSwap?.("plane", PLN.x, PLN.z, PLH, ground(PLN.x, PLN.z) + 25); if (ok) { race.ti++; onFoot(false); } else race.noPlane = true; }
         banner("🏁 Possum part over!", race.free ? "Jump in the plane (Get in) and take off down the road" : "No plane on the ground: you're straight in the air", 3600); if (race.free) tell("Walk to the plane and tap Get in", true); }
       else if (t.kind === "board") { onFoot(false); say("✈️", 1000); tell(touch() ? "Push the left stick up: speed down the road, lift off, and stay low through the rings" : "Hold W to speed down the road and lift off, then stay low through the rings", true); }
-      else if (nx.kind === "park") tell("Last gate: the possum house is next!", false);
+      else if (nx.kind === "park") tell("Last gate: the giant possum is next!", false);
 
       else if (nx.kind === "finish") tell(CAR ? "Last gate done: now over the line to finish!" : "Through the big ring over the line to finish!", true); };
     const touch = () => matchMedia("(pointer: coarse)").matches;
@@ -19257,7 +19250,7 @@ const handle = async (m, post) => {
     const aim = (x, z, now) => { const t = TG[race.ti]; if (!t || race.leg !== 1 || race.leaves >= NEED || t.kind !== "pend") return t;
       race.pd = pwAlong(x, z, (race.pd || 0) - 60, (race.pd || 0) + 160);
       let b = null, bd = Infinity; for (const pass of [0, 1]) { for (const q of LEAF) if (!q.got && !(q.gone > now) && (pass || q.d >= race.pd - 25)) { const d = Math.hypot(q.x - x, q.z - z); if (d < bd) { bd = d; b = q; } } if (b) break; }
-      return b ? { x: b.x, z: b.z, y: b.y + 1, r: 0, kind: "leaf", leg: 1, D: t.D } : t; };
+      return b ? { x: b.x, z: b.z, y: b.y + 1, r: 0, kind: "leaf", leg: 1, D: t.D, top: b.y - 1, jump: b.kind === 0 } : t; };
     // ---- each frame: the countdown, the marker, boxes and leaves, picking things up; five times a second, the rest
     R.frame = force => { if (dead) return; if (HO) hostTick(performance.now()); if (!race) return; const now = performance.now();
       if (!big.hidden && now > bigT) big.hidden = true;
@@ -19320,7 +19313,7 @@ const handle = async (m, post) => {
       else if (race.state === "go") { const t = TG[race.ti], gate = t.kind !== "door" && t.kind !== "board", off = gate && Math.hypot(t.x - x, t.z - z) > t.D - (race.ti ? TG[race.ti - 1].D : 0) + 80, tm = fmtT(now - race.t0 + race.pen);
         cb.textContent = `${LEG_ICON.map((e, i) => i < race.leg ? "✅" : e).join("")} ${n > 1 ? `${ord(pl)} of ${n}` : "Time trial"}`;
         cs.textContent = race.missed === race.ti ? (t.kind === "finish" ? (CAR ? "Turn back: over the finish line" : "Turn back: through the finish ring") : t.y != null ? `Turn back: through ring ${ringNo(race.ti)}` : "Turn back: through the gate")
-          : t.kind === "door" ? (kind === "foot" ? `Run in the door · ${tm}` : `Tap Get out · ${tm}`)
+          : t.kind === "door" ? (kind === "foot" ? `Walk up to the giant possum · ${tm}` : `Tap Get out · ${tm}`)
           : t.kind === "board" ? (kind === "foot" ? `Get in the plane · ${tm}` : `Get out, then in the plane`)
           : off ? (race.leg === 2 ? "Back to the rings: follow the diamond" : race.leg === 1 ? "Missed a gate: back to the green line" : "Missed a checkpoint: back to the yellow line")
           : race.leg === 2 ? `${tm} · ring ${Math.max(1, Math.min(NR, ringNo(race.ti)))} of ${NR}` : race.leg === 1 ? (race.leaves < NEED ? `🍃 ${race.leaves} of ${NEED} leaves · ${tm}` : `🍃 Got them! Run for the plane · ${tm}`) : `${tm} · ${fmtD(TOT - race.m)} to go`; }
@@ -19332,8 +19325,11 @@ const handle = async (m, post) => {
       dir.hidden = race.state !== "go"; if (!dir.hidden) { dirArr.style.transform = `rotate(${(-rel * 180 / Math.PI).toFixed(0)}deg)`; const dy = t.y != null && kind === "plane" ? t.y - y : 0, dist = Math.hypot(tg.x - x, tg.z - z) /* (how far to the checkpoint) */, el = Math.atan2(dy, Math.max(8, dist)) * 180 / Math.PI;
         // (the arrow shows how far up or down it is too: it stands up and rises on the screen for a ring above you, lies down and drops for one
         // below. Ash, 23 November 2026, "Try to make the arrow show elevation")
-        dirD.textContent = fmtD(dist); const vt = dy > 5 ? `\u25B2 Climb ${Math.round(dy)} m` : dy < -5 ? `\u25BC Dive ${Math.round(-dy)} m` : road?.turn || "";
-        if (dirV.textContent !== vt) dirV.textContent = vt; dirV.hidden = !vt; dirV.classList.toggle("dn", dy < -5); dirV.classList.toggle("tn", Math.abs(dy) <= 5 && !!road?.turn); void el; } };
+        // (as the possum: whether the leaf is up above you, and if it's a golden one, that it takes a jump. Ash, 25 November 2026: "As the
+        // possum make the arrow help me know if the leaf is above me")
+        const ly = tg.kind === "leaf" && tg.top != null ? tg.top - y : 0;
+        dirD.textContent = fmtD(dist); const vt = dy > 5 ? `\u25B2 Climb ${Math.round(dy)} m` : dy < -5 ? `\u25BC Dive ${Math.round(-dy)} m` : ly > 1.2 ? (tg.jump && ly < 4.5 ? `\u25B2 Up ${Math.round(ly)} m: jump for it` : `\u25B2 Up ${Math.round(ly)} m: climb`) : ly < -1.5 ? `\u25BC Down ${Math.round(-ly)} m` : road?.turn || "";
+        if (dirV.textContent !== vt) dirV.textContent = vt; dirV.hidden = !vt; dirV.classList.toggle("dn", dy < -5 || ly < -1.5); dirV.classList.toggle("tn", Math.abs(dy) <= 5 && !!road?.turn); void el; } };
     pracBtn.onclick = e => { R.open(); e.currentTarget.blur(); };
     R.dispose = () => { leaveRace(); dead = true; card.remove(); big.remove(); autoHud(0); autoEl.remove(); panel.remove(); itemBtn.remove(); dir.remove(); legBox.remove(); pracBtn.remove(); hostCard?.remove(); hostTag?.remove(); try { hostP?.remove(); } catch {} };
     R.lap = { L, sH, TOT, NT, NR, TG, RINGS, BOX, LEAF, DOOR, PLN, PLH, PW, AW, slot, at };  // (for tests)
@@ -21334,12 +21330,16 @@ const handle = async (m, post) => {
                 if (q) { P.h = Math.atan2(q.x - P.x, q.z - P.z); P.x = q.x - Math.sin(P.h) * 0.32; P.z = q.z - Math.cos(P.h) * 0.32; } }
               P.v = 0; break; }
             P.x = x; P.z = z;
-            if (P.mode === "ground" && s < P.y - 0.6) { P.mode = "air"; P.vy = 0; } }  // off the edge of a roof or the top of a light: it drops
+            if (P.mode === "ground" && s < P.y - 0.6) { P.mode = "air"; P.vy = 0; P.offAt = performance.now(); } }  // off the edge of a roof or the top of a light: it drops
+          // a moment's grace: Jump just after running off an edge still jumps (Ash, 25 November 2026: "if I try to jump while falling but I
+          // only just started falling, trigger a jump. This allows the player grace time to hit jump after just leaving a building")
+          if (P.mode === "air" && P.offAt && jump && !P.jumped && performance.now() - P.offAt < 250) { P.vy = R.possumJump * (P.gold ? 1.5 : 1); P.offAt = 0; P.coyote = true; }
+          else if (P.offAt && (P.mode !== "air" || performance.now() - P.offAt >= 250)) P.offAt = 0;
           if (P.mode === "air") { P.vy -= (R.glider && P.vy < 0 ? 5 : 22) * dt; if (R.glider && P.vy < -2.8) P.vy = -2.8; P.y += P.vy * dt; const s = surf(P.x, P.z);  /* (the vet's Glider: it floats down) */
             if (P.y <= s) { if (P.vy < -9) snd.thud(Math.min(1.2, -P.vy / 18)); P.y = s; P.vy = 0; P.mode = "ground"; } }
           else if (P.mode === "ground") { P.y += (surf(P.x, P.z) - P.y) * Math.min(1, dt * 20); P.spun = false; if (jump && !P.jumped) { P.mode = "air"; P.vy = R.possumJump * (P.gold ? 1.5 : 1); } }
           // the golden possum: Jump again in the air for a 360, a somersault with a little more lift
-          if (P.mode === "air" && P.gold && jump && !P.jumped && !P.spun && P.vy < R.possumJump * 1.3) { P.spun = true; P.flip = 0; P.vy = Math.max(P.vy, 0) + 6; snd.squeak(1.3); }
+          if (P.coyote) P.coyote = false; else if (P.mode === "air" && P.gold && jump && !P.jumped && !P.spun && P.vy < R.possumJump * 1.3) { P.spun = true; P.flip = 0; P.vy = Math.max(P.vy, 0) + 6; snd.squeak(1.3); }
           if (P.flip != null) { P.flip += dt / 0.55; if (P.flip >= 1 || P.mode !== "air") P.flip = null; }
           // into number 6's pool: out it comes golden (Ash, 15 November 2026: "If the possum goes in the pool at 6 Beaudesert Rd turn him
           // into the golden possum who is faster and can jump higher and also can do a 360 in the air")
