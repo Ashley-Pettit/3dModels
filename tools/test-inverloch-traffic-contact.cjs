@@ -22,7 +22,7 @@ async function world(place="inv", model={}, roads=[-100,0,100].map(x=>({cls:0,pt
   const BS={B,town:T,fly:F};
   const ctx=vm.createContext({BS, setTimeout: f=>{startup=f;}, performance:{now:()=>now}, matchMedia:()=>({matches:false}), townLaneOf:()=>0,
     bsClamp:(x,lo,hi)=>Math.max(lo,Math.min(x,hi)), bsBlock:()=>{}, bsUnstick:()=>{throw Error("unexpected sidestep into traffic");},
-    townPlaneParts:()=>[], townStreetData:async()=>({names:[],roads})});
+    townPlaneParts:()=>[], townCarPart:()=>({}), townStreetData:async()=>({names:[],roads})});
   vm.runInContext("let seed=37; Math.random=()=>((seed=(Math.imul(1664525, seed)+1013904223)>>>0)/4294967296)",ctx);
   vm.runInContext(mechanics+walkCode+"; globalThis.sweep=townTrafficSweep; globalThis.shape=townTrafficBodies;",ctx);
   const parts=()=>({setMatrix(){},remove(){}});
