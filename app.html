@@ -21900,8 +21900,10 @@ const handle = async (m, post) => {
         const incoming = Math.atan2(A.x[bi + 1] - A.x[bi], A.z[bi + 1] - A.z[bi]);
         const side = A.sign && Math.hypot(A.sign.x - car.x, A.sign.z - car.z) <= lead
           ? -Math.sign(A.sign.turn) : townRouteIndicator(pt, incoming, lead);
-        if (side) { A.turnSignalSide = side; A.turnSignalUntil = at + 5; }
-        A.indicator = side || (at < A.turnSignalUntil ? A.turnSignalSide : 0);
+        // (the 5 m after the corner are measured on the odometer: "Drive for me" trims the route behind the car now and then and starts its
+        // distances again from 0, which left the old mark up to 80 m ahead and the indicator going all that way)
+        if (side) { A.turnSignalSide = side; A.turnSignalUntil = A.odo + 5; }
+        A.indicator = side || (A.odo < (A.turnSignalUntil ?? 0) ? A.turnSignalSide : 0);
       }
       return [go, bsClamp(-e * (H ? 2.8 : 2.4), -1, 1), hoonB, hoonH]; };
     // what the speed chip adds while it drives itself
