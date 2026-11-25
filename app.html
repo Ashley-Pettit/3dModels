@@ -17698,6 +17698,38 @@ const handle = async (m, post) => {
     const delta = Math.atan2(bx - ax, bz - az) - incoming;
     return townIndicatorSide(Math.atan2(Math.sin(delta), Math.cos(delta)));
   }
+  // Amber indicators for Moorooka's and Logan's cars, which the app draws itself (Inverloch's model draws its own). Ash, 25 November
+  // 2026: "Merge the indicators into the other maps". Each side has a front and a rear lens in the outer part of the head and tail
+  // lamps of the new car shapes (townCarPart), just proud of them, as Inverloch's are. In the car's own frame +Z is the nose and +X
+  // its left. Per shape: nose z, headlamp bottom and top, tail z, tail lamp bottom and top. Kind -1 is a car of unknown shape
+  // (Logan's parked cars mix all three): the sedan's lamps, set just past the longest nose and tail so they never sink in.
+  const TOWN_LAMPS = [[2.188, 0.66, 0.765, -2.188, 0.63, 0.81], [2.188, 0.72, 0.825, -2.188, 0.61, 0.92], [2.228, 0.765, 0.87, -2.308, 0.655, 0.965]];
+  const TOWN_SIGNAL_AWAY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, -1e5, 0, 1];  // a lens not lit: far below the ground, so it is never drawn
+  function townIndicatorPart(kind, side) {
+    const k = kind < 0 ? 0 : (kind | 0) % 3, [nz, n0, n1, tz, t0, t1] = TOWN_LAMPS[k], front = kind < 0 ? 2.228 : nz, back = kind < 0 ? -2.308 : tz, P = [];
+    const quad = (x0, x1, y0, y1, z) => P.push(x0, y0, z, x1, y0, z, x1, y1, z, x0, y0, z, x1, y1, z, x0, y1, z);
+    quad(side * 0.557, side * 0.725, n0, n1, front + 0.02); quad(side * 0.602, side * 0.725, t0, t1, back - 0.02);
+    const n = P.length / 3, N = new Float32Array(n * 3), C = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) { N[i * 3 + 2] = P[i * 3 + 2] > 0 ? 1 : -1; C[i * 3] = 1; C[i * 3 + 1] = 0.35; C[i * 3 + 2] = 0.01; }  // #ffa01a, as Inverloch's
+    return { positions: new Float32Array(P), normals: N, colors: C, color: [1, 1, 1], unlit: true, doubleSide: true };
+  }
+  // A car's two indicators. Nothing is added to the model until one first flashes; set(side) is -1 left, 1 right, 0 off,
+  // and at(matrix) follows the car (a car not drawn, scaled to nothing, takes its lenses with it)
+  function townSignals(m, kind) {
+    let h = null, side = 0, at = null;
+    const put = () => { if (!h) return; const show = at && (at[0] || at[1] || at[2]) ? at : TOWN_SIGNAL_AWAY;
+      h.setMatrix(0, side < 0 ? show : TOWN_SIGNAL_AWAY); h.setMatrix(1, side > 0 ? show : TOWN_SIGNAL_AWAY); };
+    return {
+      at(matrix) { at = matrix; if (side) put(); },
+      set(s) { if (s === side) return; side = s; if (s && !h) h = m.addParts([townIndicatorPart(kind, 1), townIndicatorPart(kind, -1)].map(q => ({ ...q, matrix: TOWN_SIGNAL_AWAY.slice() }))); put(); },
+      remove() { try { h?.remove(); } catch {} h = null; side = 0; } };
+  }
+  // a traffic car of the new shapes with its indicators, for a model with no addTrafficCar of its own
+  function townSignalCar(m, kind, colour, matrix) {
+    const car = m.addParts([{ ...townCarPart(kind, colour), matrix }]), sig = townSignals(m, kind);
+    return { setMatrix(i, e) { car.setMatrix(i, e); if (i === 0) sig.at(e); }, setSignal: s => sig.set(s),
+      remove() { try { car.remove(); } finally { sig.remove(); } } };
+  }
 
   // First contact in [0,1] for two moving footprints. Straight travel is a swept
   // separating-axis test. On turns, enclose the turning corners and refine only
@@ -17842,7 +17874,7 @@ const handle = async (m, post) => {
       for (let i = 0; i < N; i++) { const C = { col: COLS[i % COLS.length], top: 8 + Math.random() * 6 }; if (!start(C)) continue;
         C.parts = contact && m.addTrafficCar
           ? m.addTrafficCar(i % 3, parseInt(C.col.slice(1), 16), ...townTrafficBodies.car)
-          : m.addParts([{ ...townCarPart(i % 3, C.col), matrix: M.identity().elements.slice() }]);  // (a sedan, a wagon or a ute: Inverloch's new cars)
+          : townSignalCar(m, i % 3, C.col, M.identity().elements.slice());  // (a sedan, a wagon or a ute: Inverloch's new cars, with indicators)
         P.cars.push(C); }
       // Moorooka's bus drives itself (Ash, 16 November 2026: "I want the bus to actually move by itself and stop every now again so I can
       // get on. Drives without me moving it. I'm a passenger"): round the main roads like the traffic, a bit slower, stopping every few
@@ -17880,7 +17912,7 @@ const handle = async (m, post) => {
           if (same) want = Math.min(want, ahead < 7 ? 0 : Math.max(0, D.v * (ahead - 6) / 8)); else if (di < ci && ahead < 9) want = 0; }
         // slow down into a bend or a corner
         const rem = L - C.s, at = C.i + C.d, junction = (nodes.get(key(bx, bz)) || []).length > 1 || at === 0 || at === C.r.n - 1;
-        if (contact && C.parts.setSignal) {
+        if (C.parts.setSignal) {  // (every town now: Moorooka's and Logan's cars have indicators too)
           if (!C.turnPlan && junction && rem <= bsClamp(C.v * 1.5, 8, 24)) {
             C.turnPlan = { road: C.r, at, chosen: chooseTurn(C) };
           }
@@ -20794,10 +20826,13 @@ const handle = async (m, post) => {
         Object.assign(car.own, { x: car.x, y: car.y, z: car.z, h: hd, p: car.p, r: rd }); showOwn(car.own);
         if (signal !== (car.own.litSignal || 0)) { car.own.parts.setSignal?.(signal); car.own.litSignal = signal; }
       } else m.driveCar(car.id[0], car.id[1], car.x, car.y, car.z, hd, car.p, rd, signal);
+      // a parked car you've taken in Moorooka or Logan: the app draws its indicators (Moorooka's are all sedans; Logan's mix the three shapes)
+      if (!car.own && !car.bus && T.cfg?.place !== "inv" && (signal || mySig)) { if (!mySig) mySig = townSignals(m, T.cfg?.place === "moo" ? 0 : -1);
+        M.compose(V.set(car.x, car.y, car.z), Q.setFromEuler(E.set(-car.p, hd, rd, "YXZ")), ONE); mySig.at(M.elements.slice()); mySig.set(signal); }
       // its hubcaps, turning (not a bus's): your own car is the older shape; a parked car you've taken is the new one (Inverloch's sit 0.25 m up)
       if (!car.bus) { const lay = car.own ? "old" : "new", lift = !car.own && T.cfg?.place === "inv" ? 0.25 : 0; if (mySpin && (mySpin.lay !== lay || mySpin.lift !== lift)) { mySpin.remove(); mySpin = null; }
         if (!mySpin) mySpin = townSpinner(m, lay, lift); if (mySpin) { M.compose(V.set(car.x, car.y, car.z), Q.setFromEuler(E.set(-car.p, hd, rd, "YXZ")), ONE); mySpin.at(M.elements.slice(), (car.v || 0) * (dt || 0)); } } };
-    let mySpin = null;
+    let mySpin = null, mySig = null;
     // ---- the planes, each stood in the model as the app's own mesh where it lives (MOO_PLANES); `plane` is the one you are in
     const M = new THREE.Matrix4(), M2 = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), ONE = new THREE.Vector3(1, 1, 1);
     const hub = new THREE.Matrix4().makeTranslation(0, 1.31, 2.74), mast = new THREE.Matrix4().makeTranslation(0, 2.45, 0.1);
@@ -21235,7 +21270,7 @@ const handle = async (m, post) => {
       if (on && car) M.compose(V.set(car.x, car.y, car.z), Q.setFromEuler(E.set(-car.p, car.h, car.r, "YXZ")), BEAT.set(beat * (car.bus ? 2.1 : 1), 1, beat * (car.bus ? 2.1 : 1)));
       for (let i = 0; i <= RING; i++) { const show = !!on && !!car && (i === 0 || i <= full); if (show || lit[i]) { ring.setMatrix(i, show ? M.elements.slice() : NONE); lit[i] = show; } }
       const pc = Math.round(charge * 100) + "%"; if (boostBtn.style.getPropertyValue("--charge") !== pc) boostBtn.style.setProperty("--charge", pc); };
-    const leave = (step, door) => { if (!veh) return; if (auto) autoEnd(); mySpin?.hide(); skyNavShow(null); const was = veh; if (was === "possum" && pos?.cling) { try { T.peers?.ride?.(pos.cling.id, false); } catch {} pos.cling = null; }  // (it stayed stuck to the driver: Ash, 18 November 2026)
+    const leave = (step, door) => { if (!veh) return; if (auto) autoEnd(); mySpin?.hide(); mySig?.remove(); mySig = null; skyNavShow(null); const was = veh; if (was === "possum" && pos?.cling) { try { T.peers?.ride?.(pos.cling.id, false); } catch {} pos.cling = null; }  // (it stayed stuck to the driver: Ash, 18 November 2026)
       // (the comment above once ran on over the rest of this line, so leaving never stopped the engine, the rockets or the sparks: Ash, 19 November
       // 2026, "when i use jump to often the sound of the car or something is still playing")
       if (held) { document.body.classList.remove("bsheld"); held = null; } rockets(false); if (sky) { skyEnd(); skyTried = false; } for (let i = 0; i < FXN; i++) if (sparks[i]) { sparks[i] = null; fx.setMatrix(i, NONE); } for (let i = 0; i < GFXN; i++) if (glit[i]) { glit[i] = null; gfx.setMatrix(i, NONE); } if (was !== "possum" && was !== "pigeon" && was !== "drone" && was !== "ride") snd.door(); snd.stop();
@@ -21383,7 +21418,7 @@ const handle = async (m, post) => {
         if (bump > 1.5) snd.thud(Math.min(1.6, 0.4 + bump / 14));
         const now = performance.now();
         let signal = 0;
-        if (place === "inv" && !car.bus && !car.gold) {
+        if (!car.bus && !car.gold) {  // (every town: Ash, 25 November 2026, "Merge the indicators into the other maps")
           const side = C.wait || car.face || car.flip || car.trick || car.v < -0.2 ? 0
             : auto ? auto.indicator || 0 : townManualIndicator(car, str, go);
           signal = townIndicatorFlash(car, side, now);
@@ -21924,7 +21959,7 @@ const handle = async (m, post) => {
       // stuck against something: back off and try again, a few times, then leave it with the driver
       A.slow = Math.abs(v) < 0.5 && go > 0.2 ? A.slow + dt : 0;
       if (A.slow > 0.9) { A.slow = 0; A.triedAt = A.odo; if (++A.tries > 4) { autoEnd("The car can't find a way there. Click somewhere else, or drive it yourself."); return [0, 0]; } A.rev = 1.1 + 0.25 * A.tries; A.revE = Math.abs(e) > 0.15 ? e : (A.tries % 2 ? 0.6 : -0.6); return [-0.8, bsClamp(A.revE * 2.4, -1, 1)]; }
-      if (place === "inv" && v >= -0.2 && rem > 7) {
+      if (v >= -0.2 && rem > 7) {
         const lead = bsClamp(10 + v * 1.5, 12, 28);
         const incoming = Math.atan2(A.x[bi + 1] - A.x[bi], A.z[bi + 1] - A.z[bi]);
         const side = A.sign && Math.hypot(A.sign.x - car.x, A.sign.z - car.z) <= lead
