@@ -19014,7 +19014,10 @@ const handle = async (m, post) => {
   // Goodwin Terrace, Giardini Lane and Wall Street, and round by Mayfield Road to the line (the lap just above is the one before).
   // The lap is the town's own street lines (one-way carriageways the way they run), worked out ahead of time (tools/race/course.py),
   // so nothing is fetched or worked out mid-game: x, z in decimetres.
-  const MOO_RACE = [-1704,-2963,-1795,-3147,-1868,-3371,-1932,-3620,-2095,-4420,-2256,-5378,-2444,-6398,-2619,-6834,-3022,-7823,-3143,-8151,-3165,-8271,-3168,-8344,-3150,-8579,-2857,-10179,-2857,-10289,-2874,-10385,-2910,-10524,-2919,-10598,-2874,-10727,-2367,-11363,-1887,-12020,-1787,-11891,-1722,-11814,-495,-11572,-294,-11533,632,-11372,1187,-11282,1006,-10209,828,-9141,743,-8607,710,-8235,629,-7763,-340,-7710,-331,-7404,-385,-6823,-376,-6618,-348,-6572,-323,-6584,-298,-6588,-250,-6584,-228,-6574,-192,-6542,-180,-6521,-172,-6498,-172,-6449,-102,-6434,121,-6308,812,-5797,829,-5548,1162,-3752,1204,-3749,1237,-3731,1258,-3701,1265,-3683,1265,-3650,1258,-3627,1237,-3598,1222,-3586,1186,-3575,1190,-3523,1051,-2788,1086,-2775,1118,-2745,1137,-2706,1137,-2667,1130,-2640,1118,-2621,1086,-2591,1043,-2578,1013,-2579,979,-2591,946,-2621,927,-2661,927,-2706,237,-2854,27,-2913,-235,-3021,-502,-3250,-914,-2815,-624,-2369,-692,-2019,-829,-1992,-921,-1948,-1038,-1910,-1187,-2141];
+  // (the course goes straight across the three roundabouts on its way, not round them: in a race
+  // the road rules don't count. Ash, 26 November 2026: "The yellow line in addition in a race should not take the long way around a
+  // roundabout (I.e. ignore road rules while in race)")
+  const MOO_RACE = [-1704,-2963,-1795,-3147,-1868,-3371,-1932,-3620,-2095,-4420,-2256,-5378,-2444,-6398,-2619,-6834,-3022,-7823,-3143,-8151,-3165,-8271,-3168,-8344,-3150,-8579,-2857,-10179,-2857,-10289,-2874,-10385,-2910,-10524,-2919,-10598,-2874,-10727,-2367,-11363,-1887,-12020,-1787,-11891,-1722,-11814,-495,-11572,-294,-11533,632,-11372,1187,-11282,1006,-10209,828,-9141,743,-8607,710,-8235,629,-7763,-340,-7710,-331,-7404,-385,-6823,-376,-6618,-102,-6434,121,-6308,812,-5797,829,-5548,1162,-3752,1190,-3523,1051,-2788,927,-2706,237,-2854,27,-2913,-235,-3021,-502,-3250,-914,-2815,-624,-2369,-692,-2019,-829,-1992,-921,-1948,-1038,-1910,-1187,-2141];
   // The race around Inverloch (Ash, 24 November 2026: "Add a car race with similar rules to Inverloch. Just car only. It should start by
   // speaking with ash who is opposite 11 Norman Rd"): cars only, one lap of 2.6 km. Ash stands across Norman Road from number 11, by the
   // front of the grid: talk to him to start it. From the line just west of him, west along Norman Road, up Florida Avenue, east along
@@ -19133,8 +19136,11 @@ const handle = async (m, post) => {
     // third one down at 15 m: "Plane occasionally a bit closer to ground"); the last
     // a big chequered one over the line
     const RINGS = []; if (!CAR) { let i = 0; for (let d = 320; d < AW.len - 200; d += 300, i++) { const p = AW.at(d); RINGS.push({ d, x: p.x, z: p.z, y: ground(p.x, p.z) + (i === 0 ? 18 : i === 1 ? 24 : i % 3 === 2 ? 15 : 29 + 5 * Math.sin(i * 1.7)), h: AW.head(d), r: 8.7 }); }
-      const p = AW.at(AW.len); RINGS.push({ d: AW.len, x: p.x, z: p.z, y: ground(p.x, p.z) + 18, h: AW.head(AW.len - 3), r: 13, fin: true }); }
-    for (const q of RINGS) TG.push({ D: AD + q.d, x: q.x, z: q.z, y: q.y, h: q.h, leg: 2, kind: q.fin ? "finish" : "ring", r: q.r });
+    }
+    for (const q of RINGS) TG.push({ D: AD + q.d, x: q.x, z: q.z, y: q.y, h: q.h, leg: 2, kind: "ring", r: q.r });
+    // (then down on the ground at the line: land the plane there to finish, no big ring to fly through. Ash, 26 November 2026: "At the end
+    // of the race make me land my plane at the finish line to complete")
+    if (!CAR) { const p = AW.at(AW.len); TG.push({ D: AD + AW.len, x: p.x, z: p.z, y: null, h: AW.head(AW.len - 3), leg: 2, kind: "land" }); }
     const NT = TG.length, TOT = TG[NT - 1].D, NR = RINGS.length, FR = TG.findIndex(t => t.leg === 2 && t.y != null), LEG_ICON = CAR ? ["🚗"] : ["🚗", "🐾", "✈️"];
     // the power-up boxes: rows of three across the road, every 230 m along the car's way and twice on the possum's straight. Hit one and
     // that row is gone for you for 6 s
@@ -19530,35 +19536,23 @@ const handle = async (m, post) => {
       else if (t.kind === "board") { onFoot(false); say("✈️", 1000); tell(touch() ? "Push the left stick up: speed down the road, lift off, and stay low through the rings" : "Hold W to speed down the road and lift off, then stay low through the rings", true); }
       else if (nx.kind === "park") tell("Last gate: the giant possum is next!", false);
 
-      else if (nx.kind === "finish") tell(CAR ? "Last gate done: now over the line to finish!" : "Through the big ring over the line to finish!", true); };
+      else if (nx.kind === "finish" || nx.kind === "land") tell(CAR ? "Last gate done: now over the line to finish!" : "Last ring done: now land the plane on the finish line!", true); };
     const touch = () => matchMedia("(pointer: coarse)").matches;
-    // the roundabouts on the car's way round, as spans of the lap: [in, out] (from the streets marked as roundabouts, gathered into one
-    // circle each). The arrow and its words take the fast way, straight across the middle, not round it (Ash, 25 November 2026: "During
-    // the race, don't respect roundabouts for nav instructions. Go the fast way not around it")
-    let RB = null;
-    const rbSpans = () => { if (RB) return RB; const all = T.roadsAll; if (!all) return []; const cl = [];
-      for (const r of all) if (r.ring) for (let k = 0; k < r.pts.length; k += 2) { const x = r.pts[k], z = r.pts[k + 1]; let c = cl.find(c => Math.hypot(c.x / c.n - x, c.z / c.n - z) < 30); if (!c) cl.push(c = { x: 0, z: 0, n: 0, p: [] }); c.x += x; c.z += z; c.n++; c.p.push(x, z); }
-      RB = []; for (const c of cl) { const cx = c.x / c.n, cz = c.z / c.n; let rad = 0; for (let k = 0; k < c.p.length; k += 2) rad = Math.max(rad, Math.hypot(c.p[k] - cx, c.p[k + 1] - cz)); if (rad > 25) continue;
-        let a = Infinity, b = -Infinity; for (let s = 0; s < sH; s += 2) { const p = at(s); if (Math.hypot(p.x - cx, p.z - cz) < rad + 8) { a = Math.min(a, s); b = Math.max(b, s); } }
-        if (b > a && b - a < 120) RB.push([a, b]); }
-      return RB; };
     // where the arrow points while you drive: along the course ahead of where you are on it, further the faster you go (35 m, up to 120 m
     // at about 130 km/h), so it swings round before the corner does; and the next real corner ahead (over 30 degrees, within 160 m), which
     // way and how far, for the pill under it (Ash, 24 November 2026: "In the race I feel like the arrow is too late to show I need to turn.
     // I miss the road before realising I needed to turn"). More than 30 m off the course, it points back to the nearest bit of it
-    // (it looks no further than just round the next corner, so it never points across a block at a street two corners on; and a roundabout
-    // ahead points straight across it, to where you leave it: Ash, 25 November 2026, "Sometimes the arrows are a bit confusing while
-    // racing. I get lost")
+    // (it looks no further than just round the next corner, so it never points across a block at a street two corners on: Ash, 25 November
+    // 2026, "Sometimes the arrows are a bit confusing while racing. I get lost". Roundabouts need nothing of their own: the course goes
+    // straight across them, see MOO_RACE)
     const roadAhead = (x, z) => { const t = TG[race.ti], s0 = race.ti ? TG[race.ti - 1].D : 0; let b = s0, bd = Infinity;
       for (let s = Math.max(0, s0 - 30); s <= t.D + 10; s += 3) { const p = at(s), d = (p.x - x) ** 2 + (p.z - z) ** 2; if (d < bd) { bd = d; b = s; } }
-      const off = Math.sqrt(bd) > 30, spd = Math.abs(where()?.speed || 0), rb = rbSpans(), inRb = s => rb.some(([a, c]) => s >= a - 16 && s <= c + 16);
+      const off = Math.sqrt(bd) > 30, spd = Math.abs(where()?.speed || 0);
       let look = off ? 8 : bsClamp(28 + spd * 2.6, 35, 120);
       // (the words only within 40 m of the corner; further off the arrow leans into it a little, more the nearer it gets: Ash, 25 November
       // 2026, "During the race only show the turn right if I'm less than 40m from the turn. Try to make the main arrow slightly exaggerate a
       // turn so I know it's coming from main arrow")
-      let turn = "", lean = 0; if (!off) for (let s = b + 8; s <= b + 160; s += 6) { const r = rb.find(([a, c]) => s >= a - 16 && s <= c + 16);
-        if (r) { const td = Math.max(0, r[0] - b); if (td <= 40) turn = `\u2B06 Straight across the roundabout \u00b7 ${fmtD(td)}`; look = Math.max(look, r[1] + 10 - b); break; }
-        if (inRb(s)) continue; const a = headAt(s - 10), c = headAt(s + 14), d = Math.atan2(Math.sin(c - a), Math.cos(c - a)); if (Math.abs(d) > 0.55) {
+      let turn = "", lean = 0; if (!off) for (let s = b + 8; s <= b + 160; s += 6) { const a = headAt(s - 10), c = headAt(s + 14), d = Math.atan2(Math.sin(c - a), Math.cos(c - a)); if (Math.abs(d) > 0.55) {
         const td = s - b; if (td <= 40) turn = `${d > 0 ? "\u21B0 Left" : "\u21B1 Right"} turn \u00b7 ${fmtD(td)}`; lean = Math.sign(d) * 0.7 * bsClamp(1 - (td - 35) / 75, 0, 1);  /* (leans up to 40 degrees, from 110 m out and fully by 35 m, so the turn shows well before the corner: Ash, 25 November 2026, "Use just the big arrow but try to exaggerate a bit left or right the arrow so I know to turn. Before I'm already in the intersection") */ look = Math.min(look, Math.max(td + 16, 20)); break; } }
       const p = at(Math.min(b + look, t.kind === "park" ? t.D : Infinity));
       return { x: p.x, z: p.z, y: null, turn, lean }; };
@@ -19608,6 +19602,8 @@ const handle = async (m, post) => {
         if (t.kind === "board" && race.free && !(T.car?.raceParkOk?.() ?? true) && now - (race.parkAt || 0) > 1000) { race.parkAt = now; parkPlane(); }
         if (t.kind === "door") hit = kind === "foot" && dh < 4.5;
         else if (t.kind === "board") hit = kind === "plane";
+        else if (t.kind === "land") { const w = where(); hit = kind === "plane" && !!w && !w.air && Math.abs(w.speed || 0) < 7 && dh < 40;
+          if (!hit && kind === "plane" && w && !w.air && dh < 40 && now - (race.missAt || 0) > 2500) { race.missAt = now; say("\u{1F6EC}", 1100, "Slow right down to stop"); } }
         else { const air = t.y != null && kind === "plane";
           // through the gate, not just near it (Ash, 24 November 2026: "The checkpoints are a tiny bit too forgiving"). v is how far past the
           // gate's line you are and u how far to the side of its middle. A gate counts when you're level with it, or have crossed its line
@@ -19623,7 +19619,7 @@ const handle = async (m, post) => {
           if (!hit && crossed && !race.short && dh < (air ? 150 : 40) && now - (race.missAt || 0) > 1500) { race.missAt = now; race.missed = race.ti; T.snd?.tone?.(196, 147, 0.4, 0.1, "sawtooth");
             const nm = t.kind === "finish" ? (CAR ? "the finish line" : "the finish ring") : t.y != null ? `ring ${ringNo(race.ti)}` : "the gate"; say("✗", 1100, `Missed ${nm}: turn back`); tell(`Missed ${nm}: turn back and go through it`, true); } }
         if (hit) { const i0 = race.ti; race.ti++; race.pv = null; race.missed = -1; race.short = false;
-          if (t.kind === "ring" || t.kind === "finish") { T.car?.raceFx?.("turbo", 900); ding(); if (t.kind === "ring") say("✓", 700, `Ring ${ringNo(i0)} of ${NR}`); }
+          if (t.kind === "ring" || (t.kind === "finish" && CAR)) { T.car?.raceFx?.("turbo", 900); ding(); if (t.kind === "ring") say("✓", 700, `Ring ${ringNo(i0)} of ${NR}`); }
           else if (t.kind === "gate") ding();
           if (race.ti >= NT) finish(now); else stage(t, now); }
         if (race.state === "go") { const t2 = TG[race.ti], prev = race.ti ? TG[race.ti - 1].D : 0; race.m = Math.max(prev, Math.min(t2.D, t2.D - Math.hypot(t2.x - x, t2.z - z)));
@@ -19650,7 +19646,7 @@ const handle = async (m, post) => {
       else { cb.textContent = n > 1 ? `Finished ${ord(pl)} of ${n}` : "Finished!"; cs.textContent = `${fmtT(race.fin)} · tap × to close`; }
       std.textContent = n > 1 ? rows.slice(0, 4).map((r, i) => `${i + 1} ${r.you ? "You" : r.name} ${r.fin ? "🏁" : LEG_ICON[r.leg || 0]}${!r.fin && r.leg === 1 ? ` ${Math.min(NEED, r.you ? race.leaves : r.leaves || 0)}🍃` : ""}`).join("  ·  ") : ""; std.hidden = n < 2;
       // the arrow: towards the next target, turned to how you're facing; driving, towards a point along the road ahead (roadAhead)
-      const tg = race.state === "go" ? aim(x, z, now) : TG[NT - 1], road = race.state === "go" && race.leg === 0 && !race.free && race.missed !== race.ti && tg?.leg === 0 && tg.y == null ? roadAhead(x, z) : null, t = road || tg, want = Math.atan2(-(t.x - x), -(t.z - z)), rel = Math.atan2(Math.sin(want - F.yaw), Math.cos(want - F.yaw)) + (road?.lean || 0);
+      const tg = race.state === "go" ? aim(x, z, now) : TG[NT - 1], road = race.state === "go" && race.leg === 0 && !race.free && race.missed !== race.ti && tg?.leg === 0 && tg.y == null ? roadAhead(x, z) : null, t = road || tg, want = Math.atan2(-(t.x - x), -(t.z - z)), rel = bsClamp(Math.atan2(Math.sin(want - F.yaw), Math.cos(want - F.yaw)) * 1.3, -Math.PI, Math.PI) + (road?.lean || 0);  // (a turn shown a third harder than it is, as the arrow lies back in the view: Ash, 26 November 2026, "it should be showing a much harder right")
       arr.style.transform = `rotate(${(-rel * 180 / Math.PI).toFixed(0)}deg)`;
       dir.hidden = race.state !== "go"; if (!dir.hidden) { dirArr.style.transform = `rotate(${(-rel * 180 / Math.PI).toFixed(0)}deg)`; const dy = t.y != null && kind === "plane" ? t.y - y : 0, dist = Math.hypot(tg.x - x, tg.z - z) /* (how far to the checkpoint) */, el = Math.atan2(dy, Math.max(8, dist)) * 180 / Math.PI;
         // (the arrow shows how far up or down it is too: it stands up and rises on the screen for a ring above you, lies down and drops for one
@@ -19660,11 +19656,11 @@ const handle = async (m, post) => {
         // (only once you're within 30 m of the leaf: Ash, 25 November 2026, "With the possum on race, don't show up unless I'm less than 30m
         // away from the object")
         const ly = tg.kind === "leaf" && tg.top != null && Math.hypot(tg.x - x, tg.z - z) < 30 ? tg.top - y : 0;
-        dirD.textContent = fmtD(dist); const vt = dy > 5 ? `\u25B2 Climb ${Math.round(dy)} m` : dy < -5 ? `\u25BC Dive ${Math.round(-dy)} m` : ly > 1.2 ? (tg.jump && ly < 4.5 ? `\u25B2 Up ${Math.round(ly)} m: jump for it` : `\u25B2 Up ${Math.round(ly)} m: climb`) : ly < -1.5 ? `\u25BC Down ${Math.round(-ly)} m` : "";  // (no turn words under the arrow: the arrow itself shows the turn. Ash, 25 November 2026: "Remove the 2nd turn indicator during a race")
+        dirD.textContent = fmtD(dist); const vt = tg.kind === "land" && kind === "plane" && dist < 600 ? (where()?.air ? "\u25BC Land on the finish line" : "Stop on the finish line") : dy > 5 ? `\u25B2 Climb ${Math.round(dy)} m` : dy < -5 ? `\u25BC Dive ${Math.round(-dy)} m` : ly > 1.2 ? (tg.jump && ly < 4.5 ? `\u25B2 Up ${Math.round(ly)} m: jump for it` : `\u25B2 Up ${Math.round(ly)} m: climb`) : ly < -1.5 ? `\u25BC Down ${Math.round(-ly)} m` : "";  // (no turn words under the arrow: the arrow itself shows the turn. Ash, 25 November 2026: "Remove the 2nd turn indicator during a race")
         if (dirV.textContent !== vt) dirV.textContent = vt; dirV.hidden = !vt; dirV.classList.toggle("dn", dy < -5 || ly < -1.5); dirV.classList.toggle("tn", Math.abs(dy) <= 5 && !!road?.turn); void el; } };
     pracBtn.onclick = e => { R.open(); e.currentTarget.blur(); };
     R.dispose = () => { leaveRace(); dead = true; card.remove(); big.remove(); autoHud(0); autoEl.remove(); panel.remove(); itemBtn.remove(); dir.remove(); legBox.remove(); pracBtn.remove(); hostCard?.remove(); hostTag?.remove(); try { hostP?.remove(); } catch {} };
-    R.lap = { L, sH, TOT, NT, NR, TG, RINGS, BOX, LEAF, DOOR, PLN, PLH, PW, AW, slot, at, rbSpans, headAt };  // (for tests)
+    R.lap = { L, sH, TOT, NT, NR, TG, RINGS, BOX, LEAF, DOOR, PLN, PLH, PW, AW, slot, at, headAt };  // (for tests)
     R.test = () => race;  // (for tests)
     return R;
   }
