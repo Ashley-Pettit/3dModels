@@ -65,7 +65,10 @@ test("Inverloch traffic keeps its assigned body, paint and visual handle on take
 test("automatic indicators follow steering and genuine route turns", async () => {
   const {ctx} = await world();
   const car = {v: 3};
-  assert.equal(ctx.townManualIndicator(car, -0.45, 1), -1);
+  assert.equal(ctx.townManualIndicator(car, -0.45, 1, 0), 0); // a gentle turn waits
+  assert.equal(ctx.townManualIndicator(car, -0.45, 1, 400), 0);
+  assert.equal(ctx.townManualIndicator(car, -0.45, 1, 650), -1); // held 0.6 s: on
+  assert.equal(ctx.townManualIndicator({v: 3}, 0.9, 1, 0), 1); // hard over: straight away
   assert.equal(ctx.townIndicatorFlash(car, -1, 100), -1);
   assert.equal(ctx.townManualIndicator(car, -0.25, 1), -1); // avoid flicker around the stick threshold
   assert.equal(ctx.townIndicatorFlash(car, -1, 480), 0);

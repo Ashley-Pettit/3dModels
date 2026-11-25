@@ -17811,10 +17811,17 @@ const handle = async (m, post) => {
     if (side !== car.indicatorSide) { car.indicatorSide = side; car.indicatorSince = now; }
     return side && (now - car.indicatorSince) % 750 < 375 ? side : 0;
   }
-  function townManualIndicator(car, steer, throttle) {
-    if (car.v < -0.2 || (car.v < 0.4 && throttle < -0.05)) return 0;
-    const side = Math.sign(steer);
-    return Math.abs(steer) >= (side === car.indicatorSide ? 0.22 : 0.38) ? side : 0;
+  // (it waits for a real turn: the wheel hard over, or held over for 0.6 s; a quick nudge to straighten up no longer flashes it. Once on,
+  // it stays on while you're still turning that way. Ash, 25 November 2026: "The indicator kicks in a little fast. Make it if turn is
+  // sharper or constant")
+  function townManualIndicator(car, steer, throttle, now = performance.now()) {
+    if (car.v < -0.2 || (car.v < 0.4 && throttle < -0.05)) { car.indWant = null; return 0; }
+    const side = Math.sign(steer), a = Math.abs(steer);
+    if (side && side === car.indicatorSide && a >= 0.22) return side;
+    if (!side || a < 0.38) { car.indWant = null; return 0; }
+    if (a >= 0.75) return side;
+    if (!car.indWant || car.indWant.side !== side) car.indWant = { side, t: now };
+    return now - car.indWant.t >= 600 ? side : 0;
   }
   function townRouteIndicator(pointAt, incoming, lead) {
     const [ax, az] = pointAt(5), [bx, bz] = pointAt(lead);
