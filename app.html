@@ -17862,7 +17862,7 @@ const handle = async (m, post) => {
         if (reroad()) { for (const C of P.cars) if (!C.rider && C.x != null && Math.hypot(C.x - F.pos.x, C.z - F.pos.z) > 300) start(C); } else home = was; }
       P.cars.forEach((C, ci) => {
         // more than 450 m from you: out of sight and left where it is until you come back (no work each frame)
-        if (C.x != null && Math.hypot(C.x - F.pos.x, C.z - F.pos.z) > 450) { if (!C.away) { C.away = true; C.parts.setMatrix(0, NONE.slice()); C.spin?.hide(); } return; } C.away = false;
+        if (C.x != null && Math.hypot(C.x - F.pos.x, C.z - F.pos.z) > 450) { if (!C.away) { C.away = true; C.parts.setMatrix(0, NONE.slice()); C.spin?.hide(); C.lamps?.hide(); } return; } C.away = false;
         let [ax, az, bx, bz] = seg(C), L = Math.hypot(bx - ax, bz - az) || 0.01;
         const h0 = Math.atan2(bx - ax, bz - az), ux = Math.sin(h0), uz = Math.cos(h0), cx = C.x ?? ax, cz = C.z ?? az, fh = C.h ?? h0, fx = Math.sin(fh), fz = Math.cos(fh);
         let want = C.top, waitingForPlayer = false;
@@ -17880,7 +17880,7 @@ const handle = async (m, post) => {
           if (same) want = Math.min(want, ahead < 7 ? 0 : Math.max(0, D.v * (ahead - 6) / 8)); else if (di < ci && ahead < 9) want = 0; }
         // slow down into a bend or a corner
         const rem = L - C.s, at = C.i + C.d, junction = (nodes.get(key(bx, bz)) || []).length > 1 || at === 0 || at === C.r.n - 1;
-        if (contact && C.parts.setSignal) {
+        if (!C.bus && (C.parts.setSignal || !contact)) {
           if (!C.turnPlan && junction && rem <= bsClamp(C.v * 1.5, 8, 24)) {
             C.turnPlan = { road: C.r, at, chosen: chooseTurn(C) };
           }
@@ -17914,9 +17914,10 @@ const handle = async (m, post) => {
         const y = (yf + yb + yr + yl) / 4 + 0.05, pt = Math.atan2(yf - yb, 2.6), rl = Math.atan2(yl - yr, 1.6), e = C.y == null ? 1 : Math.min(1, dt * 10);
         C.y = C.y == null ? y : C.y + (y - C.y) * e; C.p = C.p == null ? pt : C.p + (pt - C.p) * e; C.rl = C.rl == null ? rl : C.rl + (rl - C.rl) * e;
         M.compose(V.set(x, C.y, z), Q.setFromEuler(E.set(-C.p, C.h, C.rl, "YXZ")), ONE); C.parts.setMatrix(0, M.elements.slice());
-        if (!C.bus) { if (C.spin === undefined) C.spin = townSpinner(m, "new", contact && m.addTrafficCar ? 0.25 : 0); C.spin?.at(M.elements.slice(), rolled); } }); };  // (its hubcaps turning)
+        if (!C.bus) { if (C.spin === undefined) C.spin = townSpinner(m, "new", contact && m.addTrafficCar ? 0.25 : 0); C.spin?.at(M.elements.slice(), rolled);
+          if (!C.parts.setSignal) { if (!C.lamps && C.litSignal) C.lamps = townLamps(m, "new"); C.lamps?.show(M.elements.slice(), C.litSignal || 0); } } }); };  // (its hubcaps turning, and its indicators)
     // hand a car over to be driven: it leaves the traffic, and the driving code (townCar) keeps it as one of its own
-    P.take = C => { const i = P.cars.indexOf(C); if (i < 0) return null; P.cars.splice(i, 1); showSignal(C, 0);
+    P.take = C => { const i = P.cars.indexOf(C); if (i < 0) return null; P.cars.splice(i, 1); showSignal(C, 0); C.lamps?.remove(); C.lamps = null;
       return { x: C.x, z: C.z, h: C.h ?? 0, y: C.y ?? ground(C.x, C.z), p: C.p || 0, r: C.rl || 0, gold: false, bus: false, parts: C.parts }; };
     P.dispose = () => { dead = true; for (const C of P.cars) try { C.parts.remove(); } catch {} P.cars = []; };
     return P;
@@ -20434,6 +20435,27 @@ const handle = async (m, post) => {
         if (shown >= 0 && shown !== f) parts.setMatrix(shown, TOWN_WHEEL_FAR.slice()); parts.setMatrix(f, el); shown = f; },
       hide() { if (parts && shown >= 0) parts.setMatrix(shown, TOWN_WHEEL_FAR.slice()); shown = -1; },
       remove() { try { parts?.remove(); } catch {} parts = null; shown = -1; } }; }
+  // ---- indicators on every town's cars (Ash, 25 November 2026: "Move the indicators to all models"): Inverloch's model lights its own;
+  // Moorooka and Logan get amber lamps from here, front and back on the side that's signalling, shown over the car (one draw while lit)
+  // (each lamp a small block at a corner, reaching from just inside the body to just outside it, so it's on the car whichever shape it is:
+  // the sedan's nose and tail are 2.19 m out, the ute's tail 2.31)
+  const TOWN_LAMPS = { new: { x: [0.62, 0.9], y: [0.66, 0.84], z: [[2.08, 2.27], [-2.36, -2.1]] }, old: { x: [0.62, 0.9], y: [0.5, 0.66], z: [[2.06, 2.22], [-2.22, -2.06]] } };
+  const townLampCache = {};
+  function townLampParts(lay, lift = 0) { const key = lay + "/" + lift; if (townLampCache[key]) return townLampCache[key]; const L = TOWN_LAMPS[lay], A = [1, 0.42, 0.02];
+    const out = [-1, 1].map(side => { const P = [], N = [], C = [];  // (side -1 is the left, which is +x with the nose to +z)
+      const box = (x0, x1, y0, y1, z0, z1) => { const q = (a, b, c, d, n) => { for (const v of [a, b, c, a, c, d]) { P.push(...v); N.push(...n); C.push(...A); } };
+        q([x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1], [0, 0, 1]); q([x1, y0, z0], [x0, y0, z0], [x0, y1, z0], [x1, y1, z0], [0, 0, -1]);
+        q([x1, y0, z1], [x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [1, 0, 0]); q([x0, y0, z0], [x0, y0, z1], [x0, y1, z1], [x0, y1, z0], [-1, 0, 0]);
+        q([x0, y1, z1], [x1, y1, z1], [x1, y1, z0], [x0, y1, z0], [0, 1, 0]); };
+      const [a, b] = L.x, xs = side < 0 ? [a, b] : [-b, -a];
+      for (const [z0, z1] of L.z) box(xs[0], xs[1], L.y[0] + lift, L.y[1] + lift, z0, z1);
+      return { positions: new Float32Array(P), normals: new Float32Array(N), colors: new Float32Array(C), color: [1, 1, 1], roughness: 0.4, emissive: [1, 0.45, 0.02], emissiveIntensity: 2.2, doubleSide: true }; });
+    return townLampCache[key] = out; }
+  // one car's lamps: show(the car's matrix elements, side: -1 left, 1 right, 0 off), hide(), remove()
+  function townLamps(m, lay, lift = 0) { if (!m?.addParts) return null; let parts = null; try { parts = m.addParts(townLampParts(lay, lift).map(q => ({ ...q, matrix: TOWN_WHEEL_FAR.slice() }))); } catch { return null; }
+    let lit = 0; const idx = s => s < 0 ? 0 : 1;
+    return { lay, lift, show(el, side) { if (!parts) return; if (lit && lit !== side) parts.setMatrix(idx(lit), TOWN_WHEEL_FAR.slice()); if (side) parts.setMatrix(idx(side), el); lit = side; },
+      hide() { if (parts && lit) parts.setMatrix(idx(lit), TOWN_WHEEL_FAR.slice()); lit = 0; }, remove() { try { parts?.remove(); } catch {} parts = null; lit = 0; } }; }
   function townCarPart(kind, hex) { const k = ((kind | 0) % 3 + 3) % 3;
     if (!townCarCache[k]) townCarCache[k] = TOWN_CAR_SHAPES.cars[k].map(b64 => { const b = Uint8Array.from(atob(b64), ch => ch.charCodeAt(0)), dv = new DataView(b.buffer), n = b.length / 7, p = new Float32Array(n * 3), ci = new Uint8Array(n);
       for (let i = 0; i < n; i++) { for (let j = 0; j < 3; j++) p[i * 3 + j] = dv.getInt16(i * 7 + j * 2, true) / 1000; ci[i] = b[i * 7 + 6]; } return { p, ci }; });
@@ -20796,7 +20818,10 @@ const handle = async (m, post) => {
       } else m.driveCar(car.id[0], car.id[1], car.x, car.y, car.z, hd, car.p, rd, signal);
       // its hubcaps, turning (not a bus's): your own car is the older shape; a parked car you've taken is the new one (Inverloch's sit 0.25 m up)
       if (!car.bus) { const lay = car.own ? "old" : "new", lift = !car.own && T.cfg?.place === "inv" ? 0.25 : 0; if (mySpin && (mySpin.lay !== lay || mySpin.lift !== lift)) { mySpin.remove(); mySpin = null; }
-        if (!mySpin) mySpin = townSpinner(m, lay, lift); if (mySpin) { M.compose(V.set(car.x, car.y, car.z), Q.setFromEuler(E.set(-car.p, hd, rd, "YXZ")), ONE); mySpin.at(M.elements.slice(), (car.v || 0) * (dt || 0)); } } };
+        if (!mySpin) mySpin = townSpinner(m, lay, lift); M.compose(V.set(car.x, car.y, car.z), Q.setFromEuler(E.set(-car.p, hd, rd, "YXZ")), ONE); if (mySpin) mySpin.at(M.elements.slice(), (car.v || 0) * (dt || 0));
+        // (and its indicators, where the model doesn't light its own: everywhere but Inverloch)
+        if (T.cfg?.place !== "inv") { if (myLamps && myLamps.lay !== lay) { myLamps.remove(); myLamps = null; } if (!myLamps && signal) myLamps = townLamps(m, lay); myLamps?.show(M.elements.slice(), signal); } } };
+    let myLamps = null;
     let mySpin = null;
     // ---- the planes, each stood in the model as the app's own mesh where it lives (MOO_PLANES); `plane` is the one you are in
     const M = new THREE.Matrix4(), M2 = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), ONE = new THREE.Vector3(1, 1, 1);
@@ -21235,7 +21260,7 @@ const handle = async (m, post) => {
       if (on && car) M.compose(V.set(car.x, car.y, car.z), Q.setFromEuler(E.set(-car.p, car.h, car.r, "YXZ")), BEAT.set(beat * (car.bus ? 2.1 : 1), 1, beat * (car.bus ? 2.1 : 1)));
       for (let i = 0; i <= RING; i++) { const show = !!on && !!car && (i === 0 || i <= full); if (show || lit[i]) { ring.setMatrix(i, show ? M.elements.slice() : NONE); lit[i] = show; } }
       const pc = Math.round(charge * 100) + "%"; if (boostBtn.style.getPropertyValue("--charge") !== pc) boostBtn.style.setProperty("--charge", pc); };
-    const leave = (step, door) => { if (!veh) return; if (auto) autoEnd(); mySpin?.hide(); skyNavShow(null); const was = veh; if (was === "possum" && pos?.cling) { try { T.peers?.ride?.(pos.cling.id, false); } catch {} pos.cling = null; }  // (it stayed stuck to the driver: Ash, 18 November 2026)
+    const leave = (step, door) => { if (!veh) return; if (auto) autoEnd(); mySpin?.hide(); myLamps?.hide(); skyNavShow(null); const was = veh; if (was === "possum" && pos?.cling) { try { T.peers?.ride?.(pos.cling.id, false); } catch {} pos.cling = null; }  // (it stayed stuck to the driver: Ash, 18 November 2026)
       // (the comment above once ran on over the rest of this line, so leaving never stopped the engine, the rockets or the sparks: Ash, 19 November
       // 2026, "when i use jump to often the sound of the car or something is still playing")
       if (held) { document.body.classList.remove("bsheld"); held = null; } rockets(false); if (sky) { skyEnd(); skyTried = false; } for (let i = 0; i < FXN; i++) if (sparks[i]) { sparks[i] = null; fx.setMatrix(i, NONE); } for (let i = 0; i < GFXN; i++) if (glit[i]) { glit[i] = null; gfx.setMatrix(i, NONE); } if (was !== "possum" && was !== "pigeon" && was !== "drone" && was !== "ride") snd.door(); snd.stop();
@@ -21383,7 +21408,7 @@ const handle = async (m, post) => {
         if (bump > 1.5) snd.thud(Math.min(1.6, 0.4 + bump / 14));
         const now = performance.now();
         let signal = 0;
-        if (place === "inv" && !car.bus && !car.gold) {
+        if (!car.bus && !car.gold) {
           const side = C.wait || car.face || car.flip || car.trick || car.v < -0.2 ? 0
             : auto ? auto.indicator || 0 : townManualIndicator(car, str, go);
           signal = townIndicatorFlash(car, side, now);
