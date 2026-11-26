@@ -1361,6 +1361,12 @@ body.bsdrive:not(.bsplane) .bs-fly-x.bs-car { bottom: calc(68px + env(safe-area-
 /* the golden car's 180: over Boost on a phone, beside it on a desktop (X) */
 .bs-fly-x.bs-flip { top: auto; left: auto; right: 34px; bottom: calc(316px + env(safe-area-inset-bottom)); min-width: 58px; z-index: 2; touch-action: none; user-select: none; -webkit-user-select: none; background: #e8b923; color: #1b1830; }
 .bs-fly-x.bs-flip[hidden] { display: none; }
+/* the helicopter against Mumma: Barrel roll and Boost, under Rockets, filling up as they come back (Ash, 27 November 2026) */
+.bs-fly-x.bs-flip.bs-roll { bottom: calc(254px + env(safe-area-inset-bottom)); background: linear-gradient(90deg, #7fd3ff var(--charge, 100%), #8d8676 var(--charge, 100%)); color: #10213a; }
+.bs-fly-x.bs-flip.bs-hboost { bottom: calc(192px + env(safe-area-inset-bottom)); background: linear-gradient(90deg, #ffb347 var(--charge, 100%), #8d8676 var(--charge, 100%)); color: #1b1830; }
+.bs-fly-x.bs-hpow.wait { color: rgba(255, 255, 255, 0.85); }
+@media (hover: hover) and (pointer: fine) { .bs-fly-x.bs-flip.bs-roll { bottom: calc(114px + env(safe-area-inset-bottom)); } .bs-fly-x.bs-flip.bs-hboost { bottom: calc(160px + env(safe-area-inset-bottom)); } }
+.bs-boss.safe .bs-boss-me .bs-boss-bar i { background: linear-gradient(90deg, #7fd3ff, #e8fbff); }
 @media (hover: hover) and (pointer: fine) { .bs-fly-x.bs-flip { right: auto; left: calc(50% + 190px); bottom: calc(68px + env(safe-area-inset-bottom)); } }
 /* The hotrod's T-rex fight (Inverloch; townCar): the Spuds button where the golden car's 180 goes, the two health bars along the top
    and the big words in the middle. Only the button takes a tap */
@@ -1395,6 +1401,20 @@ body.bsfly.bsboss .bs-gps { top: var(--bs-gps-t, calc(150px + env(safe-area-inse
 .bs-nuke-flash.go { animation: bsFlash 2.4s ease-out forwards; }
 .bs-gloom { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0; transition: opacity 0.8s ease-out; background: radial-gradient(ellipse at center, rgba(30, 0, 0, 0) 38%, rgba(45, 4, 4, 0.78) 100%); }
 .bs-gloom.on { opacity: 1; transition: opacity 7s ease-in; } .bs-gloom[hidden] { display: none; }
+/* Dino Land (after Mumma): a pink and lilac sky over it, a quiet line at the bottom, and a white flash in and out */
+.bs-epi { position: absolute; inset: 0; z-index: 40; pointer-events: none; } .bs-epi[hidden] { display: none; }
+.bs-epi-sky { position: absolute; inset: 0; opacity: 0; transition: opacity 1.2s; background: linear-gradient(to bottom, rgba(255, 170, 220, 0.55), rgba(200, 175, 255, 0.35) 45%, rgba(255, 255, 255, 0) 80%); } .bs-epi-sky.on { opacity: 1; }
+.bs-epi-line { position: absolute; left: 50%; bottom: calc(14% + env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(90%, 640px); margin: 0; text-align: center; color: #fff; font: italic 500 clamp(1.05rem, 3.2vw, 1.6rem)/1.35 Georgia, "Times New Roman", serif; text-shadow: 0 2px 14px rgba(60, 20, 80, 0.8); opacity: 0; transition: opacity 1.1s; }
+.bs-epi-line.on { opacity: 1; }
+.bs-epi-fade { position: absolute; inset: 0; background: #fff; opacity: 0; } .bs-epi-fade.go { animation: bsEpiFade 1.8s ease-in-out; }
+@keyframes bsEpiFade { 0% { opacity: 0; } 45%, 55% { opacity: 1; } 100% { opacity: 0; } }
+body.bsepi .bs-fly > :not(.bs-epi) { visibility: hidden !important; }
+/* the nuke coming in: just the fight's bar and calls over the view (no buttons, help or names) */
+body.bscine .bs-fly > :not(.bs-boss):not(.bs-boss-call):not(.bs-epi):not(.bs-scare) { visibility: hidden !important; }
+body.bscine .bs-streets, body.bsepi .bs-streets, body.bscine .inv-label, body.bsepi .inv-label, body.bscine .lgn-label, body.bsepi .lgn-label { visibility: hidden !important; }
+.bs-low { position: absolute; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(ellipse at center, rgba(200, 0, 0, 0) 45%, rgba(210, 20, 20, 0.55) 100%); animation: bsLow 0.9s ease-in-out infinite; } .bs-low[hidden] { display: none; }
+@keyframes bsLow { 0%, 100% { opacity: 0.35; } 20% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .bs-low { animation: none; opacity: 0.6; } }
 .bs-dead { position: absolute; inset: 0; z-index: 9; pointer-events: none; display: grid; place-content: center; gap: 6px; text-align: center; color: #fff; opacity: 0; transition: opacity 0.45s ease-out; background: radial-gradient(ellipse at center, rgba(140, 0, 0, 0.3) 15%, rgba(70, 0, 0, 0.9) 100%); }
 .bs-dead::after { content: ""; position: absolute; inset: 0; background: #000; opacity: 0; transition: opacity 1.3s ease-in; }
 .bs-dead.on { opacity: 1; } .bs-dead.black::after { opacity: 1; } .bs-dead[hidden] { display: none; }
@@ -2106,6 +2126,8 @@ body.bstown.bsgmap.bsheld .bs-joy, body.bstown.bsgmap.bsheld .bs-ud { display: n
   body.bstown .bs-fly-x.bs-grip { right: calc(max(18px, env(safe-area-inset-right)) + 146px) !important; bottom: calc(134px + env(safe-area-inset-bottom)) !important; }
   body.bstown .bs-fly-x.bs-coo { right: calc(max(18px, env(safe-area-inset-right)) + 146px) !important; bottom: calc(188px + env(safe-area-inset-bottom)) !important; }
   body.bstown .bs-fly-x.bs-spud { right: calc(max(18px, env(safe-area-inset-right)) + 146px) !important; bottom: calc(134px + env(safe-area-inset-bottom)) !important; }  /* (the hotrod's Spuds, above Boost) */
+  body.bstown .bs-fly-x.bs-roll { right: calc(max(18px, env(safe-area-inset-right)) + 146px) !important; bottom: calc(26px + env(safe-area-inset-bottom)) !important; }  /* (the helicopter's Roll and Boost, under Rockets) */
+  body.bstown .bs-fly-x.bs-hboost { right: calc(max(18px, env(safe-area-inset-right)) + 146px) !important; bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
   body.bstown.bspossum:has(#bsHandBtn[hidden]) .bs-fly-x.bs-boost { bottom: calc(26px + env(safe-area-inset-bottom)) !important; }  /* (the plain possum: down one each) */
   body.bstown.bspossum:has(#bsHandBtn[hidden]) .bs-fly-x.bs-grip { bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
   /* (Explore and Free view move left, beside Settings and Share, so the GPS row up the right doesn't sit on Free view; and on foot the
@@ -19207,7 +19229,7 @@ const handle = async (m, post) => {
   function rideSettings() { let o = {}; try { o = JSON.parse(localStorage.getItem("an3d-rides") || "{}") || {}; } catch {}
     const r = {}; for (const k in RIDE_DEF) { const [d, , , lo, hi] = RIDE_DEF[k], v = o[k] == null || o[k] === "" ? NaN : +o[k]; r[k] = Number.isFinite(v) ? bsClamp(v, lo, hi) : d; } return r; }
   function townSound() {
-    let ac = null, master = null, hiss = null, eng = null, vol = 1;
+    let ac = null, master = null, hiss = null, eng = null, vol = 1, vsrc = null; const vbuf = {};
     const ctx = () => { if (!ac) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
         ac = new AC(); master = ac.createGain(); master.gain.value = 0.9 * vol; master.connect(ac.destination);
         hiss = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate); const d = hiss.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
@@ -19240,6 +19262,13 @@ const handle = async (m, post) => {
         to(eng.wf.frequency, (eng.heli ? 350 : 450) + 1500 * Math.min(1, speed / 70)); to(eng.wg.gain, eng.heli ? 0.03 + 0.045 * rev : Math.min(0.19, (speed / 45) ** 2 * 0.065) * (eng.plane ? 1.4 : 1) + (boost ? 0.055 : 0));
         to(eng.sg.gain, skid * 0.1, 0.03); },
       level(v) { vol = v; if (master) master.gain.value = 0.9 * v; },
+      // a recorded line (town3d/voice/SET/KEY.mp3): fetched when first wanted and kept as it came (a few KB), decoded only to be played,
+      // one at a time. Only two now, in an original deep action-movie voice (Kokoro's am_fenrir, slowed, lowered, with an echo): "Get to
+      // the choppa!" and "I'll be back." (Ash, 27 November 2026: "Original action-movie voice")
+      voiceLoad(set, keys) { for (const k of keys) { const id = set + "/" + k; if (vbuf[id]) continue; vbuf[id] = fetch(TOWN3D + "voice/" + id + ".mp3").then(r => r.ok ? r.arrayBuffer() : null).catch(() => null); } },
+      voice(set, key) { if (!vol) return; const a = ctx(), id = set + "/" + key; if (!a) return; this.voiceLoad(set, [key]);
+        vbuf[id].then(b => b && new Promise((ok, no) => a.decodeAudioData(b.slice(0), ok, no))).then(d => { if (!d) return; try { vsrc?.stop(); } catch {}
+          const sn = a.createBufferSource(), g = a.createGain(); sn.buffer = d; g.gain.value = 1.3; sn.connect(g); g.connect(master); sn.start(); vsrc = sn; }).catch(() => {}); },
       thud(k = 1) { hit(0.28, 320, 0.5 * k, 74); },
       // a few more (Ash, 16 November 2026: "Add a few more sounds"): a whoosh for a power-up, a boing for a jump, Arlo's woof, a pop when
       // someone says something, and a click for Grippy
@@ -21962,6 +21991,41 @@ const handle = async (m, post) => {
   function townBeaconParts() { const g = townGeo(), Y = townLin("#ffd166"), D = townLin("#c2410c");
     g.cone([0, 0.42, 0], [0, 0, 0], 0.34, 16, Y); g.cyl([0, 0.4, 0], [0, 1, 0], 0.14, 12, Y, Y); g.disc([0, 1, 0], [0, 1, 0], 0.14, D, 12);
     return [g.part({ unlit: true, doubleSide: true, emissive: [1, 0.8, 0.35], emissiveIntensity: 1 })]; }
+  // a health pack (the T-rex fight): a glowing green plus, about 2 m tall, with a tall pale green beam over it to find it by from a
+  // distance (Ash, 27 November 2026: "drop occasional hp packets around town that I can collect to heal myself to full")
+  function townPackParts() { const g = townGeo(), b = townGeo(), G = townLin("#3ddc84"), W = townLin("#eafff2");
+    g.cyl([0, 0.3, 0], [0, 2.1, 0], 0.28, 4, G, G); g.cyl([-0.9, 1.2, 0], [0.9, 1.2, 0], 0.28, 4, G, G); b.cyl([0, 0, 0], [0, 80, 0], 1.5, 10, W, G);
+    return [g.part({ unlit: true, emissive: [0.3, 1, 0.55], emissiveIntensity: 1 }), b.part({ unlit: true, opacity: 0.32, doubleSide: true })]; }
+  // where a dinosaur's about to land: a red ring on the ground 1 m across (scaled to the stomp's reach), its middle faintly filled
+  function townWarnParts() { const g = townGeo(), f = townGeo(), Rd = townLin("#ff2a2a"), n = 40, c0 = f.v([0, 0, 0], Rd);
+    for (let i = 0; i < n; i++) { const a0 = i / n * Math.PI * 2, a1 = (i + 1) / n * Math.PI * 2, P = (a, r) => [Math.sin(a) * r, 0, Math.cos(a) * r];
+      const v0 = g.v(P(a0, 0.86), Rd), v1 = g.v(P(a0, 1), Rd), v2 = g.v(P(a1, 1), Rd), v3 = g.v(P(a1, 0.86), Rd); g.t(v0, v1, v2); g.t(v0, v2, v3); f.t(c0, f.v(P(a0, 0.86), Rd), f.v(P(a1, 0.86), Rd)); }
+    return [g.part({ unlit: true, opacity: 0.85, doubleSide: true }), f.part({ unlit: true, opacity: 0.2, doubleSide: true })]; }
+  // Dino Land, after Mumma's beaten (Ash, 27 November 2026: "After killing the Dino I want to be teleported to fairly god Dino land with
+  // lots of upset small Dino's. And a feeling of did I do the right thing"): a little island in the sky, 45 m across, grassy on top with
+  // flowers and toadstools, rock tapering away underneath, clouds round its foot, a nest with Mumma's last egg in the middle, and a
+  // rainbow over the back. Part 0 lit; part 1 (the rainbow and the crystals) glowing
+  function townDinoLandParts() { const g = townGeo(), u = townGeo(), Gr = townLin("#8fdc8a"), Gr2 = townLin("#6cc56f"), Rk = townLin("#9a8fb0"), Rk2 = townLin("#6f6585"), Cl = townLin("#ffffff"), Nest = townLin("#9b7246"), Egg = townLin("#fff6e6");
+    let sd = 7; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+    g.disc([0, 0, 0], [0, 1, 0], 45, Gr, 48, Gr2, 44); g.cyl([0, -2.5, 0], [0, 0, 0], 45, 48, Rk, Gr); g.cone([0, -2.5, 0], [0, -48, 0], 45, 28, Rk2);
+    for (let i = 0; i < 26; i++) { const a = rnd() * Math.PI * 2, r = 30 + rnd() * 30, y = -14 - rnd() * 22; g.egg([Math.sin(a) * r, y, Math.cos(a) * r], 9 + rnd() * 8, 3 + rnd() * 2, 9 + rnd() * 8, Cl, 6, 10); }
+    const FL = ["#ff8fc8", "#ffd166", "#ffffff", "#c9a7ff", "#8fd3ff", "#ff9f7a"].map(townLin);
+    for (let i = 0; i < 90; i++) { const a = rnd() * Math.PI * 2, r = 4 + Math.sqrt(rnd()) * 39, x = Math.sin(a) * r, z = Math.cos(a) * r; g.cyl([x, 0, z], [x, 0.35, z], 0.03, 4, Gr2); g.egg([x, 0.4, z], 0.2, 0.1, 0.2, FL[i % FL.length], 4, 6); }
+    for (let i = 0; i < 9; i++) { const a = rnd() * Math.PI * 2, r = 16 + rnd() * 24, x = Math.sin(a) * r, z = Math.cos(a) * r, h = 0.8 + rnd() * 1.4; g.cyl([x, 0, z], [x, h, z], 0.18 * h, 8, townLin("#fff3e0")); g.egg([x, h, z], 0.7 * h, 0.35 * h, 0.7 * h, i % 2 ? townLin("#ff7aa8") : townLin("#c9a7ff"), 6, 10); }
+    for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2; g.pipe([[Math.sin(a) * 3.2, 0.4, Math.cos(a) * 3.2], [Math.sin(a + 0.6) * 3.4, 0.7, Math.cos(a + 0.6) * 3.4], [Math.sin(a + 1.2) * 3.1, 0.5, Math.cos(a + 1.2) * 3.1]], () => 0.18, 5, () => Nest, 2); }
+    g.disc([0, 0.25, 0], [0, 1, 0], 3, Nest, 20); g.egg([0, 1.25, 0], 0.9, 1.2, 0.9, Egg, 10, 14);
+    for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2; g.egg([Math.sin(a) * 2.3, 0.75, Math.cos(a) * 2.3], 0.28, 0.16, 0.28, FL[i % FL.length], 4, 6); }  // (flowers left round it)
+    ["#ff9aa2", "#ffcf8f", "#fff59d", "#a8e6a3", "#9ad7ff", "#c9a7ff"].forEach((c, k) => { const R = 34 - k * 1.1, pts = []; for (let i = 0; i <= 20; i++) { const a = Math.PI * i / 20; pts.push([Math.cos(a) * R, Math.sin(a) * R * 0.8 - 2, -30]); } u.pipe(pts, () => 0.6, 6, () => townLin(c), 3, { side0: [0, 0, 1] }); });
+    for (let i = 0; i < 7; i++) { const a = rnd() * Math.PI * 2, r = 20 + rnd() * 20, x = Math.sin(a) * r, z = Math.cos(a) * r, h = 1.5 + rnd() * 2.5; u.cone([x, 0, z], [x + (rnd() - 0.5), h, z + (rnd() - 0.5)], 0.45, 6, townLin(i % 2 ? "#a8f0ff" : "#ffc8f0")); }
+    return [g.part({ roughness: 0.9, doubleSide: true }), u.part({ unlit: true, emissive: [1, 1, 1], emissiveIntensity: 0.4 })]; }
+  // a baby T-rex (Dino Land), about 1.2 m tall and facing +Z: a round body, a big head, little arms, and big sad eyes looking down, a tear
+  // on each cheek
+  function townBabyParts(skin) { const g = townGeo(), C = townLin(skin), C2 = townMix(C, townLin("#fff3e0"), 0.45), W = townLin("#ffffff"), D = townLin("#2a2140"), Tr = townLin("#7fc8ff");
+    g.egg([0, 0.62, 0], 0.32, 0.3, 0.42, C); g.egg([0, 0.55, 0.12], 0.24, 0.22, 0.3, C2); g.egg([0, 1.0, 0.36], 0.25, 0.23, 0.29, C); g.egg([0, 0.93, 0.6], 0.16, 0.12, 0.15, C2);
+    for (const sx of [-1, 1]) { g.egg([sx * 0.13, 1.08, 0.57], 0.075, 0.08, 0.06, W, 6, 8); g.egg([sx * 0.13, 1.055, 0.62], 0.04, 0.045, 0.03, D, 5, 6); g.egg([sx * 0.14, 1.15, 0.58], 0.07, 0.015, 0.03, D, 4, 6);
+      g.egg([sx * 0.15, 0.97, 0.6], 0.022, 0.06, 0.022, Tr, 4, 6); g.egg([sx * 0.21, 0.68, 0.33], 0.05, 0.05, 0.1, C, 5, 6); g.egg([sx * 0.16, 0.28, 0.02], 0.1, 0.22, 0.12, C, 6, 8); g.egg([sx * 0.16, 0.06, 0.1], 0.1, 0.05, 0.16, C2, 5, 6); }
+    g.cone([0, 0.6, -0.3], [0, 0.32, -1.0], 0.2, 8, C);
+    return [g.part({ roughness: 0.85 })]; }
   // a ghost, for a player the T-rex has wrecked (they're out till the others win or everyone's out): a white sheet floating 30 cm up,
   // its hem wavy, two dark eyes and an "oh" of a mouth facing +Z (Ash, 26 November 2026: "If I die ... Make me a ghost")
   function townGhostParts() { const g = townGeo(), W = townLin("#f4f8ff"), W2 = townLin("#d9e4f5"), D = townLin("#1b1830"), S = [];
@@ -22581,9 +22645,9 @@ const handle = async (m, post) => {
     // (Ash, 27 November 2026, 3am: half as much health again for both; rockets 80% weaker; angry for 10 s at a time, then 30% harder and 10%
     // quicker; a single hit never more than 30; and the moves a third as often: "The Dino cycles way to fast between dizzy charging etc…
     // about 1/3 of that speed", "It should feel hard but possible to win. Avoiding instant deaths")
-    const REX_S = 2.6, REX_HP = 240, REX_WAIT = 20000, REX_SPUDS = 10, REX_NET = 150, MUM_K = 2, MUM_CAR = 0.12, CHOPPA_HITS = 35, REX_DMG = 0.9, MUM_DMG = 1.25, ROCKET = 1.4, RACE_HIT = 0.1, REX_SPD = 1.05, REPAIR = 2,
-      RAGE_MS = 10000, RAGE_DMG = 1.3, RAGE_SPD = 1.1, HIT_MAX = 30, PACE = 2, GAP = 3, MUM_GAP = 2.4, rexMs = () => performance.now();
-    const RX = new THREE.Matrix4(), RB = new THREE.Matrix4(), RH = new THREE.Matrix4(), RT = new THREE.Matrix4(), RQ = new THREE.Matrix4(), RV = new THREE.Vector3();
+    const REX_S = 2.6, REX_K = 0.9, REX_HP = 240, REX_WAIT = 20000, REX_SPUDS = 10, REX_NET = 150, MUM_K = 1.6, MUM_CAR = 0.12, CHOPPA_HITS = 35, REX_DMG = 0.9, MUM_DMG = 0.625, AIR_DMG = 0.5, ROCKET = 1.4, RACE_HIT = 0.1, REX_SPD = 1.05, REPAIR = 2,
+      RAGE_MS = 14000, RAGE_DMG = 1.3, RAGE_SPD = 1.2, HIT_MAX = 30, PACE = 2, GAP = 3, MUM_GAP = 2.4, rexMs = () => performance.now();
+    const RX = new THREE.Matrix4(), RB = new THREE.Matrix4(), RH = new THREE.Matrix4(), RT = new THREE.Matrix4(), RQ = new THREE.Matrix4(), RS = new THREE.Matrix4(), RV = new THREE.Vector3(), E3 = new THREE.Euler();
     let rex = null, rexP = null, rexPm = null, rexCorpse = null, bunkP = null, nukeP = null, rockP = null, fireP = null, beacP = null, rexArmed = 0, rexRaf = 0, rexLast = 0, rexHud = null, rexCall = null, spudP = null, spudHeld = false, spudCd = 0;
     // (with friends: rexRole "host" runs it, "guest" has joined someone else's, "" neither; rexFid the fight; rexOut: wrecked; rexGhost: and floating about)
     let rexRole = "", rexFid = "", rexHost = null, rexNetAt = 0, rexHeard = 0, rexOut = false, rexGhost = false, rexInvited = "", rexInvitedAt = 0;
@@ -22600,11 +22664,12 @@ const handle = async (m, post) => {
     const inHotrod = () => veh === "car" && !!car?.hotrod, inChoppa = () => veh === "plane" && !!plane?.heli;
     // you're in the fight, able to hit it and be hit: the host in the hotrod (any car once Mumma's up), or a friend who's joined, in any
     // car; or, against Mumma, in a helicopter; and not wrecked
-    const fighting = () => !rexOut && !!rexRole && ((veh === "car" && !!car && (rexRole === "guest" || !!car.hotrod || !!rex?.mum)) || (!!rex?.mum && inChoppa()));
+    // (riding along with someone counts too: Ash, 27 November 2026, "When joining a boss fight in progress let me select ride with x or own car")
+    const fighting = () => !rexOut && !!rexRole && ((veh === "car" && !!car && (rexRole === "guest" || !!car.hotrod || !!rex?.mum)) || (!!rex?.mum && inChoppa()) || (veh === "ride" && rexRole === "guest" && !!ride?.id));
     // still in it: fighting, or (Mumma) on foot on the way to the choppa: she's after you, but you can't hit her, and she can't hurt you
     const stillIn = () => fighting() || (!!rex?.mum && !!rexRole && !rexOut && !veh);
     // what you're in: your car or the helicopter (or nothing, on foot); and a helicopter's height off the ground
-    const meNow = () => veh === "car" && car ? car : inChoppa() ? plane : null;
+    const meNow = () => veh === "car" && car ? car : inChoppa() ? plane : veh === "ride" && ride?.q && rexRole ? { x: ride.q.x, y: ride.q.y, z: ride.q.z, h: ride.q.h, v: ride.v || 0, ride: true, air: ride.q.y - m.groundAt(ride.q.x, ride.q.z) > 3 } : null;  // (riding with someone: where their vehicle is)
     const upOff = q => q && q !== car ? q.y - m.groundAt(q.x, q.z) : 0;
     // the choppa: the town's helicopter (not the golden one)
     const choppaOf = () => planes.find(P => P.heli && !P.gold) || planes.find(P => P.heli);
@@ -22617,17 +22682,17 @@ const handle = async (m, post) => {
     const rexInvite = async () => { const u = new URL(location.href); u.search = ""; u.hash = ""; u.searchParams.set("rex", "1"); const nm = String(playerName() || "").trim().slice(0, 16); if (nm) u.searchParams.set("from", nm);
       const url = u.href, text = `${nm || "I"} ${nm ? "needs" : "need"} a hand taking down a T-rex in Inverloch! Open this and you'll be in a car next to it.`;
       if (navigator.share) { try { await navigator.share({ title: "T-rex fight in Inverloch", text, url }); return; } catch (e) { if (e?.name === "AbortError") return; } }
-      try { await navigator.clipboard.writeText(`${text} ${url}`); toast("Invite link copied. Paste it to them.", 2800); } catch { toast(`Send them this link: ${url}`, 8000, true); } };
+      try { await navigator.clipboard.writeText(`${text} ${url}`); toast("Help link copied. Paste it to them.", 2800); } catch { toast(`Send them this link: ${url}`, 8000, true); } };
     // the health bars along the top, with Invite, the nuke's way and the ghost's note; and the big words in the middle (only Invite takes a
     // tap: a finger goes through the rest)
     const rexHudMake = () => { if (rexHud) return; rexHud = document.createElement("div"); rexHud.className = "bs-boss"; rexHud.hidden = true; rexHud.setAttribute("role", "status");
-      rexHud.innerHTML = '<div class="bs-boss-name"><b></b><span></span><button type="button" class="bs-boss-inv">Invite</button></div><div class="bs-boss-bar"><i></i></div><div class="bs-boss-me"><b></b><div class="bs-boss-bar"><i></i></div></div><div class="bs-boss-nuke" hidden><i aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em"><path d="M12 1.5 21.5 12H15.6v10.5H8.4V12H2.5z" fill="currentColor" stroke="#5c3a00" stroke-width="1.3" stroke-linejoin="round"/></svg></i><span></span></div><div class="bs-boss-ghost" hidden>👻 You’re out until the others win, or everyone’s out</div>';
-      const ib = rexHud.querySelector(".bs-boss-inv"); ib.setAttribute("aria-label", "Invite friends to the T-rex fight"); ib.onclick = () => { rexInvite(); ib.blur(); };
+      rexHud.innerHTML = '<div class="bs-boss-name"><b></b><span></span><button type="button" class="bs-boss-inv">Seek help</button></div><div class="bs-boss-bar"><i></i></div><div class="bs-boss-me"><b></b><div class="bs-boss-bar"><i></i></div></div><div class="bs-boss-nuke" hidden><i aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em"><path d="M12 1.5 21.5 12H15.6v10.5H8.4V12H2.5z" fill="currentColor" stroke="#5c3a00" stroke-width="1.3" stroke-linejoin="round"/></svg></i><span></span></div><div class="bs-boss-ghost" hidden>👻 You’re out until the others win, or everyone’s out</div>';
+      const ib = rexHud.querySelector(".bs-boss-inv"); ib.setAttribute("aria-label", "Seek help: send friends a link to join the T-rex fight");  // (was Invite: Ash, 27 November 2026, "Change invite to seek help") ib.onclick = () => { rexInvite(); ib.blur(); };
       rexCall = document.createElement("div"); rexCall.className = "bs-boss-call"; rexCall.hidden = true; rexCall.setAttribute("aria-hidden", "true"); $("bsFly")?.append(rexHud, rexCall); };
     let callT = 0; const rexSay = (text, ms = 1800, bad = false) => { rexHudMake(); rexCall.textContent = text; rexCall.classList.toggle("bad", bad); rexCall.hidden = false; rexCall.classList.remove("pop"); void rexCall.offsetWidth; rexCall.classList.add("pop"); clearTimeout(callT); callT = setTimeout(() => { rexCall.hidden = true; }, ms); };
     // how many are fighting it: the host counts itself and the friends still in; a friend hears it from the host
     const rexCount = () => rexRole === "host" ? (stillIn() ? 1 : 0) + [...rexGuests.values()].filter(g => !g.out).length : rex?.n || 1;
-    let hudK = ""; const rexHudShow = () => { rexHudMake(); const on = !!rex && rex.live && !!rexRole, n = on ? rexCount() : 0, k = on ? [Math.ceil(rex.hp), Math.ceil(rex.maxHp), Math.ceil(rex.me), rex.phase, rex.st, n, rexOut, rexGhost, !!car?.hotrod, rex.mum, rex.nuke, !!rex.choppa, veh, !!rex.fixing, raging() ? Math.ceil((rex.rageTil - rexMs()) / 1000) : 0, rex.wings || 0].join() : "";
+    let hudK = ""; const rexHudShow = () => { rexHudMake(); const on = !!rex && rex.live && !!rexRole, n = on ? rexCount() : 0, k = on ? [Math.ceil(rex.hp), Math.ceil(rex.maxHp), Math.ceil(rex.me), rex.phase, rex.st, n, rexOut, rexGhost, !!car?.hotrod, rex.mum, rex.nuke, !!rex.choppa, veh, !!rex.fixing, raging() ? Math.ceil((rex.rageTil - rexMs()) / 1000) : 0, rex.wings || 0, packWay()].join() : "";
       if (rexHud.hidden === on) { rexHud.hidden = !on; document.body.classList.toggle("bsboss", on); } if (k === hudK) return; hudK = k; if (!on) return;
       const [a, b] = rexHud.querySelectorAll(".bs-boss-bar i"); a.style.width = Math.max(0, rex.hp / rex.maxHp * 100) + "%"; b.style.width = (rexOut ? 0 : Math.max(0, rex.me)) + "%";
       rexHud.querySelector(".bs-boss-name b").textContent = rex.mum ? "🦖 Mumma T-rex" : "🦖 The Inverloch Rex";
@@ -22635,7 +22700,7 @@ const handle = async (m, post) => {
       const rg = raging() ? Math.ceil((rex.rageTil - rexMs()) / 1000) : 0;
       const mood = rex.nuke ? "☢ Nuke her!" : !rex.mum && rex.st === "dead" ? "Down!" : rex.st === "dizzy" ? "Dizzy! Hit it now" : rex.mum && choppaWay() ? "Get to the choppa!" : rex.wings === 1 ? "Wings out!" : "";
       rexHud.querySelector(".bs-boss-name span").textContent = [rg ? `😡 Angry · ${rg} sec` : "", mood, n > 1 ? `${n} of you` : ""].filter(Boolean).join(" · "); rexHud.classList.toggle("rage", !!rg);
-      rexHud.querySelector(".bs-boss-ghost").hidden = !rexGhost; rexHud.querySelector(".bs-boss-nuke").hidden = !((rex.nuke && rex.nuke !== "done") || choppaWay()); nukeWay = ""; };
+      rexHud.querySelector(".bs-boss-ghost").hidden = !rexGhost; rexHud.querySelector(".bs-boss-nuke").hidden = !((rex.nuke && rex.nuke !== "done") || choppaWay() || packWay()); nukeWay = ""; };
     // the choppa's way shows once you've been told, till you're in a helicopter (or the nuke's up)
     const choppaWay = () => !!rex?.choppa && !rex.nuke && !inChoppa() && !rexOut && !!choppaOf();
     // the GPS card and the toasts go under the health bars (and the way row), however tall they are: the GPS card was over the way to
@@ -22646,11 +22711,11 @@ const handle = async (m, post) => {
       if (k === stackK) return; stackK = k; st.setProperty("--bs-gps-t", Math.round(b + 8) + "px"); st.setProperty("--bs-toast-t", Math.round(b + 8 + (gh ? gh + 8 : 0)) + "px"); };
     // the nuke's way, kept up as you go: how far the bunker is, and an arrow pointing at it (up the screen: straight ahead)
     // (and the choppa's, the same way, before the nuke's up)
-    let nukeWay = "", nukeTurn = 99; const nukeWayShow = () => { if (!rexHud || rexHud.hidden || !rex) return; const chop = !rex.nuke && choppaWay(); if (!chop && (!rex.nuke || !rex.bunker)) return;
+    let nukeWay = "", nukeTurn = 99; const nukeWayShow = () => { if (!rexHud || rexHud.hidden || !rex) return; const pk = packWay() && !(rex.nuke && atConsole()) ? packNear() : null, chop = !pk && !rex.nuke && choppaWay(); if (!pk && !chop && (!rex.nuke || !rex.bunker)) return;
       const el = rexHud.querySelector(".bs-boss-nuke"); if (el.hidden) return;
-      const H = chop ? choppaOf() : null, me = meNow() || F.pos, nearB = !chop && Math.hypot(rex.bunker[0] - me.x, rex.bunker[1] - me.z) < 30, inside = nearB && !veh;
-      const to = chop ? [H.x, H.z] : inside ? bunkTo(...TOWN_BUNKER.button) : rex.bunker, d = Math.hypot(to[0] - me.x, to[1] - me.z), far = d < 1000 ? Math.round(d / 10) * 10 + " m" : (d / 1000).toFixed(1) + " km";
-      const txt = chop ? (d < 12 ? "🚁 Get in the choppa!" : `🚁 Get to the choppa: ${far}`) : rex.nuke === "away" || rex.nuke === "boom" ? "☢ The nuke's on its way!" : !stillIn() && nearB ? "☢ At the bunker: only someone still in can fire it"
+      const H = chop ? choppaOf() : null, me = meNow() || F.pos, nearB = !pk && !chop && Math.hypot(rex.bunker[0] - me.x, rex.bunker[1] - me.z) < 30, inside = nearB && !veh;
+      const to = pk ? [pk.x, pk.z] : chop ? [H.x, H.z] : inside ? bunkTo(...TOWN_BUNKER.button) : rex.bunker, d = Math.hypot(to[0] - me.x, to[1] - me.z), far = d < 1000 ? Math.round(d / 10) * 10 + " m" : (d / 1000).toFixed(1) + " km";
+      const txt = pk ? `💚 Health pack (full health): ${far}` : chop ? (d < 12 ? "🚁 Get in the choppa!" : `🚁 Get to the choppa: ${far}`) : rex.nuke === "away" || rex.nuke === "boom" ? "☢ The nuke's on its way!" : !stillIn() && nearB ? "☢ At the bunker: only someone still in can fire it"
         : inside ? (atConsole() ? "☢ Press FIRE!" : `☢ Inside, to the console at the back: ${Math.round(d)} m`) : nearB ? (inChoppa() ? "☢ Land, get out and go into the bunker" : "☢ Get out and go into the bunker")
         // (not how: Ash, 27 November 2026, "Don't say get a car - say instead find another way to the bunker", "Don't say drive across the
         // water just say. Find a way to get to the bunker")
@@ -22663,17 +22728,19 @@ const handle = async (m, post) => {
     // fingers down ... Appears to be memory related")
     const parts = (L, n) => m.addParts((n ? Array.from({ length: n }, () => L[0]) : L).map(q => ({ ...q, matrix: NONE.slice() })));
     const rexMake = () => { try { rexP ||= parts(townRexParts()); spudP ||= parts([townSpudShot()], REX_SPUDS); rockP ||= parts([townRocketShot()], REX_SPUDS);
-        fireP ||= parts(townFireParts()); beacP ||= parts(townBeaconParts(), 2); return true; } catch (e) { console.warn("The T-rex couldn't be made", e); return false; } };
+        fireP ||= parts(townFireParts()); beacP ||= parts(townBeaconParts(), 2); warnP ||= parts(townWarnParts()); return true; } catch (e) { console.warn("The T-rex couldn't be made", e); return false; } };
     const mumMake = () => { if (rexPm) return true; try { rexPm = m.addParts(townRexParts(true).map(q => ({ ...q, matrix: NONE.slice() }))); return true; } catch (e) { console.warn("Mumma T-rex couldn't be made", e); return false; } };
     const nukeMake = () => { try { if (!bunkP) bunkP = m.addParts(townBunkerParts().map(q => ({ ...q, matrix: NONE.slice() }))); if (!nukeP) nukeP = m.addParts(townNukeParts().map(q => ({ ...q, matrix: NONE.slice() }))); return true; } catch (e) { console.warn("The nuke couldn't be made", e); return false; } };
     const hideAllOf = (P, n) => { if (P) for (let i = 0; i < n; i++) P.setMatrix(i, NONE.slice()); };
     // the end of a fight: everything it made let go (made again for the next one)
-    const rexHide = () => { for (const P of [rexP, rexPm, spudP, rockP, fireP, beacP, bunkP, nukeP]) try { P?.remove(); } catch {}
-      rexP = rexPm = spudP = rockP = fireP = beacP = bunkP = nukeP = null; spuds.length = 0; slotK.fill(0); rexCorpse = null; dinoTag?.remove(); dinoEdge?.remove(); dinoTag = dinoEdge = null; };
+    const rexHide = () => { for (const P of [rexP, rexPm, spudP, rockP, fireP, beacP, bunkP, nukeP, packP, warnP]) try { P?.remove(); } catch {}
+      rexP = rexPm = spudP = rockP = fireP = beacP = bunkP = nukeP = packP = warnP = null; lowOn(false); packs.length = 0; spuds.length = 0; slotK.fill(0); rexCorpse = null; dinoTag?.remove(); dinoEdge?.remove(); dinoTag = dinoEdge = null; };
     const slotK = new Uint8Array(REX_SPUDS);  // (what each spud slot showed last frame: 0 nothing, 1 a spud, 2 a rocket)
     const rexFwd = (R = rex) => [Math.sin(R.h), Math.cos(R.h)];
-    const rexNew = (x, z, h, host, mum = false) => { const s = mum ? REX_S * MUM_K : REX_S, base = mum ? REX_HP * 2 : REX_HP;
-      return { x, z, h, tx: x, tz: z, th: h, nv: 0, host, mum, s, k: s / REX_S, base, hp: base, maxHp: base, me: 100, st: "rise", t: 0, live: true, phase: mum ? 3 : 1, cd: mum ? { bite: 1.2, stomp: 2.5, charge: 3, tail: 1.5, breath: 2, leap: 2.5, sky: 2, knock: 1, any: 2.5, lunge: 6, catch: 2, fly: 0 } : { bite: 1.5, stomp: 3, charge: 4, tail: 2, breath: 99, leap: 99, sky: 99, knock: 99, any: 2, lunge: 8, catch: 99, fly: 99 },
+    // (sizes: the T-rex 10% smaller, Mumma 20% smaller (1.6 times the T-rex's old size, from 2): Ash, 27 November 2026, "Make mumma 20%
+    // smaller", "Make the first Dino 10% smaller". Its reach and its moves' distances go with its size)
+    const rexNew = (x, z, h, host, mum = false) => { const s = mum ? REX_S * MUM_K : REX_S * REX_K, base = mum ? REX_HP * 2 : REX_HP;
+      return { x, z, h, tx: x, tz: z, th: h, nv: 0, host, mum, s, k: s / REX_S, base, hp: base, maxHp: base, me: 100, st: "rise", t: 0, live: true, phase: mum ? 3 : 1, cd: mum ? { bite: 1.2, stomp: 2.5, charge: 3, tail: 1.5, breath: 2, leap: 2.5, sky: 2, knock: 1, any: 2.5, lunge: 6, catch: 2, fly: 0 } : { bite: 1.5, stomp: 3, charge: 4, tail: 2, breath: 99, leap: 6, sky: 99, knock: 99, any: 2, lunge: 8, catch: 99, fly: 99 },
         wings: 0, rageTil: 0, leapT: 0, walk: 0, v: 0, far: 0, meCd: 0, ramCd: 0, n: 1, nuke: "", nukeT: 0, bunker: null, lost: false,
         pose: { pitch: 0, roll: 0, neck: 0, yaw: 0, jaw: 0, tail: 0, tailP: 0, legL: 0, legR: 0, liftL: 0, liftR: 0, rise: -9, sink: 0, jump: 0 }, ring: null, glow: 0 }; };
     // a new state: what it was doing is forgotten (the host changes it, and tells everyone; a friend changes it when told)
@@ -22712,7 +22779,7 @@ const handle = async (m, post) => {
     const r2 = v => Math.round(v * 100) / 100;
     const rexSync = force => { if (rexRole !== "host" || !rex) return; const now = rexMs(); if (!force && now - rexNetAt < REX_NET) return; rexNetAt = now; const R = rex, B = R.bunker || [0, 0, 0];
       rexSend(["s", rexFid, String(playerName() || "").slice(0, 16), r2(R.x), r2(R.z), r2(R.h), R.st, r2(R.t), Math.round(R.hp), Math.round(R.maxHp), R.phase, r2(R.v), r2(R.lock || 0), R.spin || 0, rexCount(),
-        R.mum ? 1 : 0, r2(B[0]), r2(B[1]), r2(B[2]), R.nuke === "away" || R.nuke === "boom" ? r2(R.nukeT) : -1, R.live ? 1 : 0, R.lost ? 1 : 0, 1 + rexGuests.size, r2(R.jumpH || 0), r2(raging() ? (R.rageTil - rexMs()) / 1000 : 0), R.wings || 0, r2(R.leapT || 0)]); };
+        R.mum ? 1 : 0, r2(B[0]), r2(B[1]), r2(B[2]), R.nuke === "away" || R.nuke === "boom" ? r2(R.nukeT) : -1, R.live ? 1 : 0, R.lost ? 1 : 0, 1 + rexGuests.size, r2(R.jumpH || 0), r2(raging() ? (R.rageTil - rexMs()) / 1000 : 0), R.wings || 0, r2(R.leapT || 0), (R.st === "leap" || R.st === "lunge") && R.land ? r2(R.land[0]) : 0, (R.st === "leap" || R.st === "lunge") && R.land ? r2(R.land[1]) : 0]); };
     const rexStart = () => { if (!rexMake()) return; const [x, z] = rexSpot();
       rexRole = "host"; rexFid = Math.random().toString(36).slice(2, 10); rexGuests.clear(); rexOut = false; rex = rexNew(x, z, Math.atan2(car.x - x, car.z - z), true);
       rexHudMake(); hudK = ""; rexSay("BOSS FIGHT!", 2200); snd.thud(2); rexCam.shake = 1.2; rexSync(true);
@@ -22756,7 +22823,7 @@ const handle = async (m, post) => {
       rexArmed = rexMs(); rexStep = 0; rexLoop(); };
     let rexStep = 0, rexChop = false;
     // a win, for everyone in on it: Mumma down, fireworks round her and round you, a fanfare, the count of wins, and ghosts back
-    const rexWon = () => { rexHudShow(); rexSay("VICTORY!", 3600); snd.roar?.(0.7); spudBtn.hidden = true; spudHeld = false; rexArmed = 0; nukeBtnShow(false);
+    const rexWon = () => { rexHudShow(); rexSay("VICTORY!", 3600); rexTime(); if (rex?.mum) { setTimeout(() => { rexSay("I'LL BE BACK.", 2400); snd.voice?.("rex", "back"); }, 8000); setTimeout(epiStart, 11000); } snd.roar?.(0.7); spudBtn.hidden = true; spudHeld = false; rexArmed = 0; nukeBtnShow(false);
       let wins = 1; try { wins = (+localStorage.getItem("anRexWins") || 0) + 1; localStorage.setItem("anRexWins", String(wins)); } catch {}
       const n = rexRole === "host" ? 1 + rexGuests.size : rex?.nAll || rexCount(); ghostOff(false);
       
@@ -22765,11 +22832,13 @@ const handle = async (m, post) => {
         gPop(x + (Math.random() - 0.5) * (near ? 40 : 20), m.groundAt(x, z) + (near ? 40 : 14) + Math.random() * 8, z + (Math.random() - 0.5) * (near ? 40 : 20)); snd.whoosh(); }, 2400 + i * 350); };
     // a hit on you: knocked about, the car hopping (and spinning, for a big one). Mumma's hit twice as hard. Wrecked, you're out: a ghost
     // till it's over, unless no one's left, when the T-rex wins
-    const meHit = (dmg, big, why) => { if (!rex || !rex.live || rex.meCd > 0 || !fighting()) return; // (a tenth less from every dinosaur, and Mumma's a quarter harder than the T-rex's, not twice: smaller hits, more often. Ash, 27 November
+    const meHit = (dmg, big, why) => { if (rollSafe() || veh === "ride") return;  // (a passenger isn't hurt: the driver is) if (!rex || !rex.live || rex.meCd > 0 || !fighting()) return; // (a tenth less from every dinosaur, and Mumma's a quarter harder than the T-rex's, not twice: smaller hits, more often. Ash, 27 November
       // 2026: "Mummya damage is a bit too all or nothing. Less damaging more frequent attacks", "Reduce overall Dino dmg by 10%")
       // (angry: 30% harder. Never more than 30 at once, and 1.3 s at least between hits: "It should feel hard but possible to win. Avoiding
       // instant deaths", Ash, 27 November 2026)
-      dmg *= REX_DMG * (rex.mum ? MUM_DMG : 1) * (raging() ? RAGE_DMG : 1); if (racing()) dmg *= RACE_HIT; dmg = Math.min(HIT_MAX, dmg); rex.hitAt = rexMs(); rex.me = Math.max(0, rex.me - dmg); rex.meCd = 1.3; rexCam.shake = Math.max(rexCam.shake, big ? 1.1 : 0.7);
+      // (Mumma half as hard, and half that again while you're flying: Ash, 27 November 2026, "Decrease her damage by 50%. When flying
+      // reduce damage by a further 50%")
+      dmg *= REX_DMG * (rex.mum ? MUM_DMG : 1) * (raging() ? RAGE_DMG : 1); if (racing()) dmg *= RACE_HIT; if (veh === "plane" && meNow()?.air) dmg *= AIR_DMG; dmg = Math.min(HIT_MAX, dmg); rex.hitAt = rexMs(); rex.me = Math.max(0, rex.me - dmg); rex.meCd = 1.3; rexCam.shake = Math.max(rexCam.shake, big ? 1.1 : 0.7);
       snd.thud(1.6); snd.crunch?.(); const q = meNow(); if (q) fxBurst(q, false);
       // (racing for the choppa: knocked about, but not sent backwards, so you can still get there)
       if (veh === "car" && racing()) { car.v *= 0.6; if (!car.trick && !car.flip) car.trick = { t: 0, len: 0.5, high: big ? 1.6 : 1, spin: false, hit: true }; }
@@ -22787,7 +22856,7 @@ const handle = async (m, post) => {
       if (R.myHits === 5 || R.myHits === 12) rexSay("BARELY A SCRATCH!", 1100, true);
       if (R.myHits >= CHOPPA_HITS && !R.choppa) choppaCall(); };
     const choppaCall = () => { const R = rex, H = choppaOf(); R.choppa = true; hudK = ""; rexSay("THIS ISN'T WORKING…", 1500, true); snd.roar?.(0.5);
-      setTimeout(() => { if (rex === R && R.live && !R.nuke) { rexSay("GET TO THE CHOPPA!", 3200, true); rexCam.shake = Math.max(rexCam.shake, 0.6); } }, 1500);
+      setTimeout(() => { if (rex === R && R.live && !R.nuke) { rexSay("GET TO THE CHOPPA!", 3200, true); snd.voice?.("rex", "choppa"); rexCam.shake = Math.max(rexCam.shake, 0.6); } }, 1500);
       // (no GPS: the arrow in the boss bar and the one over the choppa show the way. Ash, 27 November 2026: "When it says get to the
       // chopper don't use the standard gps")
        if (rexRole === "guest") rexSend(["chop", rexFid], rexHost); R.choppaNear = false; };
@@ -22804,7 +22873,7 @@ const handle = async (m, post) => {
     const mumUp = (x, z, h, host) => { if (!mumMake()) return false; const B = rex; rexCorpse = { x: B.x, z: B.z, h: B.h, s: B.s, pose: { ...B.pose }, t: 0, glow: 0, st: "dead", corpse: true };
       const n = rexRole === "host" ? rexGuests.size : 0, keep = { n: B.n, hostName: B.hostName };
       Object.assign(B, rexNew(x, z, h, host, true), keep); B.maxHp = B.hp = B.base * (1 + 0.6 * n); B.me = rexOut ? 0 : 100; enrage();
-      gloom(false); rexSay("MUMMA T-REX!", 2800, true); snd.roar?.(1); rexCam.shake = Math.max(rexCam.shake, 1.4); hudK = "";
+      gloom(false); snd.voiceLoad?.("rex", ["choppa", "back"]); rexSay("MUMMA T-REX!", 2800, true); snd.roar?.(1); rexCam.shake = Math.max(rexCam.shake, 1.4); hudK = "";
        return true; };
     // her wings, at 30% health: out with a roar, and she's angry again (Ash, 27 November 2026: "At 30% hp give her wings and start flying
     // after the chopper")
@@ -22833,6 +22902,117 @@ const handle = async (m, post) => {
       for (const da of [0, 0.5, -0.5, 1, -1, Math.PI]) for (const d of [45, 35, 60]) { if (spot) break; const x = B.x + Math.sin(from + da) * d, z = B.z + Math.cos(from + da) * d; if (inside(x, z) && ground(x, z) - m.groundAt(x, z) < 0.5) spot = [x, z]; }
       spot ||= [B.x, B.z]; if (!mumUp(spot[0], spot[1], tg ? Math.atan2(tg.x - spot[0], tg.z - spot[1]) : B.h, true)) { rex.live = false; rexEnter("dead"); rexWon(); return; } rexEnter("rise"); };
     // Mumma at no health: the bunker comes up across the water
+    // health packs: dropped round the town during a fight, 220 to 480 m from where you are when each is dropped, at least 150 m apart: the
+    // first 8 s in, then one every 30 s while there are fewer than 3. Drive (or walk, or fly low) over one for full health. Below 30%, the
+    // way row points to the nearest. Each player has their own. (Ash, 27 November 2026: "During the boss fight drop occasional hp packets
+    // around town that I can collect to heal myself to full. If below 30% add a waypoint to the nearest one. They shouldn't be too common
+    // and I should on average have to drive at least 200m to find")
+    const PACKS = 3, PACK_MS = 30000, packs = []; let packP = null, packAt = 0, warnP = null;
+    const packWay = () => !!rex && rex.live && !rexOut && !rexGhost && rex.me < 30 && packs.length > 0;
+    const packNear = () => { const q = meNow() || F.pos; let b = null, bd = Infinity; for (const k of packs) { const d = Math.hypot(k.x - q.x, k.z - q.z); if (d < bd) { bd = d; b = k; } } return b; };
+    const packDrop = () => { const q = meNow() || F.pos; for (let i = 0; i < 40; i++) { const a = Math.random() * Math.PI * 2, r = 220 + Math.random() * 260, x = q.x + Math.sin(a) * r, z = q.z + Math.cos(a) * r;
+        if (!inside(x, z) || wetAt(x, z) || !fits(CAR, x, z, a) || packs.some(k => Math.hypot(k.x - x, k.z - z) < 150)) continue; packs.push({ x, z, y: m.groundAt(x, z) }); return true; } return false; };
+    const packClear = () => { packs.length = 0; packAt = rexMs(); hideAllOf(packP, PACKS * 2); };
+    const packTick = () => { const on = !!rex && rex.live && stillIn() && !rexOut && !rexGhost && veh !== "ride"; if (!on) { if (packs.length) packClear(); return; }
+      const now = rexMs(); if (packs.length < PACKS && now - packAt > (packs.length ? PACK_MS : 8000)) { packAt = now; packDrop(); }
+      if (!packP && packs.length) try { packP = m.addParts(Array.from({ length: PACKS }, () => townPackParts()).flat().map(q => ({ ...q, matrix: NONE.slice() }))); } catch (e) { console.warn("Health packs couldn't be made", e); }
+      const q = meNow() || F.pos, air = veh === "plane" ? q.y - m.groundAt(q.x, q.z) : 0, t = now / 1000;
+      for (let i = packs.length - 1; i >= 0; i--) { const k = packs[i], d = Math.hypot(k.x - q.x, k.z - q.z);
+        if (d > 1200) { packs.splice(i, 1); continue; }  // (left far behind: another's dropped nearer)
+        if (d < (veh ? 5 : 2.5) && air < 6) { packs.splice(i, 1); packAt = now; rex.me = 100; hudK = ""; rexSay("💚 FULL HEALTH!", 1500); snd.whoosh();
+          for (let n = 0; n < 24; n++) gAdd(k.x + (Math.random() - 0.5) * 3, k.y + Math.random() * 2.5, k.z + (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 4, 2 + Math.random() * 3, (Math.random() - 0.5) * 4, 0.9); } }
+      if (packP) for (let i = 0; i < PACKS; i++) { const k = packs[i];
+        if (!k) { packP.setMatrix(i * 2, NONE.slice()); packP.setMatrix(i * 2 + 1, NONE.slice()); continue; }
+        packP.setMatrix(i * 2, RT.makeTranslation(k.x, k.y + 0.6 + 0.25 * Math.sin(t * 2 + i), k.z).multiply(RQ.makeRotationY(t * 1.8 + i)).multiply(RS.makeScale(1.6, 1.6, 1.6)).elements.slice());
+        packP.setMatrix(i * 2 + 1, RT.makeTranslation(k.x, k.y, k.z).elements.slice()); } };
+    // (Claude's playtest, 27 November 2026, Ash: "Do a playtest, decide what's missing and add it to the boss fight". Three things:)
+    // 1. where it's about to land: a red ring on the ground there, pulsing, for a leap or a pounce, so you can get out of the way
+    const warnDraw = () => { const R = rex; if (!warnP) return; let on = false;
+      if (R && R.live && R.land && !R.corpse) { if (R.st === "leap") on = R.t < 0.35 + (R.leapT || 1.3); else if (R.st === "lunge") on = R.t < 2.7 && (R.jumpH || 0) < 2.6 * R.s; }  // (a pounce on a car, not one at a helicopter)
+      if (!on) { if (warnP.on) { warnP.on = false; hideAllOf(warnP, 2); } return; }
+      const [x, z] = R.land, y = m.groundAt(x, z) + 0.3, r = 4.5 * R.k * (1 + 0.08 * Math.sin(rexMs() / 90)); warnP.on = true;
+      for (let i = 0; i < 2; i++) warnP.setMatrix(i, RT.makeTranslation(x, y + i * 0.05, z).multiply(RS.makeScale(r, 1, r)).elements.slice()); };
+    // 2. below 30%: the edges of the screen pulse red, with a heartbeat (and the way row points to a health pack)
+    let lowEl = null, lowBeat = 0; const lowOn = on => { if (!on && !lowEl) return; if (!lowEl) { lowEl = document.createElement("div"); lowEl.className = "bs-low"; lowEl.setAttribute("aria-hidden", "true"); $("bsFly")?.prepend(lowEl); } lowEl.hidden = !on; };
+    const lowTick = () => { const on = !!rex && rex.live && stillIn() && !rexOut && !rexGhost && rex.me > 0 && rex.me < 30; if (on !== !!(lowEl && !lowEl.hidden)) lowOn(on);
+      if (on && rexMs() - lowBeat > 900) { lowBeat = rexMs(); snd.thud(0.35); setTimeout(() => snd.thud(0.25), 180); } };
+    // 3. how long the fight took, and your best, said after VICTORY
+    let rexT0 = 0; const rexTime = () => { if (!rexT0) return; const sec = Math.round((rexMs() - rexT0) / 1000), mmss = q => `${Math.floor(q / 60)}:${String(q % 60).padStart(2, "0")}`;
+      let best = 0; try { best = +localStorage.getItem("anRexBest") || 0; if (!best || sec < best) localStorage.setItem("anRexBest", String(sec)); } catch {}
+      setTimeout(() => rexSay(`⏱ ${mmss(sec)}` + (!best || sec < best ? " · NEW BEST!" : ` · BEST ${mmss(best)}`), 3400), 3800); };
+    // the nuke coming in: nothing can hurt you, and the view leaves you to follow it: behind the missile first, then swinging out to go
+    // round and round Mumma (110 m out, 45 m up, once every 14 s), looking at her and the way it's coming from, and staying for the bang.
+    // (Ash, 27 November 2026: "When the nuke is coming in make me invulnerable and spin the camera around mummy showing the nuke come in.
+    // Initially do a camera chase of the missle then moving to a rotate around the Dino")
+    C.cine = () => { if (epi) return epiCam(); const R = rex; if (!R || !(R.nuke === "away" || (R.nuke === "boom" && (R.boomT || 0) < 6))) return null;
+      const look = (c, q) => [c[0], c[1], c[2], Math.atan2(-(q[0] - c[0]), -(q[2] - c[2])), Math.atan2(q[1] - c[1], Math.hypot(q[0] - c[0], q[2] - c[2]))];
+      const gy = m.groundAt(R.x, R.z), body = [R.x, gy + 2.5 * R.s, R.z], oa = rexMs() / 1000 * Math.PI * 2 / 14, orb = [R.x + Math.sin(oa) * 110, gy + 45, R.z + Math.cos(oa) * 110];
+      if (R.nuke === "boom") return look(orb, body);
+      const FT = R.nukeFT || 9, t = Math.min(R.nukeT || 0, FT), a = nukeAt(t), b = nukeAt(Math.max(0, t - 0.25)), O = look(orb, [body[0] + (a[0] - body[0]) * 0.35, body[1] + (a[1] - body[1]) * 0.35, body[2] + (a[2] - body[2]) * 0.35]);
+      let hx = a[0] - b[0], hz = a[2] - b[2], hl = Math.hypot(hx, hz); if (hl < 0.5) { hx = R.x - a[0]; hz = R.z - a[2]; hl = Math.hypot(hx, hz) || 1; } hx /= hl; hz /= hl;
+      const ch = [a[0] - hx * 32, Math.max(a[1] - (a[1] - b[1]) * 2 + 7, m.groundAt(a[0] - hx * 32, a[2] - hz * 32) + 3), a[2] - hz * 32], Cc = look(ch, [a[0] + hx * 15, a[1], a[2] + hz * 15]);
+      const k = bsClamp((t - (R.nukeCr || 4) - 1.4) / 1.6, 0, 1), e = k * k * (3 - 2 * k); if (e <= 0) return Cc; if (e >= 1) return O;
+      const L = (p, q) => p + (q - p) * e; return [L(Cc[0], O[0]), L(Cc[1], O[1]), L(Cc[2], O[2]), Cc[3] + Math.atan2(Math.sin(O[3] - Cc[3]), Math.cos(O[3] - Cc[3])) * e, L(Cc[4], O[4])]; };
+    // Dino Land: 9.5 s after Mumma's VICTORY, a white flash, and you're watching a little island in the sky where her babies wait by the
+    // nest for her (15 of them, sobbing and whimpering, now and then looking round at you), a few quiet lines at the bottom of the screen
+    // and a slow sad tune, the view drifting round once. After 30 s, another white flash, and you're back in Inverloch beside the hotrod.
+    // (Ash, 27 November 2026: "After killing the Dino I want to be teleported to fairly god Dino land with lots of upset small Dino's. And
+    // a feeling of did I do the right thing. In 30 secs go back to Inverloch town")
+    const EPI_MS = 30000, EPI_LINES = [[2.5, "Somewhere far away…"], [7, "Her babies are still waiting for her to come home."], [13.5, "She was only protecting them."], [20, "Did you do the right thing?"]];
+    let epi = null;
+    const epiEl = () => { let el = $("bsFly")?.querySelector(".bs-epi"); if (!el) { el = document.createElement("div"); el.className = "bs-epi"; el.setAttribute("aria-live", "polite"); el.innerHTML = '<div class="bs-epi-sky"></div><p class="bs-epi-line"></p><div class="bs-epi-fade"></div>'; $("bsFly")?.append(el); } return el; };
+    const epiFlash = () => { const f = epiEl().querySelector(".bs-epi-fade"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); };
+    const epiStart = () => { if (epi || BS.town !== T) return; const H = owns.find(o => o.hotrod) || owns[0], cx = (H?.x ?? F.pos.x) + 60, cz = (H?.z ?? F.pos.z) + 60;
+      epi = { t0: rexMs() + 900, x: cx, z: cz, y: m.groundAt(cx, cz) + 420, line: -1, beat: 0, sob: 0, parts: null, babies: [] }; const el = epiEl(); el.hidden = false; epiFlash();
+      setTimeout(() => { if (!epi) return; try { if (veh) leave(false); } catch {}
+        try { const L = townDinoLandParts(), SK = ["#7fbf6a", "#c9a7ff", "#ffb38a"], B = Array.from({ length: 15 }, (_, i) => townBabyParts(SK[i % 3])[0]);
+          epi.parts = m.addParts([...L, ...B].map(q => ({ ...q, matrix: NONE.slice() }))); } catch (e) { console.warn("Dino Land couldn't be made", e); }
+        for (let i = 0; i < 15; i++) { const a = i / 15 * Math.PI * 2 + (i % 2) * 0.2, r = 5 + (i % 3) * 2.2; epi.babies.push({ x: Math.sin(a) * r, z: Math.cos(a) * r, h: Math.atan2(-Math.sin(a), -Math.cos(a)), ph: i * 1.7 }); }
+        document.body.classList.add("bsepi"); el.querySelector(".bs-epi-sky").classList.add("on"); }, 800);
+      const f = () => { if (!epi) return; if (BS.town !== T || T.dead) { epiEnd(false); return; } epiTick(); requestAnimationFrame(f); }; requestAnimationFrame(f); };
+    const epiTick = () => { const E = epi, t = (rexMs() - E.t0) / 1000, el = epiEl(); if (t < 0) return;
+      if (E.parts) { const P = E.parts; P.setMatrix(0, RT.makeTranslation(E.x, E.y, E.z).elements.slice()); P.setMatrix(1, RT.makeTranslation(E.x, E.y, E.z).elements.slice());
+        E.babies.forEach((b, i) => { const sob = Math.max(0, Math.sin(t * 2.3 + b.ph)) ** 6, look = Math.max(0, Math.sin(t * 0.37 + b.ph * 3)) > 0.93 ? 0.9 : 0, h = b.h + look * Math.sin(b.ph);
+          P.setMatrix(2 + i, RT.makeTranslation(E.x + b.x, E.y + 0.02 + sob * 0.06, E.z + b.z).multiply(RQ.makeRotationFromEuler(E3.set(0.32 - look * 0.25 + 0.06 * Math.sin(t * 9 + b.ph) * sob, h, 0.05 * Math.sin(t * 1.1 + b.ph), "YXZ"))).multiply(RS.makeScale(1.4, 1.4 - sob * 0.08, 1.4)).elements.slice()); }); }
+      // (the lines, the tune, the whimpers, some sparkles)
+      const n = EPI_LINES.filter(q => t >= q[0]).length - 1; if (n !== E.line) { E.line = n; const p = el.querySelector(".bs-epi-line"); p.classList.remove("on"); if (n >= 0) setTimeout(() => { if (epi === E) { p.textContent = EPI_LINES[n][1]; p.classList.add("on"); } }, 350); }
+      if (t - E.beat > 0.8) { E.beat = t; const NOTE = [220, 261.6, 329.6, 293.7, 246.9, 196, 220, 174.6]; const f0 = NOTE[Math.floor(t / 0.8) % NOTE.length]; snd.tone?.(f0, f0 * 0.995, 1.3, 0.035, "triangle"); }
+      if (t - E.sob > 1.6 + Math.random()) { E.sob = t; const f1 = 820 + Math.random() * 260; snd.tone?.(f1, f1 * 0.55, 0.45, 0.03, "sine"); }
+      if (Math.random() < 0.25) gAdd(E.x + (Math.random() - 0.5) * 60, E.y + 1 + Math.random() * 10, E.z + (Math.random() - 0.5) * 60, 0, 0.6, 0, 1.4);
+      if (t > EPI_MS / 1000 - 1.6 && !E.out) { E.out = true; epiFlash(); setTimeout(() => epiEnd(true), 800); } };
+    const epiEnd = back => { const E = epi; if (!E) return; epi = null; try { E.parts?.remove(); } catch {} document.body.classList.remove("bsepi"); const el = $("bsFly")?.querySelector(".bs-epi");
+      if (el) { el.querySelector(".bs-epi-sky").classList.remove("on"); el.querySelector(".bs-epi-line").classList.remove("on"); setTimeout(() => { if (!epi) el.hidden = true; }, 1200); }
+      if (back) { try { if (veh) leave(false); } catch {} const G = owns.find(o => o.hotrod) || owns[0]; if (G) { ownHome(G); T.standAt(G.x + Math.cos(G.h) * 3.2, G.z - Math.sin(G.h) * 3.2, G.h + Math.PI / 2, -0.12); } } };
+    // the view in Dino Land: round the island once, 26 m out and 7 m up, looking at the nest
+    const epiCam = () => { const E = epi; if (!E || !E.parts) return null; const t = (rexMs() - E.t0) / 1000, a = t * Math.PI * 2 / 34 + 0.6, c = [E.x + Math.sin(a) * 26, E.y + 7 - t * 0.08, E.z + Math.cos(a) * 26], q = [E.x, E.y + 1.2, E.z];
+      return [c[0], c[1], c[2], Math.atan2(-(q[0] - c[0]), -(q[2] - c[2])), Math.atan2(q[1] - c[1], Math.hypot(q[0] - c[0], q[2] - c[2]))]; };
+    // the dinosaur for the view to keep in the picture: [x, head height, z, feet height], or null
+    const rexAim = () => { const R = rex; if (!R || !R.live || R.nuke === "away" || !fighting()) return null; const gy = m.groundAt(R.x, R.z) + (R.pose?.jump || 0); return [R.x, gy + 4.8 * R.s, R.z, gy]; };
+    // the helicopter against Mumma: a Barrel roll (Q) and a Boost (B). The roll, after a tenth of a second: 2 s when nothing hurts you, and
+    // a quick 30 m dash to the side the stick's pushed (away from her if it isn't), rolling right round; every 10 s. The boost: nearly
+    // twice as fast for 3 s, every 8 s. (Ash, 27 November 2026: "When in the helicopter against mumma I want buttons for barrel roll. 10
+    // sec cd and boost. Barrel roll should make me invul for 2 sec after a .1s delay and quickly move me to the left or right based on my
+    // joystick")
+    const ROLL_CD = 10000, BOOST_CD = 8000, BOOST_MS = 3000;
+    let rollAt = -1e9, boostAt = -1e9, keyQ = false, keyB = false;
+    const rollSafe = () => { const u = rexMs() - rollAt; return (u >= 100 && u < 2100) || (!!rex && (rex.nuke === "away" || rex.nuke === "boom")); };  // (and while the nuke's coming in)
+    const heliFight = () => !!(rex && rex.live && rex.mum && fighting() && inChoppa() && meNow()?.air);
+    const heliBtn = (cls, label, key, aria, go) => { const b = document.createElement("button"); b.type = "button"; b.className = "bs-fly-x bs-flip bs-hpow " + cls; b.textContent = label; b.dataset.key = key; b.hidden = true; b.setAttribute("aria-label", aria);
+      const on = { pointerdown: e => { e.preventDefault(); go(); }, contextmenu: e => e.preventDefault() }; Object.entries(on).forEach(([k, f]) => b.addEventListener(k, f)); $("bsFly")?.append(b); return b; };
+    const doRoll = () => { const P = meNow(); if (!heliFight() || !P || rexMs() - rollAt < ROLL_CD) return; rollAt = rexMs();
+      const sx = F.stick?.x || ((F.keys.has("KeyD") || F.keys.has("ArrowRight") ? 1 : 0) - (F.keys.has("KeyA") || F.keys.has("ArrowLeft") ? 1 : 0));
+      const away = rex ? (rexWrap(Math.atan2(rex.x - P.x, rex.z - P.z) - P.h) > 0 ? 1 : -1) : 1;  // (her to the left: off to the right)
+      P.rollFx = { at: rexMs() + 100, side: Math.abs(sx) > 0.2 ? Math.sign(sx) : away, sm: 0 }; snd.whoosh(); hudK = ""; };
+    const doBoost = () => { const P = meNow(); if (!heliFight() || !P || rexMs() - boostAt < BOOST_CD) return; boostAt = rexMs(); P.boostTil = performance.now() + BOOST_MS; snd.whoosh(); };
+    const rollBtn = heliBtn("bs-roll", "Roll", "Q", "Barrel roll (Q)", doRoll), hBoostBtn = heliBtn("bs-hboost", "Boost", "B", "Boost (B)", doBoost);
+    // (each frame, from the helicopter's own flying: the dash and the roll; and the boost's trail)
+    const heliPow = (P, dt) => { const R0 = P.rollFx; if (P.boostTil > performance.now() && Math.random() < dt * 40) fxAdd(P.x - Math.sin(P.h) * 4, P.y + 1, P.z - Math.cos(P.h) * 4, (Math.random() - 0.5) * 2, Math.random(), (Math.random() - 0.5) * 2, 0.5);
+      if (!R0) return; const u = (rexMs() - R0.at) / 1000; if (u < 0) return; const f = Math.min(1, u / 0.55), sm = f * f * (3 - 2 * f), step = (sm - R0.sm) * 30; R0.sm = sm;
+      P.x = bsClamp(P.x - Math.cos(P.h) * R0.side * step, F.lim[0], F.lim[1]); P.z = bsClamp(P.z + Math.sin(P.h) * R0.side * step, F.lim[2], F.lim[3]); P.roll = R0.side * Math.PI * 2 * sm; if (f >= 1) { P.rollFx = null; P.roll = 0; } };
+    const heliPowShow = () => { const on = heliFight(); for (const [b, at, cd] of [[rollBtn, rollAt, ROLL_CD], [hBoostBtn, boostAt, BOOST_CD]]) { if (b.hidden === on) b.hidden = !on; if (!on) continue;
+        const k = Math.min(1, (rexMs() - at) / cd), pc = Math.round(k * 50) * 2 + "%"; if (b.dataset.pc !== pc) { b.dataset.pc = pc; b.style.setProperty("--charge", pc); b.classList.toggle("wait", k < 1); } }
+      if (on) { const q = F.keys.has("KeyQ"), bb = F.keys.has("KeyB"); if (q && !keyQ) doRoll(); if (bb && !keyB) doBoost(); keyQ = q; keyB = bb; } else keyQ = keyB = false;
+      if (rexHud) rexHud.classList.toggle("safe", rollSafe()); };
     // (her wings come off, and she's furious: Ash, 27 November 2026, "Getting her to 0% takes off her wings but she gets super mad and jumps
     // lots swiping")
     const nukeReady = () => { const R = rex; R.hp = 0; R.nuke = "ready"; if (R.host) { R.bunker = bunkerSpot(); rexSync(true); } nukeShow();
@@ -22939,7 +23119,7 @@ const handle = async (m, post) => {
     let dizzyTil = 0, dizzyAt = null, dizzyEl = null;
     // (down on the near side: back the way you came, past any water there is in the last 200 m, to dry land, so you can't be knocked down
     // over the far shore and be there anyway)
-    const knockDown = () => { if (!inChoppa() || !rex) return; const P = plane, hd = P.h; let x = P.x, z = P.z;
+    const knockDown = () => { if (rollSafe()) return; if (!inChoppa() || !rex) return; const P = plane, hd = P.h; let x = P.x, z = P.z;
       { let wet = false; for (let k = 0; k < 25; k++) { if (wetAt(x, z)) wet = true; else if (wet) break; x -= Math.sin(hd) * 8; z -= Math.cos(hd) * 8; } if (!wet) { x = P.x; z = P.z; } }
       snd.crunch?.(); snd.thud(2.4); rexCam.shake = Math.max(rexCam.shake, 1.6); fxBurst({ x: P.x, y: P.y, z: P.z }, false);
       try { leave(false); } catch {} const B = rex.bunker; T.standAt?.(x, z, B ? Math.atan2(x - B[0], z - B[1]) : hd + Math.PI, -0.05);
@@ -22950,7 +23130,8 @@ const handle = async (m, post) => {
     const dizzyTick = () => { if (!dizzyTil) return; if (rexMs() > dizzyTil || veh) { dizzyTil = 0; dizzyEnd = rexMs(); dizzyAt = null; document.body.classList.remove("bsdizzy"); if (dizzyEl) dizzyEl.hidden = true; return; }
       if (dizzyAt) { F.pos.x = dizzyAt[0]; F.pos.z = dizzyAt[1]; } rexCam.shake = Math.max(rexCam.shake, 0.3); };  // (stays put: the sticks themselves aren't touched)
     // where she lands when she leaps over you: ahead of you along your way, further the faster you're going (on dry ground in the map)
-    const leapSpot = (tg, far = 1) => { const dir = tg.dir ?? tg.h, ahead = (18 + Math.max(12, tg.v || 22) * 0.9) * far;
+    // (a bit further out than before: Ash, 27 November 2026, "Make the Dino's jump infront of me a bit more and a bit more infront")
+    const leapSpot = (tg, far = 1) => { const dir = tg.dir ?? tg.h, ahead = (22 + Math.max(12, tg.v || 22) * 1.1) * far;
       for (const k of [1, 0.75, 1.3, 0.5]) { const x = tg.x + Math.sin(dir) * ahead * k, z = tg.z + Math.cos(dir) * ahead * k; if (inside(x, z) && ground(x, z) - m.groundAt(x, z) < 0.5) return [x, z]; } return null; };
     // a leap to a spot, taking secs in the air (a long one, from far off, higher)
     const leapTo = (L, secs) => { const R = rex; R.from = [R.x, R.z]; R.land = L; R.leapT = secs; rexEnter("leap"); };
@@ -23048,7 +23229,8 @@ const handle = async (m, post) => {
             if (L) { leapTo(L, Math.max(1.3, Math.min(3.2, Math.hypot(L[0] - R.x, L[1] - R.z) / 95))); R.cd.catch = 2.5; break; } R.cd.catch = 1; }
           // racing for the choppa (or on the move, with her after you): over you and down in front with a stomp, now and then way out in front
           // (Ash, 27 November 2026: "When I'm driving for the chopper jump mummy occasionally way infront of me")
-          if ((race || (R.mum && (tg.v || 0) > 8 && up < 4)) && R.cd.leap <= 0 && d > 10 * K && d < 80 * K) { const L = leapSpot(tg, race && Math.random() < 0.3 ? 2.4 : 1); if (L) { leapTo(L, Math.max(1.3, Math.min(2.6, Math.hypot(L[0] - R.x, L[1] - R.z) / 70))); break; } }
+          // (the T-rex too, once it's furious)
+          if ((race || ((R.mum || R.phase === 3) && (tg.v || 0) > 8 && up < 4)) && R.cd.leap <= 0 && d > 10 * K && d < 90 * K) { const L = leapSpot(tg, Math.random() < (race ? 0.45 : 0.2) ? 2.4 : 1); if (L) { leapTo(L, Math.max(1.3, Math.min(2.6, Math.hypot(L[0] - R.x, L[1] - R.z) / 70))); break; } }
           // (the rest wait for the pause after the last move)
           if (R.cd.any > 0) break;
           if (race && R.cd.breath <= 0 && d > 14 * K && d < 42 * K && a < 0.9) { go("breath"); break; }
@@ -23109,7 +23291,7 @@ const handle = async (m, post) => {
               if (me && Math.hypot(me.x - lx, me.z - lz) < 4.5 * K && upOff(me) < 3 * s) meHit(24, true, "Squashed!");
               if (host) { R.v = 0; if (tg) R.h = Math.atan2(tg.x - R.x, tg.z - R.z); } }
             stand(); to({ pitch: 0.04, neck: -0.5, jaw: 0.9, legL: 0, legR: 0, liftL: 0, liftR: 0 }, 5); }
-          if (R.t > T1 + 0.9) { R.cd.leap = tg?.race ? 4.2 : 9; go("walk"); } break; }
+          if (R.t > T1 + 0.9) { R.cd.leap = tg?.race ? 3.2 : R.mum ? 7 : 11; go("walk"); } break; }
         // up after a helicopter: a crouch, straight up as high as it is (drifting under it), a snap and a swing of the head at the top,
         // then down with a stomp
         case "skyleap": { const T0 = 0.4, T1 = 1.4, T2 = 1.9, T3 = 2.75, H = R.jumpH || 6 * s;
@@ -23188,13 +23370,15 @@ const handle = async (m, post) => {
           break; } }
       // the spud gun: a flaming spud about three times a second while it's held, off the car's roof, aimed a little for you at its chest.
       // In the choppa, rockets: four or five a second, from under its nose, straight at her chest if she's anywhere ahead (no drop)
-      spudCd -= dt; if (me && me !== car && R.live && !R.nuke && R.st !== "dead" && (spudHeld || F.keys.has("KeyL")) && spudCd <= 0 && spuds.length < REX_SPUDS) { spudCd = 0.22;
+      // (riding with someone: you fire too, rockets from their helicopter, spuds from their car. Ash, 27 November 2026, "If riding I want to be
+      // able to shoot")
+      spudCd -= dt; if (me && me !== car && !(me.ride && !me.air) && R.live && !R.nuke && R.st !== "dead" && (spudHeld || F.keys.has("KeyL")) && spudCd <= 0 && spuds.length < REX_SPUDS) { spudCd = 0.22;
         // (off the way the helicopter's facing, tipped up or down at her if she's ahead (a helicopter's nose can't point down at her), then
         // steering only a little after her: Ash, 27 November 2026, "The homing missles home too much, maybe just slightly")
         const hx = Math.sin(me.h), hz = Math.cos(me.h), x0 = me.x + hx * 2.2, y0 = me.y + 0.9, z0 = me.z + hz * 2.2, tx = R.x + fx * 1.6 * s, ty = m.groundAt(R.x, R.z) + 3.4 * s + (p.jump || 0), tz = R.z + fz * 1.6 * s;
         const th = Math.hypot(tx - x0, tz - z0), aim = Math.abs(rexWrap(Math.atan2(tx - x0, tz - z0) - me.h)), pt = aim < 0.7 && th < 400 ? Math.atan2(ty - y0, th) : -0.05;
         spuds.push({ x: x0, y: y0, z: z0, vx: hx * Math.cos(pt) * 110, vy: Math.sin(pt) * 110, vz: hz * Math.cos(pt) * 110, t: 0, rk: true }); snd.whoosh(); snd.tone?.(520, 140, 0.25, 0.07, "sawtooth"); }
-      else if (me && me === car && R.live && !R.nuke && R.st !== "dead" && (spudHeld || F.keys.has("KeyL")) && spudCd <= 0 && spuds.length < REX_SPUDS) { spudCd = 0.3;
+      else if (me && (me === car || (me.ride && !me.air)) && R.live && !R.nuke && R.st !== "dead" && (spudHeld || F.keys.has("KeyL")) && spudCd <= 0 && spuds.length < REX_SPUDS) { spudCd = 0.3;
         const hx = Math.sin(me.h), hz = Math.cos(me.h), x0 = me.x + hx * 1.4, y0 = me.y + (me.hotrod ? 2.2 : 1.7), z0 = me.z + hz * 1.4, tx = R.x + fx * 1.6 * s, ty = m.groundAt(R.x, R.z) + 3.4 * s, tz = R.z + fz * 1.6 * s;
         let vx = hx * 60 + Math.sin(me.dir ?? me.h) * me.v, vy = 3, vz = hz * 60 + Math.cos(me.dir ?? me.h) * me.v; const td = Math.hypot(tx - x0, tz - z0), aim = Math.abs(rexWrap(Math.atan2(tx - x0, tz - z0) - me.h));
         if (td < 150 * K && aim < 0.6) { const T2 = td / 60; vx = (tx - x0) / T2; vz = (tz - z0) / T2; vy = (ty - y0) / T2 + 6 * T2; }
@@ -23215,14 +23399,22 @@ const handle = async (m, post) => {
     // the card asking you in: "Ash is fighting a T-rex!", Join the fight or Not now (once a fight; gone after 20 s)
     let offerEl = null, offerT = 0;
     const rexOfferHide = () => { clearTimeout(offerT); if (offerEl) offerEl.hidden = true; };
-    const rexOffer = (fid, name, mum) => { if (rexSeen.has(fid) || rexRole || rexGhost || T.race?.active?.()) return; rexSeen.add(fid);
+    const rexOffer = (fid, name, mum, force = false) => { if ((rexSeen.has(fid) && !force) || rexRole || rexGhost || T.race?.active?.()) return; rexSeen.add(fid);
       if (!offerEl) { offerEl = document.createElement("div"); offerEl.className = "bs-boss-offer"; offerEl.setAttribute("role", "dialog"); offerEl.setAttribute("aria-label", "A T-rex fight"); $("bsFly")?.append(offerEl); }
-      const p = document.createElement("p"), yes = document.createElement("button"), no = document.createElement("button"); p.textContent = `🦖 ${name || "A player"} is fighting ${mum ? "Mumma T-rex" : "a T-rex"}! Join in and take it down together.`;
-      yes.type = no.type = "button"; yes.className = "ok"; yes.textContent = "Join the fight"; no.textContent = "Not now"; yes.onclick = () => { rexOfferHide(); rexJoin(fid); }; no.onclick = rexOfferHide;
-      offerEl.replaceChildren(p, yes, no); offerEl.hidden = false; clearTimeout(offerT); offerT = setTimeout(rexOfferHide, 20000); };
+      // (ride with them, or your own car: Ash, 27 November 2026, "When joining a boss fight in progress let me select ride with x or own car")
+      const p = document.createElement("p"), rd = document.createElement("button"), yes = document.createElement("button"), no = document.createElement("button"), who = String(name || "them").slice(0, 16); p.textContent = `🦖 ${name || "A player"} is fighting ${mum ? "Mumma T-rex" : "a T-rex"}! Join in and take it down together.`;
+      rd.type = yes.type = no.type = "button"; rd.className = yes.className = "ok"; rd.textContent = `Ride with ${who}`; yes.textContent = "Own car"; no.textContent = "Not now";
+      rd.onclick = () => { rexOfferHide(); rexJoin(fid, "ride"); }; yes.onclick = () => { rexOfferHide(); rexJoin(fid, "car"); }; no.onclick = rexOfferHide;
+      const H = rexHeardOf.get(fid), hp = H && (T.peers?.list?.() || []).find(v => v.id === H.id); rd.hidden = !(hp && RIDE_REACH[hp.k]);  // (only if they're in something you can ride in)
+      offerEl.replaceChildren(p, rd, yes, no); offerEl.hidden = false; clearTimeout(offerT); offerT = setTimeout(rexOfferHide, 20000); };
     // in: a car (one of the town's, brought over) about 40 m off it (80 for Mumma), on the host's side of it, facing it
-    const rexJoin = fid => { const H = rexHeardOf.get(fid); if (!H || rexMs() - H.at > 8000) { toast("That T-rex fight isn't on any more.", 3000, true); return; } if (rexRole || rexGhost) return;
+    const rexJoin = (fid, how = "car") => { const H = rexHeardOf.get(fid); if (!H || rexMs() - H.at > 8000) { toast("That T-rex fight isn't on any more.", 3000, true); return; } if (rexRole || rexGhost) return;
       const [, , hn, x, z] = H.raw, mum = !!H.raw[15], hp = (T.peers?.list?.() || []).find(v => v.id === H.id), base = hp ? Math.atan2(hp.x - x, hp.z - z) : Math.random() * Math.PI * 2;
+      // riding with them: beside their car or helicopter (even up in the air), then in as a passenger; if that can't be done, your own car
+      if (how === "ride" && hp && RIDE_REACH[hp.k] && rexMake() && (!mum || mumMake())) { rexRole = "guest"; rexFid = fid; rexHost = H.id; rexOut = false; rexHeard = rexMs();
+        try { if (veh) leave(false); T.standAt?.(hp.x + Math.cos(hp.h || 0) * 3, hp.z - Math.sin(hp.h || 0) * 3, hp.h || 0, -0.1); want = { ride: hp, distance: 0 }; C.enter(); } catch {} finally { want = null; }
+        if (veh === "ride") { rex = rexNew(x, z, H.raw[5], false, mum); rexNet(H.raw); rexHudMake(); hudK = ""; rexSend(["join", fid, String(playerName() || "").slice(0, 16)], H.id); rexSay(`RIDING WITH ${String(hn || "THEM").toUpperCase().slice(0, 16)}!`, 2000); rexLoop(); return; }
+        rexRole = ""; rexFid = ""; rexHost = null; }
       let spot = null; for (const da of [0.5, -0.5, 1, -1, 0, 1.6, -1.6, Math.PI]) for (const r of mum ? [80, 100, 60] : [40, 55, 30]) { const a = base + da, sx = x + Math.sin(a) * r, sz = z + Math.cos(a) * r, h = Math.atan2(x - sx, z - sz);
         if (!spot && inside(sx, sz) && ground(sx, sz) - m.groundAt(sx, sz) < 0.35 && fits(CAR, sx, sz, h)) spot = [sx, sz, h]; }
       if (!spot || !rexMake() || (mum && !mumMake())) { toast("Couldn't find a car near the T-rex. Try again in a moment.", 3000, true); return; }
@@ -23231,10 +23423,10 @@ const handle = async (m, post) => {
       rex = rexNew(x, z, H.raw[5], false, mum); rexNet(H.raw); rexHudMake(); hudK = ""; rexSend(["join", fid, String(playerName() || "").slice(0, 16)], H.id);
        rexLoop(); };
     // a friend's copy, told what the host's is doing
-    const rexNet = raw => { const [, , hn, x, z, h, st, t, hp, mx, ph, v, lock, spin, n, mum, bx, bz, bh, nt, live, lost, all, jh, rg, wg, lt] = raw; rexHeard = rexMs(); const R = rex; if (!R) return;
+    const rexNet = raw => { const [, , hn, x, z, h, st, t, hp, mx, ph, v, lock, spin, n, mum, bx, bz, bh, nt, live, lost, all, jh, rg, wg, lt, lx, lz] = raw; rexHeard = rexMs(); const R = rex; if (!R) return;
       if (mum && !R.mum) { if (!mumUp(+x || 0, +z || 0, +h || 0, false)) return; }  // (the T-rex is down, and here's Mumma)
       R.tx = +x || 0; R.tz = +z || 0; R.th = +h || 0; R.nv = +v || 0; R.hp = +hp || 0; R.maxHp = Math.max(1, +mx || R.base); R.n = +n || 1; R.nAll = +all || R.n; R.hostName = String(hn || "").slice(0, 16); R.lock = +lock || 0; R.spin = +spin || 0; if (+jh > 0 || st === "fly") R.jumpH = +jh || 0;
-      R.rageTil = +rg > 0 ? rexMs() + rg * 1000 : 0; if (+lt > 0) R.leapT = +lt; if (+wg === 1 && !R.wings) wingsOut();
+      R.rageTil = +rg > 0 ? rexMs() + rg * 1000 : 0; if (+lt > 0) R.leapT = +lt; if (+wg === 1 && !R.wings) wingsOut(); if (+lx || +lz) R.land = [+lx, +lz];
       if (ph > R.phase) { R.phase = ph; if (!R.mum) rexSay(ph === 3 ? "IT'S FURIOUS! DODGE!" : "IT'S ANGRY! DODGE!", 1800, true); }
       if ((bx || bz) && !R.bunker) { R.bunker = [+bx, +bz, +bh || 0]; nukeReady(); }
       if (nt >= 0 && R.nuke === "ready") { R.nuke = "away"; R.nukeT = +nt || 0; nukeFlight(); } else if (nt >= 0 && R.nuke === "away" && Math.abs(R.nukeT - nt) > 0.6) R.nukeT = +nt;
@@ -23259,7 +23451,7 @@ const handle = async (m, post) => {
       else if (k === "out") { const g = rexGuests.get(id); if (g) { g.out = true;  } } };
     // opened from an invite (?rex=1&from=Ash): straight into the fight when there's word of one
     C.rexArrive = from => { if (place !== "inv") return; rexInvited = from || "your friend"; rexInvitedAt = rexMs();
-      for (const [fid, H] of rexHeardOf) if (rexMs() - H.at < 3000 && H.raw[6] !== "dead" && H.raw[6] !== "leave" && H.raw[20] !== 0) { rexInvited = ""; rexJoin(fid); return; }
+      for (const [fid, H] of rexHeardOf) if (rexMs() - H.at < 3000 && H.raw[6] !== "dead" && H.raw[6] !== "leave" && H.raw[20] !== 0) { rexInvited = ""; rexOffer(fid, H.raw[2], !!H.raw[15], true); return; }
       toast(`Looking for ${rexInvited}'s T-rex fight…`, 3000, true);
       setTimeout(() => { if (rexInvited && !rexRole) { toast(`There's no T-rex fight on yet. You'll be asked to join when ${rexInvited} starts one (in the hotrod by The Hub).`, 6500, true); rexInvited = ""; } }, 25000); };
     // the loop: while it's armed, up or on its way off. Stops itself when there's nothing left to do
@@ -23277,24 +23469,28 @@ const handle = async (m, post) => {
           if (rex) rexTick(dt); if (rex) rexSync(false); }
         const noSpud = !(rex && rex.live && fighting() && !rex.nuke); if (spudBtn.hidden !== noSpud) spudBtn.hidden = noSpud;
         // into the choppa against Mumma: the button's Rockets, the GPS is done with, and how to fight her from up there
-        const chop = !!(rex && rex.live && rex.mum && fighting() && inChoppa()); if (chop !== rexChop) { rexChop = chop; spudBtn.textContent = chop ? "Rockets" : "Spuds"; spudBtn.setAttribute("aria-label", chop ? "Fire rockets (L)" : "Fire the spud gun (L)");
+        const chop = !!(rex && rex.live && rex.mum && fighting() && (inChoppa() || (veh === "ride" && !!meNow()?.air))); if (chop !== rexChop) { rexChop = chop; spudBtn.textContent = chop ? "Rockets" : "Spuds"; spudBtn.setAttribute("aria-label", chop ? "Fire rockets (L)" : "Fire the spud gun (L)");
           if (chop) { rex.me = 100; hudK = "";  } }
         // nearly at the choppa: where it is (the arrow over it does the rest)
         if (rex && racing() && !rex.choppaNear) { const H = choppaOf(), q = meNow() || F.pos; if (H && Math.hypot(H.x - q.x, H.z - q.z) < 110) { rex.choppaNear = true; const at = String(H.home?.at || "");
           rexSay(/behind/.test(at) ? "IT'S BEHIND THE HOUSE!" : "THERE'S THE CHOPPA!", 2400);
            } }
-        nukeBtnShow(!!(rex && rex.live && rex.nuke === "ready" && atConsole()));
+        nukeBtnShow(!!(rex && rex.live && rex.nuke === "ready" && atConsole())); heliPowShow(); packTick(); warnDraw(); lowTick();
+        { const cn = !!(rex && (rex.nuke === "away" || (rex.nuke === "boom" && (rex.boomT || 0) < 6))); if (cn !== document.body.classList.contains("bscine")) document.body.classList.toggle("bscine", cn); } if (rex && !rexT0) rexT0 = rexMs(); else if (!rex) rexT0 = 0;
         if (nukeBtn && !nukeBtn.hidden && (F.keys.has("Digit0") || F.keys.has("Numpad0"))) nukeAsk();
         // (the view further back and up while it's after you, and tipped up a little, so her head's in it: 7 m back, 10.5 for Mumma.
         // Ash, 26 November 2026, "During the boss fight zoom the camera out a bit"; 27 November, "zoom the camera out a bit more so I can see
         // mummas head from standard viewpoints")
-        const camOn = rex && rex.live && fighting(); dizzyTick(); rexHudShow(); nukeWayShow(); rexStack(false); dinoTagShow(); rexCam.d = ease(rexCam.d, camOn ? (rex.mum ? 10.5 : 7) : 0, dt * 1.5); rexCam.up = ease(rexCam.up, camOn ? (rex.mum ? 0.12 : 0.06) : 0, dt * 1.5); rexCam.shake = Math.max(0, rexCam.shake - dt * 1.8);
+        // (and further back again the closer it is, up to 5 m more when it's on top of you, so all of it fits: Ash, 27 November 2026, "Try to
+        // optimise the camera for the bossfight")
+        const camOn = rex && rex.live && fighting(), cq = meNow(), cd = camOn && cq ? Math.hypot(rex.x - cq.x, rex.z - cq.z) : 1e9, near = camOn ? 5 * bsClamp(1 - cd / (45 * rex.k), 0, 1) : 0;
+        dizzyTick(); rexHudShow(); nukeWayShow(); rexStack(false); dinoTagShow(); rexCam.d = ease(rexCam.d, camOn ? (rex.mum ? 10.5 : 7) + near : 0, dt * 1.5); rexCam.up = ease(rexCam.up, camOn ? (rex.mum ? 0.12 : 0.06) : 0, dt * 1.5); rexCam.shake = Math.max(0, rexCam.shake - dt * 1.8);
         if (rexArmed || rex || rexCam.d > 0.05 || rexCam.shake > 0) rexRaf = requestAnimationFrame(f); else { rexCam.d = 0; rexCam.up = 0; rexCam.shake = 0; } };
       rexRaf = requestAnimationFrame(f); };
     // for testing: Ash taps the version number in the corner and he's back to full health (Ash, 27 November 2026: "For testing purposes if I
     // press on the version number set my hp to full")
     C.rexHeal = () => { if (!rex || !rex.live || !rexRole || rexOut) return false; rex.me = 100; hudK = ""; rexHudShow();  return true; };
-    C.rexInfo = () => rex ? { x: rex.x, z: rex.z, h: rex.h, st: rex.st, hp: rex.hp, maxHp: rex.maxHp, me: rex.me, phase: rex.phase, live: rex.live, role: rexRole, n: rexCount(), mum: rex.mum, nuke: rex.nuke, bunker: rex.bunker, ghost: rexGhost, out: rexOut, t: rex.t, downed: !!rex.downed, dizzy: dizzyTil > rexMs(), hits: rex.myHits || 0, choppa: !!rex.choppa, inChoppa: inChoppa(), rockets: spuds.filter(q => q.rk).length, wings: rex.wings || 0, rage: raging(), jump: rex.pose.jump || 0, rescue: rescue.length } : rexArmed ? { armed: true } : null;  // (for checking)
+    C.rexInfo = () => rex ? { x: rex.x, z: rex.z, h: rex.h, st: rex.st, hp: rex.hp, maxHp: rex.maxHp, me: rex.me, phase: rex.phase, live: rex.live, role: rexRole, n: rexCount(), mum: rex.mum, nuke: rex.nuke, bunker: rex.bunker, ghost: rexGhost, out: rexOut, t: rex.t, downed: !!rex.downed, dizzy: dizzyTil > rexMs(), hits: rex.myHits || 0, choppa: !!rex.choppa, inChoppa: inChoppa(), rockets: spuds.filter(q => q.rk).length, spudsN: spuds.length, wings: rex.wings || 0, rage: raging(), jump: rex.pose.jump || 0, rescue: rescue.length, safe: rollSafe(), s: rex.s, packs: packs.map(k => [Math.round(k.x), Math.round(k.z)]) } : rexArmed ? { armed: true } : null;  // (for checking)
     // Jump to's Boss fight: beside the hotrod, in it, and the T-rex in about three and a half seconds (the ground shaking first) instead of
     // twenty (Ash, 26 November 2026: "Add a jump to boss fight")
     C.bossGo = () => { const G = owns.find(o => o.hotrod); if (!G) return false;
@@ -23308,8 +23504,8 @@ const handle = async (m, post) => {
         else if (!inHotrod()) toast("Couldn't get you into the hotrod. Walk up to it on the lawn by The Hub and get in.", 3500, true); }, 350);
       return true; };
     const rexEnd = () => { cancelAnimationFrame(rexRaf); rexRaf = 0; rexArmed = 0; if (rexRole === "host" && rexFid) rexSend(["end", rexFid, "gone"]); else if (rexRole === "guest") rexSend(["out", rexFid], rexHost);
-      ghostOff(false); gloom(false); dizzyTil = 1; dizzyTick(); rescueClear(); if (scareEl) scareEl.hidden = true; rex = null; rexRole = ""; rexFid = ""; rexHost = null; rexGuests.clear(); rexOut = false; rexHide(); rexOfferHide(); nukeBtnShow(false); if (nukeFlash) nukeFlash.hidden = true;
-      spudBtn.hidden = true; spudHeld = false; rexChop = false; spudBtn.textContent = "Spuds"; if (rexHud) rexHud.hidden = true; if (rexCall) rexCall.hidden = true; document.body.classList.remove("bsboss"); rexStack(true); rexCam.d = 0; rexCam.up = 0; rexCam.shake = 0; };
+      ghostOff(false); gloom(false); lowOn(false); dizzyTil = 1; dizzyTick(); rescueClear(); if (scareEl) scareEl.hidden = true; rex = null; rexRole = ""; rexFid = ""; rexHost = null; rexGuests.clear(); rexOut = false; rexHide(); rexOfferHide(); nukeBtnShow(false); if (nukeFlash) nukeFlash.hidden = true;
+      spudBtn.hidden = true; spudHeld = false; rexChop = false; spudBtn.textContent = "Spuds"; rollBtn.hidden = hBoostBtn.hidden = true; if (rexHud) rexHud.hidden = true; if (rexCall) rexCall.hidden = true; document.body.classList.remove("bsboss", "bscine"); rexStack(true); rexCam.d = 0; rexCam.up = 0; rexCam.shake = 0; };
     // the golden possum's turbo rockets: two silver tubes on the back with flames out of them, while its boost or jump is on
     // (bigger: long flickering flames with a yellow bloom at the nozzles, and a trail of gold glitter behind. Ash, 18 November 2026)
     const rk = m.addParts([cube("#c9ced6", 0.36, 0.36, 1.3, 0, [[-0.55, 0, 0], [0.55, 0, 0]]), cube("#ff8a1c", 0.3, 0.3, 1.1, -0.55, [[-0.55, 0, 0], [0.55, 0, 0]]), cube("#ffe46b", 0.5, 0.5, 0.45, 0, [[-0.55, 0, 0], [0.55, 0, 0]])]);
@@ -23716,8 +23912,8 @@ const handle = async (m, post) => {
           else { P.pow = 1; P.powHeld = false; if (F.stick.y > 0.3) climb = Math.max(climb, F.stick.y); if (ud) thr = bsClamp(thr + ud, -1, 1); } }
         if (P.heli) {  // the helicopter: the rotor spins up, then it lifts straight off. W and S go forward and back, A and D turn it on the spot, and it sets down wherever it meets open ground
           P.spin += (1 - P.spin) * Math.min(1, dt * 0.9); const up = P.spin > 0.8, e = Math.min(1, dt * 3);
-          const HK = P.gold ? 1.4 : 1;  // the golden helicopter: 40% faster, forward and up
-          P.v += ((P.air ? (thr >= 0 ? thr * 50 * HK : thr * 14 * HK) : 0) - P.v) * Math.min(1, dt * (P.air ? 0.9 : 4));
+          const HK = P.gold ? 1.4 : 1, boostOn = P.air && P.boostTil > performance.now();  // the golden helicopter: 40% faster, forward and up. (Boost, against Mumma: flat out at 1.9 times)
+          P.v += ((P.air ? (boostOn ? 95 * HK : thr >= 0 ? thr * 50 * HK : thr * 14 * HK) : 0) - P.v) * Math.min(1, dt * (boostOn ? 3 : P.air ? 0.9 : 4));
           P.turn += (str - P.turn) * Math.min(1, dt * 5); P.h -= P.turn * 1.25 * dt;
           P.vy = (P.vy || 0) + ((up ? climb * 11 * HK : -3) - (P.vy || 0)) * Math.min(1, dt * 2.2);
           if (!P.air) { if (up && climb > 0.05) P.air = true; else { P.vy = 0; const [y, p, r] = lie(P, 1.5, 0.9); P.y = y; P.p += (p - P.p) * e; P.r += (r - P.r) * e; } }
@@ -23727,11 +23923,11 @@ const handle = async (m, post) => {
             // A helicopter can come down on one and sit there; a plane bounces up off it)
             const rY = roofAt(P.x, P.z), roof = rY != null || solid(P.x, P.z), floor = rY != null ? rY + 0.15 : ground(P.x, P.z) + (roof ? (roofs ? 6.5 : 12) : 0);
             if (P.y <= floor) { P.y = floor; if (!roof && climb <= 0.05) { P.air = false; if (P.vy < -4) snd.thud(Math.min(1.4, -P.vy / 8)); P.v *= 0.3; } P.vy = Math.max(0, P.vy); } }
-          P.ang = (P.ang || 0) + P.spin * 30 * dt; showPlane(P);
+          heliPow(P, dt); P.ang = (P.ang || 0) + P.spin * 30 * dt; showPlane(P);
           const alt = Math.max(0, P.y - ground(P.x, P.z));
           hint(!P.air ? (!up ? "The rotor is spinning up" : touch ? "Hold Up to lift off" : "Hold \u2193 (or Space) to lift off") : "");  // in the air it is plain what to do (Ash, 15 November 2026)
           snd.set(0.3 + 0.6 * P.spin, 0.45 + 0.4 * Math.abs(climb), Math.abs(P.v), false, 0);
-          o = P; D = 14 + Math.min(8, Math.abs(P.v) / 6); text = Math.round(Math.abs(P.v) * 3.6) + " km/h";  // (the speed only, not the height: Ash, 25 November 2026, "Remove 5m up it clashes over Arlo. Leave just the speed")
+          o = P; D = 14 + Math.min(8, Math.abs(P.v) / 6) + rexCam.d * 0.6; text = Math.round(Math.abs(P.v) * 3.6) + " km/h";  // (further back against Mumma) (the speed only, not the height: Ash, 25 November 2026, "Remove 5m up it clashes over Arlo. Leave just the speed")
         } else {
         // on the ground S brakes and then backs it up, slowly, so a plane nosed into a wall can get out again (Ash, 14 November
         // 2026: "the plane needs reverse when on the ground. Sometimes ive been stuck before and unable to fly again")
@@ -23777,7 +23973,13 @@ const handle = async (m, post) => {
       // perspective for the possum")
       if (idle > 1.2 && o.v > 1 && (camSet < 0.15 || veh === "possum" || (veh === "ride" && ride?.k === "possum"))) { const e = Math.min(1, dt * 2.5); off[0] -= off[0] * e; off[1] -= off[1] * e; }
       // the view: behind and above, swinging round after it; closer in where a building is behind, so it is not from inside one
-      camYaw += wrap(o.h + Math.PI - camYaw) * Math.min(1, dt * 3.5);
+      // (in the T-rex fight, in a car or the helicopter: swung round part of the way towards the dinosaur, so it's usually in the picture,
+      // unless it's behind you. Not once you've set the view yourself. Ash, 27 November 2026: "With the camera pan, look for an angle that
+      // typically keeps the Dino's in los")
+      const aim = (veh === "car" || veh === "plane") && camSet < 0.15 ? rexAim() : null;
+      { let want = 0; if (aim) { const rel = wrap(Math.atan2(aim[0] - o.x, aim[2] - o.z) - o.h), hd = Math.hypot(aim[0] - o.x, aim[2] - o.z); if (Math.abs(rel) < 2.3 && hd > 6 && hd > (o.y - aim[3]) * 0.5) want = bsClamp(rel * 0.75, -1.25, 1.25); }
+        rexCam.yaw = (rexCam.yaw || 0) + (want - (rexCam.yaw || 0)) * Math.min(1, dt * 1.6); }
+      camYaw += wrap(o.h + Math.PI + (rexCam.yaw || 0) - camYaw) * Math.min(1, dt * 3.5);
       const critter = veh === "possum" || veh === "pigeon" || (veh === "ride" && ride.k === "possum"), high = critter && o.y - ground(o.x, o.z) > 1.2;  // (the possum: close behind it, looking up a wall it is climbing)
       const yaw = camYaw + off[0], pitch = bsClamp((veh === "possum" && pos.mode === "climb" ? 0.3 : -0.2) + off[1], -1.2, 0.35), cp = Math.cos(pitch), sx = Math.sin(yaw) * cp, sz = Math.cos(yaw) * cp;
       if (!o.air && !high) while (D > 2.5 && (solid(o.x + sx * D, o.z + sz * D) || solid(o.x + sx * D * 0.55, o.z + sz * D * 0.55) || (rexCam.d > 0.5 && [0.25, 0.4, 0.7, 0.85].some(f => solid(o.x + sx * D * f, o.z + sz * D * f))))) D -= 1.25;  // (further back in the T-rex fight: looked along more of the way, so it isn't put inside a building)
@@ -23791,7 +23993,13 @@ const handle = async (m, post) => {
       // the plane jumped about on the screen)
       const e = 1 - Math.exp(-dt * 9), to = [px - o.x, py - o.y, pz - o.z];
       if (!camOff || Math.hypot(F.pos.x - o.x - camOff[0], F.pos.z - o.z - camOff[2]) > 60) camOff = to; else for (let i = 0; i < 3; i++) camOff[i] += (to[i] - camOff[i]) * e;
-      F.pos.x = o.x + camOff[0]; F.pos.y = Math.max(o.y + camOff[1], (critter ? surf(F.pos.x, F.pos.z) + 0.5 : ground(F.pos.x, F.pos.z) + 0.7)); F.pos.z = o.z + camOff[2]; F.yaw = yaw; F.pitch = pitch + (veh === "car" ? rexCam.up : 0);
+      F.pos.x = o.x + camOff[0]; F.pos.y = Math.max(o.y + camOff[1], (critter ? surf(F.pos.x, F.pos.z) + 0.5 : ground(F.pos.x, F.pos.z) + 0.7)); F.pos.z = o.z + camOff[2]; F.yaw = yaw;
+      // (and tipped up or down to fit in its head and feet as well as you, where they'll both fit; you come first)
+      { let tilt = veh === "car" ? rexCam.up : 0; if (aim) { const hv = (innerWidth / innerHeight < 0.8 ? 38 : 30) * Math.PI / 180 * 0.8, v0 = pitch + tilt, ang = (x, y, z) => Math.atan2(y - F.pos.y, Math.hypot(x - F.pos.x, z - F.pos.z) || 1);
+          const look = Math.atan2(o.x - F.pos.x, o.z - F.pos.z), seen = Math.abs(wrap(Math.atan2(aim[0] - F.pos.x, aim[2] - F.pos.z) - look)) < 0.9;
+          if (seen) { const me0 = ang(o.x, o.y + 0.8, o.z), lo = Math.max(me0 - hv, ang(aim[0], aim[1], aim[2]) - hv), hi = Math.min(me0 + hv, ang(aim[0], aim[3], aim[2]) + hv);
+            const v = lo <= hi ? bsClamp(v0, lo, hi) : bsClamp(v0, me0 - hv, me0 + hv); tilt = v - pitch; } }
+        rexCam.tilt = (rexCam.tilt || 0) + (tilt - (rexCam.tilt || 0)) * Math.min(1, dt * 2.5); F.pitch = pitch + (veh === "car" || veh === "plane" ? rexCam.tilt : 0); }
       if (rexCam.shake > 0.01 && !matchMedia("(prefers-reduced-motion: reduce)").matches) { const k = Math.min(1.2, rexCam.shake) * 0.45; F.pos.x += (Math.random() - 0.5) * k; F.pos.y += (Math.random() - 0.5) * k; F.pos.z += (Math.random() - 0.5) * k; }  // the T-rex's footsteps and hits
       last = [F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch]; };
     // what is in reach of where you stand: a plane within 11 m, a parked car within 8 m, whichever is nearer
@@ -24299,7 +24507,8 @@ const handle = async (m, post) => {
     let pwCharge = 1, pwSpent = false, pwHeld = false, pwOn = false, pwSend = 0, tkWait = 0, pwLook = 0;
     const powerTo = () => veh === "ride" && ride?.id ? { id: ride.id, k: ride.k, possum: false } : veh === "possum" && pos?.cling ? { id: pos.cling.id, k: (T.peers?.list?.() || []).find(v => v.id === pos.cling.id)?.k, possum: true, gold: !!pos.gold } : null;
     const usePower = () => { const to = powerTo(); if (!to) return false; if (pwSpent) toast("Still charging.", 900); return true; };
-    const useTrick = () => { const to = powerTo(); if (!to) return false; if (tkWait > 0) return true; const air = /plane|heli/.test(to.k || ""); if (T.peers?.power?.(to.id, 2, to.possum && !air, to.gold)) { tkWait = R.trickBack; snd.boing(); toast(air ? "Spin!" : to.possum ? "Jump and roll!" : "Jump!", 1200); } return true; };
+    const useTrick = () => { const to = powerTo(); if (!to) return false; if (tkWait > 0) return true; const air = /plane|heli/.test(to.k || ""), boss = !!(rexRole && rex?.live && veh === "ride");
+      if (T.peers?.power?.(to.id, 2, to.possum && !air, to.gold)) { tkWait = boss ? 10 : R.trickBack; snd.boing(); if (boss) rexSay("BARREL ROLL!", 1100); else toast(air ? "Spin!" : to.possum ? "Jump and roll!" : "Jump!", 1200); } return true; };
     pwBtn.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); pwHeld = true; usePower(); });
     for (const ev of ["pointerup", "pointercancel", "pointerleave"]) pwBtn.addEventListener(ev, () => { pwHeld = false; }); tkBtn.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); useTrick(); });
     $("bsFly")?.append(pwBtn, tkBtn); C.powerKey = k => (k === "B" ? usePower : useTrick)();
@@ -24311,7 +24520,7 @@ const handle = async (m, post) => {
       document.body.classList.toggle("bspowers", !!to); if (pwBtn.hidden === !!to) { pwBtn.hidden = tkBtn.hidden = !to; }
       if (!to || (pwLook -= dt) > 0) return; pwLook = 0.1;
       pwBtn.style.setProperty("--charge", Math.round(pwCharge * 100) + "%"); pwBtn.classList.toggle("ready", !pwSpent);
-      const air = /plane|heli/.test(to.k || ""), name = air ? "Spin" : to.possum ? "Jump 360" : "Jump", tx = tkWait > 0 ? `${name} ${Math.ceil(tkWait)}` : name; if (tkBtn.textContent !== tx) tkBtn.textContent = tx; tkBtn.classList.toggle("ready", tkWait <= 0); };
+      const air = /plane|heli/.test(to.k || ""), name = rexRole && rex?.live && veh === "ride" ? "Roll" : air ? "Spin" : to.possum ? "Jump 360" : "Jump", tx = tkWait > 0 ? `${name} ${Math.ceil(tkWait)}` : name; if (tkBtn.textContent !== tx) tkBtn.textContent = tx; tkBtn.classList.toggle("ready", tkWait <= 0); };
     const gripBtn = document.createElement("button"); gripBtn.type = "button"; gripBtn.className = "bs-fly-x bs-grip"; gripBtn.textContent = grippy ? "Grippy: on" : "Grippy: off"; gripBtn.dataset.key = "Q"; gripBtn.hidden = true;
     gripBtn.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); if (veh === "possum") gripAsk = true; else if (veh === "pigeon" || veh === "drone") nestAsk = true; }); $("bsFly")?.append(gripBtn);
     // the pigeon's Coo (X): everyone near hears it
@@ -24328,6 +24537,11 @@ const handle = async (m, post) => {
     // golden possum should double the effect of vehicle bonuses including a mega high jump and putting turbo rockets onto the back of
     // the vehicle")
     C.power = (kind, spin, from, gold) => { const now = performance.now(), V2 = veh === "car" ? car : veh === "plane" ? plane : null; if (!V2) return false;
+      // (in the T-rex fight, from your passenger: a roll. Nothing hurts you for 2 s; in a helicopter, a dash to the side as well. Ash, 27
+      // November 2026: "If riding I want to be able to shoot, roll (like heli) or boost my teammate")
+      if (kind === 2 && rex && rex.live && rexRole) { rollAt = rexMs(); if (veh === "plane" && plane.heli && plane.air) { plane.rollFx = { at: rexMs() + 100, side: Math.random() < 0.5 ? -1 : 1, sm: 0 }; snd.whoosh(); }
+        else if (veh === "car" && !car.trick && !car.flip) { car.trick = { t: 0, spin: true, len: 1.4, high: 3.5 }; snd.boing(); snd.whoosh(); } rexSay(`${String(from || "YOUR PASSENGER").toUpperCase().slice(0, 16)}: BARREL ROLL!`, 1300); return true; }
+      if (kind === 1 && rex && rex.live && rexRole) { if (!(V2.teamTil > now - 600)) { snd.whoosh(); rexSay(`⚡ ${String(from || "YOUR PASSENGER").toUpperCase().slice(0, 16)} IS BOOSTING YOU!`, 1300); } V2.teamTil = now + 450; V2.teamK = gold ? 2 : 1; return true; }
       if (kind === 1) { if (!(V2.teamTil > now - 600)) { snd.whoosh(); if (gold) gBurst(V2, 5, 10); toast(gold ? `\ud83d\ude80 ${from}, the golden possum, fired your turbo rockets!` : `\u26a1 ${from} is boosting you!`, 1600); } V2.teamTil = now + 450; V2.teamK = gold ? 2 : 1; }
       else if (veh === "car" && !car.trick && !car.flip) { car.trick = { t: 0, spin, gold, len: spin ? (gold ? 2.9 : 1.9) : 0.9, high: spin ? (gold ? 20 : 8) : gold ? 4.4 : 2.2 }; snd.boing(); if (spin) snd.whoosh(); if (gold) gBurst(car, 4, 8, 0.2);
         toast(gold && spin ? `\ud83d\ude80 ${from}, the golden possum: mega jump!` : spin ? `${from} sent you flying!` : `${from} made you jump!`, 1600); }
@@ -24397,7 +24611,7 @@ const handle = async (m, post) => {
     C.toGold = () => { const G = planes.find(P => P.gold); if (!G) return false; if (veh) leave(false);
       const sn = Math.sin(G.h), cs = Math.cos(G.h), dx = sn * 7 - cs * 5, dz = cs * 7 + sn * 5; T.tween = null;
       F.pos.x = G.x + dx; F.pos.z = G.z + dz; F.pos.y = ground(F.pos.x, F.pos.z) + (T.walk ? F.eye : 14); F.yaw = Math.atan2(dx, dz); F.pitch = T.walk ? -0.06 : -0.6; at = 0; return true; };
-    C.dispose = () => { rexEnd(); Object.entries(spudOn).forEach(([k, f]) => spudBtn.removeEventListener(k, f)); spudBtn.remove(); rexHud?.remove(); rexCall?.remove(); offerEl?.remove(); nukeBtn?.remove(); nukeFlash?.remove(); ghostVeil?.remove(); try { rexP?.remove(); rexPm?.remove(); spudP?.remove(); rockP?.remove(); fireP?.remove(); beacP?.remove(); bunkP?.remove(); nukeP?.remove(); } catch {} try { satMesh?.remove?.(); } catch {} try { autoMark?.remove?.(); } catch {} ezGo.remove(); ezL.remove(); ezR.remove(); upChip.remove(); unBtn.remove(); if (veh) leave(false); btn.onclick = null; btn.hidden = boostBtn.hidden = handBtn.hidden = flipBtn.hidden = true; plantBtn.remove(); plantMenu.remove(); gripBtn.remove(); pwBtn.remove(); tkBtn.remove(); flipBtn.removeEventListener("pointerdown", flipPress); F.hand = false; Object.entries(press).forEach(([k, f]) => boostBtn.removeEventListener(k, f)); Object.entries(handPress).forEach(([k, f]) => handBtn.removeEventListener(k, f));
+    C.dispose = () => { epiEnd(false); rexEnd(); Object.entries(spudOn).forEach(([k, f]) => spudBtn.removeEventListener(k, f)); spudBtn.remove(); rollBtn.remove(); hBoostBtn.remove(); rexHud?.remove(); rexCall?.remove(); offerEl?.remove(); nukeBtn?.remove(); nukeFlash?.remove(); ghostVeil?.remove(); try { rexP?.remove(); rexPm?.remove(); spudP?.remove(); rockP?.remove(); fireP?.remove(); beacP?.remove(); bunkP?.remove(); nukeP?.remove(); } catch {} try { satMesh?.remove?.(); } catch {} try { autoMark?.remove?.(); } catch {} ezGo.remove(); ezL.remove(); ezR.remove(); upChip.remove(); unBtn.remove(); if (veh) leave(false); btn.onclick = null; btn.hidden = boostBtn.hidden = handBtn.hidden = flipBtn.hidden = true; plantBtn.remove(); plantMenu.remove(); gripBtn.remove(); pwBtn.remove(); tkBtn.remove(); flipBtn.removeEventListener("pointerdown", flipPress); F.hand = false; Object.entries(press).forEach(([k, f]) => boostBtn.removeEventListener(k, f)); Object.entries(handPress).forEach(([k, f]) => handBtn.removeEventListener(k, f));
       document.removeEventListener("visibilitychange", hidden); document.body.classList.remove("bsdrive", "bsplane"); snd.dispose(); showKeys(null); try { for (const P of planes) P.parts.remove(); for (const G of owns) G.parts.remove(); ring.remove(); possumMesh?.remove(); poleMesh?.remove(); } catch {} };
     return C;
   }
@@ -24489,7 +24703,7 @@ const handle = async (m, post) => {
     if (T.tween) { const w = T.tween, k = Math.min(1, (performance.now() - w.t0) / w.ms), e = k * k * (3 - 2 * k), L = (a, b) => a + (b - a) * e, dy = w.b.yaw - w.a.yaw;
       F.pos.set(L(w.a.x, w.b.x), L(w.a.y, w.b.y) + (w.arc || 0) * Math.sin(Math.PI * e), L(w.a.z, w.b.z)); F.yaw = w.a.yaw + Math.atan2(Math.sin(dy), Math.cos(dy)) * e; F.pitch = L(w.a.pitch, w.b.pitch);
       if (k >= 1) T.tween = null; }
-    m.setCamera(F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch);
+    const cine = T.car?.cine?.(); if (cine) m.setCamera(...cine); else m.setCamera(F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch);  // (the nuke coming in, in the T-rex fight)
     // midday in every town, whatever the weather view's clock is doing, until an admin moves the time in Settings (Ash, 15 November
     // 2026: "Logan was nighttime, keep it daytime unless as an admin it's changed": opening another town from Settings, or a clock
     // that carried on underneath, could give the real time of day)
