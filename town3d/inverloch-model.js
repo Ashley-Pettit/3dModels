@@ -4367,7 +4367,7 @@ ${w_}`).replace("#include <map_fragment>",`#include <map_fragment>
               vec3 n = texture2D(map, uv + px * vec2(0.0, 1.6)).rgb, t = texture2D(map, uv - px * vec2(0.0, 1.6)).rgb;
               vec3 around = (e + w + n + t) * 0.25;
               // (never past the lightest or darkest of the colours around: no dark or bright fringes)
-              vec3 crisp = clamp(here + (here - around) * 1.6, min(min(e, w), min(n, t)), max(max(e, w), max(n, t)));
+              vec3 crisp = clamp(here + (here - around) * 1.6, min(here, min(min(e, w), min(n, t))), max(here, max(max(e, w), max(n, t))));
               diffuseColor.rgb = mix(diffuseColor.rgb, crisp, close);
             }
           }
