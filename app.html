@@ -22792,7 +22792,7 @@ const handle = async (m, post) => {
       }
       return [go, bsClamp(-e * (H ? 2.8 : 2.4), -1, 1), hoonB, hoonH]; };
     // what the speed chip adds while it drives itself
-    const autoText = () => !auto ? "" : auto.done ? " · Stopping" : auto.cruise ? (auto.turn ? ` · Next ${auto.turn > 0 ? "left" : "right"}` : auto.sign ? ` · Turning ${auto.sign.turn > 0 ? "left" : "right"}` : " · Driving for you") : auto.hoon ? " · Autodrive" : " · Driving you there";
+    const autoText = () => !auto ? "" : auto.done ? " · Stopping" : auto.cruise ? (auto.turn ? ` · Next ${auto.turn > 0 ? "left" : "right"}` : auto.sign ? ` · Turning ${auto.sign.turn > 0 ? "left" : "right"}` : " · Driving for you") : " · Autodrive";  // (a tap or click to drive there says Autodrive too, not "Driving you there": Ash, 26 November 2026, "Remove driving you there, instead just write autodrive")
     // the car to get into near a spot on the map (the map view's click): one of the app's own, one of the traffic, or one parked in the model
     C.carNear = (x, z, r) => { let best = null;
       for (const G of [...owns.filter(G => !G.takenBy), ...(T.traffic?.cars || []).filter(D => D.x != null && !D.away && !D.bus)]) { const d = Math.hypot(G.x - x, G.z - z); if (d < r && (!best || d < best.distance)) best = { own: G, gold: G.gold, distance: d, x: G.x, z: G.z, heading: G.h }; }
