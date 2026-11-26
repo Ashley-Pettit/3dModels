@@ -1416,6 +1416,7 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 /* Chat: under Emote; the box to type in sits at the top, clear of the phone's keyboard */
 .bs-fly-x.bs-chat { position: absolute; left: 50%; right: auto; top: auto; bottom: calc(66px + env(safe-area-inset-bottom)); transform: translateX(-50%); }
 .bs-fly-x.bs-chat[hidden] { display: none; }
+body.bsdrive:not(.bsplane) .bs-fly-x.bs-chat { bottom: calc(116px + env(safe-area-inset-bottom)); }  /* in a car: above Get out */
 .bs-chatbar { pointer-events: auto; position: absolute; z-index: 5; left: 50%; top: calc(62px + env(safe-area-inset-top)); transform: translateX(-50%); width: min(440px, calc(100% - 32px)); display: flex; gap: 6px; padding: 6px; box-sizing: border-box; border-radius: 16px; background: rgba(22, 24, 34, 0.9); }
 .bs-chatbar[hidden] { display: none; }
 /* GPS: the address box, and while it shows the way a blue card under the top buttons with the next turn, how far, and an arrow */
@@ -1995,7 +1996,7 @@ body.bstown.bsgmap.bsheld .bs-joy, body.bstown.bsgmap.bsheld .bs-ud { display: n
      middle column comes down to the bottom edge, Chat lowest, then Emote, then Get in the car: Ash, 25 November 2026, "Polish the
      rotated phone look so that items don't overlap. Move emote down on horizontal view") */
   body.bstown .bs-town-mode { left: calc(max(16px, env(safe-area-inset-left)) + 98px); transform: none; }
-  body.bstown .bs-fly-x.bs-chat { bottom: calc(10px + env(safe-area-inset-bottom)); }
+  body.bstown .bs-fly-x.bs-chat, body.bstown.bsdrive:not(.bsplane) .bs-fly-x.bs-chat { bottom: calc(10px + env(safe-area-inset-bottom)); }
   body.bstown .bs-fly-x.bs-emote { bottom: calc(56px + env(safe-area-inset-bottom)); }
   body.bstown:not(.bsdrive) .bs-fly-x.bs-car { bottom: calc(102px + env(safe-area-inset-bottom)); }
 }
@@ -18762,7 +18763,10 @@ const handle = async (m, post) => {
       // player is near, show chat as seperate to emote")
       // (as the possum too: Ash, 16 November 2026, "Whilst the possum I still want to be able to chat")
       // (and in a car, a plane, a helicopter or as the pigeon: Ash, 18 November 2026, "When in car or something allow chat")
-      { let near = false; if (can || T.car?.in || document.body.classList.contains("bspossum")) for (const q of peers.values()) { const s2 = q.shown; if (s2 && Math.hypot(s2.x - F.pos.x, s2.z - F.pos.z) < 200) { near = true; break; } }
+      // (in a vehicle or as the possum, whenever anyone else is in town, near or not, since the Emote menu that holds Chat is hidden
+      // then: Ash, 26 November 2026, "When in a vehicle I still want to be able to chat")
+      { const ride = !!T.car?.in || document.body.classList.contains("bspossum"); let near = ride && (peers.size > 0 || isAsh());
+        if (!near && can) for (const q of peers.values()) { const s2 = q.shown; if (s2 && Math.hypot(s2.x - F.pos.x, s2.z - F.pos.z) < 200) { near = true; break; } }
         if (chatBtn.hidden === near) chatBtn.hidden = !near; }
       // what you just said: over you when you can see yourself (the worker view), otherwise at the top of the screen, for 30 s
       // (Ash, 15 November 2026: "The speech bubble didn't work": in your own eyes' view there was no you to put it over)
