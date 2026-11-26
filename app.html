@@ -1792,6 +1792,9 @@ body.bsme .bs-height, body.bstown.bsme .bs-height { left: 16px; top: calc(62px +
 .bs-me-head h2 { margin: 0; font: 750 1rem/1.2 var(--ui); }
 .bs-me-x { width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.12); color: inherit; font: 600 1.1rem/1 var(--ui); cursor: pointer; }
 .bs-me-sec { display: grid; gap: 8px; }
+.bs-me-graphics label { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+.bs-me-graphics select { min-height: 38px; padding: 4px 10px; border-radius: 8px; font: inherit; }
+.bs-me .bs-me-go[hidden] { display: none; }
 .bs-me-mem { margin: 0; font: 600 0.78rem/1.35 var(--ui); color: rgba(255, 255, 255, 0.8); }
 .bs-me-new summary { min-height: 40px; display: flex; align-items: center; padding: 0 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.12); color: #fff; font: 700 0.84rem/1.2 var(--ui); cursor: pointer; }
 .bs-me-new[open] summary { margin-bottom: 6px; }
@@ -9489,18 +9492,31 @@ const handle = async (m, post) => {
   // light one comes back and this device keeps to it from then on. Everything the app has put into or set on the model
   // (Inverloch's town centre, the tide, a flood, the time, the camera) is replayed into the sharp one before it shows.
   // T.model is a stand-in that always reaches whichever model is showing.
+  const invGraphicsKey = "an3d-inv-graphics";
+  const invGraphicsPresets = ["auto", "low", "medium", "high"];
+  const invGraphics = (() => {
+    let saved; try { saved = JSON.parse(localStorage.getItem(invGraphicsKey)); } catch {}
+    return {
+      preset: [...invGraphicsPresets, "ultra"].includes(saved?.preset) ? saved.preset : "auto",
+      frameTarget: saved?.frameTarget === 30 ? 30 : 60,
+    };
+  })();
   function townModelPair(T, lib, box, cfg, opts, cb) {
     const key = "an3d-" + cfg.place, mem = navigator.deviceMemory || 8, touch = matchMedia("(pointer: coarse)").matches;
     let seen = {}; try { seen = JSON.parse(localStorage.getItem(key) || "{}") || {}; } catch {}
     const save = o => { seen = { ...seen, ...o }; try { localStorage.setItem(key, JSON.stringify(seen)); } catch {} };
     const best = navigator.connection?.saveData || mem < 4 ? "low" : touch || mem <= 4 ? "medium" : "high";
-    const direct = best === "low" || seen.slow || (seen.q === best && seen.ms < 5000);
-    const first = direct ? (seen.slow ? "low" : best) : "low";
+    const graphics = cfg.place === "inv" ? invGraphics : null;
+    const presets = lib.qualityPresets ? ["auto", ...lib.qualityPresets] : invGraphicsPresets;
+    const initialPreset = presets.includes(graphics?.preset) ? graphics.preset : "auto";
+    const manual = initialPreset !== "auto";
+    const direct = manual || best === "low" || seen.slow || (seen.q === best && seen.ms < 5000);
+    const first = manual ? initialPreset : direct && !seen.slow ? best : "low";
     const hiBox = $("bsHiRes");
     let cur = null, next = null, dead = false;
     const log = [], last = {}, LAST = ["setLabelObstacles", "setTide", "setFlood", "setFloodLevel", "setMinutes", "setCamera", "setGroundEdits", "setRemoved", "setMore", "driveCar"];
     const make = (q, own) => { const t0 = performance.now(); let mm = null;
-      mm = lib.create(box, { ...opts, quality: q, onProgress: own ? cb.onProgress : undefined,
+      mm = lib.create(box, { ...opts, quality: q, ...(graphics ? { frameTarget: graphics.frameTarget } : {}), onProgress: own ? cb.onProgress : undefined,
         onFloodLevel: v => { if (mm === cur) cb.onFloodLevel(v); },
         onError: msg => { if (mm === cur) cb.onError(msg); else if (mm === next) drop(); } });
       mm.t0 = t0; return mm; };
@@ -9561,8 +9577,9 @@ const handle = async (m, post) => {
       if (g && g < 40 && !window.__anForceUp) { save({ slow: true }); const back = make("low", false); tag(back); const be = rootOf(back); if (be) be.style.visibility = "hidden";
         try { await back.ready; } catch { return; } if (!dead && BS.town === T) await swapTo(back, "low"); }
     };
-    T.pair = { get cur() { return cur; }, get next() { return next; } };  // for checking it in a browser's console
-    const ready = cur.ready.then(() => { if (!direct) upgrade(); else if (first === best) save({ q: best, ms: Math.round(performance.now() - cur.t0) }); });
+    T.pair = { initialPreset, presets, get cur() { return cur; }, get next() { return next; },
+      setFrameTarget(target) { cur?.setFrameTarget?.(target); next?.setFrameTarget?.(target); } };
+    const ready = cur.ready.then(() => { if (!direct) upgrade(); else if (!manual && first === best) save({ q: best, ms: Math.round(performance.now() - cur.t0) }); });
     return m;
   }
   function townModelOn(T) {
@@ -18628,6 +18645,38 @@ const handle = async (m, post) => {
       return section;
     };
     const meClose = () => { meBox.hidden = true; meBtn.setAttribute("aria-expanded", "false"); };
+    const graphicsSection = () => {
+      const section = el("div", "bs-me-sec bs-me-graphics");
+      const restart = el("button", "bs-me-go", "Restart Inverloch with this preset");
+      restart.type = "button";
+      const selected = T.pair.presets.includes(invGraphics.preset) ? invGraphics.preset : "auto";
+      restart.hidden = selected === T.pair.initialPreset;
+      restart.onclick = () => { meClose(); townModelOff(); setTimeout(() => townModelOpen(true, "inv"), 60); };
+      const choice = (label, values, selected, change) => {
+        const row = el("label", "", label), select = el("select");
+        for (const [value, name] of values) select.add(new Option(name, value));
+        select.value = String(selected);
+        select.onchange = () => {
+          change(select.value);
+          try { localStorage.setItem(invGraphicsKey, JSON.stringify(invGraphics)); } catch {}
+        };
+        for (const type of ["keydown", "keyup"]) select.addEventListener(type, e => {
+          if (e.key !== "Escape") { F.held?.delete(e.code); e.stopPropagation(); }
+        });
+        row.append(select); return row;
+      };
+      section.append(el("span", "bs-me-lbl", "Graphics"),
+        choice("Detail preset", T.pair.presets.map(p => [p, p[0].toUpperCase() + p.slice(1)]), selected, value => {
+          invGraphics.preset = value;
+          restart.hidden = value === T.pair.initialPreset;
+        }));
+      if (T.pair.cur.setFrameTarget) section.append(
+        choice("Frame-rate target", [["30", "30 fps"], ["60", "60 fps"]], invGraphics.frameTarget, value => {
+          invGraphics.frameTarget = Number(value); T.pair.setFrameTarget(invGraphics.frameTarget);
+        }));
+      section.append(el("p", "", "A new detail preset takes effect when you reopen Inverloch."), restart);
+      return section;
+    };
     const meDraw = () => { meBox.replaceChildren(); const touch = matchMedia("(pointer: coarse)").matches;  // (it was used here with nothing called touch in reach, so Settings came up empty: Ash, 25 November 2026, "Settings is not loading")
       const head = el("div", "bs-me-head"), x = el("button", "bs-me-x", "\u00d7"); x.type = "button"; x.setAttribute("aria-label", "Close settings"); x.onclick = () => { meClose(); meBtn.focus(); }; head.append(el("h2", "", "Settings"), x);
       // your player: the name over you and the colour of your top
@@ -18752,7 +18801,7 @@ const handle = async (m, post) => {
         for (const g of A.gold) sec.append(btn(g, "bs-me-go"));
         if (A.news.length) { const d = el("details", "bs-me-new"); d.append(el("summary", "", `New to check (${A.news.length})`)); for (const q of A.news) { const b = btn(q, "bs-me-newi"); b.append(el("small", "", q.what)); d.append(b); } sec.append(d); }
         return sec; };
-      meBox.append(head, patchNotes(), you, st, as, sw, here, tm, app, ...(sug ? [sug] : []), ...(isAsh() && T.adminJumps ? [adminSec()] : []), ...(isAsh() ? exAshSecs(meDraw) : []), towns, ...(keysB ? [keysB] : []), tut, ...(wv ? [wv] : []), hi, priv, ver); };  // no Exit explore (Ash, 15 November 2026: "Remove exit explore"); Esc, or the browser's back, still leaves
+      meBox.append(head, patchNotes(), ...(place === "inv" ? [graphicsSection()] : []), you, st, as, sw, here, tm, app, ...(sug ? [sug] : []), ...(isAsh() && T.adminJumps ? [adminSec()] : []), ...(isAsh() ? exAshSecs(meDraw) : []), towns, ...(keysB ? [keysB] : []), tut, ...(wv ? [wv] : []), hi, priv, ver); };  // no Exit explore (Ash, 15 November 2026: "Remove exit explore"); Esc, or the browser's back, still leaves
     // closes with its \u00d7, the gear again, or a tap anywhere else
     const meOut = e => { if (!meBox.hidden && !meBox.contains(e.target) && !meBtn.contains(e.target)) meClose(); }; document.addEventListener("pointerdown", meOut, true);
     document.body.classList.add("bsme"); meBtn.hidden = false; meBtn.onclick = () => { meBox.hidden = !meBox.hidden; meBtn.setAttribute("aria-expanded", String(!meBox.hidden)); if (!meBox.hidden) meDraw(); meBtn.blur(); };
