@@ -21880,13 +21880,16 @@ const handle = async (m, post) => {
         o = { x: q.x, y: q.y, z: q.z, h: q.h, v: ride.v, air: q.y - ground(q.x, q.z) > 3 }; D = RIDE_BACK[q.k] + Math.min(10, ride.v / 8);
         text = L ? (L.stopT > 0 ? "Bus stop \u00b7 Get off here, or stay on" : `On the bus \u00b7 ${Math.round(ride.v * 3.6)} km/h`) : `With ${ride.name} \u00b7 ${Math.round(ride.v * 3.6)} km/h`; hint("");
       } else if (veh === "car") {
-        // driving itself (a click on the road, or Drive for me): until a driving key, the stick, the handbrake or the Boost button takes
+        // driving itself (a click on the road, or Drive for me): until a driving key, the stick or the handbrake takes
         // it back. (Shift is left out: the < and > keys are often pressed with it, and that would boost the car out of it)
         // (Autodrive from the GPS drives like a hoon: it works the boost and the handbrake itself too)
         const mine = Math.abs(thr) > 0.05 || Math.abs(str) > 0.05;  // (your own driving, before Autodrive's)
         let aHand = false; if (auto) { const rA = C.autoTil > performance.now();
           /* (the race's Autodrive: nothing you do stops it; it drives its 10 s and hands back. Ash, 24 November 2026: "The autodrive didn't seem to work"; "Autodrive on race disable hard steer to take control") */
-          if (!rA && (Math.abs(thr) > 0.05 || Math.abs(str) > 0.05 || has("Space") || F.hand || F.boost)) autoEnd(); else { const a = autoStep(dt); thr = a[0]; str = a[1]; boost = !!a[2]; aHand = !!a[3];
+          // (Boost no longer takes it back: it boosts while Drive for me keeps steering. Ash, 26 November 2026: "During drive for me, allow
+          // the player to boost without breaking drive for me". Shift boosts too, unless it is held for the < and > keys)
+          const myBoost = !!F.boost || (has("ShiftLeft", "ShiftRight") && !has("Comma", "Period"));
+          if (!rA && (Math.abs(thr) > 0.05 || Math.abs(str) > 0.05 || has("Space") || F.hand)) autoEnd(); else { const a = autoStep(dt); thr = a[0]; str = a[1]; boost = !!a[2] || (myBoost && a[0] >= 0); aHand = !!a[3];  // (not while it brakes for a bend or backs up: it would boost the wrong way)
             // (a click to drive there: the last 9 m straight on, no swinging round at the end. The GPS's Autodrive keeps its turn to face the
             // place. Ash, 25 November 2026: "Keep this for the gps autodrive but for drive me there don't pivot at the end")
             if (auto?.click && auto.rem < 9) { str = 0; aHand = false; } } }
