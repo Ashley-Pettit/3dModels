@@ -1418,6 +1418,14 @@ body.bspossum .bs-fly-x.bs-boost.on { background: #ffd166; }
 .bs-fly-x.bs-chat { position: absolute; left: 50%; right: auto; top: auto; bottom: calc(66px + env(safe-area-inset-bottom)); transform: translateX(-50%); }
 .bs-fly-x.bs-chat[hidden] { display: none; }
 body.bsdrive:not(.bsplane) .bs-fly-x.bs-chat { bottom: calc(116px + env(safe-area-inset-bottom)); }  /* in a car: above Get out */
+/* in the plane, the helicopter and the drone on a phone, where Up and Down stand in the middle at the bottom: above Get out on a phone
+   held upright, beside Up and Down (to their left) on its side (Ash, 26 November 2026: "Btns overlap", Chat between Up and Down) */
+@media (pointer: coarse) {
+  body.bsplane .bs-fly-x.bs-chat, body.bsheli .bs-fly-x.bs-chat, body.bsdrone .bs-fly-x.bs-chat { bottom: calc(222px + env(safe-area-inset-bottom)) !important; }
+}
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
+  body.bsplane .bs-fly-x.bs-chat, body.bsheli .bs-fly-x.bs-chat, body.bsdrone .bs-fly-x.bs-chat { left: calc(50% - 84px) !important; bottom: calc(22px + env(safe-area-inset-bottom)) !important; }
+}
 .bs-chatbar { pointer-events: auto; position: absolute; z-index: 5; left: 50%; top: calc(62px + env(safe-area-inset-top)); transform: translateX(-50%); width: min(440px, calc(100% - 32px)); display: flex; gap: 6px; padding: 6px; box-sizing: border-box; border-radius: 16px; background: rgba(22, 24, 34, 0.9); }
 .bs-chatbar[hidden] { display: none; }
 /* GPS: the address box, and while it shows the way a blue card under the top buttons with the next turn, how far, and an arrow */
