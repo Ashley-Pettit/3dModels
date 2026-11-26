@@ -20010,6 +20010,24 @@ const handle = async (m, post) => {
     R.test = () => race;  // (for tests)
     return R;
   }
+  // the GPS's destination marker, built once: a ring on the ground (radius 2.2 to 3 m), a soft beam (0.35 m across, 26 m up), and a map pin
+  // (a ball 1.5 m across, tapering to a point 2.6 m below its middle) with a white disc on each face, all about the pin's own middle
+  let gpsPinMade = null;
+  function gpsPinShapes() { if (gpsPinMade) return gpsPinMade; const ring = [], beam = [], pin = [], pinN = [], dot = [], N = 40;
+    for (let i = 0; i < N; i++) { const a = i / N * Math.PI * 2, b = (i + 1) / N * Math.PI * 2, c = Math.cos, s = Math.sin, r0 = 2.2, r1 = 3;
+      ring.push(r0 * c(a), 0, r0 * s(a), r1 * c(a), 0, r1 * s(a), r1 * c(b), 0, r1 * s(b), r0 * c(a), 0, r0 * s(a), r1 * c(b), 0, r1 * s(b), r0 * c(b), 0, r0 * s(b));
+      if (i % 2 === 0) { const B = 0.35, a2 = (i + 2) / N * Math.PI * 2; beam.push(B * c(a), 0, B * s(a), B * c(a2), 0, B * s(a2), B * c(a2), 26, B * s(a2), B * c(a), 0, B * s(a), B * c(a2), 26, B * s(a2), B * c(a), 26, B * s(a)); } }
+    // the pin: rings of a ball (radius 1.5) down to where it narrows, then a cone to the point; smooth normals
+    const R = 1.5, TIP = -2.6, SEG = 28, rows = []; for (let k = 0; k <= 12; k++) { const th = k / 12 * Math.PI * 0.78; rows.push([R * Math.sin(th), R * Math.cos(th), Math.sin(th), Math.cos(th)]); }
+    const last = rows[rows.length - 1]; rows.push([0, TIP, last[2], last[3]]);
+    for (let k = 0; k + 1 < rows.length; k++) for (let j = 0; j < SEG; j++) { const a = j / SEG * Math.PI * 2, b = (j + 1) / SEG * Math.PI * 2, [r0, y0, n0r, n0y] = rows[k], [r1, y1, n1r, n1y] = rows[k + 1];
+      const v = (r, y, ang) => [r * Math.cos(ang), y, r * Math.sin(ang)], nn = (nr, ny, ang) => [nr * Math.cos(ang), ny, nr * Math.sin(ang)];
+      const tip = k + 1 === rows.length - 1, q = [[v(r0, y0, a), nn(n0r, n0y, a)], [v(r1, y1, a), tip ? nn(0.9, -0.42, a) : nn(n1r, n1y, a)], [v(r1, y1, b), tip ? nn(0.9, -0.42, b) : nn(n1r, n1y, b)], [v(r0, y0, b), nn(n0r, n0y, b)]];
+      for (const ix of [0, 1, 2, 0, 2, 3]) { pin.push(...q[ix][0]); pinN.push(...q[ix][1]); } }
+    // the white disc, just proud of the ball on both faces (the pin turns, so each side shows in turn)
+    for (const side of [1, -1]) for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2, b = (i + 1) / 24 * Math.PI * 2, r = 0.62, z = side * 1.53;
+      dot.push(0, 0.1, z, r * Math.cos(a), 0.1 + r * Math.sin(a), z, r * Math.cos(b), 0.1 + r * Math.sin(b), z); }
+    return gpsPinMade = { ring: new Float32Array(ring), beam: new Float32Array(beam), pin: new Float32Array(pin), pinN: new Float32Array(pinN), dot: new Float32Array(dot) }; }
   function townGps(T, m, F, ground, cfg, box) {
     const G = { places: [] }; let dead = false, net = null, netP = null, route = null, parts = null, hudT = 0, offT = 0, rerouteT = 0, ctl = null, sugT = 0, lastPick = null;
     const lin = hex => { const v = parseInt(hex.slice(1), 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255].map(c => Math.pow(c / 255, 2.2)); };
@@ -20229,15 +20247,28 @@ const handle = async (m, post) => {
       catch { say("Couldn't look that up just now. Check you're online and try again."); } };
     // where you are: your car, or you
     const here = () => { const w = T.car?.in ? T.car.where?.() : null; return w && w.x != null ? [w.x, w.z] : [F.pos.x, F.pos.z]; };
-    const clearParts = () => { try { parts?.remove(); } catch {} parts = null; };
+    const clearParts = () => { try { parts?.remove(); } catch {} parts = null; pinAt = null; };
     const draw = (pts, pin) => { clearParts(); const pos = [], nor = [], col = [], c = lin("#3d8bff"), pc = lin("#ff4d6d"), W = 0.8;
       const quad = (a, b, cc, d, k) => { for (const q of [a, b, cc, a, cc, d]) { pos.push(q[0], q[1], q[2]); nor.push(0, 1, 0); col.push(k[0], k[1], k[2]); } };
       for (let i = 0; i + 3 < pts.length; i += 2) { const ax = pts[i], az = pts[i + 1], bx = pts[i + 2], bz = pts[i + 3], L = Math.hypot(bx - ax, bz - az); if (L < 0.05) continue;
         const nx = -(bz - az) / L * W, nz = (bx - ax) / L * W, ya = ground(ax, az) + 0.18, yb = ground(bx, bz) + 0.18;
         quad([ax - nx, ya, az - nz], [ax + nx, ya, az + nz], [bx + nx, yb, bz + nz], [bx - nx, yb, bz - nz], c); }
-      const ex = pin ? pin.x : pts[pts.length - 2], ez = pin ? pin.z : pts[pts.length - 1], g = ground(ex, ez);  // the pin, on the place itself: a tall red beam you can see from streets away
-      for (const [dx, dz] of [[0.6, 0], [0, 0.6]]) quad([ex - dx, g, ez - dz], [ex + dx, g, ez + dz], [ex + dx, g + 30, ez + dz], [ex - dx, g + 30, ez - dz], pc);
-      parts = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.6, doubleSide: true, matrix: new BS.B.THREE.Matrix4().elements }]); };
+      const ex = pin ? pin.x : pts[pts.length - 2], ez = pin ? pin.z : pts[pts.length - 1], g = ground(ex, ez);
+      // the place itself: a map pin hovering over a glowing ring, turning slowly and bobbing, with a soft beam up through it you can see
+      // from streets away (Ash, 26 November 2026: "Change the brown stick that the gps uses to mark its destination. Make it a pretty your
+      // destination marker"; the stick was two flat red strips lit as if they lay on the ground, so they looked brown)
+      const I = new BS.B.THREE.Matrix4().elements, mk = gpsPinShapes();
+      parts = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.6, doubleSide: true, matrix: I },
+        { positions: mk.ring, color: [1, 0.34, 0.5], unlit: true, opacity: 0.85, doubleSide: true, matrix: new BS.B.THREE.Matrix4().makeTranslation(ex, g + 0.22, ez).elements },
+        { positions: mk.beam, color: [1, 0.45, 0.6], unlit: true, opacity: 0.28, doubleSide: true, matrix: new BS.B.THREE.Matrix4().makeTranslation(ex, g, ez).elements },
+        { positions: mk.pin, normals: mk.pinN, color: [1, 0.3, 0.45], emissive: [1, 0.3, 0.45], emissiveIntensity: 0.55, roughness: 0.35, doubleSide: true, matrix: I },
+        { positions: mk.dot, color: [1, 1, 1], unlit: true, doubleSide: true, matrix: I }]);
+      pinAt = { x: ex, y: g, z: ez }; pinTick(); };
+    // the pin's turn and bob, every frame (two matrices: nothing else is rebuilt)
+    let pinAt = null; const pinM = new BS.B.THREE.Matrix4(), pinR = new BS.B.THREE.Matrix4();
+    const pinTick = () => { if (!parts || !pinAt) return; const t = performance.now() / 1000;
+      pinM.makeTranslation(pinAt.x, pinAt.y + 6.2 + Math.sin(t * 2) * 0.35, pinAt.z).multiply(pinR.makeRotationY(t * 1.2));
+      parts.setMatrix(3, pinM.elements); parts.setMatrix(4, pinM.elements); };
     // a route: the line every 3 m, how far along each point is, and the turns (where the street's name changes, or it turns sharply)
     // The line runs on the streets only: from the street beside you to the point on the place's own street nearest it; the pin stands
     // on the place itself
@@ -20287,7 +20318,7 @@ const handle = async (m, post) => {
     G.netInfo = () => net && { nodes: net.X.length, pieces: net.SA.length, ms: net.ms };  // (for tests: how big, and how long it took to build)
     G.stop = () => { if (route?.dest?.auto) T.car?.autoStop?.(); route = null; clearParts(); card.hidden = true; document.getElementById("bsGpsBtn")?.setAttribute("aria-pressed", "false"); };
     G.active = () => !!route;
-    G.frame = force => { if (!route || dead) return; const now = performance.now(); if (!force && now - hudT < 250) return; hudT = now;
+    G.frame = force => { if (!route || dead) return; pinTick(); const now = performance.now(); if (!force && now - hudT < 250) return; hudT = now;
       const R = route, [x, z] = here(), n = R.at.length; let bi = R.i, bd = Infinity, bt = 0;
       for (let i = Math.max(0, R.i - 15); i < Math.min(n - 1, R.i + 80); i++) { const ax = R.pts[i * 2], az = R.pts[i * 2 + 1], dx = R.pts[i * 2 + 2] - ax, dz = R.pts[i * 2 + 3] - az, L2 = dx * dx + dz * dz || 1, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L2)), d = Math.hypot(x - ax - dx * t, z - az - dz * t);
         if (d < bd) { bd = d; bi = i; bt = t; } }
