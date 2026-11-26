@@ -21564,9 +21564,45 @@ const handle = async (m, post) => {
     // how the ground lies under something: its height, and how far the nose is up and the right side down
     const lie = (o, half, wide) => { const s = Math.sin(o.h), c = Math.cos(o.h), g = (a, b) => ground(o.x + s * a - c * b, o.z + c * a + s * b), yf = g(half, 0), yb = g(-half, 0), yr = g(0, wide), yl = g(0, -wide);
       return [(yf + yb + yr + yl) / 4, Math.atan2(yf - yb, half * 2), Math.atan2(yl - yr, wide * 2)]; };
+    // ---- the car as a boat: drive into water deep enough (half a metre) and it's a runabout until the water is under 15 cm again
+    // (Ash, 26 November 2026: "If I drive into water, turn my car into a boat and vice versa"). The car is drawn 60 m under the ground
+    // meanwhile (as the star's flash does) and the boat, made once when first needed, drawn where it is, bobbing a little
+    let boatP = null;
+    const boatShape = () => { const P = [], N = [], K = [], c = h => { const v = parseInt(h.slice(1), 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255].map(q => Math.pow(q / 255, 2.2)); };
+      const tri = (a, b, d, col) => { const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], vx = d[0] - a[0], vy = d[1] - a[1], vz = d[2] - a[2];
+        let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; const L = Math.hypot(nx, ny, nz) || 1; nx /= L; ny /= L; nz /= L;
+        // (each face turned to look away from the middle of the part it's on, so it's lit from outside)
+        const mx = (a[0] + b[0] + d[0]) / 3 - (O ? O[0] : 0), my = (a[1] + b[1] + d[1]) / 3 - (O ? O[1] : 0.45), mz = (a[2] + b[2] + d[2]) / 3 - (O ? O[2] : 0); if (nx * mx + ny * my + nz * mz < 0) { nx = -nx; ny = -ny; nz = -nz; [b, d] = [d, b]; }
+        for (const q of [a, b, d]) { P.push(...q); N.push(nx, ny, nz); K.push(...col); } };
+      let O = null;
+      const quad = (a, b, d, e, col) => { tri(a, b, d, col); tri(a, d, e, col); };
+      const box = (x0, x1, y0, y1, z0, z1, col) => { const k = c(col); O = [(x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2];
+        quad([x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1], k); quad([x1, y0, z0], [x0, y0, z0], [x0, y1, z0], [x1, y1, z0], k);
+        quad([x1, y0, z1], [x1, y0, z0], [x1, y1, z0], [x1, y1, z1], k); quad([x0, y0, z0], [x0, y0, z1], [x0, y1, z1], [x0, y1, z0], k);
+        quad([x0, y1, z1], [x1, y1, z1], [x1, y1, z0], [x0, y1, z0], k); quad([x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1], k); };
+      // the hull: navy below, white above, a pointed bow out front (+z), squared off at the stern
+      const W = 0.95, nav = c("#1d3557"), wht = c("#f4f1ea");
+      box(-W, W, 0, 0.45, -2.1, 1.4, "#1d3557"); box(-W, W, 0.45, 0.9, -2.1, 1.4, "#f4f1ea");
+      O = [0, 0.5, 1.6]; const b0 = [-W, 0, 1.4], b1 = [W, 0, 1.4], b2 = [W, 0.9, 1.4], b3 = [-W, 0.9, 1.4], tipLo = [0, 0.3, 2.7], tipHi = [0, 1.0, 2.75];
+      tri(b1, tipLo, tipHi, wht); tri(b1, tipHi, b2, wht); tri(tipLo, b0, b3, wht); tri(tipLo, b3, tipHi, wht); tri(b3, b2, tipHi, wht); tri(b0, tipLo, b1, nav);
+      box(-W + 0.08, W - 0.08, 0.9, 0.95, -2.0, 1.3, "#c9a46a");  // the deck
+      box(-0.8, 0.8, 0.95, 1.4, 0.5, 0.65, "#7fb8d8");  // the windscreen
+      box(-0.6, -0.05, 0.95, 1.35, -0.6, 0.0, "#e63946"); box(0.05, 0.6, 0.95, 1.35, -0.6, 0.0, "#e63946");  // the seats
+      box(-0.22, 0.22, 0.5, 1.5, -2.45, -2.1, "#222222"); box(-0.1, 0.1, 0.0, 0.5, -2.4, -2.2, "#333333");  // the outboard motor
+      box(-W - 0.04, W + 0.04, 0.78, 0.86, -2.1, 1.4, "#e63946");  // a red stripe
+      return { positions: new Float32Array(P), normals: new Float32Array(N), colors: new Float32Array(K), color: [1, 1, 1], roughness: 0.55, doubleSide: true, matrix: NONE }; };
+    const boatDraw = on => { if (!on) { if (boatP) boatP.setMatrix(0, NONE); return; }
+      if (!boatP) try { boatP = m.addParts([boatShape()]); } catch { return; }
+      const t = performance.now() / 1000, bob = Math.sin(t * 2.1) * 0.06 - 0.32, rl = (car.r || 0) + Math.sin(t * 1.6) * 0.03 + bsClamp((car.yr || 0) * 0.08, -0.12, 0.12);
+      M.compose(V.set(car.x, car.y + bob, car.z), Q.setFromEuler(E.set(-(car.p || 0) - bsClamp(car.v / 60, -0.05, 0.12), car.h + (car.spinY || 0), rl, "YXZ")), ONE); boatP.setMatrix(0, M.elements); };
+    const boatCheck = () => { if (car.bus || !m.groundAt) return false; const w = m.waterAt ? m.waterAt(car.x, car.z) : m.waterLevel?.(); if (!(w > -1e4)) return car.boat = false;
+      const d = w - m.groundAt(car.x, car.z), on = car.boat ? d > 0.15 : d > 0.5;
+      if (on !== !!car.boat) { car.boat = on; fxBurst(car, false); snd.whoosh?.(); toast(on ? "\ud83d\udea4 Boat mode! Drive back onto land to be a car again." : "\ud83d\ude97 Back on the road.", 2200); if (!on) boatDraw(false); }
+      return on; };
     const sit = (dt, signal = 0) => { const [y, p, r] = car.bus ? lie(car, 3.6, 1.1) : lie(car, 1.3, 0.8), e = dt ? Math.min(1, dt * 12) : 1; car.y += (y + 0.05 + (car.hop || 0) - car.y) * (car.flip || car.trick ? 1 : e); car.p += (p - car.p) * e; car.r += (r - car.r) * e; const rd = car.r + (car.roll || 0), hd = car.h + (car.spinY || 0);
       // (a golden star: the car flashes, gone and back about five times a second, sparkling: Ash, 25 November 2026, "Flash my car while active")
-      const now = performance.now(), cy = car.y + (C.starTil > now && Math.floor(now / 100) % 3 === 2 ? -60 : 0);  // (gone: 60 m under the ground)
+      const now = performance.now(), boat = boatCheck(), cy = car.y + ((C.starTil > now && Math.floor(now / 100) % 3 === 2) || boat ? -60 : 0);  // (gone: 60 m under the ground)
+      if (boat) boatDraw(true);
       if (car.own) {
         Object.assign(car.own, { x: car.x, y: cy, z: car.z, h: hd, p: car.p, r: rd }); showOwn(car.own); car.own.y = car.y;
         if (signal !== (car.own.litSignal || 0)) { car.own.parts.setSignal?.(signal); car.own.litSignal = signal; }
@@ -22018,7 +22054,7 @@ const handle = async (m, post) => {
       if (on && car) M.compose(V.set(car.x, car.y, car.z), Q.setFromEuler(E.set(-car.p, car.h, car.r, "YXZ")), BEAT.set(beat * (car.bus ? 2.1 : 1), 1, beat * (car.bus ? 2.1 : 1)));
       for (let i = 0; i <= RING; i++) { const show = !!on && !!car && (i === 0 || i <= full); if (show || lit[i]) { ring.setMatrix(i, show ? M.elements.slice() : NONE); lit[i] = show; } }
       const pc = Math.round(charge * 100) + "%"; if (boostBtn.style.getPropertyValue("--charge") !== pc) boostBtn.style.setProperty("--charge", pc); };
-    const leave = (step, door) => { if (!veh) return; if (auto) autoEnd(); mySpin?.hide(); mySig?.remove(); mySig = null; skyNavShow(null); const was = veh; if (was === "possum" && pos?.cling) { try { T.peers?.ride?.(pos.cling.id, false); } catch {} pos.cling = null; }  // (it stayed stuck to the driver: Ash, 18 November 2026)
+    const leave = (step, door) => { if (!veh) return; if (auto) autoEnd(); if (car?.boat) { car.boat = false; boatDraw(false); } mySpin?.hide(); mySig?.remove(); mySig = null; skyNavShow(null); const was = veh; if (was === "possum" && pos?.cling) { try { T.peers?.ride?.(pos.cling.id, false); } catch {} pos.cling = null; }  // (it stayed stuck to the driver: Ash, 18 November 2026)
       // (the comment above once ran on over the rest of this line, so leaving never stopped the engine, the rockets or the sparks: Ash, 19 November
       // 2026, "when i use jump to often the sound of the car or something is still playing")
       if (held) { document.body.classList.remove("bsheld"); held = null; } rockets(false); if (sky) { skyEnd(); skyTried = false; } for (let i = 0; i < FXN; i++) if (sparks[i]) { sparks[i] = null; fx.setMatrix(i, NONE); } for (let i = 0; i < GFXN; i++) if (glit[i]) { glit[i] = null; gfx.setMatrix(i, NONE); } if (was !== "possum" && was !== "pigeon" && was !== "drone" && was !== "ride") snd.door(); snd.stop();
