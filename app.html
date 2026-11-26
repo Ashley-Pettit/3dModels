@@ -19219,6 +19219,12 @@ const handle = async (m, post) => {
         to(eng.wf.frequency, (eng.heli ? 350 : 450) + 1500 * Math.min(1, speed / 70)); to(eng.wg.gain, eng.heli ? 0.03 + 0.045 * rev : Math.min(0.19, (speed / 45) ** 2 * 0.065) * (eng.plane ? 1.4 : 1) + (boost ? 0.055 : 0));
         to(eng.sg.gain, skid * 0.1, 0.03); },
       level(v) { vol = v; if (master) master.gain.value = 0.9 * v; },
+      // a line said out loud in the phone or computer's own voice, deep and slow: an action-movie voice for the T-rex fight's "Get to the
+      // choppa!" and "I'll be back" (Ash, 26 November 2026). It's the device's built-in voice, not anyone's in particular. Quiet when the
+      // game's sound is off
+      say(text, pitch = 0.55, rate = 0.82) { const S = window.speechSynthesis; if (!S || !vol || typeof SpeechSynthesisUtterance === "undefined") return;
+        try { S.cancel(); const u = new SpeechSynthesisUtterance(text), en = S.getVoices().filter(v => /^en/i.test(v.lang)), deep = en.find(v => /\b(gordon|lee|daniel|arthur|aaron|rishi|fred|alex|male)\b/i.test(v.name) && !/female/i.test(v.name));
+          if (deep || en[0]) u.voice = deep || en[0]; u.lang = u.voice?.lang || "en-AU"; u.pitch = pitch; u.rate = rate; u.volume = Math.min(1, vol); S.speak(u); } catch {} },
       thud(k = 1) { hit(0.28, 320, 0.5 * k, 74); },
       // a few more (Ash, 16 November 2026: "Add a few more sounds"): a whoosh for a power-up, a boing for a jump, Arlo's woof, a pop when
       // someone says something, and a click for Grippy
@@ -21921,6 +21927,18 @@ const handle = async (m, post) => {
     g.box(-0.3, 0.3, -0.015, 0.015, -0.55, -0.3, RD); g.box(-0.015, 0.015, -0.3, 0.3, -0.55, -0.3, K);
     g.egg([0, 0, -0.95], 0.13, 0.13, 0.45, (p, N) => townMix(townLin("#fff2a8"), townLin("#ff4a1c"), Math.min(1, Math.max(0, (-p[2] - 0.6) / 0.7))), 5, 8);
     return g.part({ roughness: 0.4, emissive: [0.5, 0.25, 0.05], emissiveIntensity: 0.6 }); }
+  // Mumma T-rex's fire breath: a long flame from the mouth (0) out along +Z to 1, fat in the middle, white-yellow at the mouth going
+  // orange then red, see-through and lit by itself. Scaled to its length and width where it's drawn (Ash, 26 November 2026: "Fire
+  // breath at me")
+  function townFireParts() { const g = townGeo(), Y = townLin("#fff4b0"), O = townLin("#ff8a1c"), R = townLin("#d6281c");
+    const S = [[0, 0.03], [0.06, 0.1], [0.2, 0.17], [0.42, 0.25], [0.66, 0.29], [0.86, 0.25], [0.97, 0.14], [1, 0.04]].map(([z, r]) => ({ p: [0, 0, z], rx: r, ry: r }));
+    g.loft(S, 14, p => p[2] < 0.35 ? townMix(Y, O, p[2] / 0.35) : townMix(O, R, Math.min(1, (p[2] - 0.35) / 0.65)), { side0: [1, 0, 0], open: true });
+    return [g.part({ unlit: true, opacity: 0.7, doubleSide: true, emissive: [1, 0.55, 0.15], emissiveIntensity: 1 })]; }
+  // the beacon over the boss: a fat yellow arrow pointing down, tip at 0, 1 tall, so you can always see where it is (Ash, 26 November
+  // 2026: "Show an arrow becon above the boss so I know where it is")
+  function townBeaconParts() { const g = townGeo(), Y = townLin("#ffd166"), D = townLin("#c2410c");
+    g.cone([0, 0.42, 0], [0, 0, 0], 0.34, 16, Y); g.cyl([0, 0.4, 0], [0, 1, 0], 0.14, 12, Y, Y); g.disc([0, 1, 0], [0, 1, 0], 0.14, D, 12);
+    return [g.part({ unlit: true, doubleSide: true, emissive: [1, 0.8, 0.35], emissiveIntensity: 1 })]; }
   // a ghost, for a player the T-rex has wrecked (they're out till the others win or everyone's out): a white sheet floating 30 cm up,
   // its hem wavy, two dark eyes and an "oh" of a mouth facing +Z (Ash, 26 November 2026: "If I die ... Make me a ghost")
   function townGhostParts() { const g = townGeo(), W = townLin("#f4f8ff"), W2 = townLin("#d9e4f5"), D = townLin("#1b1830"), S = [];
@@ -22516,10 +22534,15 @@ const handle = async (m, post) => {
     // on to the town's helicopter (not the golden one) and the boss bar pointing the way. She never gives up on you now, and runs to catch
     // up when she's far behind. On foot you're still in it (she's after you, but can't hurt you). In a helicopter (any one) you fire
     // rockets (L, or the Rockets button): seven times a spud's damage, quicker, straight at her chest. Stay above her head: she can bite
-    // a helicopter up to about 30 m up, and charge or whip one lower down. A helicopter can fly to the bunker and fire the nuke too
-    const REX_S = 2.6, REX_HP = 160, REX_WAIT = 20000, REX_SPUDS = 10, REX_NET = 150, MUM_K = 2, MUM_CAR = 0.12, CHOPPA_HITS = 20, ROCKET = 7, rexMs = () => performance.now();
+    // a helicopter up to about 30 m up, and charge or whip one lower down. A helicopter can fly to the bunker and fire the nuke too.
+    // The race for the choppa (Ash, 26 November 2026: "when racing for the choppa, mumma needs to keep up and should deal damage at 10% of
+    // normal. Fire breath at me and charge and stomp jump infront of me"): once you've been told to get to the choppa (and till you're in
+    // one), she runs as fast as she needs to stay on you (up to 46 m/s), her hits do a tenth of what they did, and she breathes fire at
+    // you, charges, and leaps over you to land in front with a stomp. A yellow arrow floats over the boss so you can always find it (and
+    // over the choppa while you're racing for it), and the view's further back in the fight
+    const REX_S = 2.6, REX_HP = 160, REX_WAIT = 20000, REX_SPUDS = 10, REX_NET = 150, MUM_K = 2, MUM_CAR = 0.12, CHOPPA_HITS = 20, ROCKET = 7, RACE_HIT = 0.1, rexMs = () => performance.now();
     const RX = new THREE.Matrix4(), RB = new THREE.Matrix4(), RH = new THREE.Matrix4(), RT = new THREE.Matrix4(), RQ = new THREE.Matrix4(), RV = new THREE.Vector3();
-    let rex = null, rexP = null, rexPm = null, rexCorpse = null, bunkP = null, nukeP = null, rockP = null, rexArmed = 0, rexRaf = 0, rexLast = 0, rexHud = null, rexCall = null, spudP = null, spudHeld = false, spudCd = 0;
+    let rex = null, rexP = null, rexPm = null, rexCorpse = null, bunkP = null, nukeP = null, rockP = null, fireP = null, beacP = null, rexArmed = 0, rexRaf = 0, rexLast = 0, rexHud = null, rexCall = null, spudP = null, spudHeld = false, spudCd = 0;
     // (with friends: rexRole "host" runs it, "guest" has joined someone else's, "" neither; rexFid the fight; rexOut: wrecked; rexGhost: and floating about)
     let rexRole = "", rexFid = "", rexHost = null, rexNetAt = 0, rexHeard = 0, rexOut = false, rexGhost = false, rexInvited = "", rexInvitedAt = 0;
     const spuds = [], rexCam = { d: 0, shake: 0 }, rexGuests = new Map(), rexSeen = new Set(), rexHeardOf = new Map();
@@ -22540,6 +22563,8 @@ const handle = async (m, post) => {
     const upOff = q => q && q !== car ? q.y - m.groundAt(q.x, q.z) : 0;
     // the choppa: the town's helicopter (not the golden one)
     const choppaOf = () => planes.find(P => P.heli && !P.gold) || planes.find(P => P.heli);
+    // racing for it: told to get to the choppa, not in one yet, nuke not up
+    const racing = () => !!rex?.mum && !!rex.choppa && !rex.nuke && !inChoppa() && !rexOut;
     // the invite: shared (a phone's share sheet) or copied, as the race's is
     const rexInvite = async () => { const u = new URL(location.href); u.search = ""; u.hash = ""; u.searchParams.set("rex", "1"); const nm = String(playerName() || "").trim().slice(0, 16); if (nm) u.searchParams.set("from", nm);
       const url = u.href, text = `${nm || "I"} ${nm ? "needs" : "need"} a hand taking down a T-rex in Inverloch! Open this and you'll be in a car next to it.`;
@@ -22580,16 +22605,17 @@ const handle = async (m, post) => {
       if (txt !== nukeWay) { nukeWay = txt; el.querySelector("span").textContent = txt; }
       const a = rexWrap(Math.atan2(to[0] - me.x, to[1] - me.z) - (F.yaw + Math.PI)); if (Math.abs(a - nukeTurn) > 0.03) { nukeTurn = a; el.querySelector("i").style.transform = `rotate(${(-a).toFixed(3)}rad)`; } };
     // the parts, made the first time: the T-rex and Mumma (8 parts each), the spuds in flight, the bunker and the nuke
-    const rexMake = () => { if (rexP) return true; try { rexP = m.addParts(townRexParts().map(q => ({ ...q, matrix: NONE.slice() }))); spudP = m.addParts(Array.from({ length: REX_SPUDS }, () => ({ ...townSpudShot(), matrix: NONE.slice() }))); rockP = m.addParts(Array.from({ length: REX_SPUDS }, () => ({ ...townRocketShot(), matrix: NONE.slice() }))); return true; } catch (e) { console.warn("The T-rex couldn't be made", e); rexP = null; return false; } };
+    const rexMake = () => { if (rexP) return true; try { rexP = m.addParts(townRexParts().map(q => ({ ...q, matrix: NONE.slice() }))); spudP = m.addParts(Array.from({ length: REX_SPUDS }, () => ({ ...townSpudShot(), matrix: NONE.slice() }))); rockP = m.addParts(Array.from({ length: REX_SPUDS }, () => ({ ...townRocketShot(), matrix: NONE.slice() })));
+      fireP = m.addParts(townFireParts().map(q => ({ ...q, matrix: NONE.slice() }))); beacP = m.addParts([0, 1].map(() => ({ ...townBeaconParts()[0], matrix: NONE.slice() }))); return true; } catch (e) { console.warn("The T-rex couldn't be made", e); rexP = null; return false; } };
     const mumMake = () => { if (rexPm) return true; try { rexPm = m.addParts(townRexParts(true).map(q => ({ ...q, matrix: NONE.slice() }))); return true; } catch (e) { console.warn("Mumma T-rex couldn't be made", e); return false; } };
     const nukeMake = () => { try { if (!bunkP) bunkP = m.addParts(townBunkerParts().map(q => ({ ...q, matrix: NONE.slice() }))); if (!nukeP) nukeP = m.addParts(townNukeParts().map(q => ({ ...q, matrix: NONE.slice() }))); return true; } catch (e) { console.warn("The nuke couldn't be made", e); return false; } };
     const hideAllOf = (P, n) => { if (P) for (let i = 0; i < n; i++) P.setMatrix(i, NONE.slice()); };
-    const rexHide = () => { hideAllOf(rexP, 8); hideAllOf(rexPm, 8); hideAllOf(spudP, REX_SPUDS); hideAllOf(rockP, REX_SPUDS); hideAllOf(bunkP, 2); hideAllOf(nukeP, 6); spuds.length = 0; rexCorpse = null; };
+    const rexHide = () => { hideAllOf(rexP, 8); hideAllOf(rexPm, 8); hideAllOf(spudP, REX_SPUDS); hideAllOf(rockP, REX_SPUDS); hideAllOf(fireP, 1); hideAllOf(beacP, 2); hideAllOf(bunkP, 2); hideAllOf(nukeP, 6); spuds.length = 0; rexCorpse = null; };
     const rexFwd = (R = rex) => [Math.sin(R.h), Math.cos(R.h)];
     const rexNew = (x, z, h, host, mum = false) => { const s = mum ? REX_S * MUM_K : REX_S, base = mum ? REX_HP * 2 : REX_HP;
-      return { x, z, h, tx: x, tz: z, th: h, nv: 0, host, mum, s, k: s / REX_S, base, hp: base, maxHp: base, me: 100, st: "rise", t: 0, live: true, phase: mum ? 3 : 1, cd: mum ? { bite: 1.2, stomp: 2.5, charge: 3, tail: 1.5 } : { bite: 1.5, stomp: 3, charge: 4, tail: 2 },
+      return { x, z, h, tx: x, tz: z, th: h, nv: 0, host, mum, s, k: s / REX_S, base, hp: base, maxHp: base, me: 100, st: "rise", t: 0, live: true, phase: mum ? 3 : 1, cd: mum ? { bite: 1.2, stomp: 2.5, charge: 3, tail: 1.5, breath: 2, leap: 4 } : { bite: 1.5, stomp: 3, charge: 4, tail: 2, breath: 99, leap: 99 },
         walk: 0, v: 0, far: 0, meCd: 0, ramCd: 0, n: 1, nuke: "", nukeT: 0, bunker: null, lost: false,
-        pose: { pitch: 0, roll: 0, neck: 0, yaw: 0, jaw: 0, tail: 0, tailP: 0, legL: 0, legR: 0, liftL: 0, liftR: 0, rise: -9, sink: 0 }, ring: null, glow: 0 }; };
+        pose: { pitch: 0, roll: 0, neck: 0, yaw: 0, jaw: 0, tail: 0, tailP: 0, legL: 0, legR: 0, liftL: 0, liftR: 0, rise: -9, sink: 0, jump: 0 }, ring: null, glow: 0 }; };
     // a new state: what it was doing is forgotten (the host changes it, and tells everyone; a friend changes it when told)
     const rexEnter = (st, t = 0) => { const R = rex; R.st = st; R.t = t; R.hitMe = false; R.hitTg = false; R.slam = false; R.roared = false; R.down = false; if (R.host) rexSync(true); };
     // where it comes up: about 60 m off the way you're looking (past the car, so you see it come up). Best with nothing in the way; else
@@ -22653,7 +22679,7 @@ const handle = async (m, post) => {
       rexArmed = rexMs(); rexStep = 0; rexLoop(); };
     let rexStep = 0, rexChop = false;
     // a win, for everyone in on it: Mumma down, fireworks round her and round you, a fanfare, the count of wins, and ghosts back
-    const rexWon = () => { rexHudShow(); rexSay("VICTORY!", 3600); snd.roar?.(0.7); spudBtn.hidden = true; spudHeld = false; rexArmed = 0; nukeBtnShow(false);
+    const rexWon = () => { rexHudShow(); rexSay("VICTORY!", 3600); snd.roar?.(0.7); setTimeout(() => snd.say?.("I'll be back."), 900);  // (Ash, 26 November 2026: "at the end if you kill mumma say I'll be back") spudBtn.hidden = true; spudHeld = false; rexArmed = 0; nukeBtnShow(false);
       let wins = 1; try { wins = (+localStorage.getItem("anRexWins") || 0) + 1; localStorage.setItem("anRexWins", String(wins)); } catch {}
       const n = rexRole === "host" ? 1 + rexGuests.size : rex?.nAll || rexCount(); ghostOff(false);
       toast(`☢️🎉 Boom! ${n > 1 ? `The ${n} of you took` : "You took"} down Mumma T-rex and saved Inverloch!${wins > 1 ? ` That's ${wins} wins.` : ""}`, 7000, true);
@@ -22662,9 +22688,11 @@ const handle = async (m, post) => {
         gPop(x + (Math.random() - 0.5) * (near ? 40 : 20), m.groundAt(x, z) + (near ? 40 : 14) + Math.random() * 8, z + (Math.random() - 0.5) * (near ? 40 : 20)); snd.whoosh(); }, 2400 + i * 350); };
     // a hit on you: knocked about, the car hopping (and spinning, for a big one). Mumma's hit twice as hard. Wrecked, you're out: a ghost
     // till it's over, unless no one's left, when the T-rex wins
-    const meHit = (dmg, big, why) => { if (!rex || !rex.live || rex.meCd > 0 || !fighting()) return; dmg *= rex.mum ? 2 : 1; rex.me = Math.max(0, rex.me - dmg); rex.meCd = 0.9; rexCam.shake = Math.max(rexCam.shake, big ? 1.1 : 0.7);
+    const meHit = (dmg, big, why) => { if (!rex || !rex.live || rex.meCd > 0 || !fighting()) return; dmg *= rex.mum ? 2 : 1; if (racing()) dmg *= RACE_HIT; rex.me = Math.max(0, rex.me - dmg); rex.meCd = 0.9; rexCam.shake = Math.max(rexCam.shake, big ? 1.1 : 0.7);
       snd.thud(1.6); snd.crunch?.(); const q = meNow(); if (q) fxBurst(q, false);
-      if (veh === "car") { car.v = -Math.max(4, Math.abs(car.v) * 0.3) * (big ? 2 : 1); if (!car.trick && !car.flip) car.trick = { t: 0, len: big ? 1 : 0.6, high: big ? 2.8 : 1.4, spin: big, hit: true }; }
+      // (racing for the choppa: knocked about, but not sent backwards, so you can still get there)
+      if (veh === "car" && racing()) { car.v *= 0.6; if (!car.trick && !car.flip) car.trick = { t: 0, len: 0.5, high: big ? 1.6 : 1, spin: false, hit: true }; }
+      else if (veh === "car") { car.v = -Math.max(4, Math.abs(car.v) * 0.3) * (big ? 2 : 1); if (!car.trick && !car.flip) car.trick = { t: 0, len: big ? 1 : 0.6, high: big ? 2.8 : 1.4, spin: big, hit: true }; }
       else if (q) q.v *= 0.4;  // (the choppa: knocked, and slowed right down)
       rexHud?.classList.remove("hurt"); void rexHud?.offsetWidth; rexHud?.classList.add("hurt"); if (why) toast(why, 1600);
       if (rex.me > 0) return; rexSay("WRECKED!", 2600, true); if (veh === "car") car.trick = { t: 0, len: 1.3, high: 3.4, spin: true, hit: true }; rexOut = true; spudBtn.hidden = true; spudHeld = false;
@@ -22678,9 +22706,9 @@ const handle = async (m, post) => {
       if (R.myHits === 5 || R.myHits === 12) rexSay("BARELY A SCRATCH!", 1100, true);
       if (R.myHits >= CHOPPA_HITS && !R.choppa) choppaCall(); };
     const choppaCall = () => { const R = rex, H = choppaOf(); R.choppa = true; hudK = ""; rexSay("THIS ISN'T WORKING…", 1500, true); snd.roar?.(0.5);
-      setTimeout(() => { if (rex === R && R.live && !R.nuke) { rexSay("GET TO THE CHOPPA!", 3200, true); rexCam.shake = Math.max(rexCam.shake, 0.6); } }, 1500);
+      setTimeout(() => { if (rex === R && R.live && !R.nuke) { rexSay("GET TO THE CHOPPA!", 3200, true); rexCam.shake = Math.max(rexCam.shake, 0.6); snd.say?.("Get to the choppa!"); } }, 1500);
       toast(`💪 "This isn't working… GET TO THE CHOPPA!" Your car's barely scratching her. ${H ? "The GPS is on to the helicopter: get out, get in, and give her the rockets." : "Find a helicopter and give her the rockets."} She's coming after you!`, 8000, true);
-      if (H) try { T.gps?.goTo?.(H.x, H.z, "The choppa"); } catch {} };
+      if (H) try { T.gps?.goTo?.(H.x, H.z, "The choppa"); } catch {} if (rexRole === "guest") rexSend(["chop", rexFid], rexHost); R.choppaNear = false; };
     const rexHurt = (dmg, x, y, z, flash = 1, fromCar = false) => { if (fromCar && rex?.mum) { dmg *= MUM_CAR; carHit(); } if (!rex || !rex.live || rex.nuke || (!rex.mum && rex.st === "dead")) return; rex.glow = Math.max(rex.glow, flash); snd.thud(1.1 + dmg / 20);
       for (let i = 0; i < 6; i++) fxAdd(x, y, z, (Math.random() - 0.5) * 8, 3 + Math.random() * 5, (Math.random() - 0.5) * 8, 0.5 + Math.random() * 0.3);
       if (rexRole === "guest") { rexSend(["hit", rexFid, r2(dmg)], rexHost); return; }
@@ -22721,15 +22749,17 @@ const handle = async (m, post) => {
       if (R.host) { R.live = false; R.phase = 3; rexEnter("dead"); rexWon(); } };
     // who it's after (the host decides): the nearest of the host (in the hotrod) and the friends who've joined, still in a car. Mumma's
     // after anyone still in: in a car, in the choppa or on foot
-    const rexTarget = () => { if (!rex) return null; const c = []; if (stillIn() && rexRole === "host") { const q = meNow(); c.push(q ? { x: q.x, z: q.z, h: q.h, dir: q.dir ?? q.h, v: q.v || 0 } : { x: F.pos.x, z: F.pos.z, h: F.yaw + Math.PI, v: 0 }); }
-      if (rexGuests.size) { const L = T.peers?.list?.() || []; for (const [id, g] of rexGuests) { if (g.out) continue; const q = L.find(v => v.id === id); if (q && q.x != null && (/^(car|gold|hotrod|bus)$/.test(q.k) || (rex.mum && q.k !== "ghost"))) c.push({ x: q.x, z: q.z, h: q.h || 0, dir: q.h || 0, v: 0, id }); } }
+    const rexTarget = () => { if (!rex) return null; const c = []; if (stillIn() && rexRole === "host") { const q = meNow(); c.push(q ? { x: q.x, z: q.z, h: q.h, dir: q.dir ?? q.h, v: q.v || 0, race: racing() } : { x: F.pos.x, z: F.pos.z, h: F.yaw + Math.PI, v: 0, race: racing() }); }
+      if (rexGuests.size) { const L = T.peers?.list?.() || []; for (const [id, g] of rexGuests) { if (g.out) continue; const q = L.find(v => v.id === id); if (q && q.x != null && (/^(car|gold|hotrod|bus)$/.test(q.k) || (rex.mum && q.k !== "ghost"))) { const now = rexMs(); if (!g.lp || now - g.lp[2] > 400) { if (g.lp && now - g.lp[2] < 2000) g.v = Math.min(60, Math.hypot(q.x - g.lp[0], q.z - g.lp[1]) / ((now - g.lp[2]) / 1000)); g.lp = [q.x, q.z, now]; } }  // (how fast they're going, from where they were)
+          c.push({ x: q.x, z: q.z, h: q.h || 0, dir: q.h || 0, v: g.v || 0, id, race: !!g.choppa && rex.mum && !/heli|plane/.test(q.k) }); } }
       let best = null, bd = Infinity; for (const q of c) { const d = Math.hypot(q.x - rex.x, q.z - rex.z); if (d < bd) { bd = d; best = q; } } return best; };
     // a T-rex (or Mumma, or the T-rex's body) where it stands (life size x its scale), each part about its joint
-    const rexDraw = (R, P) => { const p = R.pose, J = TOWN_REX, s = R.s, gy = m.groundAt(R.x, R.z) + (p.rise + p.sink) * s;
+    const rexDraw = (R, P) => { const p = R.pose, J = TOWN_REX, s = R.s, gy = m.groundAt(R.x, R.z) + (p.rise + p.sink) * s + (p.jump || 0);
       RX.compose(RV.set(R.x, gy, R.z), Q.setFromEuler(E.set(0, R.h, 0, "YXZ")), V.set(s, s, s));
       RB.copy(RX).multiply(RT.makeTranslation(0, J.hipL[1], J.hipL[2])).multiply(RQ.makeRotationFromEuler(E.set(p.pitch, 0, p.roll, "YXZ"))).multiply(RT.makeTranslation(0, -J.hipL[1], -J.hipL[2]));
       P.setMatrix(0, RB.elements.slice()); P.setMatrix(6, RB.elements.slice());
       RH.copy(RB).multiply(RT.makeTranslation(...J.neck)).multiply(RQ.makeRotationFromEuler(E.set(p.neck, p.yaw, 0, "YXZ"))); P.setMatrix(1, RH.elements.slice());
+      if (!R.corpse) { RV.set(0, -0.25, 1.75).applyMatrix4(RH); R.mouth = [RV.x, RV.y, RV.z]; const e = RH.elements, l = Math.hypot(e[8], e[9], e[10]) || 1; R.mdir = [e[8] / l, e[9] / l, e[10] / l]; }
       P.setMatrix(2, RH.clone().multiply(RT.makeTranslation(...J.jaw)).multiply(RQ.makeRotationX(p.jaw)).elements);
       const legBase = R.st === "dead" || R.corpse ? RB : RX;
       P.setMatrix(3, legBase.clone().multiply(RT.makeTranslation(J.hipL[0], J.hipL[1] + p.liftL, J.hipL[2])).multiply(RQ.makeRotationX(p.legL)).elements);
@@ -22756,12 +22786,32 @@ const handle = async (m, post) => {
       const rr = t < 2.6 ? 10 + 500 * up(t / 2.6) : 0; nukeP.setMatrix(5, rr > 0 ? RT.compose(RV.set(x, y + 0.3, z), Q.identity(), V.set(rr, 1 + rr * 0.05, rr)).elements.slice() : NONE.slice());
       if (t > 14) { hideAllOf(nukeP, 6); R.nuke = "done"; } };
     const rexWrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+    // where she lands when she leaps over you: ahead of you along your way, further the faster you're going (on dry ground in the map)
+    const leapSpot = tg => { const dir = tg.dir ?? tg.h, ahead = 18 + Math.max(12, tg.v || 22) * 0.9;
+      for (const k of [1, 0.75, 1.3, 0.5]) { const x = tg.x + Math.sin(dir) * ahead * k, z = tg.z + Math.cos(dir) * ahead * k; if (inside(x, z) && ground(x, z) - m.groundAt(x, z) < 0.5) return [x, z]; } return null; };
+    // the fire breath: out of her mouth along her head, flickering; it burns you if you're in it (a hit each 0.9 s you stay in)
+    const fireDraw = (R, me, dt) => { if (!fireP) return; const on = R.st === "breath" && R.t > 0.5 && R.t < 2.4 && R.live && !!R.mouth;
+      if (!on) { if (R.fireOn) { R.fireOn = false; fireP.setMatrix(0, NONE.slice()); } return; } R.fireOn = true;
+      const s = R.s, [mx, my, mz] = R.mouth, [ux, uy, uz] = R.mdir, grow = Math.min(1, (R.t - 0.5) / 0.35) * Math.min(1, (2.4 - R.t) / 0.25), L = 12 * s * grow, W = 4.5 * s * (0.88 + Math.random() * 0.24) * Math.max(0.3, grow);
+      fireP.setMatrix(0, RT.compose(RV.set(mx, my, mz), Q.setFromEuler(E.set(-Math.atan2(uy, Math.hypot(ux, uz)), Math.atan2(ux, uz), Math.random() * 6, "YXZ")), V.set(W, W, L)).elements.slice());
+      if (Math.random() < dt * 40) { const k = 0.3 + Math.random() * 0.7; fxAdd(mx + ux * L * k, my + uy * L * k, mz + uz * L * k, (Math.random() - 0.5) * 8, 2 + Math.random() * 5, (Math.random() - 0.5) * 8, 0.7); }
+      if (me) { const vx = me.x - mx, vy = me.y + 1 - my, vz = me.z - mz, al = vx * ux + vy * uy + vz * uz;
+        if (al > 0 && al < L && Math.hypot(vx - ux * al, vy - uy * al, vz - uz * al) < 2 + al * 0.13) meHit(10, false, "🔥 Fire breath!"); } };
+    // the yellow arrow over the boss (bigger the further off you are, so it's always there to see), and one over the choppa while you're
+    // racing for it
+    const beaconDraw = R => { if (!beacP) return; const t = rexMs(), bob = Math.sin(t / 260), spin = Q.setFromEuler(E.set(0, t / 700, 0, "YXZ")).clone();
+      if (R.live && R.st !== "dead") { const p = R.pose, s = R.s, y = m.groundAt(R.x, R.z) + (p.rise + p.sink) * s + (p.jump || 0) + 6.4 * s, sz = Math.max(1.6 * s, Math.hypot(F.pos.x - R.x, F.pos.z - R.z) * 0.06);
+        beacP.setMatrix(0, RT.compose(RV.set(R.x, y + bob * 0.15 * sz, R.z), spin, V.set(sz * 0.7, sz, sz * 0.7)).elements.slice()); R.beac = true; }
+      else if (R.beac) { R.beac = false; beacP.setMatrix(0, NONE.slice()); }
+      const H = racing() ? choppaOf() : null;
+      if (H) { const sz = Math.max(5, Math.hypot(F.pos.x - H.x, F.pos.z - H.z) * 0.07); beacP.setMatrix(1, RT.compose(RV.set(H.x, H.y + 5.5 + bob * 0.15 * sz, H.z), spin, V.set(sz * 0.7, sz, sz * 0.7)).elements.slice()); R.beacH = true; }
+      else if (R.beacH) { R.beacH = false; beacP.setMatrix(1, NONE.slice()); } };
     // one frame of the fight. The host moves it and decides what it does next; a friend's copy glides to where the host says and does the
     // same moves. Everyone checks their own car against its bites, stomps, charges and tail, and their own rams and spuds against it
     const rexTick = dt => { const R = rex, p = R.pose, s = R.s, K = R.k, host = R.host; R.t += dt; R.meCd = Math.max(0, R.meCd - dt); R.ramCd = Math.max(0, R.ramCd - dt); R.glow = Math.max(0, R.glow - dt * 4); for (const k in R.cd) R.cd[k] -= dt;
       if (R.nuke === "away") R.nukeT += dt;
       if (!host) { const k = Math.min(1, dt * 6); R.x += (R.tx - R.x) * k; R.z += (R.tz - R.z) * k; R.h = rexWrap(R.h + rexWrap(R.th - R.h) * k);
-        if (R.live && rexMs() - rexHeard > 6000) { rexGuestEnd("lost"); return; } }
+        if (R.live && rexMs() - rexHeard > 10000) { rexGuestEnd("lost"); return; } }  // (10 s: 6 dropped a friend in a test with a busy host)
       // the T-rex's body, once Mumma's up: lying there, sinking after a few seconds, then gone
       if (rexCorpse) { const B = rexCorpse; B.t += dt; B.pose.roll = Math.PI / 2; if (B.t > 4) B.pose.sink = -Math.min(5, (B.t - 4) * 1.8); if (B.t > 7.5) { hideAllOf(rexP, 8); rexCorpse = null; } else rexDraw(B, rexP); }
       const me = fighting() ? meNow() : null, tg = host ? rexTarget() : me, [fx, fz] = rexFwd(), dx = tg ? tg.x - R.x : 0, dz = tg ? tg.z - R.z : 0, d = Math.hypot(dx, dz), ang = tg ? rexWrap(Math.atan2(dx, dz) - R.h) : 0, fast = R.mum ? 1.6 : R.phase === 3 ? 1.35 : R.phase === 2 ? 1.15 : 1;
@@ -22780,11 +22830,15 @@ const handle = async (m, post) => {
         case "rise": { const f = Math.min(1, R.t / 0.9); p.rise = -9 * (1 - f) * (1 - f); to({ pitch: -0.15, neck: -0.5, jaw: 0.2 }); if (f >= 1) { p.rise = 0; go("roar"); } break; }
         case "roar": { stand(); to({ pitch: -0.12, neck: -0.65, jaw: 0.85, tail: 0, tailP: -0.15 }, 5); look(); if (R.t < 0.1 && !R.roared) { R.roared = true; snd.roar?.(1); rexCam.shake = Math.max(rexCam.shake, dm < 150 * K ? 0.6 * K : 0); }
           if (R.t > 1.6) go(R.won || !R.live ? "leave" : "walk"); break; }
-        case "walk": { to({ pitch: 0.04, neck: 0.12, jaw: 0.15 + 0.1 * Math.sin(R.t * 3), tailP: 0 }, 3); look(); walk(d > 14 * K ? (R.mum && d > 60 * K ? 26 : 12 * fast) : d > 8 * K ? 6 * K : 0);  // (Mumma runs to catch you up)
+        case "walk": { const race = R.mum && !R.nuke && !!tg?.race;  // (racing you for the choppa: she keeps up, up to 46 m/s)
+          to({ pitch: 0.04, neck: 0.12, jaw: 0.15 + 0.1 * Math.sin(R.t * 3), tailP: 0 }, 3); look(); walk(d > 14 * K ? (race ? Math.min(46, 14 + d * 0.5) : R.mum && d > 60 * K ? 26 : 12 * fast) : d > 8 * K ? 6 * K : 0);  // (Mumma runs to catch you up)
           if (!host) break; if (!tg) { go("leave"); break; }
           // too far away: it gives up after six seconds of everyone being 320 m off (not Mumma, waiting on the nuke: she's not giving up)
           R.far = d > 320 && !R.nuke && !R.mum ? R.far + dt : 0; if (R.far > 6) { rexOver("💨 You outran the T-rex. Get out and back in the hotrod to face it again."); break; }
           const a = Math.abs(ang);
+          // racing for the choppa: over you and down in front with a stomp, or fire
+          if (race && R.cd.leap <= 0 && d > 10 * K && d < 80 * K) { const L = leapSpot(tg); if (L) { R.from = [R.x, R.z]; R.land = L; go("leap"); break; } }
+          if (race && R.cd.breath <= 0 && d > 14 * K && d < 42 * K && a < 0.9) { go("breath"); break; }
           if (R.phase >= 2 && R.cd.charge <= 0 && d > 26 * K && d < 95 * K && a < 0.6) { R.lock = Math.atan2(tg.x + Math.sin(tg.dir ?? tg.h) * tg.v * 0.8 - R.x, tg.z + Math.cos(tg.dir ?? tg.h) * tg.v * 0.8 - R.z); go("charge"); }
           else if (R.phase === 3 && R.cd.tail <= 0 && d < 20 * K && a > 2.1) { R.spin = Math.sign(ang) || 1; go("tail"); }
           else if (R.cd.stomp <= 0 && d < 15 * K) go("stomp");
@@ -22808,6 +22862,26 @@ const handle = async (m, post) => {
         case "tail": { stand(); const f = Math.min(1, R.t / 0.9); if (host) R.h = rexWrap(R.h + R.spin * dt * 7 * (f < 0.8 ? 1 : 0)); to({ tail: -(R.spin || 1) * 0.6, pitch: 0.1 }, 8);
           if (!R.hitMe && me && R.t > 0.3 && R.t < 0.7) { const tx = R.x - Math.sin(R.h) * 5 * s, tz = R.z - Math.cos(R.h) * 5 * s; if (Math.hypot(me.x - tx, me.z - tz) < 6 * K && upOff(me) < 3 * s) { R.hitMe = true; meHit(14, true, "Tail whipped!"); } }
           if (R.t > 1.2) { R.cd.tail = R.mum ? 2.5 : 4; go("walk"); } break; }
+        // fire breath: she rears back, then breathes a long flame for two seconds, turning after you slowly (each player's copy aims the
+        // head down at their own car, so the flame each sees is the one that can hit them)
+        case "breath": { stand(); look(); if (host && tg) turn(Math.atan2(dx, dz), R.t < 0.5 ? 2.2 : 0.7);
+          const dd = me ? dm : d, aimDown = bsClamp(Math.atan2(3.9 * s, Math.max(4 * s, dd - 5 * s)) - 0.12, 0.1, 0.95);
+          if (R.t < 0.5) { to({ pitch: -0.2, neck: -0.6, jaw: 0.5 }, 6); if (R.t < 0.05 && !R.roared) { R.roared = true; snd.roar?.(0.5); if (rexRole && !rexGhost) rexSay("FIRE!", 1100, true); } }
+          else if (R.t < 2.4) { to({ pitch: 0.12, neck: aimDown, jaw: 1.15 }, 8); if (Math.random() < dt * 2.5) snd.whoosh(); }
+          else to({ pitch: 0.04, neck: 0.12, jaw: 0.2 }, 4);
+          if (R.t > 2.8) { R.cd.breath = 5; go("walk"); } break; }
+        // the leap: a crouch, up over you (about six times her hip height... well, 31 m for Mumma) and down in front of you, a stomp ring
+        // out from where she lands, then a roar
+        case "leap": { const T0 = 0.35, T1 = 1.65;
+          if (R.t < T0) { stand(); p.jump = 0; to({ pitch: -0.25, neck: -0.4, jaw: 0.6, legL: 0.35, legR: 0.35 }, 10); if (R.t < 0.05 && !R.roared) { R.roared = true; snd.roar?.(0.7); if (rexRole && !rexGhost) rexSay("INCOMING!", 1100, true); } }
+          else if (R.t < T1) { const f = (R.t - T0) / (T1 - T0); p.jump = 4 * 6 * s * f * (1 - f); to({ pitch: 0.2, neck: 0.3, jaw: 0.4, legL: -0.6, legR: -0.4, liftL: 0.4, liftR: 0.4 }, 8);
+            if (host && R.from && R.land) { R.x = R.from[0] + (R.land[0] - R.from[0]) * f; R.z = R.from[1] + (R.land[1] - R.from[1]) * f; R.h = Math.atan2(R.land[0] - R.from[0], R.land[1] - R.from[1]); R.v = Math.hypot(R.land[0] - R.from[0], R.land[1] - R.from[1]) / (T1 - T0); } }
+          else { p.jump = 0; if (!R.slam) { R.slam = true; const lx = host ? R.x : R.tx, lz = host ? R.z : R.tz; R.ring = { x: lx, z: lz, r: 1, hit: false }; snd.thud(2.8); snd.roar?.(0.6);
+              rexCam.shake = Math.max(rexCam.shake, Math.max(0.4, 1.6 - dm / 80)); for (let k = 0; k < 22; k++) { const a2 = Math.random() * Math.PI * 2; fxAdd(lx + Math.sin(a2) * 4 * K, m.groundAt(lx, lz) + 0.4, lz + Math.cos(a2) * 4 * K, Math.sin(a2) * 12, 4 + Math.random() * 5, Math.cos(a2) * 12, 1.1); }
+              if (me && Math.hypot(me.x - lx, me.z - lz) < 4.5 * K && upOff(me) < 3 * s) meHit(24, true, "Squashed!");
+              if (host) { R.v = 0; if (tg) R.h = Math.atan2(tg.x - R.x, tg.z - R.z); } }
+            stand(); to({ pitch: 0.04, neck: -0.5, jaw: 0.9, legL: 0, legR: 0, liftL: 0, liftR: 0 }, 5); }
+          if (R.t > T1 + 0.9) { R.cd.leap = 6.5; go("walk"); } break; }
         case "dead": { R.v = 0; const f = Math.min(1, R.t / 1.4); p.roll = (Math.PI / 2) * f * f; p.pitch = ease(p.pitch, 0, dt * 3); p.neck = ease(p.neck, -0.3, dt * 2); p.jaw = ease(p.jaw, 0.7, dt * 2); p.tail = ease(p.tail, 0, dt * 2);
           if (f >= 1 && !R.down) { R.down = true; snd.thud(2.6); rexCam.shake = dm < 150 * K ? 1.3 : 0; for (let k = 0; k < 18; k++) { const a = Math.random() * Math.PI * 2; fxAdd(R.x + Math.sin(a) * 6 * K, m.groundAt(R.x, R.z) + 0.4, R.z + Math.cos(a) * 6 * K, Math.sin(a) * 9, 4 + Math.random() * 4, Math.cos(a) * 9, 1); } }
           // (the T-rex, not Mumma: the ground shakes, and up she comes)
@@ -22816,9 +22890,10 @@ const handle = async (m, post) => {
         case "leave": { R.far = 0; if (R.t < 0.1 && me && host) R.h = rexWrap(Math.atan2(R.x - me.x, R.z - me.z)); to({ pitch: 0.04, neck: 0.1, jaw: 0.1, yaw: 0 }, 3); walk(10, false);
           if (R.t > 5) p.sink = -Math.min(5, (R.t - 5) * 1.5); if (R.t > 8.5) rexGone(); break; } }
       if (!rex) return;
+      if (R.st !== "leap") p.jump = ease(p.jump || 0, 0, dt * 8);
       if (R.st !== "walk" && R.st !== "charge" && R.st !== "leave") p.tail = ease(p.tail, 0.08 * Math.sin(R.t * 2), dt * 2);
       // you and it bumping: it's solid (its hips, chest and tail root); hitting it at speed hurts it
-      if (me && me === car && R.live && R.st !== "rise" && R.st !== "dead") { const vx = Math.sin(me.dir ?? me.h) * me.v, vz = Math.cos(me.dir ?? me.h) * me.v;
+      if (me && me === car && R.live && R.st !== "rise" && R.st !== "dead" && (p.jump || 0) < 3) { const vx = Math.sin(me.dir ?? me.h) * me.v, vz = Math.cos(me.dir ?? me.h) * me.v;
         for (const [o, r] of [[1.0, 1.4], [2.3, 1.05], [-2.2, 0.8]]) { const cx = R.x + fx * o * s, cz = R.z + fz * o * s, ex = me.x - cx, ez = me.z - cz, e = Math.hypot(ex, ez) || 1e-3, rr = r * s + 1.7; if (e >= rr) continue;
           const nx = ex / e, nz = ez / e, vin = -(vx * nx + vz * nz) + R.v * Math.max(0, fx * nx + fz * nz);
           const ox = cx + nx * (rr + 0.05), oz = cz + nz * (rr + 0.05); if (fits(CAR, ox, oz, me.h)) { me.x = ox; me.z = oz; } else me.v = 0;
@@ -22845,7 +22920,7 @@ const handle = async (m, post) => {
         if (gone) { if (q.t <= 3) for (let k = 0; k < (q.rk ? 8 : 3); k++) fxAdd(q.x, q.y, q.z, (Math.random() - 0.5) * 6, 2 + Math.random() * 4, (Math.random() - 0.5) * 6, 0.45); spuds.splice(i, 1); } }
       if (rockP) for (let i = 0; i < REX_SPUDS; i++) { const q = spuds[i]; rockP.setMatrix(i, q?.rk ? RT.compose(RV.set(q.x, q.y, q.z), Q.setFromEuler(E.set(-Math.atan2(q.vy, Math.hypot(q.vx, q.vz)), Math.atan2(q.vx, q.vz), 0, "YXZ")), V.set(1.6, 1.6, 1.6)).elements.slice() : NONE.slice()); }
       if (spudP) for (let i = 0; i < REX_SPUDS; i++) { const q = spuds[i]; spudP.setMatrix(i, q && !q.rk ? RT.compose(RV.set(q.x, q.y, q.z), Q.setFromEuler(E.set(-Math.atan2(q.vy, Math.hypot(q.vx, q.vz)), Math.atan2(q.vx, q.vz), q.t * 9, "YXZ")), V.set(1.4, 1.4, 1.4)).elements.slice() : NONE.slice()); }
-      nukeDraw(dt); if (rex) rexDraw(R, R.mum ? rexPm : rexP); };
+      fireDraw(R, me, dt); nukeDraw(dt); if (rex) { rexDraw(R, R.mum ? rexPm : rexP); beaconDraw(R); } };
     // ---- joining someone else's fight
     // the card asking you in: "Ash is fighting a T-rex!", Join the fight or Not now (once a fight; gone after 20 s)
     let offerEl = null, offerT = 0;
@@ -22889,6 +22964,7 @@ const handle = async (m, post) => {
           if (rex.live && !rex.nuke) { rex.maxHp += rex.base * 0.6; rex.hp += rex.base * 0.6; } toast(`🦖 ${nm} has joined the T-rex fight!`, 3000, true); rexSync(true); } else rexGuests.get(id).out = false; }
       else if (k === "hit") { if (rexGuests.has(id) && rex.live) { const f = rexFwd(); rexHurt(Math.max(0, Math.min(40, +raw[2] || 0)), rex.x + f[0] * rex.s, m.groundAt(rex.x, rex.z) + 3 * rex.s, rex.z + f[1] * rex.s, 0.5); } }
       else if (k === "nuke") { if (rexGuests.has(id) && !rexGuests.get(id).out) { toast(`☢️ ${rexGuests.get(id).name} fired the nuke!`, 3000, true); nukeFire(); } }
+      else if (k === "chop") { const g = rexGuests.get(id); if (g) g.choppa = true; }
       else if (k === "out") { const g = rexGuests.get(id); if (g) { g.out = true; toast(`👻 ${g.name} is out!`, 2500, true); } } };
     // opened from an invite (?rex=1&from=Ash): straight into the fight when there's word of one
     C.rexArrive = from => { if (place !== "inv") return; rexInvited = from || "your friend"; rexInvitedAt = rexMs();
@@ -22912,10 +22988,15 @@ const handle = async (m, post) => {
         // into the choppa against Mumma: the button's Rockets, the GPS is done with, and how to fight her from up there
         const chop = !!(rex && rex.live && rex.mum && fighting() && inChoppa()); if (chop !== rexChop) { rexChop = chop; spudBtn.textContent = chop ? "Rockets" : "Spuds"; spudBtn.setAttribute("aria-label", chop ? "Fire rockets (L)" : "Fire the spud gun (L)");
           if (chop) { if (rex.choppa) try { T.gps?.stop?.(); } catch {} toast(touch ? "🚁 In the choppa! Hold Rockets to fire at Mumma. Keep above her head: she can bite you up to about 30 m up." : "🚁 In the choppa! Hold L to fire rockets at Mumma. Keep above her head: she can bite you up to about 30 m up.", 6000, true); } }
+        // nearly at the choppa (the GPS only gets you to the street): where it is, and the GPS off (the arrow over it does the rest)
+        if (rex && racing() && !rex.choppaNear) { const H = choppaOf(), q = meNow() || F.pos; if (H && Math.hypot(H.x - q.x, H.z - q.z) < 110) { rex.choppaNear = true; const at = String(H.home?.at || "");
+          rexSay(/behind/.test(at) ? "IT'S BEHIND THE HOUSE!" : "THERE'S THE CHOPPA!", 2400); try { T.gps?.stop?.(); } catch {}
+          toast(`🚁 The choppa's ${at || "just here"}. ${veh === "car" ? "Get out and run" : "Run"} round to it (the yellow arrow's over it) and get in!`, 7000, true); } }
         const meQ = meNow(); nukeBtnShow(!!(rex && rex.live && rex.nuke === "ready" && rex.bunker && fighting() && meQ && Math.hypot(meQ.x - rex.bunker[0], meQ.z - rex.bunker[1]) < 30 && upOff(meQ) < 40));
         if (nukeBtn && !nukeBtn.hidden && (F.keys.has("Digit0") || F.keys.has("Numpad0"))) nukeAsk();
-        // (the view a little further back and up while it's after you: 7 m put the view up in the trees)
-        rexHudShow(); nukeWayShow(); rexStack(false); rexCam.d = ease(rexCam.d, rex && rex.live && fighting() ? 3.5 * (rex.mum ? 1.6 : 1) : 0, dt * 1.5); rexCam.shake = Math.max(0, rexCam.shake - dt * 1.8);
+        // (the view a little further back and up while it's after you: 7 m put the view up in the trees. 5 m, and 8 for Mumma, higher up:
+    // Ash, 26 November 2026, "During the boss fight zoom the camera out a bit")
+        rexHudShow(); nukeWayShow(); rexStack(false); rexCam.d = ease(rexCam.d, rex && rex.live && fighting() ? 5 * (rex.mum ? 1.6 : 1) : 0, dt * 1.5); rexCam.shake = Math.max(0, rexCam.shake - dt * 1.8);
         if (rexArmed || rex || rexCam.d > 0.05 || rexCam.shake > 0) rexRaf = requestAnimationFrame(f); else { rexCam.d = 0; rexCam.shake = 0; } };
       rexRaf = requestAnimationFrame(f); };
     C.rexInfo = () => rex ? { x: rex.x, z: rex.z, h: rex.h, st: rex.st, hp: rex.hp, maxHp: rex.maxHp, me: rex.me, phase: rex.phase, live: rex.live, role: rexRole, n: rexCount(), mum: rex.mum, nuke: rex.nuke, bunker: rex.bunker, ghost: rexGhost, out: rexOut, hits: rex.myHits || 0, choppa: !!rex.choppa, inChoppa: inChoppa(), rockets: spuds.filter(q => q.rk).length } : rexArmed ? { armed: true } : null;  // (for checking)
@@ -23407,7 +23488,7 @@ const handle = async (m, post) => {
       const room = veh === "drone" && R6()?.floorAt(o.x, o.z, o.y) != null ? R6() : null;  // flying the drone indoors: the view stays in the room with it
       if (room) { D = Math.min(D, room.near(o.x, o.z)); while (D > 0.6 && room.floorAt(o.x + sx * D, o.z + sz * D, o.y) == null) D -= 0.3; }
       else if (veh === "drone" && R6() && o.y < R6().ceil + 1) while (D > 0.6 && R6().inHouse(o.x + sx * D, o.z + sz * D)) D -= 0.3;  // (just out of the door: the view comes out with it, not left behind the wall)
-      const px = o.x + sx * D, pz = o.z + sz * D, py0 = Math.max(o.y + (veh === "ride" ? RIDE_UP[ride.k] : veh === "car" ? (car.bus ? 3.4 : 1.5 + rexCam.d * 0.4) : critter ? 0.9 : veh === "drone" ? (room ? 0.55 : 1.0) : 2.4) - Math.sin(pitch) * D, critter ? surf(px, pz) + 0.5 : ground(px, pz) + 0.7);
+      const px = o.x + sx * D, pz = o.z + sz * D, py0 = Math.max(o.y + (veh === "ride" ? RIDE_UP[ride.k] : veh === "car" ? (car.bus ? 3.4 : 1.5 + rexCam.d * 0.5) : critter ? 0.9 : veh === "drone" ? (room ? 0.55 : 1.0) : 2.4) - Math.sin(pitch) * D, critter ? surf(px, pz) + 0.5 : ground(px, pz) + 0.7);
       const py = room && room.ceilAt(px, pz, o.y) != null ? Math.min(py0, room.ceilAt(px, pz, o.y) - 0.2) : py0;
       // the view rides with what you're in and only eases its place round it (Ash, 15 November 2026: "When flying the plane it's a bit
       // laggy/choppy": it used to ease after the plane itself, so at speed it fell back further on a slow frame than a quick one and
@@ -24015,7 +24096,7 @@ const handle = async (m, post) => {
     C.toGold = () => { const G = planes.find(P => P.gold); if (!G) return false; if (veh) leave(false);
       const sn = Math.sin(G.h), cs = Math.cos(G.h), dx = sn * 7 - cs * 5, dz = cs * 7 + sn * 5; T.tween = null;
       F.pos.x = G.x + dx; F.pos.z = G.z + dz; F.pos.y = ground(F.pos.x, F.pos.z) + (T.walk ? F.eye : 14); F.yaw = Math.atan2(dx, dz); F.pitch = T.walk ? -0.06 : -0.6; at = 0; return true; };
-    C.dispose = () => { rexEnd(); Object.entries(spudOn).forEach(([k, f]) => spudBtn.removeEventListener(k, f)); spudBtn.remove(); rexHud?.remove(); rexCall?.remove(); offerEl?.remove(); nukeBtn?.remove(); nukeFlash?.remove(); ghostVeil?.remove(); try { rexP?.remove(); rexPm?.remove(); spudP?.remove(); rockP?.remove(); bunkP?.remove(); nukeP?.remove(); } catch {} try { satMesh?.remove?.(); } catch {} try { autoMark?.remove?.(); } catch {} ezGo.remove(); ezL.remove(); ezR.remove(); upChip.remove(); unBtn.remove(); if (veh) leave(false); btn.onclick = null; btn.hidden = boostBtn.hidden = handBtn.hidden = flipBtn.hidden = true; plantBtn.remove(); plantMenu.remove(); gripBtn.remove(); pwBtn.remove(); tkBtn.remove(); flipBtn.removeEventListener("pointerdown", flipPress); F.hand = false; Object.entries(press).forEach(([k, f]) => boostBtn.removeEventListener(k, f)); Object.entries(handPress).forEach(([k, f]) => handBtn.removeEventListener(k, f));
+    C.dispose = () => { rexEnd(); Object.entries(spudOn).forEach(([k, f]) => spudBtn.removeEventListener(k, f)); spudBtn.remove(); rexHud?.remove(); rexCall?.remove(); offerEl?.remove(); nukeBtn?.remove(); nukeFlash?.remove(); ghostVeil?.remove(); try { rexP?.remove(); rexPm?.remove(); spudP?.remove(); rockP?.remove(); fireP?.remove(); beacP?.remove(); bunkP?.remove(); nukeP?.remove(); } catch {} try { satMesh?.remove?.(); } catch {} try { autoMark?.remove?.(); } catch {} ezGo.remove(); ezL.remove(); ezR.remove(); upChip.remove(); unBtn.remove(); if (veh) leave(false); btn.onclick = null; btn.hidden = boostBtn.hidden = handBtn.hidden = flipBtn.hidden = true; plantBtn.remove(); plantMenu.remove(); gripBtn.remove(); pwBtn.remove(); tkBtn.remove(); flipBtn.removeEventListener("pointerdown", flipPress); F.hand = false; Object.entries(press).forEach(([k, f]) => boostBtn.removeEventListener(k, f)); Object.entries(handPress).forEach(([k, f]) => handBtn.removeEventListener(k, f));
       document.removeEventListener("visibilitychange", hidden); document.body.classList.remove("bsdrive", "bsplane"); snd.dispose(); showKeys(null); try { for (const P of planes) P.parts.remove(); for (const G of owns) G.parts.remove(); ring.remove(); possumMesh?.remove(); poleMesh?.remove(); } catch {} };
     return C;
   }
