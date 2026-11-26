@@ -21913,7 +21913,7 @@ const handle = async (m, post) => {
           // (Boost no longer takes it back: it boosts while Drive for me keeps steering. Ash, 26 November 2026: "During drive for me, allow
           // the player to boost without breaking drive for me". Shift boosts too, unless it is held for the < and > keys)
           const myBoost = !!F.boost || (has("ShiftLeft", "ShiftRight") && !has("Comma", "Period"));
-          if (!rA && (Math.abs(thr) > 0.05 || Math.abs(str) > 0.05 || has("Space") || F.hand)) autoEnd(); else { const a = autoStep(dt); thr = a[0]; str = a[1]; boost = !!a[2] || (myBoost && a[0] >= 0); aHand = !!a[3];  // (not while it brakes for a bend or backs up: it would boost the wrong way)
+          if (!rA && (Math.abs(thr) > 0.05 || Math.abs(str) > 0.05 || has("Space") || F.hand)) autoEnd(); else { auto.userBoost = myBoost; const a = autoStep(dt); thr = a[0]; str = a[1]; boost = !!a[2] || (myBoost && a[0] >= 0); aHand = !!a[3];  // (not while it brakes for a bend or backs up: it would boost the wrong way)
             // (a click to drive there: the last 9 m straight on, no swinging round at the end. The GPS's Autodrive keeps its turn to face the
             // place. Ash, 25 November 2026: "Keep this for the gps autodrive but for drive me there don't pivot at the end")
             if (auto?.click && auto.rem < 9) { str = 0; aHand = false; } } }
@@ -22506,15 +22506,17 @@ const handle = async (m, post) => {
       const n = A.x.length;
       // where the car is along the way: the nearest point on the next few stretches, never back the way it came
       let best = Infinity, bi = A.i, bt = A.t;
-      for (let i = A.i; i < Math.min(n - 1, A.i + (A.hoon ? 12 : 5)); i++) { const ax = A.x[i], az = A.z[i], dx = A.x[i + 1] - ax, dz = A.z[i + 1] - az, L2 = dx * dx + dz * dz || 1;
+      for (let i = A.i; i < Math.min(n - 1, A.i + (A.hoon || A.userBoost ? 12 : 5)); i++) { const ax = A.x[i], az = A.z[i], dx = A.x[i + 1] - ax, dz = A.z[i + 1] - az, L2 = dx * dx + dz * dz || 1;
         const t = bsClamp(((car.x - ax) * dx + (car.z - az) * dz) / L2, i === A.i ? A.t : 0, 1), d = Math.hypot(car.x - ax - dx * t, car.z - az - dz * t); if (d < best - 0.01) { best = d; bi = i; bt = t; } }
       A.i = bi; A.t = bt;
       const at = A.s[bi] + ((A.s[bi + 1] ?? A.s[bi]) - A.s[bi]) * bt, total = A.s[n - 1], rem = total - at, toEnd = Math.hypot(A.x[n - 1] - car.x, A.z[n - 1] - car.z); A.rem = rem;
       const pt = d => { const sd = Math.min(total, at + d); let i = bi; while (i < n - 2 && A.s[i + 1] < sd) i++; const L = (A.s[i + 1] ?? A.s[i]) - A.s[i] || 1, f = bsClamp((sd - A.s[i]) / L, 0, 1), j = Math.min(i + 1, n - 1); return [A.x[i] + (A.x[j] - A.x[i]) * f, A.z[i] + (A.z[j] - A.z[i]) * f]; };
       if (A.sign && Math.hypot(A.sign.x - car.x, A.sign.z - car.z) < 7) A.sign.near = true; else if (A.sign?.near) { A.sign = null; ezShow(); }  // the turn it was asked for is behind it now
       // there (or as near as the way goes), or told to stop: brake to a stop, and it is yours again
-      const H = !!A.hoon && !car.bus;
-      if (A.done || rem < 1.6 || (rem < 7 && toEnd < 2.6)) { if (!A.done) { A.done = true; ezShow(); if (A.cruise) toast("That's as far as this street goes.", 2800); } if (Math.abs(v) < 0.6) { autoEnd(); return [0, 0]; } return [v > 0 ? -1 : 1, 0, 0, H && v > 4]; }
+      // (while you hold Boost it drives as the GPS's Autodrive does, flat out to the boost's top speed and braking in time for each corner,
+      // so the boost isn't braked away to its usual 50 km/h: Ash, 26 November 2026, "Boosting during drive for me keeps getting cancelled")
+      const H = (!!A.hoon || !!A.userBoost) && !car.bus;
+      if (A.done || rem < 1.6 || (rem < 7 && toEnd < 2.6)) { if (!A.done) { A.done = true; ezShow(); if (A.cruise) toast("That's as far as this street goes.", 2800); } if (Math.abs(v) < 0.6) { autoEnd(); return [0, 0]; } return [v > 0 ? -1 : 1, 0, 0, !!A.hoon && !car.bus && v > 4]; }
       const big = car.bus ? 1.6 : 1, [tx, tz] = pt(bsClamp(4.5 + Math.abs(v) * 0.75, 5, H ? 26 : 15) * big), e = wrap(Math.atan2(tx - car.x, tz - car.z) - car.h);
       // backing off something it has run into: a second or so in reverse, the wheel the other way, then on again
       if (A.rev > 0) { A.rev -= dt; return [-0.8, bsClamp(A.revE * 2.4, -1, 1)]; }
@@ -22523,7 +22525,7 @@ const handle = async (m, post) => {
       const [ax, az] = pt(10 * big), [bx, bz] = pt(24 * big), bend = rem > 12 ? Math.abs(wrap(Math.atan2(bx - ax, bz - az) - car.h)) : 0;
       let vt = Math.max(4.2, AUTO_V / (1 + 2.2 * bend)) / (car.bus ? 1.3 : 1), hoonB = false, hoonH = false;
       if (H) { // flat out, but slow enough at each corner coming to get round it: looked for up to 90 m ahead, braking at HOON_A
-        const top = R.carTop / 3.6 * (car.gold ? GOLD : 1) * (C.autoTil > performance.now() ? 2.4 * (C.spdK || 1) : 1); vt = top; let worst = 0;  /* (the race's Autodrive cannon: aiming for 2.4 times as fast; 1.6 till 24 November 2026) */
+        const top = (A.hoon ? R.carTop : R.carBoostTop) / 3.6 * (car.gold ? GOLD : 1) * (C.autoTil > performance.now() ? 2.4 * (C.spdK || 1) : 1); vt = top; let worst = 0;  /* (the race's Autodrive cannon: aiming for 2.4 times as fast; 1.6 till 24 November 2026) */
         for (const d of [8, 20, 34, 50, 70, 90]) { if (d > rem - 6) break; const [px, pz] = pt(d), [qx, qz] = pt(d + 12), b = Math.abs(wrap(Math.atan2(qx - px, qz - pz) - car.h)); if (d <= 20) worst = Math.max(worst, b);
           vt = Math.min(vt, Math.sqrt((Math.max(6.5, top / (1 + 2.6 * b))) ** 2 + 2 * HOON_A * Math.max(0, d - 6))); }
         vt = Math.min(vt, Math.sqrt(2 * HOON_A * Math.max(0, rem - 3)) + 1.2); if (Math.abs(e) > 0.8) vt = Math.min(vt, 6.5);
@@ -22531,7 +22533,7 @@ const handle = async (m, post) => {
         // sharp corner quick, so the back swings round
         hoonB = worst < 0.12 && Math.abs(e) < 0.12 && v > 4 && v < vt - 1.5 && rem > 80;
         A.hc = Math.max(0, (A.hc || 0) - dt); A.ht = Math.max(0, (A.ht || 0) - dt);
-        if (!A.ht && !A.hc && v > 9 && worst > 0.9 && Math.abs(e) > 0.35 && rem > 25) { A.ht = 0.32; A.hc = 1.8; }
+        if (A.hoon && !A.ht && !A.hc && v > 9 && worst > 0.9 && Math.abs(e) > 0.35 && rem > 25) { A.ht = 0.32; A.hc = 1.8; }
         hoonH = A.ht > 0; }
       else { vt = Math.min(vt, Math.sqrt(2 * 2.4 * Math.max(0, rem - 1.2)) + 0.9); if (Math.abs(e) > 0.7) vt = Math.min(vt, 3.8); }
       let go = bsClamp((vt - v) * (H ? 1.4 : 0.6), -1, 1); if (go < 0 && v < 0.8) go = 0;
