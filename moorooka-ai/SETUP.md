@@ -18,10 +18,33 @@ The API key must never go in the public page, or anyone could copy it. A small f
 2. Worker > Settings > Variables and Secrets:
    - Secret `ANTHROPIC_API_KEY` = your Haiku key
    - Variable `ALLOWED_ORIGIN` = `https://ashley-pettit.github.io`
-3. Give Claude the Worker's address (like `https://moorooka-ai.<you>.workers.dev`). It goes in the repo's publish
-   workflow as `MOOROOKA_AI_ENDPOINT`, and every visitor's app uses it.
-4. In the Claude Console (https://platform.claude.com) set a monthly spend limit on the key. Each question allows up to
-   3 web searches; the Worker allows 20 questions per visitor per 10 minutes.
+3. Open the Worker's address (like `https://moorooka-ai.<you>.workers.dev`) in a browser. It should show
+   `{"ok":true,"app":"Moorooka AI",...}`.
+4. Tell the site where the Worker is. On GitHub: this repo > Settings > Secrets and variables > Actions > Variables >
+   New repository variable, named `MOOROOKA_AI_ENDPOINT`, with the Worker's address as its value. It isn't a secret.
+   Then Actions > Publish > Run workflow (or wait for the next merge). Every visitor's app uses it from then on.
+5. In the Claude Console (https://platform.claude.com) set a monthly spend limit on the key. This is the hard stop on
+   cost, whatever else happens.
+
+## The throttle: one visitor can't flood it
+
+The Worker counts questions per visitor (by IP address) and turns away anyone over the limit with a polite message:
+
+- 20 questions in any 10 minutes ("Wait a few minutes, then try again")
+- 100 questions in any 24 hours ("Ask again tomorrow")
+
+To change either, add a Worker variable `LIMIT_PER_10_MIN` or `LIMIT_PER_DAY` with the new number (Worker > Settings >
+Variables and Secrets). No code change or new publish is needed. Each question also allows at most 3 web searches.
+
+The counts are kept in the Worker's memory, so they are best effort: Cloudflare can restart a Worker, which starts the
+counts again. That is why step 5's spend limit matters.
+
+## Premium (coming soon)
+
+The app shows a small "Get Premium" button. For now it only says "Premium is coming soon". The plan: Haiku stays free
+for everyone; a signed-in, paying person gets Opus. When it's built, the Worker must choose the model itself after
+checking the sign-in and the payment (never trust a model name sent by the page), and it will need a key that is
+allowed to use Opus: today's key is Haiku only.
 
 ## Owner settings
 Tap the version number at the bottom of the menu 5 times, or add `?admin` to the address.
