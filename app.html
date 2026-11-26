@@ -1884,32 +1884,55 @@ body.bsdrive .bs-fly-tip { display: none !important; }
   .bs-fly .bs-slides > .bs-fly-x[data-key] { position: relative; inset: auto; }  /* in its place in the row, as before: only there to carry the keycap */
   .bs-udb[data-key], .bs-admin button[data-key] { position: relative; }
 }
-/* Admin mode (Ash only): the pencil in the tools opens this toolbar under the top buttons. Tools, then width, line, undo, copy
-   and clear, then a line saying what to do and what is waiting to be copied. With a tool on, the model takes the touch. */
-.bs-admin { pointer-events: auto; position: absolute; z-index: 3; top: calc(106px + env(safe-area-inset-top)); left: 16px; right: 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+/* The construction worker's menu: the pencil opens this card under the top buttons. One card, three rows that stay where they are:
+   what to do with your edits (undo, suggestions, copy, clear, and Save on the right), the eight tools side by side (a picture over
+   its name), and, with Path, Grass or Road in hand, how wide and whether straight. Under them a line saying what the tool does.
+   With a tool on, the model takes the touch. (Ash, 26 November 2026: "Improve the ui UX of the construction workers menu. Feels very clunky") */
+.bs-admin { pointer-events: auto; position: absolute; z-index: 3; top: calc(106px + env(safe-area-inset-top)); left: 16px; right: 16px; max-width: 400px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px; padding: 5px; border-radius: 20px;
+  background: rgba(14, 18, 34, 0.88); color: var(--bs-ink); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.28), inset 0 0 0 1px rgba(255, 255, 255, 0.14); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 .bs-admin[hidden] { display: none; }
-.bs-admin-row { display: flex; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: 19px; background: var(--bs-scrim);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.14); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
-.bs-admin button { height: 32px; padding: 0 12px; border: 0; border-radius: 999px; background: none; color: var(--bs-ink); font: 700 0.82rem var(--ui); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.bs-admin-row { display: flex; align-items: center; gap: 2px; }
+.bs-admin-row[hidden] { display: none; }
+.bs-admin-row + .bs-admin-row { padding-top: 4px; border-top: 1px solid rgba(255, 255, 255, 0.12); }
+.bs-admin button { height: 36px; padding: 0 12px; border: 0; border-radius: 999px; background: none; color: var(--bs-ink); font: 700 0.82rem var(--ui); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; -webkit-tap-highlight-color: transparent; }
 .bs-admin button[hidden], .bs-admin-w[hidden] { display: none; }
-.bs-admin button.bs-admin-ic { width: 34px; padding: 0; justify-content: center; }
-.bs-admin button svg { width: 17px; height: 17px; flex: none; }
-.bs-admin button[data-tool][aria-pressed="true"], .bs-admin #bsAdminSave.has { background: #fff; color: #1b1830; }
+.bs-admin button.bs-admin-ic { width: 38px; padding: 0; }
+.bs-admin button svg { width: 18px; height: 18px; flex: none; }
 .bs-admin button:disabled { opacity: 0.55; cursor: default; }
 .bs-admin button:focus-visible { outline: 2px solid var(--bs-ink); outline-offset: 0; }
-@media (hover: hover) { .bs-admin button:hover { background: rgba(255, 255, 255, 0.16); } .bs-admin button[data-tool][aria-pressed="true"]:hover, .bs-admin #bsAdminSave.has:hover { background: #fff; } }
-@media (pointer: coarse) { .bs-admin button { height: 40px; padding: 0 14px; font-size: 0.88rem; } .bs-admin button.bs-admin-ic, .bs-admin-w button { width: 40px; } }  /* (Ash, 20 November 2026: "Try to make the interface easier to use") */
-.bs-admin button[data-tool="delete"][aria-pressed="true"], .bs-admin button[data-tool="delete"][aria-pressed="true"]:hover { background: #d93a3f; color: #fff; }
+@media (hover: hover) { .bs-admin button:hover { background: rgba(255, 255, 255, 0.16); } }
+@media (pointer: coarse) { .bs-admin button { height: 40px; font-size: 0.88rem; } .bs-admin button.bs-admin-ic, .bs-admin-w button { width: 40px; } }  /* (Ash, 20 November 2026: "Try to make the interface easier to use") */
+/* your edits: Save (or Send) is the one that stands out, on the right, white once there is something to save */
+.bs-admin #bsAdminSave { margin-left: auto; padding: 0 16px; background: rgba(255, 255, 255, 0.14); white-space: nowrap; }
+.bs-admin #bsAdminSave.has, .bs-admin #bsAdminSave.has:hover { background: #fff; color: #1b1830; }
+.bs-admin #bsAdminClear[data-sure="1"], .bs-admin #bsAdminClear[data-sure="1"]:hover { background: #d93a3f; color: #fff; white-space: nowrap; }
+.bs-admin #bsAdminPlans { min-width: 40px; padding: 0 11px; gap: 5px; }
+.bs-admin #bsAdminPlans b { font: 800 0.82rem var(--ui); font-variant-numeric: tabular-nums; }
+.bs-admin #bsAdminPlans b:empty { display: none; }
+.bs-admin #bsAdminPlans.has, .bs-admin #bsAdminPlans.has:hover { background: #ffd36b; color: #1b1830; }
+/* the tools: eight the same size in one row, the one in hand white (Delete red) */
+.bs-admin-tools { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); }
+.bs-admin .bs-admin-tools button { flex-direction: column; gap: 4px; height: 54px; padding: 0; border-radius: 13px; font-size: 0.66rem; letter-spacing: 0.01em; }
+.bs-admin .bs-admin-tools button svg { width: 21px; height: 21px; }
+.bs-admin .bs-admin-tools button i { width: 19px; height: 19px; margin: 1px 0; border-radius: 6px; box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.6); }
+.bs-admin .bs-admin-tools button i.rd { background: linear-gradient(#4a4d52 0 22%, transparent 22% 42%, #4a4d52 42% 58%, transparent 58% 78%, #4a4d52 78%), linear-gradient(90deg, #4a4d52 44%, #f2f2ee 44% 56%, #4a4d52 56%); }  /* (its centre line) */
+.bs-admin .bs-admin-tools button[aria-pressed="true"], .bs-admin .bs-admin-tools button[aria-pressed="true"]:hover { background: #fff; color: #1b1830; }
+.bs-admin .bs-admin-tools button[aria-pressed="true"] i { box-shadow: inset 0 0 0 1.5px rgba(27, 24, 48, 0.4); }
+.bs-admin .bs-admin-tools button[data-tool="delete"][aria-pressed="true"], .bs-admin .bs-admin-tools button[data-tool="delete"][aria-pressed="true"]:hover { background: #d93a3f; color: #fff; }
 body.bsadmin .bs-findme { display: none; }  /* (while editing: the bar runs under where it stands) */
-@media (max-width: 999px) { .bs-admin-note { max-width: min(34em, calc(100% - 100px)); } }  /* (clear of the pencil, on the right) */
-.bs-admin button i { width: 12px; height: 12px; border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55); }
+/* Path, Grass and Road: how wide, and Straight or Freehand as a switch showing both */
+.bs-admin-opts { justify-content: space-between; flex-wrap: wrap; row-gap: 4px; }
 .bs-admin-w { display: inline-flex; align-items: center; }
-.bs-admin-w button { width: 32px; padding: 0; justify-content: center; font-size: 1.05rem; }
-.bs-admin-w output { min-width: 46px; text-align: center; font: 700 0.8rem var(--ui); color: var(--bs-ink); font-variant-numeric: tabular-nums; }
-.bs-admin-note { margin: 0; max-width: 34em; padding: 6px 12px; border-radius: 14px; background: var(--bs-scrim); color: var(--bs-ink); font: 600 0.78rem/1.35 var(--ui); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.bs-admin .bs-admin-w button { width: 38px; padding: 0; font-size: 1.15rem; background: rgba(255, 255, 255, 0.1); }
+.bs-admin-w output { min-width: 56px; text-align: center; font: 700 0.8rem var(--ui); color: var(--bs-ink); font-variant-numeric: tabular-nums; }
+.bs-admin #bsAdminLine, .bs-admin #bsAdminLine:hover { padding: 3px; gap: 0; background: rgba(255, 255, 255, 0.1); }
+.bs-admin #bsAdminLine span { height: 100%; padding: 0 10px; border-radius: 999px; display: inline-flex; align-items: center; opacity: 0.8; }
+.bs-admin #bsAdminLine[aria-pressed="true"] span:first-child, .bs-admin #bsAdminLine[aria-pressed="false"] span:last-child { background: #fff; color: #1b1830; opacity: 1; }
+.bs-admin-note { margin: 0; padding: 3px 9px 4px; color: var(--bs-ink); font: 600 0.76rem/1.35 var(--ui); opacity: 0.86; }
 .bs-admin-note:empty { display: none; }
-.bs-admin #bsAdminPlans.has { background: #ffd36b; color: #1b1830; }
-.bs-admin-plans { max-width: min(34em, 100%); max-height: 40vh; overflow: auto; box-sizing: border-box; padding: 8px; border-radius: 14px; background: var(--bs-scrim); color: var(--bs-ink); font: 500 0.78rem/1.35 var(--ui); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); display: grid; gap: 8px; }
+@media (max-width: 359px) { .bs-admin .bs-admin-tools button { font-size: 0.6rem; } }
+@media (hover: hover) and (pointer: fine) { .bs-fly .bs-admin #bsAdminUndo[data-key]::after { right: -6px; bottom: -3px; } }  /* (its keycap clear of the tools under it) */
+.bs-admin-plans { max-height: 40vh; overflow: auto; box-sizing: border-box; padding: 8px 5px 3px; border-top: 1px solid rgba(255, 255, 255, 0.12); color: var(--bs-ink); font: 500 0.78rem/1.35 var(--ui); display: grid; gap: 8px; }
 .bs-admin-plans[hidden] { display: none; }
 .bs-admin-plans p { margin: 0; }
 .bs-plan { padding: 6px 4px; border-top: 1px solid rgba(255, 255, 255, 0.14); }
@@ -1939,7 +1962,7 @@ body.bstown.bsgmap.bsheld .bs-joy, body.bstown.bsgmap.bsheld .bs-ud { display: n
 .bs-wel-tick input { width: 20px; height: 20px; accent-color: #ffd166; flex: none; }
 .bs-wel-go { min-height: 46px; margin-top: 4px; border: 0; border-radius: 12px; background: #ffd166; color: #1b1830; font: 800 1rem var(--ui); cursor: pointer; }
 .bs-welcome button:focus-visible, .bs-welcome input:focus-visible { outline: 3px solid #7ed0ff; outline-offset: 2px; }
-@media (min-width: 1000px) { .bs-admin { top: calc(60px + env(safe-area-inset-top)); left: auto; right: 16px; align-items: flex-end; } }
+@media (min-width: 1000px) { .bs-admin { top: calc(60px + env(safe-area-inset-top)); left: auto; right: 16px; width: 400px; } }
 /* street names in the town models: drawn by the app over the model, along each street, never upside down */
 .bs-streets { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
 .bs-streets span { position: absolute; left: 0; top: 0; white-space: nowrap; font: 600 12px/1 var(--ui); letter-spacing: .01em; color: #23272f;
@@ -2485,8 +2508,9 @@ body.bsfly .toast.show { transform: translate(-50%, 0); }
     <div class="bs-town-list bs-town-floods" id="bsTownFloods" role="menu" aria-label="Floods to show on the map" hidden></div>
     <div class="bs-slides" role="group" aria-label="Street names, tide, time and flood"><button class="bs-fly-x bs-ic" type="button" id="bsNamesBtn" data-key="N" aria-pressed="false" aria-label="Street names" title="Show street names (N)" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M9 21h6"/><path d="M5 5h11l3 2.5L16 10H5z"/><path d="M19 12H8l-3 2.5L8 17h11z"/></svg></button><button class="bs-fly-x" type="button" id="bsTideBtn" aria-controls="bsTownTide" aria-expanded="false" hidden>Tide</button><button class="bs-fly-x" type="button" id="bsTimeBtn" aria-controls="bsFlyTimeBox" aria-expanded="false" aria-label="Time of day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span id="bsTimeBtnT">Time</span></button><button class="bs-fly-x" type="button" id="bsGpsBtn" data-key="I" aria-pressed="false" aria-label="GPS: directions to an address" title="GPS: directions to an address (I)" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 10.5 20 4l-6.5 16.5-2.3-7.2z"/></svg><span>GPS</span></button><button class="bs-fly-x bs-town-flood" type="button" id="bsTownFlood" data-key="L" aria-haspopup="menu" aria-expanded="false" aria-pressed="false" hidden>Flood</button></div>
     <div class="bs-admin" id="bsAdmin" role="toolbar" aria-label="Edit the map" hidden>
-      <div class="bs-admin-row" role="group" aria-label="Tool"><button type="button" data-tool="path" aria-pressed="false"><i style="background:#cfcabd"></i>Path</button><button type="button" data-tool="grass" aria-pressed="false"><i style="background:#6fa64b"></i>Grass</button><button type="button" data-tool="road" aria-pressed="false"><i style="background:#4a4d52"></i>Road</button><button type="button" data-tool="tree" aria-pressed="false"><i style="background:#4c7a33;border-radius:50%"></i>Tree</button><button type="button" data-tool="car" aria-pressed="false"><i style="background:#2d5ea8;border-radius:3px"></i>Car</button><button type="button" data-tool="light" aria-pressed="false"><i style="background:#8e9396;width:4px"></i>Light</button><button type="button" data-tool="move" aria-pressed="false">Move</button><button type="button" data-tool="delete" aria-pressed="false">Delete</button></div>
-      <div class="bs-admin-row"><span class="bs-admin-w" id="bsAdminW" role="group" aria-label="Width" hidden><button type="button" data-w="-1" aria-label="Narrower">&minus;</button><output id="bsAdminWOut"></output><button type="button" data-w="1" aria-label="Wider">+</button></span><button type="button" id="bsAdminLine" aria-pressed="true" hidden>Straight</button><button type="button" class="bs-admin-ic" id="bsAdminUndo" aria-label="Undo" title="Undo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5 4 9l4 4"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button><button type="button" id="bsAdminSave" aria-label="Save my edits for everyone">Save</button><button type="button" id="bsAdminCopy" aria-label="Copy edits">Copy</button><button type="button" class="bs-admin-ic" id="bsAdminClear" aria-label="Clear all my edits" title="Clear all my edits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 7V4h4v3M6 7l1 13h10l1-13"/></svg></button></div>
+      <div class="bs-admin-row bs-admin-acts"><button type="button" class="bs-admin-ic" id="bsAdminUndo" aria-label="Undo" title="Undo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5 4 9l4 4"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button><button type="button" class="bs-admin-ic" id="bsAdminCopy" aria-label="Copy edits" title="Copy edits (to paste to Claude)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5.5 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v.5"/></svg></button><button type="button" class="bs-admin-ic" id="bsAdminClear" aria-label="Clear all my edits" title="Clear all my edits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 7V4h4v3M6 7l1 13h10l1-13"/></svg></button><button type="button" id="bsAdminSave" aria-label="Save my edits for everyone">Save</button></div>
+      <div class="bs-admin-row bs-admin-tools" role="group" aria-label="Tool"><button type="button" data-tool="path" aria-pressed="false"><i style="background:#cfcabd"></i><span>Path</span></button><button type="button" data-tool="grass" aria-pressed="false"><i style="background:#6fa64b"></i><span>Grass</span></button><button type="button" data-tool="road" aria-pressed="false"><i class="rd"></i><span>Road</span></button><button type="button" data-tool="tree" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 7.2 9.8h2.3L5 16.8h14l-4.5-7h2.3z"/><path d="M12 16.8V21"/></svg><span>Tree</span></button><button type="button" data-tool="car" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11.5 6.6 7a2 2 0 0 1 1.9-1.3h7a2 2 0 0 1 1.9 1.3l1.6 4.5"/><rect x="3" y="11.5" width="18" height="5.5" rx="2"/><path d="M6.5 17v2M17.5 17v2"/></svg><span>Car</span></button><button type="button" data-tool="light" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21V8a4 4 0 0 1 4-4h2"/><path d="M6 21h6"/><path d="M15 2.8h4.5l-1 3.4h-2.5z"/></svg><span>Light</span></button><button type="button" data-tool="move" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M3 12h18"/><path d="m9 6 3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg><span>Move</span></button><button type="button" data-tool="delete" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 20H10.2l-5.6-5.6a2 2 0 0 1 0-2.8l7-7a2 2 0 0 1 2.8 0l5 5a2 2 0 0 1 0 2.8L11.8 20"/><path d="m8.6 8.6 6.8 6.8"/></svg><span>Delete</span></button></div>
+      <div class="bs-admin-row bs-admin-opts" id="bsAdminOpts" hidden><span class="bs-admin-w" id="bsAdminW" role="group" aria-label="Width" hidden><button type="button" data-w="-1" aria-label="Narrower">&minus;</button><output id="bsAdminWOut"></output><button type="button" data-w="1" aria-label="Wider">+</button></span><button type="button" id="bsAdminLine" aria-label="Straight line" aria-pressed="true" hidden><span aria-hidden="true">Straight</span><span aria-hidden="true">Freehand</span></button></div>
       <p class="bs-admin-note" id="bsAdminNote" role="status"></p>
     </div>
     <p class="bs-town-note" id="bsTownNote" hidden></p>
@@ -17501,8 +17525,8 @@ const handle = async (m, post) => {
     const admin = () => isAsh(), can = () => townRole() === "builder";
 
     const copyBtn = $("bsAdminCopy"), plansBtn = document.createElement("button"), plansBox = document.createElement("div");
-    plansBtn.type = "button"; plansBtn.id = "bsAdminPlans"; plansBtn.textContent = "Suggestions"; plansBtn.setAttribute("aria-expanded", "false"); plansBtn.hidden = true;
-    plansBox.className = "bs-admin-plans"; plansBox.hidden = true; copyBtn.parentElement.appendChild(plansBtn); $("bsAdmin").appendChild(plansBox);
+    plansBtn.type = "button"; plansBtn.id = "bsAdminPlans"; plansBtn.innerHTML = "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M4 13 6.6 5.5h10.8L20 13v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z'/><path d='M4 13h4.6l1 2.5h4.8l1-2.5H20'/></svg><b></b>"; plansBtn.setAttribute("aria-label", "Suggestions"); plansBtn.title = "Suggestions from construction workers"; plansBtn.setAttribute("aria-expanded", "false"); plansBtn.hidden = true;
+    plansBox.className = "bs-admin-plans"; plansBox.hidden = true; copyBtn.parentElement.insertBefore(plansBtn, copyBtn); $("bsAdmin").appendChild(plansBox);
     const fly = $("bsFly"), bar = $("bsAdmin"), btn = $("bsEditBtn"), note = $("bsAdminNote"), wOut = $("bsAdminWOut"), line = $("bsAdminLine"), clear = $("bsAdminClear"), saveBtn = $("bsAdminSave");
     $("bsAdminUndo").dataset.key = /Mac|iPhone|iPad/.test(navigator.platform || "") ? "\u2318Z" : "Ctrl Z";  // shown on the button on a desktop
     const TOOLS = { path: { k: 3, w: 1.3, min: 0.6, max: 5, step: 0.1, straight: true, col: "#e8e3d6", say: "Drag to lay a footpath." },
@@ -17530,8 +17554,9 @@ const handle = async (m, post) => {
         : !boss ? (n ? "Your changes are on this device. Send shows them to everyone for 3 hours and gives them to the town planner." : all(asked) ? "Sent! Everyone sees it for 3 hours, and the town planner can make it permanent." : "Pick a tool to change the ground. Help us build and shape this model!")
         : n ? "Your edits are on this device only. Save puts them in everyone's app." : all(sent) ? "Saved. Your edits will be in everyone's app in about 5 minutes." : "Pick a tool. Edits stay on this device until you save them."; };
     const show = () => { for (const b of bar.querySelectorAll("[data-tool]")) b.setAttribute("aria-pressed", String(b.dataset.tool === A.tool));
-      const paint = !!A.tool && A.tool !== "delete" && !TOOLS[A.tool].put; $("bsAdminW").hidden = line.hidden = !paint;
-      if (paint) { wOut.textContent = width().toFixed(1) + " m"; line.textContent = straight() ? "Straight" : "Freehand"; line.setAttribute("aria-pressed", String(straight())); }
+      const paint = !!A.tool && !!TOOLS[A.tool].k;  /* (Path, Grass and Road. Move was counted as one: it has no width, so picking it stopped here with an error, the line under the tools stayed as it was and, picked first, it never took the touch) */
+      $("bsAdminW").hidden = line.hidden = $("bsAdminOpts").hidden = !paint;
+      if (paint) { wOut.textContent = width().toFixed(1) + " m"; line.setAttribute("aria-pressed", String(straight())); }
       document.body.classList.toggle("bsadmin-tool", !!A.tool); count(); };
     // the line being drawn, over the view: instant, while the ground itself catches up a few times a second
     const ink = document.createElementNS("http://www.w3.org/2000/svg", "svg"); ink.setAttribute("class", "bs-admin-ink"); ink.setAttribute("aria-hidden", "true");
@@ -17684,7 +17709,7 @@ const handle = async (m, post) => {
       if (!T.dead) { drawPlans(); showFresh(); } };
     const waiting = () => [...plans.values()].filter(P => !doneSet.has(P.id) && all(P.e)).sort((a, b) => b.time - a.time);
     const ago = t => { const s = Date.now() / 1000 - t; return s < 3600 ? `${Math.max(1, Math.round(s / 60))} min ago` : s < 86400 ? `${Math.round(s / 3600)} h ago` : `${Math.round(s / 86400)} d ago`; };
-    const drawPlans = () => { const list = waiting(); plansBtn.textContent = list.length ? `Suggestions (${list.length})` : "Suggestions"; plansBtn.classList.toggle("has", !!list.length);
+    const drawPlans = () => { const list = waiting(); plansBtn.querySelector("b").textContent = list.length || ""; plansBtn.setAttribute("aria-label", list.length ? `Suggestions (${list.length})` : "Suggestions"); plansBtn.classList.toggle("has", !!list.length);
       if (plansBox.hidden) return;
       if (!list.length) { const p = document.createElement("p"); p.textContent = "No suggestions from construction workers yet."; plansBox.replaceChildren(p); return; }
       plansBox.replaceChildren(...list.map(P => { const row = document.createElement("div"); row.className = "bs-plan"; const who = document.createElement("p"); const b = document.createElement("b"); b.textContent = P.by;
