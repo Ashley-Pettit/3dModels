@@ -21584,7 +21584,7 @@ const handle = async (m, post) => {
     const fits = (pts, x, z, h) => { const s = Math.sin(h), c = Math.cos(h);
       if (T.invStatic && (pts === CAR || pts === BUS) && T.invStatic.depth(x,z,h,pts[0][0],pts[0][1])) return false;
       for (const [a, b] of pts) if (solid(x + s * a - c * b, z + c * a + s * b)) return false;
-      return ground(x, z) - m.groundAt(x, z) < 0.35; };
+      return ground(x, z) - m.groundAt(x, z) < 0.35 || pts === CAR; };  // (out of deep water, except a car: it goes in and becomes a boat. Ash, 26 November 2026: "Car to boat doesn't work": this stopped it at the water's edge)
     const inside = (x, z) => x >= F.lim[0] && x <= F.lim[1] && z >= F.lim[2] && z <= F.lim[3];  // the edge of the model: nothing goes past it
     // how the ground lies under something: its height, and how far the nose is up and the right side down
     const lie = (o, half, wide) => { const s = Math.sin(o.h), c = Math.cos(o.h), g = (a, b) => ground(o.x + s * a - c * b, o.z + c * a + s * b), yf = g(half, 0), yb = g(-half, 0), yr = g(0, wide), yl = g(0, -wide);
