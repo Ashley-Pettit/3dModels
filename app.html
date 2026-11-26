@@ -18025,6 +18025,9 @@ const handle = async (m, post) => {
     // and the mega mysterious Moorooka golden helicopter, which only the locals know about (not in Jump to, as the golden plane isn't)
     { const o = take(() => true); if (o) out.push({ x: +(o[0] + 18).toFixed(1), z: o[1], h: o[2] - 0.9, heli: true, gold: true, name: "The golden helicopter", at: "", what: "" }); }
     return out; };
+  // (Inverloch's bus stood in A'Beckett Street over the noses of the cars parked in front of The Hub. It's at the kerb across the
+  // road now, in the parking lane, and the one parked car in its way goes (hide): Ash, 26 November 2026, "Fix the random bus in
+  // Inverloch city. Parked inside cars atm")
   const TOWN_RIDES = {
     moo: { planes: [...MOO_PLANES, { x: -464, z: -1533, h: 2.71, heli: true, name: "The helicopter", at: "on the field off School Road", what: "On the open grass off School Road, near Nathan Terrace. Walk up to it and get in" }, ...mooDayRides()],
       cars: [MOO_RED6, MOO_GOLD_CAR], possum: MOO_POSSUM, pigeon: MOO_PIGEON },  // (the bus drives itself now: townTraffic)
@@ -18032,7 +18035,7 @@ const handle = async (m, post) => {
       cars: [{ x: -228.5, z: -375.5, h: Math.PI, spare: true, name: "The red car", what: "On the lawn by The Hub, beside the plane" }, { x: -232.5, z: -375.5, h: Math.PI, gold: true, name: "The golden car", what: "On the lawn by The Hub. A fifth faster than the red one" },
         // the potato hotrod, only in Inverloch (Ash, 26 November 2026): beside the golden car. 20 seconds after you get in, the T-rex comes (townCar)
         { x: -237.2, z: -375.5, h: Math.PI, hotrod: true, name: "The hotrod", what: "A potato hot rod with a blower and flames, on the lawn by The Hub. Only in Inverloch. Get in if you dare" }],
-      more: { planes: [{ x: -1602.1, z: 422, h: 2.6, heli: true, name: "The helicopter", at: "behind 11 Norman Road", what: "On the grass behind 11 Norman Road" }], cars: [{ x: -214, z: -359.6, h: -1.571, bus: true, name: "The bus", what: "In A'Beckett Street, out the front of The Hub" }] },
+      more: { planes: [{ x: -1602.1, z: 422, h: 2.6, heli: true, name: "The helicopter", at: "behind 11 Norman Road", what: "On the grass behind 11 Norman Road" }], cars: [{ x: -207, z: -346, h: -1.683, bus: true, hide: [[-203.77, -345.76]], name: "The bus", what: "In A'Beckett Street, at the kerb across the road from The Hub" }] },
       roam: [[-278, -562], [627, -1086], [-108, -190], [17, -179], [-1585, 1221], [575, 1066]] },
     logan: { planes: [{ x: 5732, z: -12989, h: 1.0, name: "The plane", at: "on the big lawn in Civic Centre Park", what: "On the big open lawn in Civic Centre Park, behind the council, with room to take off" }],
       cars: [{ x: 5816.2, z: -13302.9, h: 1.94, spare: true, name: "The red car", what: "On the lawn out the front of the council, by the plane" }, { x: 5788.7, z: -13204.6, h: 3.63, gold: true, name: "The golden car", what: "In the car park behind the council. A fifth faster than the red one" }],
@@ -21349,8 +21352,11 @@ const handle = async (m, post) => {
   // with the wheels. Just my car I'm driving or if driven by another player. If won't add much memory at all consider all cars, not
   // buses"). The car's own tyres stay as they are (they're round, so turning them shows nothing); the hubcaps over them do. A five-spoke
   // hubcap looks the same every 72 degrees, so each car has five of them already turned 0, 14.4, 28.8, 43.2 and 57.6 degrees and shows
-  // one: one draw a car, 340 triangles all told (about 37 KB), nothing built while you drive. Past about 28 km/h the turn shown each frame
-  // is held to a little under half a spoke's gap, so it keeps reading as rolling forwards rather than strobing backwards
+  // one: one draw a car, 340 triangles all told (about 37 KB), nothing built while you drive. Past about 25 km/h the turn shown each frame
+  // is held to just under two of those five steps (28.8 degrees, well under half a spoke's gap), so it keeps reading as rolling
+  // forwards. It was held to 0.45 of a gap, which with the five steps came out as two steps, then three: a three-step jump (43.2
+  // degrees, past half a gap) reads as a turn backwards, so at speed the hubcaps twitched back every few frames (Ash, 26 November
+  // 2026: "The wheels on the car are very buggy")
   const TOWN_WHEELS = { new: { x: 0.905, y: 0.34, r: 0.32, z: [1.38, -1.35] }, old: { x: 0.995, y: 0.34, r: 0.34, z: [1.32, -1.3] } };
   const townWheelCache = {};
   function townWheelParts(lay, lift = 0) { const key = lay + "/" + lift; if (townWheelCache[key]) return townWheelCache[key];
@@ -21367,7 +21373,7 @@ const handle = async (m, post) => {
   // one car's hubcaps: at(the car's matrix elements, metres it has rolled forward since last time), hide(), remove()
   function townSpinner(m, lay, lift = 0) { if (!m?.addParts) return null; let parts = null; try { parts = m.addParts(townWheelParts(lay, lift).map(q => ({ ...q, matrix: TOWN_WHEEL_FAR.slice() }))); } catch { return null; }
     const K = 5, gap = Math.PI * 2 / 5, r = TOWN_WHEELS[lay].r; let ang = 0, shown = -1;
-    return { lay, lift, at(el, d) { if (!parts) return; const da = bsClamp((d || 0) / r, -0.45 * gap, 0.45 * gap); ang = ((ang + da) % gap + gap) % gap; const f = Math.min(K - 1, Math.floor(ang / gap * K));
+    return { lay, lift, at(el, d) { if (!parts) return; const da = bsClamp((d || 0) / r, -0.399 * gap, 0.399 * gap); ang = ((ang + da) % gap + gap) % gap; const f = Math.min(K - 1, Math.floor(ang / gap * K));
         if (shown >= 0 && shown !== f) parts.setMatrix(shown, TOWN_WHEEL_FAR.slice()); parts.setMatrix(f, el); shown = f; },
       hide() { if (parts && shown >= 0) parts.setMatrix(shown, TOWN_WHEEL_FAR.slice()); shown = -1; },
       remove() { try { parts?.remove(); } catch {} parts = null; shown = -1; } }; }
@@ -21951,7 +21957,7 @@ const handle = async (m, post) => {
       // (a golden star: the car flashes, gone and back about five times a second, sparkling: Ash, 25 November 2026, "Flash my car while active")
       const now = performance.now(), boat = boatCheck(), cy = car.y + ((C.starTil > now && Math.floor(now / 100) % 3 === 2) || boat ? -60 : 0);  // (gone: 60 m under the ground)
       if (boat) boatDraw(true);
-      if (car.own) { if (car.own.hotrod) { const d = (car.v || 0) * (dt || 0); car.own.spin[0] += d / 0.62; car.own.spin[1] += d / 0.4; car.own.steer = car.steer || 0; }
+      if (car.own) { if (car.own.hotrod) { const d = (car.v || 0) * (dt || 0), cap = HOTROD_SPIN; car.own.spin[0] += bsClamp(d / 0.62, -cap, cap); car.own.spin[1] += bsClamp(d / 0.4, -cap, cap); car.own.steer = car.steer || 0; }
         Object.assign(car.own, { x: car.x, y: cy, z: car.z, h: hd, p: car.p, r: rd }); showOwn(car.own); car.own.y = car.y;
         if (signal !== (car.own.litSignal || 0)) { car.own.parts.setSignal?.(signal); car.own.litSignal = signal; }
       } else m.driveCar(car.id[0], car.id[1], car.x, cy, car.z, hd, car.p, rd, signal);
@@ -21962,6 +21968,10 @@ const handle = async (m, post) => {
       if (!car.bus && !car.hotrod) { const lay = car.own ? "old" : "new", lift = !car.own && T.cfg?.place === "inv" ? 0.25 : 0; if (mySpin && (mySpin.lay !== lay || mySpin.lift !== lift)) { mySpin.remove(); mySpin = null; }
         if (!mySpin) mySpin = townSpinner(m, lay, lift); if (mySpin) { M.compose(V.set(car.x, cy, car.z), Q.setFromEuler(E.set(-car.p, hd, rd, "YXZ")), ONE); mySpin.at(M.elements.slice(), (car.v || 0) * (dt || 0)); } } };
     let mySpin = null, mySig = null;
+    // the hotrod's wheels: their tread is in stripes 24 degrees apart, so a turn of more than half that in a frame reads as rolling
+    // backwards, and at speed they flickered back and forth (Ash, 26 November 2026: "The wheels on the car are very buggy"). Each
+    // frame's turn is held to 0.4 of it, as the hubcaps are: past about 20 km/h they turn no faster, and always forwards
+    const HOTROD_SPIN = 0.4 * Math.PI * 2 / 15;
     // ---- the planes, each stood in the model as the app's own mesh where it lives (MOO_PLANES); `plane` is the one you are in
     const M = new THREE.Matrix4(), M2 = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), ONE = new THREE.Vector3(1, 1, 1);
     const hub = new THREE.Matrix4().makeTranslation(0, 1.31, 2.74), mast = new THREE.Matrix4().makeTranslation(0, 2.45, 0.1);
@@ -22007,6 +22017,9 @@ const handle = async (m, post) => {
       { const L = G.hotrod ? townHotrodParts() : G.bus ? townPlaneParts("#2f7fc4", "bus") : townPlaneParts(G.gold ? "#e8b923" : "#c8322b", true); if (G.hotrod) { G.wheels = L.wheels; G.spin = [0, 0]; G.steer = 0; }
         G.np = L.length; G.parts = m.addParts(L.map(q => ({ ...q, matrix: M.identity().elements.slice() }))); } showOwn(G); return G; });
     const gold = owns.find(G => G.gold) || owns[0];
+    // a parked car of the model's that stands where one of ours is put goes (Inverloch's bus: see TOWN_RIDES)
+    { const hid = owns.length ? RIDES.cars.flatMap(h => h.hide || []) : []; if (hid.length) { T.hideCars = [...(T.hideCars || []), ...hid];
+      if (T.admin?.apply) T.admin.apply(); else m.setRemoved?.({ cars: T.hideCars, trees: T.hideTrees || [], people: [] }); } }
     // where a plane or helicopter (one at random), or a golden one, is now: for the locals' news (townLocals)
     C.rideSpot = heli => { const L = planes.filter(P => !P.gold && !!P.heli === heli); const P = L[Math.floor(Math.random() * L.length)]; return P ? { x: P.x, z: P.z, name: P.home.name } : null; };
     C.goldSpot = k => { if (k === "car") return gold?.gold ? { x: gold.x, z: gold.z } : null; const P = planes.find(P => P.gold && !!P.heli === (k === "heli")); return P ? { x: P.x, z: P.z } : null; };
