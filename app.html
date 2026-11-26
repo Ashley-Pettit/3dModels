@@ -1991,6 +1991,9 @@ body.bstown.bsgmap.bsheld .bs-joy, body.bstown.bsgmap.bsheld .bs-ud { display: n
 .bs-wel-tick { display: flex; gap: 10px; align-items: center; cursor: pointer; } .bs-wel-tick[hidden] { display: none; }
 .bs-wel-tick input { width: 20px; height: 20px; accent-color: #ffd166; flex: none; }
 .bs-wel-go { min-height: 46px; margin-top: 4px; border: 0; border-radius: 12px; background: #ffd166; color: #1b1830; font: 800 1rem var(--ui); cursor: pointer; }
+.bs-wel-go.bs-wel-nudge { animation: bsWelNudge 0.42s ease-in-out 3; }
+@keyframes bsWelNudge { 50% { transform: scale(1.06); background: #ffe08f; box-shadow: 0 0 0 3px #fff, 0 0 22px 6px rgba(255, 209, 102, 0.85); } }
+@media (prefers-reduced-motion: reduce) { .bs-wel-go.bs-wel-nudge { background: #ffe08f; box-shadow: 0 0 0 3px #fff, 0 0 18px 4px rgba(255, 209, 102, 0.8); } }
 .bs-welcome button:focus-visible, .bs-welcome input:focus-visible { outline: 3px solid #7ed0ff; outline-offset: 2px; }
 @media (min-width: 1000px) { .bs-admin { top: calc(60px + env(safe-area-inset-top)); left: auto; right: 16px; width: 400px; } }
 /* street names in the town models: drawn by the app over the model, along each street, never upside down */
@@ -9134,9 +9137,18 @@ const handle = async (m, post) => {
           const go = el("button", "bs-wel-go", "Play"); go.type = "submit"; card.append(go);
           const draw = () => { std.setAttribute("aria-checked", String(!gm)); gmb.setAttribute("aria-checked", String(gm)); if (tutL) tutL.hidden = gm && !F.rod?.offer; };
           draw();
-          const keys = e => { if (!card.contains(e.target)) { e.stopPropagation(); if (e.type === "keydown" && (e.code === "Escape" || e.code === "Enter")) { e.preventDefault(); play(); } } };
+          // anything else pressed while the card's up (a key, a click or tap on the view, a scroll) flashes Play, so it's plain what starts
+          // the game (Ash, 26 November 2026: "At the start of the game if the user presses anything flash the start game btn to indicate
+          // that's what they should press"). Not typing a name, or moving round the card with Tab, the arrows, Space or Enter
+          // (with reduced motion on, it lights up for a moment instead of pulsing)
+          let nudgeT = 0; const nudge = () => { go.classList.remove("bs-wel-nudge"); void go.offsetWidth; go.classList.add("bs-wel-nudge"); clearTimeout(nudgeT); nudgeT = setTimeout(() => go.classList.remove("bs-wel-nudge"), 1300); };
+          const NAV = /^(Tab|Enter|NumpadEnter|Space|Escape|Arrow\w+|Shift\w*|Control\w*|Alt\w*|Meta\w*)$/;
+          const keys = e => { if (!card.contains(e.target)) { e.stopPropagation(); if (e.type === "keydown" && (e.code === "Escape" || e.code === "Enter")) { e.preventDefault(); play(); } else if (e.type === "keydown" && !e.repeat) nudge(); }
+            else if (e.target !== inp && !NAV.test(e.code)) { e.stopPropagation(); if (e.type === "keydown" && !e.repeat) nudge(); } };
           ["keydown", "keyup"].forEach(t => addEventListener(t, keys, true));
-          const play = () => { if (!wrap.isConnected) return; ["keydown", "keyup"].forEach(t => removeEventListener(t, keys, true)); wrap.remove();
+          const poke = e => { if (!card.contains(e.target)) nudge(); };  // (passive, and only while the card's up: it never holds up a finger on the sticks)
+          ["pointerdown", "wheel"].forEach(t => document.addEventListener(t, poke, { capture: true, passive: true }));
+          const play = () => { if (!wrap.isConnected) return; ["keydown", "keyup"].forEach(t => removeEventListener(t, keys, true)); ["pointerdown", "wheel"].forEach(t => document.removeEventListener(t, poke, { capture: true })); wrap.remove();
             if (needName) { const v = (inp.value || "").replace(/[<>]/g, "").trim().slice(0, 16); try { if (v) localStorage.setItem("an-player", v); localStorage.setItem("an-player-asked", "1"); } catch {} BS.town?.peers?.tellName?.(); }
             if (needTut) try { if (!ls("an-tut")) localStorage.setItem("an-tut", "offered"); } catch {}
             BS.mapStyle?.(gm, true); F.waitPlay = false;
