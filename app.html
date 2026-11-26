@@ -5870,7 +5870,12 @@ const handle = async (m, post) => {
   // Toast
   // ======================================================================
   let toastTimer;
-  function toast(msg, ms = 3200) {
+  // In Explore, only the notes that matter: another player arriving, something you tried that didn't work (and why), a race someone
+  // started with you in it, what others say, saving and copying, and the start of a mini game. The rest stay quiet (Ash, 26 November
+  // 2026: "The toasts are often annoying. Remove them unless you think they are critical. Keep the player is here"). force: always show
+  const TOAST_KEEP = / is here\.$|couldn't|can't|could not|won't|isn't|aren't|didn't|not allowed|No way|No one|Nothing close|There's no|Not there|blocked|still loading|Check your connection|You're racing|No driving|started a race|copied|^Saved|^Sent!|^Approved|^Denied|Out of time|^Splash! The possum mission|^Sky rings!|2 minutes 15|letter from/;
+  function toast(msg, ms = 3200, force = false) {
+    if (!force && document.body.classList.contains("bsfly") && !TOAST_KEEP.test(String(msg))) return;
     const t = $("toast");
     // in Explore, under whatever is across the top middle (the GPS's directions, the race's cards), not over it (Ash, 25 November 2026:
     // "Try to make the toasts not over other text")
@@ -18619,7 +18624,7 @@ const handle = async (m, post) => {
     const chatSend = () => { const t = clean(chatIn.value); chatIn.value = ""; chatClose(); if (!t) return;
       if (off) return toast("Other players can't see you, so they can't see what you say either. Turn it on in Settings.", 3500);
       myChat = { text: t, t: performance.now() }; try { sendChat?.(t); } catch {} if (!peers.size) toast("Said. No one else is here right now to see it.", 2600); };
-    const chatted = (t, id) => { const q = peers.get(id), text = clean(t); if (!q || !text) return; q.chat = { text, t: performance.now() }; T.snd?.pop?.(); if (q.name) toast(`${q.name}: ${text}`, 3500); };
+    const chatted = (t, id) => { const q = peers.get(id), text = clean(t); if (!q || !text) return; q.chat = { text, t: performance.now() }; T.snd?.pop?.(); if (q.name) toast(`${q.name}: ${text}`, 3500, true); };  // (what someone says: always shown)
     // a label: the name, or a speech bubble while they've said something in the last 30 s
     const sayIn = (el, name, chat, now, sign = "") => { const on = chat && now - chat.t < CHAT_MS, key = on ? name + "\u0000" + chat.text : name + sign;
       if (el.dataset.k === key) return; el.dataset.k = key; el.classList.toggle("said", !!on);
