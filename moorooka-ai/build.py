@@ -15,6 +15,28 @@ import argparse, hashlib, json, os, re, shutil, subprocess, unicodedata
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO_APP = os.path.join(HERE, "..", "app.html")
 EXPLORE_3D = "https://ashley-pettit.github.io/3dModels/moorooka/explore/"
+
+# Meet locals: the only suburbs, interests and meeting places a profile may use. One list, shared by the page and the
+# Cloudflare Worker, so a profile can never carry a place or an interest somebody typed in themselves. Every meeting
+# place is public and already in the app, because the noticeboard never carries contact details: people meet there.
+MEET = {
+    "suburbs": ["Moorooka", "Salisbury", "Rocklea", "Annerley", "Tarragindi", "Yeronga", "Yeerongpilly",
+                "Coopers Plains", "Fairfield", "Nathan", "Tennyson", "Acacia Ridge", "Archerfield", "Holland Park West"],
+    "tags": ["Walks", "Coffee", "Eating out", "Cooking", "Parents and bubs", "Gardening", "Dogs", "Running",
+             "Cycling", "Board games", "Books", "Music", "Soccer", "Craft", "Volunteering", "Practising English",
+             "Fishing", "Over 50s", "New to Moorooka", "Photography"],
+    "spots": [
+        {"id": "clubhouse", "n": "The Clubhouse", "w": "76 Koala Rd, Moorooka"},
+        {"id": "beangreen", "n": "Bean on the Green", "w": "76 Koala Rd, Moorooka"},
+        {"id": "moorvale", "n": "The Moorvale shops", "w": "Beaudesert Rd, Moorooka"},
+        {"id": "peggs", "n": "Pegg's Park", "w": "Vendale Ave, Moorooka"},
+        {"id": "ccentre", "n": "Moorooka Community Centre", "w": "Beaudesert Rd, Moorooka"},
+        {"id": "mayfield", "n": "Mayfield Gardens", "w": "311 Tarragindi Rd, Moorooka"},
+        {"id": "evans", "n": "Evans Road dog park", "w": "Evans Rd, Salisbury"},
+        {"id": "library", "n": "Coopers Plains Library", "w": "107 Orange Grove Rd"},
+        {"id": "toohey", "n": "Toohey Forest trails", "w": "Tarragindi / Nathan"},
+    ],
+}
 APP_URL = "https://ashley-pettit.github.io/3dModels/moorooka-ai/"
 
 SUBURBS = ["Moorooka", "Salisbury", "Rocklea", "Annerley", "Tarragindi", "Yeronga", "Yeerongpilly", "Coopers Plains",
@@ -245,8 +267,9 @@ def main():
     directory = "\n".join(line(b) for b in sorted(biz, key=lambda x: (x["c"], x["n"].lower())))
     knowledge = knowledge.replace("EXPLORE_3D_URL", EXPLORE_3D).replace("{{DIRECTORY}}", directory or "(not available)")
     kjson = json.dumps(knowledge)
+    mjson = json.dumps(MEET, ensure_ascii=False, separators=(",", ":"))
     html = (html.replace("/*DATA*/", data).replace("/*BIZ*/", "const BIZ = " + json.dumps(biz, ensure_ascii=False, separators=(",", ":")) + ";")
-                .replace("/*KNOWLEDGE*/", kjson).replace("/*ENDPOINT*/", a.endpoint).replace("BUILD_ID", build)
+                .replace("/*KNOWLEDGE*/", kjson).replace("/*MEET*/", mjson).replace("/*ENDPOINT*/", a.endpoint).replace("BUILD_ID", build)
                 .replace("EXPLORE_3D_URL", EXPLORE_3D).replace("APP_URL", APP_URL))
     import base64
     uri = lambda p, mime: f"data:{mime};base64," + base64.b64encode(open(os.path.join(HERE, p), "rb").read()).decode()
@@ -256,7 +279,7 @@ def main():
                     .replace("IMG_ICON", uri("icons/icon-180.png", "image/png")))
     else:            # the site: separate files the browser can cache
         html = html.replace("FONT_GEIST", "geist.woff2").replace("FONT_DISPLAY", "bricolage.woff2").replace("IMG_3D", "moorooka-3d.jpg").replace("IMG_HERO", "moorooka-hero.jpg").replace("IMG_ICON", "icon-180.png")
-    worker = worker.replace("/*KNOWLEDGE*/", kjson).replace("BUILD_ID", build)
+    worker = worker.replace("/*KNOWLEDGE*/", kjson).replace("/*MEET*/", mjson).replace("BUILD_ID", build)
     os.makedirs(a.out, exist_ok=True)
     open(os.path.join(a.out, "index.html"), "w", encoding="utf-8").write(html)
     open(os.path.join(a.out, "worker.js"), "w", encoding="utf-8").write(worker)

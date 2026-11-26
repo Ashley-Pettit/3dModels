@@ -39,6 +39,37 @@ Variables and Secrets). No code change or new publish is needed. Each question a
 The counts are kept in the Worker's memory, so they are best effort: Cloudflare can restart a Worker, which starts the
 counts again. That is why step 5's spend limit matters.
 
+## Turn Meet locals on (about 5 minutes, after the steps above)
+
+Meet locals is the noticeboard of neighbours keen to meet other locals. Until you do this the page says it isn't
+switched on yet, and the rest of the app carries on as normal.
+
+1. https://dash.cloudflare.com > Storage & Databases > KV > Create a namespace. Call it `moorooka-locals`.
+2. Your Worker > Settings > Bindings > Add > KV namespace. Variable name `LOCALS`, namespace `moorooka-locals`. Deploy.
+3. Optional, so you can take any profile down from your own phone: add a secret `ADMIN_KEY` to the Worker with a long
+   random password, then put the same thing into Owner settings > "Meet locals admin key" in the app. Every profile
+   then gets a Remove button.
+
+Nothing else to publish: the page already knows how to use it once the Worker has the binding.
+
+### What a profile can and can't carry
+
+No phone number, email address, street address, web address or social handle is accepted, by the page or the Worker:
+the whole idea is that people meet at a public place. A profile is a first name, a suburb, one line about what
+they're up for, interests and meeting places picked from fixed lists, and that's all. It is for people 18 and over.
+
+Nobody checks a profile before it appears, so the rest of the safety is:
+
+- **Report.** Two reports from two different visitors take a profile off the board straight away. The same person
+  reporting twice counts once, so nobody can silence a neighbour on their own. A hidden profile is kept, not deleted,
+  so you can look at it: open `https://your-worker/locals?hidden=1&admin=YOUR_ADMIN_KEY`.
+- **It expires.** Every profile disappears by itself after 60 days.
+- **Flooding.** One visitor can put up 3 profiles and send 10 reports a day, and gets 20 tries at the form (so a few
+  typos never lock anyone out).
+
+Nobody signs in. A profile belongs to the phone that put it up, by a secret kept in that browser, and only its hash is
+stored. If someone clears their browser they can't take their own profile down: they report it, or you remove it.
+
 ## Premium (coming soon)
 
 The app shows a small "Get Premium" button. For now it only says "Premium is coming soon". The plan: Haiku stays free
