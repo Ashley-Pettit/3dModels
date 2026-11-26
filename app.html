@@ -9968,7 +9968,7 @@ const handle = async (m, post) => {
     { kind: "strip", addr: "143 Beaudesert Road", a: [-157.7, -258.7], b: [-164.2, -269.0], n: [0.8457, -0.5337], kerb: 3.98, across: 14.58, eave: 49.5, wall: "#d9cdb8", awning: "#c9c2b4",
       shops: [{ n: "Clear Radiology", w: 12.2, c: ["#1b2a4a", "#ffffff"], what: "X-rays and scans", jump: true }] },  // (the RSPCA Op Shop closed for good; Clear Radiology Moorooka is here now: Google Maps, 21 November 2026)
     { kind: "strip", addr: "145-147 Beaudesert Road", a: [-141.4, -235.2], b: [-156.2, -258.7], n: [0.8462, -0.5329], kerb: 2.69, across: 13.29, eave: 50.0, wall: "#e6dfd0", awning: "#d8d4ca", windows: [3.7, 4.7, 6, "#2a3640"],
-      shops: [{ plain: true, w: 5.4 }, { plain: true, w: 3.4 }, { n: "Cutting Master Barbershop", w: 4.5, c: ["#141414", "#ffffff"], what: "Barber", jump: true }, { n: "Moorooka Mall", sub: "Ethiopian Village", w: 3.5, c: ["#f4f1ea", "#2a2a2a"], arcade: true, what: "Arcade, with the Ethiopian Village restaurant at the back", jump: true },
+      shops: [{ plain: true, w: 5.4 }, { plain: true, w: 3.4 }, { n: "Cutting Master Barbershop", w: 4.5, c: ["#141414", "#ffffff"], what: "Barber", jump: true }, { n: "Moorooka Mall", rearTenant: "Ethiopian Village", mallPassage: true, sub: "Ethiopian Village", w: 3.5, c: ["#f4f1ea", "#2a2a2a"], arcade: true, what: "Arcade, with the Ethiopian Village restaurant at the back", jump: true },
         { n: "Culture Cuts Barber", t: "BARBER", w: 3.4, c: ["#141414", "#ffffff"], what: "Barber and hair salon (5/147)" }, { plain: true, w: 2.6, posters: true }, { n: "A La Mode Hair & Beauty", w: 5.0, c: ["#f1e2d6", "#8a2332"] }],
       tenants: { lines: ["Ethiopian Village", "Culture Cuts Barber", "Mitchells Solicitors", "Amal Express"], c: ["#f4f1ea", "#2a2a2a"], x: 16.95, o: 0.8, w: 1.5 } },
     { kind: "strip", addr: "201 Beaudesert Road", a: [-97.6, -165.7], b: [-108.0, -182.3], n: [0.8474, -0.5309], kerb: 2.21, across: 13.21, eave: 50.6, wall: "#8f8678", awning: "#3a3a3a", arcadeRoof: 52.6,
@@ -10034,7 +10034,10 @@ const handle = async (m, post) => {
     { kind: "strip", addr: "182 Beaudesert Road", a: [-103.1, -224.9], b: [-92.0, -214.3], n: [-0.6906, 0.7232], kerb: 4.7, across: 15.0, eave: 54.0, wall: "#e9e2cf", awning: "#cfc8b8",
       shops: [{ n: "QML Pathology", display: "clinic", w: 6.5, c: ["#1d3f8f", "#ffffff"], what: "Pathology collection (Shop E/182; Google Maps, November 2026)", jump: true }, { plain: true, w: 8.8 }] },  // (the cream corner building north of Mayfield Road; the other front was for lease (Street View, September 2025))
     { kind: "strip", addr: "180 Beaudesert Road", a: [-112.3, -238.5], b: [-103.3, -225.2], n: [-0.8282, 0.5604], kerb: 3.06, across: 13.36, eave: 52.0, wall: "#f2efe8", awning: "#c8202a",  // (and Kingz beside it: Street View, September 2024)
-      shops: [{ n: "Big Boss Pizzas", w: 8.6, c: ["#efe6d2", "#5a3a22"], canopy: "#c8202a", what: "Pizza: order the best chips ever", jump: true }, { n: "KINGZ BARBERSHOP", w: 4.6, c: ["#111111", "#ffffff"], what: "Barber", jump: true }, { n: "BILTONG", sub: "& JERKY", w: 2.9, c: ["#5a2d0c", "#f2e3c6"], what: "Biltong and jerky" }] },
+      // September 2026 Street View: from the north, the biltong shop and Big Boss under red canvas, then Kingz under a black fascia.
+      shops: [{ n: "BILTONG", t: "The Biltong & Jerky Shop", w: 4.0, display: "biltong", canopy: "#c42c36", c: ["#342927", "#f4e3be"], what: "South African groceries and biltong at 176 Beaudesert Road" },
+        { n: "Big Boss Pizzas", display: "pizza", w: 5.9, c: ["#342e2c", "#f7ebd6"], canopy: "#c42c36", what: "Pizza: order the best chips ever", jump: true },
+        { n: "KINGZ BARBERSHOP", display: "kingz", w: 6.2, c: ["#17191a", "#ffffff"], what: "Barber", jump: true }] },
     // the east side from 152 to 168 (Ash, 16 November 2026: "find all moorooka businesses, use google maps image as a reference ... try not
     // to make it load intensive"): laid out from Street View (September 2024), each an awning with the shop's name on its edge
     { kind: "strip", addr: "152 Beaudesert Road", a: [-136.9, -274.4], b: [-130.2, -263.4], n: [-0.854, 0.5202], kerb: 2.06, across: 12.36, eave: 48.6, wall: "#f3f1ec", awning: "#7e1b1b",
@@ -10046,7 +10049,7 @@ const handle = async (m, post) => {
     { kind: "strip", addr: "166-168 Beaudesert Road", a: [-120.6, -251.1], b: [-112.5, -238.8], n: [-0.8352, 0.55], kerb: 3.0, across: 13.3, eave: 51.5, wall: "#ece6d4", awning: "#3a3d42", windows: [3.9, 5.1, 4, "#2a3640", 0.6, 14.1, 1.7],  // (four windows, each in a deep white surround: Street View, September 2026)
       shops: [{ n: "Moorooka Chiropractic Centre", t: "CHIROPRACTOR", w: 5.8, c: ["#3a3d42", "#ffffff"], what: "Chiropractor", jump: true }, { plain: true, w: 3.9 }, { n: "Skye Therapy", sub: "OCCUPATIONAL THERAPY", w: 5.0, c: ["#ffffff", "#2a3640"], what: "Occupational therapy (Level 1/168)" }] },
     { kind: "strip", addr: "173-175 Beaudesert Road", a: [-126.9, -210.1], b: [-136.3, -225.4], n: [0.852, -0.5235], kerb: 3.68, across: 14.28, eave: 49.6, wall: "#efede8", awning: "#5d6874", windows: [3.8, 4.9, 6, "#1f2a33"],
-      shops: [{ n: "Way Future", display: "reception", sub: "SUPPORT SERVICES", w: 3.4, c: ["#ffffff", "#1b8a8f"], what: "Disability support services (4/173)" }, { n: "Red Sea Grocery", display: "produce", w: 5.0, c: ["#b9bcc0", "#3a3d42"], what: "African grocery, through to Moorvale Lane" }, { n: "TOBACCONIST", w: 4.4, c: ["#f2c230", "#1d1d1d"], what: "Cigar Heaven, tobacconist (173; Google Maps, November 2026)" }, { n: "Habos Kitchen", sub: "CAFE & RESTAURANT", w: 5.2, c: ["#2a2c30", "#f3e6c8"], what: "Cafe and restaurant", jump: true }] },
+      shops: [{ n: "Way Future", display: "reception", sub: "SUPPORT SERVICES", w: 3.4, c: ["#ffffff", "#1b8a8f"], what: "Disability support services (4/173)" }, { n: "Red Sea Grocery", display: "produce", w: 5.0, c: ["#b9bcc0", "#3a3d42"], what: "African grocery, through to Moorvale Lane" }, { n: "TOBACCONIST", display: "tinted", w: 4.4, c: ["#f2c230", "#1d1d1d"], what: "Cigar Heaven, tobacconist (173; Google Maps, November 2026)" }, { n: "Habos Kitchen", display: "habos", sub: "CAFE & RESTAURANT", w: 5.2, c: ["#2a2c30", "#f3e6c8"], what: "Cafe and restaurant", jump: true }] },
     // Inline Physio, again from Street View (Ash, 16 November 2026: "Use Google maps to fix the physio"): a pale grey weatherboard cottage
     // with white trim, the big white "inline physio." board on the verandah, teal posters in the windows. Fixed up again from Street View
     // (Ash, 21 November 2026: "Fix up the inline physio"): 2.5 m further back behind a lawn, as it is; the dark verandah over the door
@@ -10363,9 +10366,13 @@ const handle = async (m, post) => {
     { kind: "sign", addr: "107 Beaudesert Road", a: [-228.1, -477.6], b: [-226.8, -486.7], n: [0.9899, 0.1414], kerb: 5.8, across: 16.3, eave: 39.6, wall: "#f3efe6", noBoard: true,  // (on a pole by the fence: its porch roof hid a sign on the wall)
       pole: { n: "Guardian", sub: "CHILDCARE & EDUCATION", c: ["#ffffff", "#5b2a86"], x: 4.6, back: 2 },
       shops: [{ n: "Guardian", sub: "CHILDCARE & EDUCATION", w: 7.5, c: ["#ffffff", "#5b2a86"], what: "Childcare" }] },
-    { kind: "strip", addr: "10 Moorvale Lane", a: [-169.1, -195.9], b: [-163.0, -186.7], n: [-0.8334, 0.5526], kerb: 0.76, across: 6.56, eave: 49.6, wall: "#e4ddd0", awning: "#3b3b3b",
-      shops: [{ n: "Dinder Kitchen", w: 4, c: ["#1d1d1d", "#f2c14e"], what: "Sudanese kitchen (halal)", jump: true }, { n: "Salina", sub: "RESTAURANT", w: 3.6, c: ["#7a1f2b", "#ffffff"], what: "Restaurant" },
-        { n: "Red Sea", sub: "GROCERIES", w: 3.4, c: ["#b71c1c", "#ffffff"], what: "African groceries" }] },
+    // The May 2024 view from Radburn shows brick end walls and a narrow pedestrian lane between the two surveyed buildings.
+    // Dinder gives shop 8/183 and describes the Radburn corner. The lane bays and window fittings are approximate.
+    { kind: "strip", addr: "Shop 8/183 Beaudesert Road (Moorvale Lane)", a: [-155.1, -188.7], b: [-160.0, -185.55], n: [-0.542, -0.8404], kerb: 1.2, across: 2.6, awningDepth: 0.38, jumpOut: 1.45, eave: 49.6, wall: "#b88158", awning: "#b4a99b",
+      shops: [{ n: "Dinder Kitchen", display: "dinder", w: 5.8, c: ["#342e28", "#ead6aa"], what: "Sudanese kitchen (halal)", jump: true }] },
+    { kind: "strip", addr: "10 Moorvale Lane", a: [-152.8, -193.3], b: [-144.9, -198.4], n: [0.5439, 0.8392], kerb: 1.2, across: 2.6, awningDepth: 0.38, eave: 49.6, wall: "#c58a60", awning: "#b4a99b",
+      shops: [{ n: "Salina", display: "salina", sub: "RESTAURANT", w: 4.6, c: ["#7a1f2b", "#ffffff"], what: "Restaurant" },
+        { n: "Red Sea", display: "pantry", sub: "GROCERIES", w: 4.8, c: ["#b71c1c", "#ffffff"], what: "African groceries, Moorvale Lane frontage" }] },
     { kind: "sign", addr: "8 Moorvale Lane", a: [-161.8, -184.4], b: [-157.5, -177.5], n: [-0.8487, 0.5289], kerb: 0.3, across: 7.61, eave: 49.6, wall: "#e4ddd0",
       shops: [{ n: "Moorooka Accountant", w: 7, c: ["#f2f2f2", "#1d3557"], what: "Accountant" }] },
     // Colebrook Corner's white weatherboard building on the corner of Colebrook Avenue, north of the Vanilla Lab's gap (Street View, April
@@ -11238,7 +11245,7 @@ const handle = async (m, post) => {
         : /solicitor|lawyer|tax|accountant|bank|optometr|chiro|physio|dental|medical|doctor|office|real estate/.test(t) ? "office" : "plain"; };
     // Rannchhod Arcade seen from the footpath. Project the passage into its existing shop canvas.
     // The glazing rhythm, colours and apparent depth are inferred. The atrium and shops are inside the block.
-    const arcadePassage = (g, left, right, Y, scale, tenant) => {
+    const arcadePassage = (g, left, right, Y, scale, shop) => {
       g.save();
       g.translate(left * scale, Y(2.5));
       g.scale((right - left) * scale, 2.5 * scale);
@@ -11252,6 +11259,24 @@ const handle = async (m, post) => {
         points.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y));
         g.closePath(); g.fill();
       };
+      if (shop.mallPassage) {
+        // Moorooka Mall, October 2024: white entrance piers, a dark straight passage and a chequered floor.
+        // Keep its back wall enclosed. The circular atrium belongs to Rannchhod Arcade.
+        g.fillStyle = "#332f2d"; g.fillRect(0, 0, 1, 1);
+        face("#77766e", [[0,0],[1,0],project(1,0,4),project(0,0,4)]);
+        for (let row = 0; row < 12; row++) for (let col = 0; col < 6; col++) {
+          const a = col / 6, b = (col + 1) / 6, z = row / 3, end = (row + 1) / 3;
+          face((row + col) % 2 ? "#343839" : "#cccac1", [project(a,1,z),project(b,1,z),project(b,1,end),project(a,1,end)]);
+        }
+        for (const side of [0,1]) for (let bay = 0; bay < 4; bay++) {
+          const wall = (start, end, top, bottom, colour) => face(colour, [project(side,top,start),project(side,top,end),project(side,bottom,end),project(side,bottom,start)]);
+          wall(bay,bay+1,0,1,"#b0ada4"); wall(bay+0.1,bay+0.95,0.16,0.92,"#343d3e");
+          wall(bay+0.12,bay+0.90,0.65,0.69,"#78837e");
+        }
+        g.fillStyle = "#f3e4c7"; g.textAlign = "center"; g.textBaseline = "middle";
+        g.font = "bold 0.065px sans-serif"; g.fillText(shop.rearTenant,0.5,0.47,0.19);
+        g.restore(); return;
+      }
       g.fillStyle = "#d4baa0"; g.fillRect(0, 0, 1, 1);
       // Looking through the street-level shops towards the bright circular atrium.
       face("#c2b9a5", [[0,0], [1,0], project(1,0,3), project(0,0,3)]);
@@ -11289,7 +11314,7 @@ const handle = async (m, post) => {
         }
       }
       g.fillStyle = "#f5e5ca"; g.textBaseline = "middle"; g.textAlign = "center";
-      g.font = "bold 0.086px sans-serif"; g.fillText(tenant, 0.5, 0.47, 0.24);
+      g.font = "bold 0.086px sans-serif"; g.fillText(shop.rearTenant, 0.5, 0.47, 0.24);
       // The rail at the head of the stair, catching daylight below the tenant fascia.
       g.fillStyle = "#c6b299";
       g.fillRect(0.38, 0.55, 0.11, 0.013);
@@ -11312,7 +11337,7 @@ const handle = async (m, post) => {
         for (const p of points.slice(1)) g.lineTo(...p);
         g.closePath(); g.fill();
       };
-      const warm = ["dining", "cafe", "curtains", "bakery", "giftware", "charcoal", "wok", "burger"].includes(display);
+      const warm = ["dining", "cafe", "curtains", "bakery", "giftware", "charcoal", "wok", "burger", "biltong", "pizza", "habos", "salina", "dinder"].includes(display);
       const wall = warm ? "#bc9875" : "#b0bdba", floor = warm ? "#796653" : "#667578";
       const back = g.createLinearGradient(0, 6, 0, 63);
       back.addColorStop(0, warm ? "#776353" : "#627477"); back.addColorStop(0.46, wall); back.addColorStop(1, wall);
@@ -11353,6 +11378,62 @@ const handle = async (m, post) => {
           }
           break;
         }
+        case "biltong":
+          rect(8,13,43,42,"#513a2e"); rect(11,16,37,2,"#e0be84");
+          for (const x of [14,21,28,35,42]) {
+            rect(x,18,1,4,"#b6b9ac");
+            poly([[x-1,22],[x+2,21],[x+4,26],[x+2,37+x%6],[x,39],[x-2,30]],"#85462d");
+          }
+          rect(53,22,35,32,"#d4d6c7"); rect(56,25,29,24,"#638084");
+          for (const y of [34,45]) {
+            for (const x of [61,70,79]) oval(x,y-2,3.5,2.2,"#985442");
+            rect(57,y,27,1,"#d9ddd0");
+          }
+          break;
+        case "pizza":
+          rect(12,12,50,16,"#242927");
+          for (const x of [16,31,46]) {
+            rect(x,15,10,2,"#efce9c"); rect(x,20,8,1,"#d3c8ae");
+          }
+          rect(65,25,24,18,"#b5b9b2"); rect(67,29,20,6,"#403b35");
+          rect(6,43,87,14,"#9e714f"); rect(5,40,89,3,"#e4d5b6");
+          for (const y of [31,34,37]) { rect(23,y,20,2.8,"#dfc299"); rect(23,y+2,20,0.8,"#977952"); }
+          break;
+        case "kingz":
+          rect(0,1,100,13,"#222725");
+          g.fillStyle = "#f1f3ed"; g.font = "bold 9px serif"; g.textAlign = "center"; g.fillText("KINGZ BARBERSHOP",50,11,95);
+          for (const x of [26,69]) {
+            rect(x-11,17,22,20,"#343838"); rect(x-9,18,18,18,"#c2d6d3");
+            rect(x-13,37,26,2,"#615346"); rect(x-7,34,14,10,"#292a29");
+            rect(x-10,43,20,4,"#171b1b"); rect(x-1,47,2,7,"#d7d9d3"); oval(x,55,7,1.5,"#3c4442");
+          }
+          break;
+        case "tinted":
+          rect(0,0,100,70,"#303b3e"); rect(0,42,100,4,"#b9c0ba"); rect(0,49,100,2,"#78888b");
+          break;
+        case "dinder":
+          rect(10,11,31,20,"#504338"); rect(12,13,27,16,"#dbbd89");
+          oval(25,21,10,4,"#f5e4c3"); oval(25,21,6,2,"#98603d");
+          rect(12,41,76,15,"#9b6548"); rect(10,39,80,3,"#dfceac");
+          for (const x of [48,62,76]) { oval(x,37,6,2.2,"#b4824f"); oval(x,35,5,1.8,"#e2b87e"); }
+          break;
+        case "salina":
+          rect(14,13,25,17,"#684b3a"); rect(16,15,21,13,"#cda576");
+          for (const x of [30,70]) {
+            rect(x-13,38,5,14,"#654331"); rect(x+9,38,5,14,"#654331");
+            oval(x,44,12,3,"#d4b78b"); rect(x-1,46,2,9,"#614f3f"); oval(x,43,6,1.6,"#f1dfbf");
+          }
+          break;
+        case "habos":
+          rect(5,12,88,18,"#38363a");
+          for (const x of [20,48,76]) {
+            rect(x-9,14,18,14,"#b8aba0"); oval(x,21,7,5,"#ece1ce"); oval(x,21,4,2.8,"#9c683b");
+          }
+          rect(8,38,81,17,"#b3a089");
+          for (const x of [19,42,65]) {
+            rect(x-8,40,19,13,"#eee4d0"); oval(x+1,46,7,4,"#806449"); oval(x,45,4,2.5,"#b18545");
+          }
+          break;
         case "strength":
           for (const x of [18, 63]) {
             rect(x, 12, 2, 41, "#2e363b"); rect(x+20, 12, 2, 41, "#2e363b");
@@ -11416,7 +11497,7 @@ const handle = async (m, post) => {
         if (s.arcade) { g.fillStyle = "#15171a"; R(x0 + 0.3, x1 - 0.3, 0, 2.5);  // the way in: dark, with a chequered floor
           for (let i = 0; i < 12; i++) { g.fillStyle = i % 2 ? "#e8e6e0" : "#1b1b1b"; g.fillRect((x0 + 0.3 + i * (x1 - x0 - 0.6) / 12) * S, Y(0.28), (x1 - x0 - 0.6) / 12 * S, 0.28 * S); }
           g.fillStyle = "rgba(255,236,200,0.75)"; for (let lx = x0 + 0.8; lx < x1 - 0.5; lx += 1.1) R(lx - 0.15, lx + 0.15, 2.38, 2.44);  // lights down the arcade
-          if (s.rearTenant) arcadePassage(g, x0 + 0.3, x1 - 0.3, Y, S, s.rearTenant);
+          if (s.rearTenant) arcadePassage(g, x0 + 0.3, x1 - 0.3, Y, S, s);
           if (s.checks) for (const px of [x0, x1 - 0.3]) for (let k = 0, yy = 0.3; yy < 2.5; yy += 0.15, k++) for (let j = 0; j < 2; j++) { g.fillStyle = (k + j) % 2 ? "#f2f0ea" : "#151515"; R(px + j * 0.15, px + (j + 1) * 0.15, yy, Math.min(2.5, yy + 0.15)); } }  // (Rannchhod Arcade's black and white pillars)
         else { const kind = shopKind(s), dx = x0 + W * (s.post ? 0.5 : 0.62) - 0.5, free = (a, b) => b < dx - 0.08 || a > dx + 1.08;  // the door: 1 m wide
           g.fillStyle = { food: "#3a2e24", hair: "#2c3034", shop: "#2b3034", office: "#2c343b", wash: "#2e3438", plain: "#1f3340" }[kind]; R(x0, x1, 0.45, 2.5); R(dx, dx + 1, 0, 0.45);
@@ -11466,7 +11547,8 @@ const handle = async (m, post) => {
           if (s.posters) for (let i = 0; i < Math.round((x1 - x0) * 1.2); i++) { g.fillStyle = ["#e9b22a", "#d8432e", "#3fa34d", "#e87f1f", "#f2e04a"][Math.floor(rnd() * 5)]; g.fillRect((x0 + 0.2 + rnd() * (x1 - x0 - 1)) * S, Y(1.1 + rnd() * 1.1), (0.4 + rnd() * 0.5) * S, (0.5 + rnd() * 0.5) * S); }
           if (s.display) {
             const edge = x0 + 0.08, right = dx - 0.09;
-            if (right > edge) paintShopDisplay(g, edge * S, Y(2.44), (right-edge) * S, 1.91 * S, s.display, s.c[0]);
+            if (s.display === "tinted") paintShopDisplay(g, x0 * S, Y(2.44), W * S, 1.91 * S, s.display, s.c[0]);
+            else if (right > edge) paintShopDisplay(g, edge * S, Y(2.44), (right-edge) * S, 1.91 * S, s.display, s.c[0]);
           }
           // the sky across the glass
           g.save(); g.beginPath(); g.rect(x0 * S, Y(2.5), W * S, 2.5 * S); g.clip(); g.fillStyle = "rgba(255,255,255,0.11)";
@@ -11517,7 +11599,7 @@ const handle = async (m, post) => {
       let signY = 2.55, signH = 0.85;  // where a stand-off sign sits, for Jump to
       if (f.kind === "strip") {
         // shopfronts under an awning that reaches most of the way to the kerb; each shop's name on the awning's edge
-        const depth = bsClamp(f.kerb - 0.6, 1.2, 2.6);
+        const depth = f.awningDepth ?? bsClamp(f.kerb - 0.6, 1.2, 2.6);
         // (as Street View shows them: Ash, 20 November 2026, "a little unpolished. Use google maps") a lip of darker metal under each sign,
         // downlights under the awning, its tie rods up to the wall where there's an upper floor, a canvas canopy over the glass where a shop
         // has one (Big Boss's red), and on the footpath a table and chairs outside a place to eat and an A-frame board outside a barber's or a
@@ -12185,7 +12267,7 @@ const handle = async (m, post) => {
       // (a shop on a post out the front: its tag over the post, not over the wall behind it)
       shops.forEach((s, i) => { if (s.n && where[i]) { const pk = f.pole?.big || 1, q = f.pole && f.noBoard ? at(f.pole.x ?? -1.6, 1.15 + 1.45 * pk + 0.15 + 0.8 * pk + 0.35, f.pole.o ?? bsClamp(f.kerb - (f.pole.back ?? 1.6), 2, 9)) : at(f.kind === "sign" && f.bx != null && shops.length === 1 ? f.bx : (where[i][0] + where[i][1]) / 2, signY + signH + 0.35, 0.3); T.shopTags.push({ n: s.n === "POST OFFICE" ? "Post Office" : s.n, x: q[0], y: q[1], z: q[2] }); }
         if (!s.jump) return;
-        const cx = (where[i][0] + where[i][1]) / 2, D = f.across + 1.6 <= 22 ? f.across + 1.6 : Math.max(6, f.kerb - 1.5), p = at(cx, 0, D), q = at(cx, 0, 0);
+        const cx = (where[i][0] + where[i][1]) / 2, D = f.jumpOut ?? (f.across + 1.6 <= 22 ? f.across + 1.6 : Math.max(6, f.kerb - 1.5)), p = at(cx, 0, D), q = at(cx, 0, 0);
         out.push({ name: s.n === "POST OFFICE" ? "Moorooka Post Office" : s.n, group: "Shops and places", what: `${s.what}, ${f.addr}`, walk: { x: p[0], z: p[2], yaw: Math.atan2(f.n[0], f.n[1]), pitch: Math.atan2(signY + signH / 2 - 1.7, D) * 0.8 }, target: [q[0], q[2]] }); });
     }
     parts.push({ positions: new Float32Array(P), normals: new Float32Array(Nn), colors: new Float32Array(Cc), matrix: I, color: [1, 1, 1], roughness: 0.7, doubleSide: true });
