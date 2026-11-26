@@ -32,6 +32,10 @@ jobs:
 
       - name: Build the pages
         run: python3 build.py _site
+        env:
+          # Moorooka AI's server: the Cloudflare Worker that holds the API key (moorooka-ai/SETUP.md). Not a secret.
+          # Set it in Settings > Secrets and variables > Actions > Variables. Until then the page says setup is needed.
+          MOOROOKA_AI_ENDPOINT: ${{ vars.MOOROOKA_AI_ENDPOINT }}
 
       - uses: actions/configure-pages@v5
         with:

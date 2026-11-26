@@ -92,6 +92,13 @@ svg{flex:none}
 .icon-btn{width:40px;height:40px;border-radius:11px;border:0;background:none;display:grid;place-items:center;color:var(--ink)}
 .icon-btn:hover{background:var(--surface)}
 .icon-btn svg{width:21px;height:21px}
+/* Upgrade to Premium: a small pill (top bar on phones, beside the send button on wide screens). It only says "coming soon" for now. */
+.pro{position:relative;flex:none;display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 12px 0 9px;border:0;border-radius:999px;background:var(--accent-tint);color:var(--accent-text);font-size:13px;font-weight:600;white-space:nowrap;transition:background var(--t),color var(--t),transform var(--t)}
+.pro::after{content:"";position:absolute;inset:-6px}
+.pro svg{width:14px;height:14px}
+.pro:hover{background:color-mix(in srgb,var(--accent) 18%,var(--card))}
+.pro:active{transform:scale(.97)}
+.cbar .pro{display:none}
 .top.scrolled{box-shadow:0 1px 0 var(--line)}
 
 /* ---------- home ---------- */
@@ -171,6 +178,7 @@ svg{flex:none}
 .main.is-home .top:not(.scrolled){background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;color:#fff}
 .main.is-home .top:not(.scrolled) .icon-btn{color:#fff}
 .main.is-home .top:not(.scrolled) .icon-btn:hover{background:rgba(255,255,255,.14)}
+.main.is-home .top:not(.scrolled) .pro,.main.is-home .top:not(.scrolled) .pro:hover{background:#fff;color:#0D5C3B}
 .skypick{display:flex;gap:6px;margin-top:6px}
 .skypick button{flex:1;border:1px solid var(--line-2);background:var(--card);border-radius:10px;min-height:40px;font-size:13.5px;font-weight:550}
 .skypick button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
@@ -248,6 +256,7 @@ svg{flex:none}
 .rel:hover{color:var(--accent-text)}
 .ans.err .md{color:var(--ink-2)}
 .retry{display:inline-flex;align-items:center;gap:6px;margin-top:10px;border:1px solid var(--line-2);background:var(--card);border-radius:999px;padding:7px 14px;font-size:13.5px;font-weight:550;color:var(--ink)}
+.retry svg{width:15px;height:15px;flex:none}
 
 /* ---------- explore pages ---------- */
 .page-head{padding:18px 0 16px}
@@ -391,6 +400,7 @@ svg{flex:none}
   .cmeta{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-3);padding:4px 0}
   .cmeta svg{width:14px;height:14px}
   .cbar .grow{flex:1}
+  .cbar .pro{display:inline-flex;margin-right:6px}
   .page-head{padding-top:44px}
   .page-head h2{font-size:36px}
   .thread{padding-top:24px}
@@ -408,6 +418,7 @@ svg{flex:none}
   .p-acts a,.p-acts button{min-height:40px;font-size:13.5px}
   .acts{margin:12px -10px 0}
   .acts button{min-height:40px;padding:6px 10px;font-size:13.5px}
+  .retry{min-height:44px}
   .brand{min-height:40px}
   .rel{min-height:48px}
   .more{min-height:46px}
@@ -417,6 +428,8 @@ svg{flex:none}
   .main.is-home .page-chat{padding-bottom:calc(128px + env(safe-area-inset-bottom))}
 }
 @media (max-width:359px){
+  .pro{width:32px;padding:0;justify-content:center}
+  .pro span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
   .bento{grid-template-columns:1fr}
   .d-card{flex-direction:row;align-items:center;gap:12px;min-height:0;padding:12px}
   .d-card .d-top{order:0;gap:0}
@@ -465,7 +478,7 @@ svg{flex:none}
   <div class="side-foot">
     <button class="linkbtn" id="aboutBtn">About</button>
     <button class="linkbtn" id="clearChats" hidden>Clear chats</button>
-    <button class="ver" id="ver" aria-label="App version">v3.0 BUILD_ID</button>
+    <button class="ver" id="ver" aria-label="App version">v3.1 BUILD_ID</button>
   </div>
 </aside>
 <div class="side-scrim" id="sideScrim"></div>
@@ -475,6 +488,7 @@ svg{flex:none}
     <div class="in">
       <button class="icon-btn menu" id="menuBtn" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h10M4 17h16"/></svg></button>
       <h1 id="title"><button class="brand" data-home aria-label="Moorooka AI home"></button></h1>
+      <button type="button" class="pro" data-premium aria-label="Upgrade to Premium"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4z"/></svg><span>Upgrade</span></button>
       <button class="icon-btn newchat" data-newchat aria-label="New chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
     </div>
   </header>
@@ -501,6 +515,7 @@ svg{flex:none}
           <div class="cbar">
             <span class="cmeta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Searches the web for the latest</span>
             <span class="grow"></span>
+            <button type="button" class="pro" data-premium aria-label="Upgrade to Premium"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4z"/></svg><span>Upgrade</span></button>
             <button type="button" class="cbtn mic" id="mic" aria-label="Speak your question" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg></button>
             <button type="submit" class="cbtn send" id="send" aria-label="Send" disabled></button>
           </div>
@@ -989,6 +1004,7 @@ function retryLast(){
   ask(u.content);
 }
 function friendlyError(err){
+  if(err && err.friendly) return err.friendly;
   const m = String(err && (err.message||err.code) || err);
   if(/rate|429|too many/i.test(m)) return "Lots of people are asking right now. Wait a minute, then try again.";
   if(/not_granted|consent/i.test(m)) return "Moorooka AI needs permission to answer. Allow the prompt, then try again.";
@@ -1027,7 +1043,9 @@ async function viaSample(sample, msgs, on){
 }
 async function streamFrom(url, body, headers, on){
   const res = await fetch(url, {method:"POST", headers:{"content-type":"application/json", ...headers}, body: JSON.stringify(body), signal: ctrl.signal});
-  if(!res.ok){ let t=""; try{ t = await res.text(); }catch(e){} let msg = t; try{ msg = JSON.parse(t).error?.message || t; }catch(e){} throw new Error((res.status===429?"rate ":"") + (msg || ("HTTP "+res.status))); }
+  if(!res.ok){ let t=""; try{ t = await res.text(); }catch(e){} let msg = t, own = false; try{ const er = JSON.parse(t).error || {}; msg = er.message || t; own = er.type === "visitor_limit"; }catch(e){}
+    const err = new Error((res.status===429?"rate ":"") + (msg || ("HTTP "+res.status))); if(own) err.friendly = msg;   // our server's own per-visitor limit: show its wording
+    throw err; }
   const reader = res.body.getReader(), dec = new TextDecoder(); let buf = ""; const blocks = {};
   while(true){
     const {value, done} = await reader.read(); if(done) break;
@@ -1266,6 +1284,8 @@ window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); instal
 if(!standalone){ $("#promo").hidden = false; }
 $("#promo").onclick = openInstall;
 document.addEventListener("click", e => { if(e.target.closest("[data-install]")) openInstall(); });
+/* Premium (a stronger AI model for signed-in, paying people) isn't built yet. The free guide stays free for everyone. */
+document.addEventListener("click", e => { if(e.target.closest("[data-premium]")) toast("Premium is coming soon"); });
 $("#aboutBtn").onclick = openAbout;
 function openAbout(){
   setDrawer(false);
