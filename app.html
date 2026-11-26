@@ -1361,6 +1361,30 @@ body.bsdrive:not(.bsplane) .bs-fly-x.bs-car { bottom: calc(68px + env(safe-area-
 .bs-fly-x.bs-flip { top: auto; left: auto; right: 34px; bottom: calc(316px + env(safe-area-inset-bottom)); min-width: 58px; z-index: 2; touch-action: none; user-select: none; -webkit-user-select: none; background: #e8b923; color: #1b1830; }
 .bs-fly-x.bs-flip[hidden] { display: none; }
 @media (hover: hover) and (pointer: fine) { .bs-fly-x.bs-flip { right: auto; left: calc(50% + 190px); bottom: calc(68px + env(safe-area-inset-bottom)); } }
+/* The hotrod's T-rex fight (Inverloch; townCar): the Spuds button where the golden car's 180 goes, the two health bars along the top
+   and the big words in the middle. Only the button takes a tap */
+.bs-fly-x.bs-spud { background: #ff6a1c; color: #fff; min-width: 70px; }
+.bs-fly-x.bs-spud:active { background: #ffd23a; color: #1b1830; }
+.bs-boss { position: absolute; left: 50%; top: calc(64px + env(safe-area-inset-top)); transform: translateX(-50%); width: min(420px, calc(100% - 32px)); z-index: 3; pointer-events: none; color: #fff; font: 800 0.74rem var(--ui); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75); }
+.bs-boss[hidden], .bs-boss-call[hidden] { display: none; }
+body.bsfly.bsboss .toast { top: calc(env(safe-area-inset-top, 0px) + 128px); }  /* (the toasts under the health bars) */
+@media (max-width: 700px) { .bs-boss { top: calc(108px + env(safe-area-inset-top)); } body.bsfly.bsboss .toast { top: calc(env(safe-area-inset-top, 0px) + 172px); } }  /* (a phone: under the speed and the GPS) */
+.bs-boss-name { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 4px; letter-spacing: 0.05em; text-transform: uppercase; }
+.bs-boss-name span { color: #ffd23a; }
+.bs-boss-bar { height: 12px; border-radius: 6px; background: rgba(0, 0, 0, 0.5); overflow: hidden; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3); }
+.bs-boss-bar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #a3121b, #ff4b2b); transition: width 0.25s ease-out; }
+.bs-boss-me { display: flex; align-items: center; gap: 8px; margin-top: 7px; }
+.bs-boss-me .bs-boss-bar { flex: 1; height: 8px; }
+.bs-boss-me .bs-boss-bar i { background: linear-gradient(90deg, #c58c47, #ffd23a); }
+.bs-boss.rage > .bs-boss-bar i { animation: bsRage 0.45s infinite alternate; }
+.bs-boss.hurt .bs-boss-me { animation: bsHurt 0.45s; }
+.bs-boss-call { position: absolute; left: 50%; top: 32%; transform: translate(-50%, -50%); z-index: 3; pointer-events: none; white-space: nowrap; font: 900 clamp(1.6rem, 7vw, 3rem) var(--ui); letter-spacing: 0.04em; color: #ffd23a; text-shadow: 0 3px 0 #7a1a0c, 0 6px 22px rgba(0, 0, 0, 0.6); }
+.bs-boss-call.bad { color: #ff5a3c; text-shadow: 0 3px 0 #3a0806, 0 6px 22px rgba(0, 0, 0, 0.6); }
+.bs-boss-call.pop { animation: bsPop 0.35s ease-out; }
+@keyframes bsRage { to { filter: brightness(1.7); } }
+@keyframes bsHurt { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+@keyframes bsPop { from { transform: translate(-50%, -50%) scale(1.6); } }  /* (no fade: a stalled frame left it see-through) */
+@media (prefers-reduced-motion: reduce) { .bs-boss.rage > .bs-boss-bar i, .bs-boss.hurt .bs-boss-me, .bs-boss-call.pop { animation: none; } }
 /* the map-editing pencil: where the handbrake shows in a car, over the Look stick (Ash, 15 November 2026), and away while you drive or fly one */
 /* the construction worker's button: above Sprint and Jump, twice the size it was, saying whether building is on (Ash, 16 November 2026) */
 .bs-fly-x.bs-edit { top: auto; left: auto; right: 30px; bottom: calc(318px + env(safe-area-inset-bottom)); width: 84px; height: 84px; padding: 0 0 14px; border-radius: 22px; display: inline-flex; align-items: center; justify-content: center; z-index: 2; position: absolute; }
@@ -2035,6 +2059,7 @@ body.bstown.bsgmap.bsheld .bs-joy, body.bstown.bsgmap.bsheld .bs-ud { display: n
   body.bstown .bs-fly-x.bs-boost { right: calc(max(18px, env(safe-area-inset-right)) + 146px) !important; bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
   body.bstown .bs-fly-x.bs-grip { right: calc(max(18px, env(safe-area-inset-right)) + 146px) !important; bottom: calc(134px + env(safe-area-inset-bottom)) !important; }
   body.bstown .bs-fly-x.bs-coo { right: calc(max(18px, env(safe-area-inset-right)) + 146px) !important; bottom: calc(188px + env(safe-area-inset-bottom)) !important; }
+  body.bstown .bs-fly-x.bs-spud { right: calc(max(18px, env(safe-area-inset-right)) + 146px) !important; bottom: calc(134px + env(safe-area-inset-bottom)) !important; }  /* (the hotrod's Spuds, above Boost) */
   body.bstown.bspossum:has(#bsHandBtn[hidden]) .bs-fly-x.bs-boost { bottom: calc(26px + env(safe-area-inset-bottom)) !important; }  /* (the plain possum: down one each) */
   body.bstown.bspossum:has(#bsHandBtn[hidden]) .bs-fly-x.bs-grip { bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
   /* (Explore and Free view move left, beside Settings and Share, so the GPS row up the right doesn't sit on Free view; and on foot the
@@ -17993,7 +18018,9 @@ const handle = async (m, post) => {
     moo: { planes: [...MOO_PLANES, { x: -464, z: -1533, h: 2.71, heli: true, name: "The helicopter", at: "on the field off School Road", what: "On the open grass off School Road, near Nathan Terrace. Walk up to it and get in" }, ...mooDayRides()],
       cars: [MOO_RED6, MOO_GOLD_CAR], possum: MOO_POSSUM, pigeon: MOO_PIGEON },  // (the bus drives itself now: townTraffic)
     inv: { planes: [{ x: -210, z: -377, h: 1.571, name: "The plane", at: "on the lawn by The Hub", what: "On the lawn by The Hub, off A'Beckett Street. Walk up to it and get in" }],
-      cars: [{ x: -228.5, z: -375.5, h: Math.PI, spare: true, name: "The red car", what: "On the lawn by The Hub, beside the plane" }, { x: -232.5, z: -375.5, h: Math.PI, gold: true, name: "The golden car", what: "On the lawn by The Hub. A fifth faster than the red one" }],
+      cars: [{ x: -228.5, z: -375.5, h: Math.PI, spare: true, name: "The red car", what: "On the lawn by The Hub, beside the plane" }, { x: -232.5, z: -375.5, h: Math.PI, gold: true, name: "The golden car", what: "On the lawn by The Hub. A fifth faster than the red one" },
+        // the potato hotrod, only in Inverloch (Ash, 26 November 2026): beside the golden car. 20 seconds after you get in, the T-rex comes (townCar)
+        { x: -237.2, z: -375.5, h: Math.PI, hotrod: true, name: "The hotrod", what: "A potato hot rod with a blower and flames, on the lawn by The Hub. Only in Inverloch. Get in if you dare" }],
       more: { planes: [{ x: -1602.1, z: 422, h: 2.6, heli: true, name: "The helicopter", at: "behind 11 Norman Road", what: "On the grass behind 11 Norman Road" }], cars: [{ x: -214, z: -359.6, h: -1.571, bus: true, name: "The bus", what: "In A'Beckett Street, out the front of The Hub" }] },
       roam: [[-278, -562], [627, -1086], [-108, -190], [17, -179], [-1585, 1221], [575, 1066]] },
     logan: { planes: [{ x: 5732, z: -12989, h: 1.0, name: "The plane", at: "on the big lawn in Civic Centre Park", what: "On the big open lawn in Civic Centre Park, behind the council, with room to take off" }],
@@ -18505,7 +18532,7 @@ const handle = async (m, post) => {
     P.frame = () => { if (!P.cars.length) return; const now = performance.now(), dt = Math.min(0.1, (now - last) / 1000); last = now; if (!dt) return;
       // you: on foot, or in whatever you are driving
       const me = T.car?.in ? T.car.pose?.() : T.walk ? { x: F.pos.x, z: F.pos.z } : null;
-      const kind = contact && me && (T.car?.in ? (me.k === "gold" ? "car" : me.k) : "walk");
+      const kind = contact && me && (T.car?.in ? (me.k === "gold" || me.k === "hotrod" ? "car" : me.k) : "walk");
       const player = townTrafficBodies[kind] ? { x: me.x, z: me.z, h: me.h || 0, y: me.y ?? ground(me.x, me.z) + (F.jumpH || 0) } : null;
       const previous = playerStart?.kind === kind ? playerStart : player;
       playerStart = null;
@@ -18606,7 +18633,7 @@ const handle = async (m, post) => {
     const THREE = BS.B.THREE, M = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), ONE = new THREE.Vector3(1, 1, 1), NONE = new THREE.Matrix4().makeScale(0, 0, 0).elements;
     const TOPS = ["#d1495b", "#2e86ab", "#3a9d5d", "#e08e2b", "#7b5ea7", "#1f9e9e", "#c2577a", "#5b7f2f"], wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
     const V2 = new THREE.Vector3();
-    const SHAPES = { walk: (c, lc) => townPlaneParts(c, "person", lc), builder: c => townPlaneParts(c, "builder"), chef: c => townPlaneParts(c, "chef"), car: c => townPlaneParts(c, true), gold: () => townPlaneParts("#e8b923", true), bus: () => townPlaneParts("#2f7fc4", "bus"),
+    const SHAPES = { walk: (c, lc) => townPlaneParts(c, "person", lc), builder: c => townPlaneParts(c, "builder"), chef: c => townPlaneParts(c, "chef"), car: c => townPlaneParts(c, true), gold: () => townPlaneParts("#e8b923", true), hotrod: () => townHotrodOne || (townHotrodOne = townHotrodParts(true)), bus: () => townPlaneParts("#2f7fc4", "bus"),
       plane: () => townPlaneParts().slice(0, 1), goldplane: () => townPlaneParts("#e2ad1c").slice(0, 1), heli: () => townPlaneParts("#c8322b", "heli").slice(0, 2), goldheli: () => townPlaneParts("#e2ad1c", "heli").slice(0, 2),
       possum: () => townPlaneParts(undefined, "possum"), drone: () => townPlaneParts(undefined, "drone"), pigeon: () => townPlaneParts(undefined, "pigeon"), goldpigeon: () => townPlaneParts("gold", "pigeon") };
     const peers = new Map(); let sendEmote = null, emoteAt = 0; const SH = [new THREE.Matrix4().makeTranslation(-0.31, 1.42, 0), new THREE.Matrix4().makeTranslation(0.31, 1.42, 0)], R1 = new THREE.Matrix4(), R2 = new THREE.Matrix4();
@@ -18643,7 +18670,7 @@ const handle = async (m, post) => {
     // (Ash, 15 November 2026: "Make it more obvious when a player is riding with you")
     const riders = new Map(), rideCard = document.createElement("div"), rideTag = document.createElement("div");
     rideCard.className = "bs-ridecard"; rideCard.hidden = true; rideCard.setAttribute("role", "status"); rideTag.className = "bs-peer bs-ridetag"; rideTag.hidden = true; box.append(rideCard, rideTag);
-    const CLING_TOP = { plane: 1.95, goldplane: 1.95, heli: 2.05, goldheli: 2.05, car: 1.45, gold: 1.45, bus: 3.3 };  // tell a driver you've got in with them, or out
+    const CLING_TOP = { plane: 1.95, goldplane: 1.95, heli: 2.05, goldheli: 2.05, car: 1.45, gold: 1.45, hotrod: 1.75, bus: 3.3 };  // tell a driver you've got in with them, or out
     // a disco ball (an emote you only have while drunk: Ash, 16 November 2026, "Whilst drunk give me an emote to summon a disco ball that's
     // quite impressive"): a mirror ball drops in 6.5 m over whoever summoned it, spins and throws coloured beams round for nine seconds
     const discos = [], discoAt = (where, secs) => { if (discos.length > 3) return; const parts = m.addParts(townPlaneParts("#ffffff", "disco").map(q => ({ ...q, matrix: NONE.slice() }))); discos.push({ parts, where, t0: performance.now(), secs }); };
@@ -18701,7 +18728,7 @@ const handle = async (m, post) => {
     // (someone getting into a car, plane, helicopter, the possum, the pigeon or the drone: your own copy of it is hidden while they have
     // it, and when they leave it it's moved to where they left it. README "Known gaps": "a vehicle someone else is in is drawn as well as
     // your own copy of it standing where it lives; cars others drive off still stand in your copy of the town")
-    const RIDEK = new Set(["car", "gold", "bus", "plane", "goldplane", "heli", "goldheli", "possum", "pigeon", "goldpigeon", "drone"]);
+    const RIDEK = new Set(["car", "gold", "hotrod", "bus", "plane", "goldplane", "heli", "goldheli", "possum", "pigeon", "goldpigeon", "drone"]);
     const drop = id => { riders?.delete(id); const q = peers.get(id); if (!q) return; if (RIDEK.has(String(q.kind || "").split("~")[0])) try { T.car?.peerLeft?.(id, q.shown || q.b); } catch {} try { q.parts?.remove(); } catch {} q.spin?.remove(); q.el.edge?.remove(); q.el.remove(); peers.delete(id); P.count = peers.size; };
     const got = (a, id) => { if (!Array.isArray(a) || a.length < 7 || !a.slice(0, 4).every(Number.isFinite)) return;
       let q = peers.get(id); if (!q) { if (peers.size >= 12) return; q = { el: label(id), name: "", kind: "", parts: null, a: null, b: null, colour: TOPS[[...String(id)].reduce((n, ch) => n + ch.charCodeAt(0), 0) % TOPS.length] }; peers.set(id, q); P.count = peers.size; }
@@ -19158,6 +19185,14 @@ const handle = async (m, post) => {
         f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(3200, t + 0.45); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.22, t + 0.12); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
         n.connect(f); f.connect(g); g.connect(master); n.start(t); n.stop(t + 0.6); this.tone(500, 1400, 0.4, 0.05, "triangle"); },
       boing() { this.tone(180, 620, 0.35, 0.1, "sine"); },
+      // the T-rex (townCar): a roar, two growling notes wobbling down through a closing filter with breath under them (k: how big), and
+      // the crunch of a bite or a hit
+      roar(k = 1) { const a = ctx(); if (!a) return; const t = a.currentTime, len = 0.6 + 1.1 * k, o = a.createOscillator(), o2 = a.createOscillator(), lfo = a.createOscillator(), lg = a.createGain(), f = a.createBiquadFilter(), g = a.createGain();
+        o.type = "sawtooth"; o2.type = "square"; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(68, t + len); o2.frequency.setValueAtTime(97, t); o2.frequency.exponentialRampToValueAtTime(46, t + len);
+        lfo.frequency.value = 24; lg.gain.value = 16; lfo.connect(lg); lg.connect(o.frequency); lg.connect(o2.frequency); f.type = "lowpass"; f.Q.value = 4; f.frequency.setValueAtTime(1100, t); f.frequency.exponentialRampToValueAtTime(300, t + len);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.3 * Math.min(1, k + 0.2), t + 0.12); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+        o.connect(f); o2.connect(f); f.connect(g); g.connect(master); for (const x of [o, o2, lfo]) { x.start(t); x.stop(t + len + 0.05); } hit(len, 520, 0.32 * k, 0); },
+      crunch() { hit(0.12, 2400, 0.4, 160); setTimeout(() => hit(0.1, 1800, 0.3, 120), 70); },
       // the pigeon's coo-roo-coo (Ash, 18 November 2026: "Make a noise on request that other players can hear. Like a pigeon sound")
       // (louder and longer: Ash, 18 November 2026, "Make coo a bit louder and longer")
       coo(k = 1) { this.tone(360, 430, 0.3, 0.22 * k, "sine"); setTimeout(() => this.tone(450, 300, 0.5, 0.26 * k, "sine"), 300); setTimeout(() => this.tone(390, 350, 0.34, 0.2 * k, "sine"), 860);
@@ -21642,6 +21677,192 @@ const handle = async (m, post) => {
       if (walls && m.solidAt?.(x, z) && y < gy(x, z) + 8) return out(pt);
       if (y <= gy(x, z)) { let a = pt, b = t; for (let k = 0; k < 10; k++) { const c = (a + b) / 2; if (cam.y + dy * c <= gy(cam.x + dx * c, cam.z + dz * c)) b = c; else a = c; } return out(b); } }
     return null; }
+  // ---- the potato hotrod and the Inverloch T-rex (Ash, 26 November 2026: "Generate this as a moderate res car called hotrod found only
+  // in Inverloch. If I get in the car in 20 seconds start a boss fight where a massive trex engages me in a boss battle"). Both are made
+  // here from smooth tubes and a lumpy potato, every corner coloured, nose to +Z, wheels (and feet) on y = 0. Moderate res: about 14,000
+  // triangles for the hotrod and 7,000 for the T-rex, made once when first needed
+  const townLin = hex => { const v = parseInt(hex.slice(1), 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255].map(c => Math.pow(c / 255, 2.2)); };
+  const townMix = (a, b, f) => [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f];
+  function townGeo() { const P = [], K = [], I = [], cr = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]], nz = a => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
+    const g = { cr, nz,
+      v(p, c) { P.push(p[0], p[1], p[2]); K.push(c[0], c[1], c[2]); return P.length / 3 - 1; },
+      t(a, b, c) { I.push(a, b, c); },
+      // a smooth tube through sections [{ p: [x, y, z], rx, ry }] (rx across, ry the other way), segs round, coloured by col(p, normal, i, a);
+      // its ends capped unless open. The way across starts as side0 and is carried along the tube without twisting
+      loft(S, segs, col, o = {}) { const n = S.length, rings = []; let side = o.side0 || [1, 0, 0];
+        for (let i = 0; i < n; i++) { const a = S[Math.max(0, i - 1)].p, b = S[Math.min(n - 1, i + 1)].p, t = nz([b[0] - a[0], b[1] - a[1], b[2] - a[2]]), d = side[0] * t[0] + side[1] * t[1] + side[2] * t[2];
+          side = nz([side[0] - t[0] * d, side[1] - t[1] * d, side[2] - t[2] * d]); const up = cr(t, side), s = S[i], ring = [];
+          for (let j = 0; j < segs; j++) { const q = (j / segs) * Math.PI * 2 + (o.turn || 0), c = Math.cos(q), sn = Math.sin(q), N = nz([side[0] * c / s.rx + up[0] * sn / s.ry, side[1] * c / s.rx + up[1] * sn / s.ry, side[2] * c / s.rx + up[2] * sn / s.ry]);
+            let p = [s.p[0] + side[0] * c * s.rx + up[0] * sn * s.ry, s.p[1] + side[1] * c * s.rx + up[1] * sn * s.ry, s.p[2] + side[2] * c * s.rx + up[2] * sn * s.ry];
+            if (o.bump) { const k = o.bump(p, N, i, q); p = [p[0] + N[0] * k, p[1] + N[1] * k, p[2] + N[2] * k]; }
+            ring.push(g.v(p, col(p, N, i, q))); }
+          rings.push(ring); if (i === 0) rings.t0 = t; if (i === n - 1) rings.t1 = t; }
+        for (let i = 0; i + 1 < n; i++) for (let j = 0; j < segs; j++) { const A = rings[i][j], B = rings[i][(j + 1) % segs], C = rings[i + 1][(j + 1) % segs], D = rings[i + 1][j]; g.t(A, B, C); g.t(A, C, D); }
+        if (!o.open) for (const [r, sgn, s] of [[rings[0], -1, S[0]], [rings[n - 1], 1, S[n - 1]]]) { const tt = sgn < 0 ? rings.t0 : rings.t1, cap = o.capCol || col(s.p, tt, sgn < 0 ? 0 : n - 1, 0);
+          const c = g.v([s.p[0] + tt[0] * sgn * Math.min(s.rx, s.ry) * 0.35, s.p[1] + tt[1] * sgn * Math.min(s.rx, s.ry) * 0.35, s.p[2] + tt[2] * sgn * Math.min(s.rx, s.ry) * 0.35], cap);
+          for (let j = 0; j < segs; j++) sgn < 0 ? g.t(c, r[(j + 1) % segs], r[j]) : g.t(c, r[j], r[(j + 1) % segs]); }
+        return rings; },
+      // an egg: centre c, radii, along z, rows by segs
+      egg(c, rx, ry, rz, col, rows = 8, segs = 12) { const S = []; for (let k = 1; k < rows; k++) { const a = Math.PI * k / rows, s = Math.sin(a); S.push({ p: [c[0], c[1], c[2] - Math.cos(a) * rz], rx: Math.max(1e-3, rx * s), ry: Math.max(1e-3, ry * s) }); }
+        g.loft(S, segs, typeof col === "function" ? col : () => col); },
+      // a tube along a bent line (points smoothed), radius r
+      pipe(pts, r, segs, col, sub = 6, o = {}) { const S = [], cat = (a, b, c, d, t) => [0, 1, 2].map(k => 0.5 * (2 * b[k] + (-a[k] + c[k]) * t + (2 * a[k] - 5 * b[k] + 4 * c[k] - d[k]) * t * t + (-a[k] + 3 * b[k] - 3 * c[k] + d[k]) * t * t * t));
+        for (let i = 0; i + 1 < pts.length; i++) for (let k = 0; k < sub; k++) S.push({ p: cat(pts[Math.max(0, i - 1)], pts[i], pts[i + 1], pts[Math.min(pts.length - 1, i + 2)], k / sub) });
+        S.push({ p: pts[pts.length - 1] }); S.forEach((s, i) => { s.rx = s.ry = typeof r === "function" ? r(i / (S.length - 1)) : r; });
+        return g.loft(S, segs, typeof col === "function" ? col : () => col, { side0: o.side0 || [0, 0, 1], open: o.open, capCol: o.capCol }); },
+      // a cylinder from a to b, crisp ends
+      cyl(a, b, r, segs, col, capCol = col, r2 = r) { const t = nz([b[0] - a[0], b[1] - a[1], b[2] - a[2]]); let side = Math.abs(t[1]) > 0.9 ? [1, 0, 0] : nz(cr([0, 1, 0], t)); const up = cr(t, side), ring = (c, rr) => Array.from({ length: segs }, (_, j) => { const q = j / segs * Math.PI * 2; return [c[0] + (side[0] * Math.cos(q) + up[0] * Math.sin(q)) * rr, c[1] + (side[1] * Math.cos(q) + up[1] * Math.sin(q)) * rr, c[2] + (side[2] * Math.cos(q) + up[2] * Math.sin(q)) * rr]; });
+        const A = ring(a, r), B = ring(b, r2), ia = A.map(p => g.v(p, col)), ib = B.map(p => g.v(p, col));
+        for (let j = 0; j < segs; j++) { const k = (j + 1) % segs; g.t(ia[j], ia[k], ib[k]); g.t(ia[j], ib[k], ib[j]); }
+        if (capCol) { const ca = g.v(a, capCol), cb = g.v(b, capCol), ja = A.map(p => g.v(p, capCol)), jb = B.map(p => g.v(p, capCol));
+          for (let j = 0; j < segs; j++) { const k = (j + 1) % segs; g.t(ca, ja[k], ja[j]); g.t(cb, jb[j], jb[k]); } } },
+      // a cone from base centre a to tip b
+      cone(a, b, r, segs, col) { const t = nz([b[0] - a[0], b[1] - a[1], b[2] - a[2]]); const side = Math.abs(t[1]) > 0.9 ? [1, 0, 0] : nz(cr([0, 1, 0], t)), up = cr(t, side), tip = g.v(b, col);
+        const ring = Array.from({ length: segs }, (_, j) => { const q = j / segs * Math.PI * 2; return g.v([a[0] + (side[0] * Math.cos(q) + up[0] * Math.sin(q)) * r, a[1] + (side[1] * Math.cos(q) + up[1] * Math.sin(q)) * r, a[2] + (side[2] * Math.cos(q) + up[2] * Math.sin(q)) * r], col); });
+        for (let j = 0; j < segs; j++) g.t(ring[j], ring[(j + 1) % segs], tip); },
+      // a box, flat faced (its own corners on each face)
+      box(x0, x1, y0, y1, z0, z1, col) { const F = [[[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]], [[x0, y0, z1], [x0, y1, z1], [x0, y1, z0], [x0, y0, z0]], [[x0, y1, z0], [x0, y1, z1], [x1, y1, z1], [x1, y1, z0]],
+          [[x0, y0, z1], [x0, y0, z0], [x1, y0, z0], [x1, y0, z1]], [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]], [[x1, y0, z0], [x0, y0, z0], [x0, y1, z0], [x1, y1, z0]]];
+        for (const f of F) { const q = f.map(p => g.v(p, col)); g.t(q[0], q[1], q[2]); g.t(q[0], q[2], q[3]); } },
+      // a flat round patch on a surface: centre c, facing n, radius r (a few millimetres out from it)
+      disc(c, n, r, col, segs = 8, rim = null, r2 = r) { n = nz(n); const side = nz(Math.abs(n[1]) > 0.9 ? cr([1, 0, 0], n) : cr([0, 1, 0], n)), up = cr(n, side), m = g.v(c, col);
+        const ring = Array.from({ length: segs }, (_, j) => { const q = j / segs * Math.PI * 2, a = Math.cos(q) * r, b = Math.sin(q) * r2; return g.v([c[0] + side[0] * a + up[0] * b, c[1] + side[1] * a + up[1] * b, c[2] + side[2] * a + up[2] * b], rim || col); });
+        for (let j = 0; j < segs; j++) g.t(m, ring[j], ring[(j + 1) % segs]); },
+      part(x = {}) { return { positions: new Float32Array(P), colors: new Float32Array(K), indices: new Uint32Array(I), color: [1, 1, 1], roughness: 0.8, doubleSide: true, ...x }; },
+      tris: () => I.length / 3 };
+    return g; }
+  // the potato: t from its back (0) to its front (1), a round from its right side (0) through the top (pi/2); its surface point
+  const TOWN_SPUD = { cz: -0.15, L: 2.05, cy: 0.98, rx: 0.88, ry: 0.72 };
+  function townSpudAt(t, a, carve = true) { const S = TOWN_SPUD, u = Math.PI * t, k = Math.pow(Math.max(0, Math.sin(u)), 0.56), size = 1.08 - 0.22 * t, cy = S.cy + 0.08 * (1 - t) - 0.05 * t;
+    const lump = 1 + 0.045 * Math.sin(3 * a + 5.1 * t) + 0.035 * Math.sin(7.3 * t + 1.1) * Math.cos(2 * a + 0.7) + 0.025 * Math.sin(11 * t + 3 * a) + 0.02 * Math.cos(5 * a - 8 * t);
+    const sa = Math.sin(a), x = Math.cos(a) * S.rx * k * size * lump, z = S.cz - Math.cos(u) * S.L; let y = cy + sa * S.ry * k * size * lump * (sa < 0 ? 0.72 : 1), cut = 0;
+    if (carve && sa > 0) for (const [zc, hl, hw, dep] of [[-0.62, 0.62, 0.5, 0.42], [1.27, 0.6, 0.42, 0.3]]) { const m = 1 - ((z - zc) / hl) ** 2 - (x / hw) ** 2;  // the cockpit and the engine bay, cut into the top
+      if (m > -0.05) cut = Math.max(cut, m > 0 ? 1 : 0.5); if (m > 0) { const f = Math.min(1, m / 0.3); y -= dep * f * f * (3 - 2 * f); if (m > 0.02) cut = 2; } }
+    return { p: [x, y, z], cut }; }
+  let townHotrodOne = null;  // (another player's hotrod, made once)
+  function townHotrodParts(merged = false) {
+    const body = townGeo(), chrome = townGeo(), glass = townGeo(), lamp = townGeo();
+    const SKIN = [townLin("#a86a2c"), townLin("#c58c47"), townLin("#8e5524")], FLESH = townLin("#f4e0a2"), FLESH2 = townLin("#dcc078"), EYE = townLin("#5e3816"), EYERIM = townLin("#7a4b1f");
+    const RED = townLin("#c41f26"), RED2 = townLin("#e5383b"), DARK = townLin("#141414"), CHR = townLin("#e9edf1"), CHR2 = townLin("#b7bec6"), GLASS = townLin("#cfe8f5"), WOOD = townLin("#7a4a22");
+    const FL_OUT = townLin("#e2491c"), FL_IN = townLin("#ffd23a"), FL_HOT = townLin("#fff2a8"), SPROUT0 = townLin("#ebbea6"), SPROUT1 = townLin("#8fc449");
+    const hash = (a, b) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
+    // the potato: 44 rows from back to front, 52 round
+    { const NT = 44, NA = 52, rows = [], g = body;
+      const skin = (t, a, p, cut) => { if (cut === 2) { const d = Math.min(1, Math.max(0, (p[1] - 1.05) / 0.5)); return townMix(FLESH2, FLESH, d); } if (cut === 1) return FLESH;
+        const n = 0.5 + 0.5 * Math.sin(9 * t + 4 * a) * Math.cos(5 * a - 13 * t), sp = hash(Math.round(t * 90), Math.round(a * 30)) > 0.93 ? 0.55 : 0, sa = Math.sin(a);
+        return townMix(townMix(SKIN[0], SKIN[1], n * 0.8 + (sa > 0 ? 0.15 * sa : 0)), SKIN[2], Math.max(sp, sa < -0.3 ? 0.35 : 0)); };
+      for (let i = 1; i < NT; i++) { const t = i / NT, ring = []; for (let j = 0; j < NA; j++) { const a = j / NA * Math.PI * 2, s = townSpudAt(t, a); ring.push(g.v(s.p, skin(t, a, s.p, s.cut))); } rows.push(ring); }
+      for (let i = 0; i + 1 < rows.length; i++) for (let j = 0; j < NA; j++) { const k = (j + 1) % NA, A = rows[i][j], B = rows[i][k], C = rows[i + 1][k], D = rows[i + 1][j]; g.t(A, B, C); g.t(A, C, D); }
+      const back = g.v(townSpudAt(0, 0).p, SKIN[0]), front = g.v(townSpudAt(1, 0).p, SKIN[0]), r0 = rows[0], r1 = rows[rows.length - 1];
+      for (let j = 0; j < NA; j++) { const k = (j + 1) % NA; g.t(back, r0[k], r0[j]); g.t(front, r1[j], r1[k]); } }
+    // where on the potato (t, a) is, and which way out (for painting on it)
+    const onSpud = (t, a, off) => { const s = townSpudAt(t, a).p, e = 0.004, pt = townSpudAt(t + e, a).p, pa = townSpudAt(t, a + e).p, d1 = [pt[0] - s[0], pt[1] - s[1], pt[2] - s[2]], d2 = [pa[0] - s[0], pa[1] - s[1], pa[2] - s[2]];
+      let n = body.nz(body.cr(d2, d1)); if (n[0] * s[0] + n[1] * (s[1] - TOWN_SPUD.cy) < 0) n = [-n[0], -n[1], -n[2]]; return { p: [s[0] + n[0] * off, s[1] + n[1] * off, s[2] + n[2] * off], n }; };
+    // the hot rod flames down both sides: three tongues each, from behind the front wheels back under the seat, orange edged
+    for (const side of [1, -1]) for (const [a0, t0, t1, w0, amp, ph] of [[0.46, 0.79, 0.44, 0.2, 0.07, 0.4], [0.08, 0.8, 0.34, 0.24, 0.08, 1.7], [-0.32, 0.78, 0.47, 0.18, 0.06, 3.1]]) {
+      for (const [off, wk, cols] of [[0.012, 1, [FL_OUT, FL_OUT, FL_OUT]], [0.02, 0.62, [FL_IN, FL_HOT, FL_IN]]]) { const N = 26, strip = [];
+        for (let i = 0; i <= N; i++) { const f = i / N, t = t0 + (t1 - t0) * f, w = w0 * wk * Math.pow(1 - f, 0.75) * (1 + 0.25 * Math.sin(f * 9 + ph)) + (wk < 1 ? 0 : 0.035 * (1 - f)), ac = a0 + amp * Math.sin(ph + f * 7.5) + 0.06 * f;
+          const aa = [ac - w, ac, ac + w].map(q => side > 0 ? q : Math.PI - q); strip.push(aa.map((q, k) => body.v(onSpud(t, q, off).p, cols[k]))); }
+        for (let i = 0; i < N; i++) for (let k = 0; k < 2; k++) { const A = strip[i][k], B = strip[i][k + 1], C = strip[i + 1][k + 1], D = strip[i + 1][k]; body.t(A, B, C); body.t(A, C, D); } } }
+    // the potato's eyes: little dark dimples here and there
+    for (let e = 0; e < 26; e++) { const t = 0.08 + 0.84 * hash(e, 3.3), a = hash(e, 7.7) * Math.PI * 2, s = townSpudAt(t, a); if (s.cut) continue; const q = onSpud(t, a, 0.006); body.disc(q.p, q.n, 0.03 + 0.025 * hash(e, 1.1), EYE, 7, EYERIM); }
+    // the sprout out the back, curling over
+    body.pipe([[0.12, 1.42, -1.7], [0.16, 1.7, -1.82], [0.19, 1.93, -1.8], [0.16, 2.06, -1.66], [0.1, 2.03, -1.53], [0.06, 1.95, -1.56]], f => 0.075 - 0.05 * f, 8, (p) => townMix(SPROUT0, SPROUT1, Math.min(1, Math.max(0, (p[1] - 1.55) / 0.45))), 5);
+    // the seat: red, rolled and pleated, the back standing up out of the cockpit
+    for (let k = -3; k <= 3; k++) { const x = k * 0.115; body.loft([{ p: [x, 1.32, -1.02], rx: 0.06, ry: 0.055 }, { p: [x, 1.68, -1.04], rx: 0.065, ry: 0.06 }, { p: [x, 2.00, -1.0], rx: 0.062, ry: 0.058 }, { p: [x, 2.12, -0.94], rx: 0.05, ry: 0.05 }], 10, (p, N) => townMix(RED, RED2, Math.max(0, N[2]) * 0.6), { side0: [1, 0, 0] }); }
+    for (let k = -3; k <= 3; k++) { const x = k * 0.115; body.loft([{ p: [x, 1.42, -0.98], rx: 0.058, ry: 0.07 }, { p: [x, 1.44, -0.72], rx: 0.06, ry: 0.075 }, { p: [x, 1.41, -0.52], rx: 0.055, ry: 0.065 }], 10, (p, N) => townMix(RED, RED2, Math.max(0, N[1]) * 0.5)); }
+    body.box(-0.42, 0.42, 1.26, 1.36, -1.05, -0.3, DARK);  // the cockpit floor
+    // the steering wheel (wood rim, chrome boss) and its column
+    { const c = [0, 1.74, -0.2], S = []; for (let i = 0; i < 24; i++) { const q = i / 24 * Math.PI * 2; S.push({ p: [c[0] + Math.cos(q) * 0.17, c[1] + Math.sin(q) * 0.17 * 0.94, c[2] - Math.sin(q) * 0.17 * 0.34], rx: 0.02, ry: 0.02 }); }
+      S.push({ ...S[0] }); body.loft(S, 6, () => WOOD, { side0: [0, 0, 1], open: true }); chrome.cyl([0, 1.74, -0.2], [0, 1.46, 0.12], 0.025, 8, CHR); chrome.disc([0, 1.74, -0.21], [0, 0.34, -0.94], 0.045, CHR, 10); }
+    // the windscreen, raked back, in a chrome frame
+    { const y0 = 1.63, y1 = 2.06, z0 = 0.1, z1 = -0.04, w0 = 0.5, w1 = 0.44, a = glass.v([-w0, y0, z0], GLASS), b = glass.v([w0, y0, z0], GLASS), c = glass.v([w1, y1, z1], GLASS), d = glass.v([-w1, y1, z1], GLASS); glass.t(a, b, c); glass.t(a, c, d);
+      chrome.pipe([[-w0, y0, z0 + 0.005], [-w1, y1, z1 + 0.005], [w1, y1, z1 + 0.005], [w0, y0, z0 + 0.005]], 0.018, 6, CHR, 1); }
+    // the engine, standing up out of the front: block, rocker covers, the blower and its three stacks, a pulley and belt
+    chrome.box(-0.31, 0.31, 1.12, 1.50, 0.82, 1.74, CHR2);
+    for (const sx of [-1, 1]) { chrome.box(sx * 0.12, sx * 0.36, 1.42, 1.56, 0.86, 1.7, CHR); for (let k = 0; k < 6; k++) chrome.box(sx * 0.15, sx * 0.33, 1.56, 1.6, 0.9 + k * 0.14, 0.94 + k * 0.14, CHR2); }
+    chrome.box(-0.25, 0.25, 1.50, 1.80, 0.96, 1.62, CHR); for (let k = 0; k < 5; k++) chrome.box(-0.262, 0.262, 1.54 + k * 0.05, 1.56 + k * 0.05, 0.95, 1.63, CHR2);
+    for (const x of [-0.17, 0, 0.17]) { const b = [x, 1.8, 1.22], tp = [x, 2.06, 1.5]; chrome.cyl(b, tp, 0.085, 14, CHR, null, 0.095); body.disc([tp[0], tp[1] - 0.012, tp[2] - 0.012], [0, 0.73, 0.68], 0.082, townLin("#7a0d10"), 12, RED); }
+    chrome.cyl([0, 1.3, 1.74], [0, 1.3, 1.8], 0.13, 16, CHR2, CHR); chrome.cyl([0, 1.56, 1.62], [0, 1.56, 1.68], 0.08, 12, CHR2, CHR); body.box(-0.035, 0.035, 1.3, 1.56, 1.76, 1.79, DARK);
+    // the headers: four chrome pipes a side, out of the block, down and back along the potato
+    for (const sx of [-1, 1]) for (let i = 0; i < 4; i++) { const z = 0.94 + i * 0.22;
+      chrome.pipe([[sx * 0.3, 1.26, z], [sx * 0.58, 1.2, z - 0.06], [sx * 0.9, 0.97, z - 0.3 - i * 0.03], [sx * 1.03, 0.72, z - 0.72 - i * 0.05], [sx * 1.05, 0.62, z - 1.05 - i * 0.06]], 0.052, 8, CHR, 5); }
+    // the front end: a dropped chrome axle, springs up into the potato, and two headlights on stalks
+    chrome.cyl([-0.86, 0.4, 1.5], [0.86, 0.4, 1.5], 0.045, 10, CHR); chrome.box(-0.5, 0.5, 0.42, 0.47, 1.4, 1.6, CHR2);
+    for (const sx of [-1, 1]) { chrome.pipe([[sx * 0.42, 0.42, 1.5], [sx * 0.4, 0.6, 1.42], [sx * 0.36, 0.78, 1.3]], 0.035, 8, CHR, 3); chrome.cyl([sx * 0.6, 0.4, 1.5], [sx * 0.6, 0.72, 1.76], 0.025, 6, CHR);
+      chrome.cyl([sx * 0.6, 0.83, 1.66], [sx * 0.6, 0.83, 1.86], 0.14, 16, CHR, CHR2, 0.12); lamp.disc([sx * 0.6, 0.83, 1.87], [0, 0, 1], 0.12, townLin("#fffbe6"), 14, townLin("#fff1b8"));
+      // the rear: a short chrome axle to each big wheel
+      chrome.cyl([sx * 0.6, 0.62, -1.3], [sx * 0.93, 0.62, -1.3], 0.06, 10, CHR2); }
+    // wheels: a fat one each side at the back, a skinny one each side at the front; red steel rims, chrome caps (one part each, so it turns)
+    const wheel = (R, W, sx) => { const g = townGeo(), TY = townLin("#191919"), TY2 = townLin("#2a2a2a"), SW = townLin("#232323"), segs = 30, prof = [[0.64, -0.5], [0.9, -0.5], [0.985, -0.43], [1, -0.28], [1, 0.28], [0.985, 0.43], [0.9, 0.5], [0.64, 0.5]];
+      const rings = prof.map(([r, x], k) => Array.from({ length: segs }, (_, j) => { const q = j / segs * Math.PI * 2, tread = k >= 3 && k <= 4 && j % 2 ? TY2 : k === 0 || k === 7 ? SW : TY; return g.v([sx * x * W, Math.cos(q) * r * R, Math.sin(q) * r * R], tread); }));
+      for (let k = 0; k + 1 < rings.length; k++) for (let j = 0; j < segs; j++) { const l = (j + 1) % segs, A = rings[k][j], B = rings[k][l], C = rings[k + 1][l], D = rings[k + 1][j]; if (sx > 0) { g.t(A, B, C); g.t(A, C, D); } else { g.t(A, D, C); g.t(A, C, B); } }
+      // the red rim on the outside, with six holes; a chrome dome in the middle; dark on the inside
+      const ox = sx * W * 0.44; g.disc([ox, 0, 0], [sx, 0, 0], R * 0.66, RED, segs, townLin("#a3181e"));
+      for (let k = 0; k < 6; k++) { const q = k / 6 * Math.PI * 2; g.disc([ox + sx * 0.004, Math.cos(q) * R * 0.44, Math.sin(q) * R * 0.44], [sx, 0, 0], R * 0.07, DARK, 6); }
+      g.loft([0, 0.35, 0.62, 0.8, 0.93, 1].map(f => ({ p: [ox + sx * (0.004 + R * 0.16 * f), 0, 0], rx: Math.max(0.004, R * 0.27 * Math.sqrt(1 - f * f)), ry: Math.max(0.004, R * 0.27 * Math.sqrt(1 - f * f)) })), 16, () => CHR, { side0: [0, 0, 1] });  // the chrome cap
+      g.disc([-ox, 0, 0], [-sx, 0, 0], R * 0.66, DARK, segs);
+      return g; };
+    const WH = [[1.13, 0.62, -1.3, 0.62, 0.46], [-1.13, 0.62, -1.3, 0.62, 0.46], [0.86, 0.4, 1.5, 0.4, 0.25], [-0.86, 0.4, 1.5, 0.4, 0.25]];
+    const wheels = WH.map(([x, , , R, W]) => wheel(R, W, Math.sign(x)).part());
+    const parts = [body.part({ roughness: 0.82 }), chrome.part({ roughness: 0.25, metalness: 0.45, emissive: [0.07, 0.07, 0.08] }), glass.part({ roughness: 0.1, opacity: 0.38 }), lamp.part({ roughness: 0.3, emissive: [0.9, 0.85, 0.6], emissiveIntensity: 0.6 }), ...wheels.map(w => ({ ...w, roughness: 0.6 }))];
+    parts.wheels = WH; parts.tris = parts.reduce((n, q) => n + q.indices.length / 3, 0);
+    if (!merged) return parts;
+    // one part (another player's hotrod): everything in one, the wheels moved to their places
+    const P = [], K = [], I = []; for (let i = 0; i < parts.length; i++) { if (i === 2) continue; const q = parts[i], o = P.length / 3, w = i >= 4 ? WH[i - 4] : null;
+      for (let k = 0; k < q.positions.length; k += 3) P.push(q.positions[k] + (w ? w[0] : 0), q.positions[k + 1] + (w ? w[1] : 0), q.positions[k + 2] + (w ? w[2] : 0)); K.push(...q.colors); for (const x of q.indices) I.push(x + o); }
+    return [{ positions: new Float32Array(P), colors: new Float32Array(K), indices: new Uint32Array(I), color: [1, 1, 1], roughness: 0.6, doubleSide: true }]; }
+  // The T-rex, life size here (12 m nose to tail, hips 3.2 m up) and drawn bigger. Its parts, each about its own joint: 0 the body and neck,
+  // 1 the head (about the top of the neck), 2 the lower jaw (about its hinge, in the head's frame), 3 and 4 the legs (about the hips), 5 the
+  // tail (about its root), 6 the little arms (with the body). TOWN_REX holds the joints
+  const TOWN_REX = { neck: [0, 4.05, 3.35], jaw: [0, -0.36, 0.05], hipL: [0.78, 3.05, 0.15], hipR: [-0.78, 3.05, 0.15], tail: [0, 3.22, -1.2] };
+  function townRexParts() {
+    const TOP = townLin("#3b5a2c"), SIDE = townLin("#6a8a3e"), BELLY = townLin("#d6c38e"), STRIPE = townLin("#1d2c17"), MOUTH = townLin("#6e1a1c"), TONGUE = townLin("#a8343a"), TOOTH = townLin("#f3ecd2"), CLAW = townLin("#2a221b"), EYE = townLin("#ffcc2e"), PUPIL = townLin("#120c06");
+    // skin: dark along the back with stripes across it, lighter down the sides, pale under the belly
+    const skin = (p, N, stripe = true) => { const up = N[1], base = up > 0.25 ? townMix(SIDE, TOP, Math.min(1, (up - 0.25) / 0.5)) : up < -0.35 ? townMix(SIDE, BELLY, Math.min(1, (-up - 0.35) / 0.35)) : SIDE;
+      return stripe && up > 0.1 && Math.sin(p[2] * 2.3 + Math.sin(p[0] * 2) * 0.4) > 0.55 ? townMix(base, STRIPE, 0.7) : base; };
+    const bumpy = (p, N) => 0.025 * Math.sin(p[2] * 9) * Math.sin(p[0] * 11 + p[1] * 7);
+    // the body, chest and neck
+    const body = townGeo();
+    body.loft([[-1.4, 3.25, 0.82, 0.92], [-0.6, 3.28, 0.92, 1.05], [0.2, 3.25, 0.96, 1.15], [1.0, 3.15, 0.95, 1.18], [1.8, 3.2, 0.85, 1.05], [2.4, 3.38, 0.68, 0.82], [2.85, 3.62, 0.52, 0.6], [3.2, 3.88, 0.44, 0.5], [3.45, 4.05, 0.42, 0.46]].map(([z, y, rx, ry]) => ({ p: [0, y, z], rx, ry })), 26, (p, N) => skin(p, N), { bump: bumpy });
+    for (let k = 0; k < 9; k++) { const z = -1.2 + k * 0.52, y = 3.25 + (z > 2 ? (z - 2) * 0.55 : 0) + [0.92, 1.05, 1.1, 1.15, 1.18, 1.1, 1.0, 0.8, 0.6][k]; body.cone([0, y - 0.06, z], [0, y + 0.16, z - 0.1], 0.1, 5, STRIPE); }  // a row of knobs down the spine
+    // its little arms, two clawed fingers each
+    const arms = townGeo();
+    for (const sx of [-1, 1]) { arms.pipe([[sx * 0.62, 3.05, 2.05], [sx * 0.78, 2.72, 2.22], [sx * 0.72, 2.45, 2.5], [sx * 0.66, 2.4, 2.72]], f => 0.16 - 0.08 * f, 8, (p, N) => skin(p, N, false), 3, { side0: [1, 0, 0] });
+      for (const dx of [-0.05, 0.06]) arms.cone([sx * 0.66 + dx, 2.4, 2.72], [sx * 0.66 + dx, 2.28, 2.86], 0.035, 5, CLAW); }
+    // the tail, from its root back to a point, sweeping up a little
+    const tail = townGeo(), T0 = TOWN_REX.tail;
+    tail.loft([[0.4, 0.05, 0.86, 0.95], [-0.6, 0.0, 0.72, 0.82], [-1.8, -0.02, 0.56, 0.64], [-3.0, 0.02, 0.42, 0.47], [-4.2, 0.08, 0.3, 0.33], [-5.3, 0.15, 0.19, 0.21], [-6.2, 0.22, 0.1, 0.11], [-6.7, 0.26, 0.04, 0.04]].map(([z, y, rx, ry]) => ({ p: [0, y, z], rx, ry })), 20, (p, N) => skin([p[0], p[1], p[2] + T0[2]], N), { bump: bumpy });
+    for (let k = 0; k < 9; k++) { const z = 0.2 - k * 0.75, ry = [0.9, 0.78, 0.66, 0.56, 0.46, 0.36, 0.27, 0.19, 0.12][k], y = 0.05 + k * 0.025 + ry; tail.cone([0, y - 0.05, z], [0, y + 0.13 - k * 0.012, z - 0.1], 0.085 - k * 0.006, 5, STRIPE); }
+    // the head: a long heavy skull, about the top of the neck, its underside (the roof of the mouth) flat at about y = -0.32; brows, eyes,
+    // nostrils and the top teeth along the edge of it
+    const head = townGeo(), jaw = townGeo(), mouthy = (p, N, top) => top ? (N[1] < -0.55 && p[2] > 0.22 ? MOUTH : null) : (N[1] > 0.5 && p[2] > 0.15 ? (Math.abs(p[0]) < 0.11 ? TONGUE : MOUTH) : null);
+    const HS = [[-0.35, 0.12, 0.42, 0.5], [0.05, 0.2, 0.52, 0.58], [0.5, 0.17, 0.5, 0.54], [0.95, 0.08, 0.42, 0.44], [1.35, 0.0, 0.34, 0.36], [1.7, -0.04, 0.27, 0.3], [1.95, -0.07, 0.2, 0.24], [2.08, -0.1, 0.1, 0.14]];
+    const JS = [[-0.05, -0.16, 0.42, 0.22], [0.35, -0.2, 0.43, 0.23], [0.8, -0.2, 0.38, 0.2], [1.25, -0.18, 0.31, 0.17], [1.6, -0.15, 0.23, 0.13], [1.78, -0.12, 0.13, 0.09]];
+    const at = (T, z) => { let i = 0; while (i < T.length - 2 && T[i + 1][0] < z) i++; const f = Math.min(1, Math.max(0, (z - T[i][0]) / (T[i + 1][0] - T[i][0]))); return [1, 2, 3].map(k => T[i][k] + (T[i + 1][k] - T[i][k]) * f); };
+    head.loft(HS.map(([z, y, rx, ry]) => ({ p: [0, y, z], rx, ry })), 22, (p, N) => mouthy(p, N, true) || skin([p[0], p[1], p[2] + 3], N, false), { bump: (p, N) => (N[1] < -0.5 ? 0 : 0.02 * Math.sin(p[2] * 14) * Math.sin(p[0] * 13)) });
+    for (const sx of [-1, 1]) { head.loft([[0.2, 0.7, 0.3], [0.45, 0.62, 0.34], [0.75, 0.5, 0.33]].map(([z, y, x]) => ({ p: [sx * x, y, z], rx: 0.13, ry: 0.07 })), 8, () => townMix(TOP, STRIPE, 0.55));  // a heavy brow, down over each eye: cross
+      head.egg([sx * 0.43, 0.42, 0.56], 0.075, 0.09, 0.1, EYE, 6, 10); head.disc([sx * 0.508, 0.42, 0.57], [sx, 0, 0.15], 0.016, PUPIL, 8, null, 0.07);  // a yellow eye, a slit of a pupil
+      head.disc([sx * 0.1, 0.1, 1.99], [sx * 0.4, 0.6, 0.7], 0.045, PUPIL, 7);  // nostrils
+      for (let k = 0; k < 10; k++) { const z = 0.3 + k * 0.165, [y, rx, ry] = at(HS, z), x = sx * 0.6 * rx, y0 = y - 0.8 * ry; head.cone([x, y0 + 0.05, z], [x * 0.97, y0 - 0.2 + k * 0.007, z + 0.02], 0.048 - k * 0.002, 5, TOOTH); } }
+    // the lower jaw, about its hinge (TOWN_REX.jaw), with its teeth and a tongue
+    jaw.loft(JS.map(([z, y, rx, ry]) => ({ p: [0, y, z], rx, ry })), 18, (p, N) => mouthy(p, N, false) || (N[1] < -0.4 ? BELLY : SIDE));
+    for (const sx of [-1, 1]) for (let k = 0; k < 9; k++) { const z = 0.25 + k * 0.165, [y, rx, ry] = at(JS, z), x = sx * 0.6 * rx, y0 = y + 0.8 * ry; jaw.cone([x, y0 - 0.04, z], [x * 0.97, y0 + 0.16 - k * 0.006, z + 0.02], 0.04 - k * 0.002, 5, TOOTH); }
+    // the legs, about the hips: a great thigh, the shin back to the ankle, the long foot and three clawed toes
+    const leg = sx => { const g = townGeo();
+      g.loft([[0, 0.2, 0.05, 0.62, 0.7], [0, -0.35, 0.18, 0.66, 0.74], [0, -0.95, 0.36, 0.52, 0.6], [0, -1.45, 0.38, 0.34, 0.4], [0, -1.95, 0.05, 0.24, 0.27], [0, -2.45, -0.32, 0.19, 0.21], [0, -2.72, -0.38, 0.17, 0.18], [0, -2.95, -0.22, 0.17, 0.16], [0, -3.02, 0.0, 0.2, 0.1]].map(([x, y, z, rx, ry]) => ({ p: [x, y, z], rx, ry })), 16, (p, N) => skin([p[0], p[1], p[2]], N, false), { side0: [1, 0, 0], bump: bumpy });
+      for (const [dx, len] of [[-0.17, 0.62], [0, 0.78], [0.17, 0.62]]) { g.pipe([[dx * 0.5, -2.98, -0.05], [dx, -3.0, len * 0.5], [dx * 1.2, -3.02, len]], f => 0.11 - 0.05 * f, 8, (p, N) => skin(p, N, false), 3, { side0: [1, 0, 0] });
+        g.cone([dx * 1.2, -3.02, len], [dx * 1.25, -3.12, len + 0.2], 0.06, 6, CLAW); }
+      return g; };
+    // the shockwave from a stomp: a flat ring of dust on the ground (unit size; drawn as big as it has got)
+    const ring = townGeo(); { const segs = 40, D0 = townLin("#d9b98a"), D1 = townLin("#f6e2bf"), inner = [], outer = []; for (let j = 0; j < segs; j++) { const q = j / segs * Math.PI * 2; inner.push(ring.v([Math.cos(q) * 0.82, 0.05, Math.sin(q) * 0.82], D0)); outer.push(ring.v([Math.cos(q), 0.25, Math.sin(q)], D1)); }
+      for (let j = 0; j < segs; j++) { const k = (j + 1) % segs; ring.t(inner[j], outer[k], outer[j]); ring.t(inner[j], inner[k], outer[k]); } }
+    const parts = [body.part({ roughness: 0.85 }), head.part({ roughness: 0.8 }), jaw.part({ roughness: 0.8 }), leg(1).part({ roughness: 0.85 }), leg(-1).part({ roughness: 0.85 }), tail.part({ roughness: 0.85 }), arms.part({ roughness: 0.85 }), ring.part({ unlit: true, opacity: 0.55 })];
+    parts.tris = parts.reduce((n, q) => n + q.indices.length / 3, 0); return parts; }
+  // a flaming spud, for the spud gun: a small potato with fire round it
+  function townSpudShot() { const g = townGeo(); g.egg([0, 0, 0], 0.16, 0.14, 0.22, (p, N) => townMix(townLin("#b5762f"), townLin("#ff9a1c"), Math.max(0, -N[2])), 6, 10);
+    g.egg([0, 0, -0.32], 0.12, 0.12, 0.3, (p, N) => townMix(townLin("#ffd23a"), townLin("#ff4a1c"), Math.min(1, Math.max(0, -p[2] - 0.2) * 2)), 5, 8);
+    return g.part({ roughness: 0.6, emissive: [0.55, 0.22, 0.02], emissiveIntensity: 0.9 }); }
   function townCar(T, m, F, ground, place) {
     const C = { in: false, enter() {}, frame() {}, dispose() {} };
     const RIDES = TOWN_RIDES[place]; if (!RIDES || !m.addParts) return C;
@@ -21717,7 +21938,7 @@ const handle = async (m, post) => {
       // (a golden star: the car flashes, gone and back about five times a second, sparkling: Ash, 25 November 2026, "Flash my car while active")
       const now = performance.now(), boat = boatCheck(), cy = car.y + ((C.starTil > now && Math.floor(now / 100) % 3 === 2) || boat ? -60 : 0);  // (gone: 60 m under the ground)
       if (boat) boatDraw(true);
-      if (car.own) {
+      if (car.own) { if (car.own.hotrod) { const d = (car.v || 0) * (dt || 0); car.own.spin[0] += d / 0.62; car.own.spin[1] += d / 0.4; car.own.steer = car.steer || 0; }
         Object.assign(car.own, { x: car.x, y: cy, z: car.z, h: hd, p: car.p, r: rd }); showOwn(car.own); car.own.y = car.y;
         if (signal !== (car.own.litSignal || 0)) { car.own.parts.setSignal?.(signal); car.own.litSignal = signal; }
       } else m.driveCar(car.id[0], car.id[1], car.x, cy, car.z, hd, car.p, rd, signal);
@@ -21725,7 +21946,7 @@ const handle = async (m, post) => {
       if (!car.bus && T.cfg?.place !== "inv" && (signal || mySig)) { if (!mySig) mySig = townSignals(m, car.own ? "own" : T.cfg?.place === "moo" ? 0 : -1);
         M.compose(V.set(car.x, cy, car.z), Q.setFromEuler(E.set(-car.p, hd, rd, "YXZ")), ONE); mySig.at(M.elements.slice()); mySig.set(signal); }
       // its hubcaps, turning (not a bus's): your own car is the older shape; a parked car you've taken is the new one (Inverloch's sit 0.25 m up)
-      if (!car.bus) { const lay = car.own ? "old" : "new", lift = !car.own && T.cfg?.place === "inv" ? 0.25 : 0; if (mySpin && (mySpin.lay !== lay || mySpin.lift !== lift)) { mySpin.remove(); mySpin = null; }
+      if (!car.bus && !car.hotrod) { const lay = car.own ? "old" : "new", lift = !car.own && T.cfg?.place === "inv" ? 0.25 : 0; if (mySpin && (mySpin.lay !== lay || mySpin.lift !== lift)) { mySpin.remove(); mySpin = null; }
         if (!mySpin) mySpin = townSpinner(m, lay, lift); if (mySpin) { M.compose(V.set(car.x, cy, car.z), Q.setFromEuler(E.set(-car.p, hd, rd, "YXZ")), ONE); mySpin.at(M.elements.slice(), (car.v || 0) * (dt || 0)); } } };
     let mySpin = null, mySig = null;
     // ---- the planes, each stood in the model as the app's own mesh where it lives (MOO_PLANES); `plane` is the one you are in
@@ -21756,7 +21977,11 @@ const handle = async (m, post) => {
       P.heli = !!home.heli;
       P.parts = m.addParts((P.heli ? townPlaneParts(P.gold ? "#e2ad1c" : "#c8322b", "heli") : townPlaneParts(P.gold ? "#e2ad1c" : undefined)).map(q => ({ ...q, matrix: M.identity().elements.slice() }))); showPlane(P); return P; });
     // ---- the golden car, the app's own mesh too: twice the top speed and the acceleration of a parked car
-    const showOwn = G => { if (G.takenBy) return hideAll(G.parts, G.np || 1); M.compose(V.set(G.x, G.y, G.z), Q.setFromEuler(E.set(-G.p, G.h, G.r, "YXZ")), ONE); G.parts.setMatrix(0, M.elements.slice()); };
+    const showOwn = G => { if (G.takenBy) return hideAll(G.parts, G.np || 1); M.compose(V.set(G.x, G.y, G.z), Q.setFromEuler(E.set(-G.p, G.h, G.r, "YXZ")), ONE); G.parts.setMatrix(0, M.elements.slice());
+      // the hotrod: its chrome, glass and lamps with it, and its four wheels each where it goes, turning as it rolls (the front two steering)
+      if (G.hotrod) { for (let i = 1; i < 4; i++) G.parts.setMatrix(i, M.elements.slice());
+        G.wheels.forEach((w, i) => { M2.copy(M).multiply(WT.makeTranslation(w[0], w[1], w[2])); if (i >= 2) M2.multiply(WT.makeRotationY(-G.steer)); G.parts.setMatrix(4 + i, M2.multiply(WT.makeRotationX(G.spin[i >= 2 ? 1 : 0])).elements.slice()); }); } };
+    const WT = new THREE.Matrix4();
     // a golden car that parks somewhere different each visit: in the place of a parked car near one of the town's places
     const parkAt = home => { if (!home.park || !m.nearestCar || !m.spots) return home; const spots = m.spots().filter(s => s.kind !== "water" && Math.hypot(s.tx - home.x, s.tz - home.z) < 1200);  // (near its usual place: Logan's places run out to Jimboomba)
       for (let t = 0; t < 24 && spots.length; t++) { const s = spots[Math.floor(Math.random() * spots.length)], c = m.nearestCar(s.tx, s.tz, 120);
@@ -21764,9 +21989,10 @@ const handle = async (m, post) => {
         T.hideCars = [c.id]; if (T.admin?.apply) T.admin.apply(); else m.setRemoved?.({ cars: T.hideCars, trees: [], people: [] });
         return { ...home, x: c.x, z: c.z, h: c.heading }; }
       T.hideCars = [[home.x, home.z]]; return home; };  // (where it stands then is a parked car of the model's: that one goes)
-    const owns = RIDES.cars.filter(home => !home.spare || !m.nearestCar).map(parkAt).map(home => { const G = { x: home.x, z: home.z, h: home.h, y: 0, p: 0, r: 0, gold: !!home.gold, bus: !!home.bus };
+    const owns = RIDES.cars.filter(home => !home.spare || !m.nearestCar).map(parkAt).map(home => { const G = { x: home.x, z: home.z, h: home.h, y: 0, p: 0, r: 0, gold: !!home.gold, bus: !!home.bus, hotrod: !!home.hotrod };
       const [y, p, r] = G.bus ? lie(G, 3.6, 1.1) : lie(G, 1.3, 0.8); G.y = y; G.p = p; G.r = r;
-      { const L = G.bus ? townPlaneParts("#2f7fc4", "bus") : townPlaneParts(G.gold ? "#e8b923" : "#c8322b", true); G.np = L.length; G.parts = m.addParts(L.map(q => ({ ...q, matrix: M.identity().elements.slice() }))); } showOwn(G); return G; });
+      { const L = G.hotrod ? townHotrodParts() : G.bus ? townPlaneParts("#2f7fc4", "bus") : townPlaneParts(G.gold ? "#e8b923" : "#c8322b", true); if (G.hotrod) { G.wheels = L.wheels; G.spin = [0, 0]; G.steer = 0; }
+        G.np = L.length; G.parts = m.addParts(L.map(q => ({ ...q, matrix: M.identity().elements.slice() }))); } showOwn(G); return G; });
     const gold = owns.find(G => G.gold) || owns[0];
     // where a plane or helicopter (one at random), or a golden one, is now: for the locals' news (townLocals)
     C.rideSpot = heli => { const L = planes.filter(P => !P.gold && !!P.heli === heli); const P = L[Math.floor(Math.random() * L.length)]; return P ? { x: P.x, z: P.z, name: P.home.name } : null; };
@@ -22091,7 +22317,7 @@ const handle = async (m, post) => {
     // pigeon and the drone are one of a kind), never the one you're in
     C.peerTook = (id, k, x, z) => { let obj = null;
       if (k === "possum") obj = veh === "possum" ? null : pos; else if (k === "pigeon" || k === "goldpigeon") obj = veh === "pigeon" ? null : pg; else if (k === "drone") obj = veh === "drone" ? null : dr;
-      else { const L = /plane|heli/.test(k) ? planes.filter(P => !!P.heli === /heli/.test(k) && !!P.gold === /^gold/.test(k) && P !== plane) : owns.filter(G => !!G.bus === (k === "bus") && !!G.gold === (k === "gold") && G !== car?.own);
+      else { const L = /plane|heli/.test(k) ? planes.filter(P => !!P.heli === /heli/.test(k) && !!P.gold === /^gold/.test(k) && P !== plane) : owns.filter(G => !!G.bus === (k === "bus") && !!G.gold === (k === "gold") && !!G.hotrod === (k === "hotrod") && G !== car?.own);
         let far = 25; for (const o of L) { if (o.takenBy) continue; const d = Math.hypot(o.x - x, o.z - z); if (d < far) { far = d; obj = o; } } }
       if (!obj || obj.takenBy) return; obj.takenBy = id; taken.set(id, obj); redraw(obj); };
     C.peerLeft = (id, at) => { const obj = taken.get(id); if (!obj) return; taken.delete(id); obj.takenBy = null;
@@ -22150,6 +22376,176 @@ const handle = async (m, post) => {
         if (p.t >= p.life) { sparks[i] = null; fx.setMatrix(i, NONE); continue; }
         p.vy -= 14 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; const k = p.s * (1 - p.t / p.life);
         M.compose(V.set(p.x, p.y, p.z), Q0.setFromEuler(E.set(p.t * 7, p.t * 5, 0, "YXZ")), SPK.set(k, k, k)); fx.setMatrix(i, M.elements.slice()); } };
+    // ---- the T-rex boss fight (Inverloch's hotrod only. Ash, 26 November 2026: "If I get in the car in 20 seconds start a boss fight
+    // where a massive trex engages me in a boss battle"). 20 seconds after you get in the hotrod the ground starts to shake and a T-rex
+    // two and a half times life size (13 m tall) bursts out of it in front of you. It stalks you and bites, stomps (a ring of dust you outrun), and once it's
+    // angry charges (dodge it and it's dizzy: hits on it count double) and swipes its tail. You fight back by ramming it (faster hits
+    // harder, Boost harder still) and with the spud gun (the Spuds button, or L). Get out, drive 320 m off, or lose, and it stomps off;
+    // get back in the hotrod for another go (another 20 seconds). Everything is made the first time it's needed, then kept and hidden
+    const REX_S = 2.6, REX_HP = 160, REX_WAIT = 20000, REX_SPUDS = 10, rexMs = () => performance.now();
+    const RX = new THREE.Matrix4(), RB = new THREE.Matrix4(), RH = new THREE.Matrix4(), RT = new THREE.Matrix4(), RQ = new THREE.Matrix4(), RV = new THREE.Vector3();
+    let rex = null, rexP = null, rexArmed = 0, rexRaf = 0, rexLast = 0, rexHud = null, rexCall = null, spudP = null, spudHeld = false, spudCd = 0;
+    const spuds = [], rexCam = { d: 0, shake: 0 };
+    const spudBtn = document.createElement("button"); spudBtn.type = "button"; spudBtn.className = "bs-fly-x bs-flip bs-spud"; spudBtn.textContent = "Spuds"; spudBtn.dataset.key = "L"; spudBtn.hidden = true; spudBtn.setAttribute("aria-label", "Fire the spud gun (L)");
+    const spudPress = on => e => { spudHeld = on; e.preventDefault(); }, spudOn = { pointerdown: spudPress(true), pointerup: spudPress(false), pointercancel: spudPress(false), pointerleave: spudPress(false), contextmenu: e => e.preventDefault() };
+    Object.entries(spudOn).forEach(([k, f]) => spudBtn.addEventListener(k, f)); $("bsFly")?.append(spudBtn);
+    const inHotrod = () => veh === "car" && !!car?.hotrod;
+    // the health bars along the top, and the big words in the middle (nothing to tap: a finger goes through them to the view)
+    const rexHudMake = () => { if (rexHud) return; rexHud = document.createElement("div"); rexHud.className = "bs-boss"; rexHud.hidden = true; rexHud.setAttribute("role", "status");
+      rexHud.innerHTML = '<div class="bs-boss-name"><b>🦖 The Inverloch Rex</b><span></span></div><div class="bs-boss-bar"><i></i></div><div class="bs-boss-me"><b>🥔 Hotrod</b><div class="bs-boss-bar"><i></i></div></div>';
+      rexCall = document.createElement("div"); rexCall.className = "bs-boss-call"; rexCall.hidden = true; rexCall.setAttribute("aria-hidden", "true"); $("bsFly")?.append(rexHud, rexCall); };
+    let callT = 0; const rexSay = (text, ms = 1800, bad = false) => { rexHudMake(); rexCall.textContent = text; rexCall.classList.toggle("bad", bad); rexCall.hidden = false; rexCall.classList.remove("pop"); void rexCall.offsetWidth; rexCall.classList.add("pop"); clearTimeout(callT); callT = setTimeout(() => { rexCall.hidden = true; }, ms); };
+    let hudK = ""; const rexHudShow = () => { rexHudMake(); const on = !!rex && rex.live, k = on ? [Math.ceil(rex.hp), Math.ceil(rex.me), rex.phase, rex.st === "dizzy"].join() : "";
+      if (rexHud.hidden === on) { rexHud.hidden = !on; document.body.classList.toggle("bsboss", on); } if (k === hudK) return; hudK = k; if (!on) return;
+      const [a, b] = rexHud.querySelectorAll(".bs-boss-bar i"); a.style.width = Math.max(0, rex.hp / REX_HP * 100) + "%"; b.style.width = Math.max(0, rex.me) + "%";
+      rexHud.querySelector(".bs-boss-name span").textContent = rex.st === "dizzy" ? "Dizzy! Hit it now" : rex.phase === 3 ? "Furious" : rex.phase === 2 ? "Angry" : ""; rexHud.classList.toggle("rage", rex.phase === 3); };
+    // the parts, made the first time: the T-rex (8 parts) and the spuds in flight
+    const rexMake = () => { if (rexP) return true; try { rexP = m.addParts(townRexParts().map(q => ({ ...q, matrix: NONE.slice() }))); spudP = m.addParts(Array.from({ length: REX_SPUDS }, () => ({ ...townSpudShot(), matrix: NONE.slice() }))); return true; } catch (e) { console.warn("The T-rex couldn't be made", e); rexP = null; return false; } };
+    const rexHide = () => { if (rexP) for (let i = 0; i < 8; i++) rexP.setMatrix(i, NONE.slice()); if (spudP) for (let i = 0; i < REX_SPUDS; i++) spudP.setMatrix(i, NONE.slice()); spuds.length = 0; };
+    const rexFwd = () => [Math.sin(rex.h), Math.cos(rex.h)];
+    // where it comes up: about 60 m off the way you're looking (past the car, so you see it come up). Best with nothing in the way; else
+    // still straight ahead if it isn't in a building (at 13 m it's taller than the roofs, and walks through them); else beside or behind.
+    // Always on dry ground inside the map (it came up behind The Hub, out of sight, the first time)
+    const rexSpot = () => { const view = F.yaw + Math.PI, free = (x, z) => ![[0, 0], [6, 0], [-6, 0], [0, 6], [0, -6]].some(([a, b]) => solid(x + a, z + b)),
+        clear = (x, z) => { const n = Math.ceil(Math.hypot(x - car.x, z - car.z) / 3); for (let i = 2; i <= n; i++) if (solid(car.x + (x - car.x) * i / n, car.z + (z - car.z) * i / n)) return false; return true; },
+        at = (a, d) => { const h = view + a, x = car.x + Math.sin(h) * d, z = car.z + Math.cos(h) * d; return inside(x, z) && ground(x, z) - m.groundAt(x, z) < 0.5 && free(x, z) ? [x, z] : null; };
+      const ahead = [[0, 60], [0.25, 60], [-0.25, 60], [0, 45], [0.25, 45], [-0.25, 45], [0, 80], [0.2, 80], [-0.2, 80]], wide = [[0.7, 55], [-0.7, 55], [1.2, 50], [-1.2, 50], [Math.PI / 2, 45], [-Math.PI / 2, 45], [Math.PI, 50], [0, 35]];
+      for (const [a, d] of ahead) { const q = at(a, d); if (q && clear(...q)) return q; }
+      for (const [a, d] of ahead) { const q = at(a, d); if (q) return q; }
+      for (const [a, d] of wide) { const q = at(a, d); if (q) return q; }
+      return [car.x + Math.sin(view) * 50, car.z + Math.cos(view) * 50]; };
+    const rexStart = () => { if (!rexMake()) return; const [x, z] = rexSpot();
+      rex = { x, z, h: Math.atan2(car.x - x, car.z - z), hp: REX_HP, me: 100, st: "rise", t: 0, live: true, phase: 1, cd: { bite: 1.5, stomp: 3, charge: 4, tail: 2 }, walk: 0, v: 0, far: 0, meCd: 0, ramCd: 0,
+        pose: { pitch: 0, roll: 0, neck: 0, yaw: 0, jaw: 0, tail: 0, tailP: 0, legL: 0, legR: 0, liftL: 0, liftR: 0, rise: -9, sink: 0 }, ring: null, glow: 0 };
+      rexHudMake(); hudK = ""; rexSay("BOSS FIGHT!", 2200); snd.thud(2); rexCam.shake = 1.2;
+      for (let k = 0; k < 18; k++) { const a = Math.random() * Math.PI * 2, sp = 6 + Math.random() * 9; fxAdd(x + Math.sin(a) * 5, m.groundAt(x, z) + 0.5, z + Math.cos(a) * 5, Math.sin(a) * sp, 6 + Math.random() * 6, Math.cos(a) * sp, 1 + Math.random() * 0.6); }
+      toast(touch ? "🦖 A T-rex! Ram it (Boost hits harder) and fire Spuds. Dodge its stomps and charges." : "🦖 A T-rex! Ram it (Shift boosts for harder hits) and hold L to fire spuds. Dodge its stomps and charges.", 6000); };
+    // the fight's over: it walks off (and later goes), or is down; why says what to tell you
+    const rexOver = (why, quiet) => { rexArmed = 0; spudBtn.hidden = true; spudHeld = false;
+      if (!rex) return; if (rex.live) { rex.live = false; if (rex.st !== "dead" && rex.st !== "roar") { rex.st = "leave"; rex.t = 0; } } rexHudShow(); if (why && !quiet) toast(why, 4500); };
+    // you get in the hotrod: 20 seconds, footsteps from about 12, then up it comes
+    const rexArm = () => { if (place !== "inv" || T.race?.active?.()) return;
+      if (rex && rex.live) return;
+      // (back in while it's walking off, not having beaten you: it turns round and the fight carries on where it was)
+      if (rex && rex.st === "leave" && !rex.won) { Object.assign(rex, { live: true, st: "roar", t: 0, far: 0 }); rex.pose.sink = 0; rexSay("IT'S BACK!", 1600); rexLoop(); return; }
+      rexArmed = rexMs(); rexStep = 0; rexLoop(); };
+    let rexStep = 0;
+    // a hit on you: knocked about, the car hopping (and spinning, for a big one)
+    const meHit = (dmg, big, why) => { if (!rex || !rex.live || rex.meCd > 0 || !inHotrod()) return; rex.me = Math.max(0, rex.me - dmg); rex.meCd = 0.9; rexCam.shake = Math.max(rexCam.shake, big ? 1.1 : 0.7);
+      snd.thud(1.6); snd.crunch?.(); fxBurst(car, false); car.v = -Math.max(4, Math.abs(car.v) * 0.3) * (big ? 2 : 1); if (!car.trick && !car.flip) car.trick = { t: 0, len: big ? 1 : 0.6, high: big ? 2.8 : 1.4, spin: big, hit: true };
+      rexHud?.classList.remove("hurt"); void rexHud?.offsetWidth; rexHud?.classList.add("hurt"); if (why) toast(why, 1600);
+      if (rex.me <= 0) { rexSay("WRECKED!", 2600, true); car.trick = { t: 0, len: 1.3, high: 3.4, spin: true, hit: true }; rex.st = "roar"; rex.t = 0; rex.won = true;
+        rexOver("💥 The T-rex got you! Get out and back in the hotrod for a rematch."); } };
+    // a hit on it: from a ram or a spud
+    const rexHurt = (dmg, x, y, z, flash = 1) => { if (!rex || !rex.live) return; const k = rex.st === "dizzy" ? 2 : 1; rex.hp = Math.max(0, rex.hp - dmg * k); rex.glow = Math.max(rex.glow, flash); snd.thud(1.1 + dmg / 20);
+      for (let i = 0; i < 6; i++) fxAdd(x, y, z, (Math.random() - 0.5) * 8, 3 + Math.random() * 5, (Math.random() - 0.5) * 8, 0.5 + Math.random() * 0.3);
+      const ph = rex.hp <= REX_HP / 3 ? 3 : rex.hp <= REX_HP * 2 / 3 ? 2 : 1;
+      if (rex.hp <= 0) { rex.st = "dead"; rex.t = 0; rex.live = false; rexHudShow(); rexSay("VICTORY!", 3200); snd.roar?.(0.7); spudBtn.hidden = true; spudHeld = false; rexArmed = 0;
+        let wins = 1; try { wins = (+localStorage.getItem("anRexWins") || 0) + 1; localStorage.setItem("anRexWins", String(wins)); } catch {}
+        toast(`🏆 You beat the T-rex of Inverloch!${wins > 1 ? ` That's ${wins} wins.` : ""}`, 6000); [0, 400, 800].forEach(t => setTimeout(() => { if (rex) gPop(rex.x + (Math.random() - 0.5) * 10, m.groundAt(rex.x, rex.z) + 12, rex.z + (Math.random() - 0.5) * 10); snd.whoosh(); }, t)); return; }
+      if (ph > rex.phase) { rex.phase = ph; rex.st = "roar"; rex.t = 0; rexSay(ph === 3 ? "IT'S FURIOUS!" : "IT'S ANGRY!", 1800, true); } };
+    // the T-rex where it stands (life size x REX_S), each part about its joint
+    const rexDraw = () => { const R = rex, p = R.pose, J = TOWN_REX, s = REX_S, gy = m.groundAt(R.x, R.z) + (p.rise + p.sink) * s;
+      RX.compose(RV.set(R.x, gy, R.z), Q.setFromEuler(E.set(0, R.h, 0, "YXZ")), V.set(s, s, s));
+      RB.copy(RX).multiply(RT.makeTranslation(0, J.hipL[1], J.hipL[2])).multiply(RQ.makeRotationFromEuler(E.set(p.pitch, 0, p.roll, "YXZ"))).multiply(RT.makeTranslation(0, -J.hipL[1], -J.hipL[2]));
+      rexP.setMatrix(0, RB.elements.slice()); rexP.setMatrix(6, RB.elements.slice());
+      RH.copy(RB).multiply(RT.makeTranslation(...J.neck)).multiply(RQ.makeRotationFromEuler(E.set(p.neck, p.yaw, 0, "YXZ"))); rexP.setMatrix(1, RH.elements.slice());
+      rexP.setMatrix(2, RH.clone().multiply(RT.makeTranslation(...J.jaw)).multiply(RQ.makeRotationX(p.jaw)).elements);
+      const legBase = R.st === "dead" ? RB : RX;
+      rexP.setMatrix(3, legBase.clone().multiply(RT.makeTranslation(J.hipL[0], J.hipL[1] + p.liftL, J.hipL[2])).multiply(RQ.makeRotationX(p.legL)).elements);
+      rexP.setMatrix(4, legBase.clone().multiply(RT.makeTranslation(J.hipR[0], J.hipR[1] + p.liftR, J.hipR[2])).multiply(RQ.makeRotationX(p.legR)).elements);
+      rexP.setMatrix(5, RB.clone().multiply(RT.makeTranslation(...J.tail)).multiply(RQ.makeRotationFromEuler(E.set(p.tailP, p.tail, 0, "YXZ"))).elements);
+      if (R.ring) { const k = R.ring.r; rexP.setMatrix(7, RT.compose(RV.set(R.ring.x, m.groundAt(R.ring.x, R.ring.z) + 0.1, R.ring.z), Q.identity(), V.set(k, 1 + k * 0.04, k)).elements.slice()); } else rexP.setMatrix(7, NONE.slice());
+      // (a quick red flash when you ram it; nothing for a spud, which comes three times a second and kept it orange)
+      const k = R.glow * 0.3; if (Math.abs((R.glowWas ?? -1) - k) > 0.01) { R.glowWas = k; for (let i = 0; i < 7; i++) rexP.setEmissive?.(i, 1, 0.1, 0.04, k); } };
+    const ease = (a, b, k) => a + (b - a) * Math.min(1, k);
+    const rexWrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+    // one frame of the fight
+    const rexTick = dt => { const R = rex, p = R.pose, s = REX_S; R.t += dt; R.meCd = Math.max(0, R.meCd - dt); R.ramCd = Math.max(0, R.ramCd - dt); R.glow = Math.max(0, R.glow - dt * 4); for (const k in R.cd) R.cd[k] -= dt;
+      const me = inHotrod() ? car : null, [fx, fz] = rexFwd(), dx = me ? me.x - R.x : 0, dz = me ? me.z - R.z : 0, d = Math.hypot(dx, dz), ang = me ? rexWrap(Math.atan2(dx, dz) - R.h) : 0, fast = R.phase === 3 ? 1.35 : R.phase === 2 ? 1.15 : 1;
+      const turn = (to, rate) => { R.h = rexWrap(R.h + Math.max(-rate * dt, Math.min(rate * dt, rexWrap(to - R.h)))); };
+      const walk = (v, steer = true) => { if (steer && me) turn(Math.atan2(dx, dz), 1.1 * fast); R.v = ease(R.v, v, dt * 3); const nx = R.x + Math.sin(R.h) * R.v * dt, nz = R.z + Math.cos(R.h) * R.v * dt; if (inside(nx, nz)) { R.x = nx; R.z = nz; }
+        const was = Math.sin(R.walk); R.walk += Math.PI * 2 * R.v / (5.2 * s) * dt; const A = Math.min(0.5, R.v / 22); p.legL = -A * Math.sin(R.walk); p.legR = A * Math.sin(R.walk); p.liftL = Math.max(0, -Math.cos(R.walk)) * 0.25 * Math.min(1, R.v / 6); p.liftR = Math.max(0, Math.cos(R.walk)) * 0.25 * Math.min(1, R.v / 6);
+        p.tail = 0.16 * Math.sin(R.walk) * Math.min(1, R.v / 6); p.roll = 0.03 * Math.sin(R.walk); if (R.v > 2 && Math.sign(was) !== Math.sign(Math.sin(R.walk))) { const k = me ? Math.max(0, 1 - d / 70) : 0; if (k > 0) { snd.thud(0.5 + k); rexCam.shake = Math.max(rexCam.shake, 0.35 * k); } } };
+      const stand = () => { R.v = ease(R.v, 0, dt * 4); p.legL = ease(p.legL, 0, dt * 6); p.legR = ease(p.legR, 0, dt * 6); p.liftL = ease(p.liftL, 0, dt * 6); p.liftR = ease(p.liftR, 0, dt * 6); };
+      const look = () => { p.yaw = ease(p.yaw, Math.max(-0.5, Math.min(0.5, ang)), dt * 3); };
+      const to = (o, k = 6) => { for (const [n, v] of Object.entries(o)) p[n] = ease(p[n], v, dt * k); };
+      // the ring of dust from a stomp, out to 26 m
+      if (R.ring) { const g = R.ring; g.r += dt * 38; if (me && !g.hit && Math.abs(Math.hypot(me.x - g.x, me.z - g.z) - g.r) < 3 && (car.hop || 0) < 0.6) { g.hit = true; meHit(R.phase === 3 ? 15 : 12, false, "Stomped!"); } if (g.r > 26) R.ring = null; }
+      switch (R.st) {
+        case "rise": { const f = Math.min(1, R.t / 0.9); p.rise = -9 * (1 - f) * (1 - f); to({ pitch: -0.15, neck: -0.5, jaw: 0.2 }); if (f >= 1) { R.st = "roar"; R.t = 0; p.rise = 0; } break; }
+        case "roar": { stand(); to({ pitch: -0.12, neck: -0.65, jaw: 0.85, tail: 0, tailP: -0.15 }, 5); look(); if (R.t < 0.1 && !R.roared) { R.roared = true; snd.roar?.(1); rexCam.shake = Math.max(rexCam.shake, 0.6); }
+          if (R.t > 1.6) { R.roared = false; R.st = R.won ? "leave" : R.live ? "walk" : "leave"; R.t = 0; } break; }
+        case "walk": { if (!me) { R.st = "leave"; R.t = 0; break; } to({ pitch: 0.04, neck: 0.12, jaw: 0.15 + 0.1 * Math.sin(R.t * 3), tailP: 0 }, 3); look();
+          walk(d > 14 ? 12 * fast : d > 8 ? 6 : 0);
+          // too far away: it gives up after six seconds of you being 320 m off
+          R.far = d > 320 ? R.far + dt : 0; if (R.far > 6) { rexOver("💨 You outran the T-rex. Get out and back in the hotrod to face it again."); break; }
+          const a = Math.abs(ang);
+          if (R.phase >= 2 && R.cd.charge <= 0 && d > 26 && d < 95 && a < 0.6) { R.st = "charge"; R.t = 0; R.lock = Math.atan2(me.x + Math.sin(me.dir || me.h) * me.v * 0.8 - R.x, me.z + Math.cos(me.dir || me.h) * me.v * 0.8 - R.z); R.hitMe = false; snd.roar?.(0.6); rexSay("CHARGE!", 1100, true); }
+          else if (R.phase === 3 && R.cd.tail <= 0 && d < 20 && a > 2.1) { R.st = "tail"; R.t = 0; R.hitMe = false; R.spin = Math.sign(ang) || 1; }
+          else if (R.cd.stomp <= 0 && d < 15) { R.st = "stomp"; R.t = 0; }
+          else if (R.cd.bite <= 0 && d < 17 && d > 5 && a < 0.55) { R.st = "bite"; R.t = 0; R.hitMe = false; }
+          break; }
+        case "bite": { stand(); look(); if (R.t < 0.75) to({ pitch: -0.1, neck: -0.55, jaw: 1.0 }, 6); else if (R.t < 1.0) { to({ pitch: 0.42, neck: 0.75, jaw: R.t > 0.9 ? 0 : 1.1 }, 16);
+            if (!R.hitMe && R.t > 0.86 && me) { R.hitMe = true; const bx = R.x + fx * 5.2 * s, bz = R.z + fz * 5.2 * s; snd.crunch?.(); if (Math.hypot(me.x - bx, me.z - bz) < 4.6) meHit(R.phase === 3 ? 22 : 18, false, "Chomp!"); } }
+          else to({ pitch: 0.04, neck: 0.12, jaw: 0.2 }, 4);
+          if (R.t > 1.6) { R.st = "walk"; R.t = 0; R.cd.bite = R.phase === 3 ? 1.6 : 2.4; } break; }
+        case "stomp": { stand(); look(); if (R.t < 0.9) { to({ pitch: -0.28, neck: -0.3, jaw: 0.6, legR: -0.7, liftR: 0.6 }, 5); if (R.t < 0.05) snd.roar?.(0.4); }
+          else if (!R.slam) { R.slam = true; p.pitch = 0.12; p.legR = 0; p.liftR = 0; R.ring = { x: R.x + fx * 1.2 * s, z: R.z + fz * 1.2 * s, r: 1, hit: false }; snd.thud(2.4); rexCam.shake = Math.max(rexCam.shake, me ? Math.max(0.3, 1.2 - d / 60) : 0); }
+          else to({ pitch: 0.04, neck: 0.12, jaw: 0.2 }, 4);
+          if (R.t > 1.7) { R.st = "walk"; R.t = 0; R.slam = false; R.cd.stomp = R.phase === 3 ? 4 : 6; } break; }
+        case "charge": { if (R.t < 0.9) { stand(); turn(R.lock, 3); to({ pitch: 0.3, neck: 0.5, jaw: 0.5, legR: Math.sin(R.t * 18) * 0.25 }, 8); if (Math.random() < dt * 20) fxAdd(R.x - fx * 2 * s, m.groundAt(R.x, R.z) + 0.3, R.z - fz * 2 * s, (Math.random() - 0.5) * 4, 2 + Math.random() * 3, (Math.random() - 0.5) * 4, 0.7); }
+          else { R.h = R.lock; walk(R.phase === 3 ? 34 : 30, false); to({ pitch: 0.3, neck: 0.4, jaw: 0.6 }, 6);
+            if (me && !R.hitMe && d < 2.4 * s) { R.hitMe = true; meHit(24, true, "Rammed by a T-rex!"); }
+            if (R.t > 3.1 || !inside(R.x + fx * 20, R.z + fz * 20)) { R.st = R.hitMe ? "walk" : "dizzy"; R.t = 0; R.cd.charge = R.phase === 3 ? 5 : 7; if (!R.hitMe) rexSay("DIZZY!", 1300); } } break; }
+        case "dizzy": { stand(); to({ pitch: 0.1, neck: 0.4 + 0.15 * Math.sin(R.t * 7), yaw: 0.45 * Math.sin(R.t * 4.5), jaw: 0.5, roll: 0.08 * Math.sin(R.t * 4.5) }, 6); if (Math.random() < dt * 8) gAdd(R.x + fx * 5 * s + (Math.random() - 0.5) * 3, m.groundAt(R.x, R.z) + 5.2 * s, R.z + fz * 5 * s + (Math.random() - 0.5) * 3, 0, 1, 0, 0.8);
+          if (R.t > 2.4) { R.st = "walk"; R.t = 0; } break; }
+        case "tail": { stand(); const f = Math.min(1, R.t / 0.9); R.h = rexWrap(R.h + R.spin * dt * 7 * (f < 0.8 ? 1 : 0)); to({ tail: -R.spin * 0.6, pitch: 0.1 }, 8);
+          if (!R.hitMe && me && R.t > 0.3 && R.t < 0.7) { const tx = R.x - Math.sin(R.h) * 5 * s, tz = R.z - Math.cos(R.h) * 5 * s; if (Math.hypot(me.x - tx, me.z - tz) < 6) { R.hitMe = true; meHit(14, true, "Tail whipped!"); } }
+          if (R.t > 1.2) { R.st = "walk"; R.t = 0; R.cd.tail = 4; } break; }
+        case "dead": { R.v = 0; const f = Math.min(1, R.t / 1.4); p.roll = (Math.PI / 2) * f * f; p.pitch = ease(p.pitch, 0, dt * 3); p.neck = ease(p.neck, -0.3, dt * 2); p.jaw = ease(p.jaw, 0.7, dt * 2); p.tail = ease(p.tail, 0, dt * 2);
+          if (f >= 1 && !R.down) { R.down = true; snd.thud(2.6); rexCam.shake = 1.3; for (let k = 0; k < 18; k++) { const a = Math.random() * Math.PI * 2; fxAdd(R.x + Math.sin(a) * 6, m.groundAt(R.x, R.z) + 0.4, R.z + Math.cos(a) * 6, Math.sin(a) * 9, 4 + Math.random() * 4, Math.cos(a) * 9, 1); } }
+          if (R.t > 12) p.sink = -Math.min(5, (R.t - 12) * 1.6); if (R.t > 15.5) { rexHide(); rex = null; } break; }
+        case "leave": { R.far = 0; if (R.t < 0.1 && me) R.h = rexWrap(Math.atan2(R.x - me.x, R.z - me.z)); to({ pitch: 0.04, neck: 0.1, jaw: 0.1, yaw: 0 }, 3); walk(10, false);
+          if (R.t > 5) p.sink = -Math.min(5, (R.t - 5) * 1.5); if (R.t > 8.5) { rexHide(); rex = null; } break; } }
+      if (!rex) return;
+      if (R.st !== "walk" && R.st !== "charge" && R.st !== "leave") p.tail = ease(p.tail, 0.08 * Math.sin(R.t * 2), dt * 2);
+      // you and it bumping: it's solid (its hips, chest and tail root); hitting it at speed hurts it
+      if (me && R.live && R.st !== "rise") { const vx = Math.sin(me.dir ?? me.h) * me.v, vz = Math.cos(me.dir ?? me.h) * me.v;
+        for (const [o, r] of [[1.0, 1.4], [2.3, 1.05], [-2.2, 0.8]]) { const cx = R.x + fx * o * s, cz = R.z + fz * o * s, ex = me.x - cx, ez = me.z - cz, e = Math.hypot(ex, ez) || 1e-3, rr = r * s + 1.7; if (e >= rr) continue;
+          const nx = ex / e, nz = ez / e, vin = -(vx * nx + vz * nz) + R.v * Math.max(0, fx * nx + fz * nz);
+          const ox = cx + nx * (rr + 0.05), oz = cz + nz * (rr + 0.05); if (fits(CAR, ox, oz, me.h)) { me.x = ox; me.z = oz; } else me.v = 0;
+          if (vin > 6 && R.ramCd <= 0) { R.ramCd = 0.5; const boosted = !!F.boost || F.keys.has("ShiftLeft") || F.keys.has("ShiftRight"), dmg = Math.max(2, Math.min(20, (vin * 3.6 - 15) / 4)) * (boosted ? 1.5 : 1);
+            rexHurt(dmg, cx + nx * r * s, m.groundAt(cx, cz) + 3 * s, cz + nz * r * s); me.v = -Math.max(4, Math.abs(me.v) * 0.35); fxBurst(me, false); rexCam.shake = Math.max(rexCam.shake, 0.6);
+            if (rex && rex.live && rex.st === "walk") { p.yaw = Math.sign(ang || 1) * -0.5; p.neck = -0.4; snd.roar?.(0.35); } }
+          else if (R.st === "charge" && !R.hitMe && R.t > 0.9) { R.hitMe = true; meHit(24, true, "Rammed by a T-rex!"); }
+          break; } }
+      // the spud gun: a flaming spud about three times a second while it's held, off the blower, aimed a little for you at its chest
+      spudCd -= dt; if (me && R.live && (spudHeld || F.keys.has("KeyL")) && spudCd <= 0 && spuds.length < REX_SPUDS) { spudCd = 0.3;
+        const hx = Math.sin(me.h), hz = Math.cos(me.h), x0 = me.x + hx * 1.4, y0 = me.y + 2.2, z0 = me.z + hz * 1.4, tx = R.x + fx * 1.6 * s, ty = m.groundAt(R.x, R.z) + 3.4 * s, tz = R.z + fz * 1.6 * s;
+        let vx = hx * 60 + Math.sin(me.dir ?? me.h) * me.v, vy = 3, vz = hz * 60 + Math.cos(me.dir ?? me.h) * me.v; const td = Math.hypot(tx - x0, tz - z0), aim = Math.abs(rexWrap(Math.atan2(tx - x0, tz - z0) - me.h));
+        if (td < 150 && aim < 0.6) { const T2 = td / 60; vx = (tx - x0) / T2; vz = (tz - z0) / T2; vy = (ty - y0) / T2 + 6 * T2; }
+        spuds.push({ x: x0, y: y0, z: z0, vx, vy, vz, t: 0 }); snd.pop(); snd.tone?.(220, 90, 0.18, 0.08, "square"); }
+      for (let i = spuds.length - 1; i >= 0; i--) { const q = spuds[i]; q.t += dt; q.vy -= 12 * dt; q.x += q.vx * dt; q.y += q.vy * dt; q.z += q.vz * dt; let gone = q.t > 3 || q.y < m.groundAt(q.x, q.z);
+        if (!gone && R.live) { const lx = q.x - R.x, lz = q.z - R.z, along = lx * fx + lz * fz, across = Math.abs(lx * fz - lz * fx), up = q.y - m.groundAt(R.x, R.z);
+          if (along > -2.5 * s && along < 6 * s && across < 1.4 * s && up > 1.6 * s && up < 5.2 * s) { gone = true; rexHurt(3, q.x, q.y, q.z, 0); } }
+        if (gone) { if (q.t <= 3) for (let k = 0; k < 3; k++) fxAdd(q.x, q.y, q.z, (Math.random() - 0.5) * 6, 2 + Math.random() * 4, (Math.random() - 0.5) * 6, 0.45); spuds.splice(i, 1); } }
+      if (spudP) for (let i = 0; i < REX_SPUDS; i++) { const q = spuds[i]; spudP.setMatrix(i, q ? RT.compose(RV.set(q.x, q.y, q.z), Q.setFromEuler(E.set(-Math.atan2(q.vy, Math.hypot(q.vx, q.vz)), Math.atan2(q.vx, q.vz), q.t * 9, "YXZ")), V.set(1.4, 1.4, 1.4)).elements.slice() : NONE.slice()); }
+      rexDraw(); };
+    // the loop: while it's armed, up or on its way off. Stops itself when there's nothing left to do
+    const rexLoop = () => { if (rexRaf) return; rexLast = rexMs(); const f = () => { rexRaf = 0; if (BS.town !== T || T.dead || !T.on) { rexEnd(); return; }
+        const now = rexMs(), dt = Math.min(0.05, (now - rexLast) / 1000); rexLast = now;
+        if (rexArmed && !rex) { if (!inHotrod() || T.race?.active?.()) { rexArmed = 0; }
+          else { const t = now - rexArmed; if (t > 12000 + rexStep * 2300 && rexStep < 4) { rexStep++; snd.thud(0.5 + rexStep * 0.35); rexCam.shake = Math.max(rexCam.shake, 0.15 + rexStep * 0.12); if (rexStep === 1) toast("Is the ground shaking? 👀", 2500); }
+            if (t >= REX_WAIT) { rexArmed = 0; rexStart(); } } }
+        if (rex) { if (rex.live && !inHotrod()) rexOver("🦖 The T-rex lost interest and stomped off. Get back in the hotrod to take it on again.", !!rex.won); if (rex) rexTick(dt); }
+        const noSpud = !(rex && rex.live && inHotrod()); if (spudBtn.hidden !== noSpud) spudBtn.hidden = noSpud;
+        // (the view a little further back and up while it's after you: 7 m put the view up in the trees)
+        rexHudShow(); rexCam.d = ease(rexCam.d, rex && rex.live && inHotrod() ? 3.5 : 0, dt * 1.5); rexCam.shake = Math.max(0, rexCam.shake - dt * 1.8);
+        if (rexArmed || rex || rexCam.d > 0.05 || rexCam.shake > 0) rexRaf = requestAnimationFrame(f); else { rexCam.d = 0; rexCam.shake = 0; } };
+      rexRaf = requestAnimationFrame(f); };
+    C.rexInfo = () => rex ? { x: rex.x, z: rex.z, h: rex.h, st: rex.st, hp: rex.hp, me: rex.me, phase: rex.phase, live: rex.live } : rexArmed ? { armed: true } : null;  // (for checking)
+    const rexEnd = () => { cancelAnimationFrame(rexRaf); rexRaf = 0; rexArmed = 0; rex = null; rexHide(); spudBtn.hidden = true; spudHeld = false; if (rexHud) rexHud.hidden = true; if (rexCall) rexCall.hidden = true; document.body.classList.remove("bsboss"); rexCam.d = 0; rexCam.shake = 0; };
     // the golden possum's turbo rockets: two silver tubes on the back with flames out of them, while its boost or jump is on
     // (bigger: long flickering flames with a yellow bloom at the nozzles, and a trail of gold glitter behind. Ash, 18 November 2026)
     const rk = m.addParts([cube("#c9ced6", 0.36, 0.36, 1.3, 0, [[-0.55, 0, 0], [0.55, 0, 0]]), cube("#ff8a1c", 0.3, 0.3, 1.1, -0.55, [[-0.55, 0, 0], [0.55, 0, 0]]), cube("#ffe46b", 0.5, 0.5, 0.45, 0, [[-0.55, 0, 0], [0.55, 0, 0]])]);
@@ -22259,7 +22655,7 @@ const handle = async (m, post) => {
         const mega = C.megaTil > performance.now(); boostBtn.classList.toggle("bsmega", mega);  // (the race's Turbo: the Boost button glows pink while it lasts)
         const gc = car.gold, bSecs = gc ? R.goldBoostSecs : R.boostSecs, bBack = (gc ? R.goldBoostBack : R.boostBack) / (mega ? 3 : 1), sTurn = gc ? R.goldSlideTurn : R.slideTurn, sSlow = gc ? R.goldSlideSlow : R.slideSlow;
         if (boosting) { charge = Math.max(0, charge - dt / bSecs); if (!charge) spent = true; } else { charge = Math.min(1, charge + dt / bBack); if (charge >= 0.2) spent = false; }
-        const K = (car.gold ? GOLD : car.bus ? 0.7 : 1) * (C.spdK || 1) * (C.slowTil > performance.now() ? 0.55 : 1) * (C.starTil > performance.now() ? 1.8 : 1) * (C.autoTil > performance.now() && auto ? 2.4 : 1), vTop = R.carTop / 3.6, vboost = Math.max(R.carBoostTop, R.carTop) / 3.6 * K, SHAPE = car.bus ? BUS : CAR;  // (spdK, slowTil: the race's car, handicap and storm cloud)
+        const K = (car.gold ? GOLD : car.bus ? 0.7 : car.hotrod ? 1.1 : 1) * (C.spdK || 1) * (C.slowTil > performance.now() ? 0.55 : 1) * (C.starTil > performance.now() ? 1.8 : 1) * (C.autoTil > performance.now() && auto ? 2.4 : 1), vTop = R.carTop / 3.6, vboost = Math.max(R.carBoostTop, R.carTop) / 3.6 * K, SHAPE = car.bus ? BUS : CAR;  // (spdK, slowTil: the race's car, handicap and storm cloud)
         if (C.starTil > performance.now() && Math.random() < dt * 18) fxSpray(car, true);  // a golden star: sparkling
         // a passenger's power-up: 2 km/h more, and half a boost's worth on top, for 3 seconds (Ash, 16 November 2026)
         const tk = car.teamK || 1, vteam = vTop * K + tk * (R.teamBoostExtra / 3.6 + R.teamBoostShare / 100 * (vboost - vTop * K)), vmax = teamOn ? vteam : vTop * K;
@@ -22329,7 +22725,7 @@ const handle = async (m, post) => {
         snd.set(0.18 + 0.82 * bsClamp((a - G[g]) / (top - G[g]), 0, 1), Math.abs(thr) > 0.05 && !brake ? 0.35 + 0.65 * Math.abs(thr) : 0.08, a, boosting || teamOn, slide ? 1 : Math.min(1, Math.abs(wrap(car.h - car.dir)) * 2.5));
         showRing(boosting || charge < 0.999, boosting);
         if (camBack && a > 2) camBack = Math.max(0, camBack - dt * 2.6);  // (off the line, it glides in to the usual view in a couple of seconds)
-        o = car; D = (car.bus ? 15 : 7.5) + Math.min(5, a / 9) + camBack;
+        o = car; D = (car.bus ? 15 : 7.5) + Math.min(5, a / 9) + camBack + rexCam.d;  // (further back while the T-rex is after you, to see it)
         // The model faces south at zero yaw. Compass bearings start at north and run clockwise.
         const bearing = place === "inv" ? " \u00b7 " + compass(180 - car.h * 180 / Math.PI) : "";
         text = Math.round(a * 3.6) + " km/h" + bearing + autoText();
@@ -22619,11 +23015,11 @@ const handle = async (m, post) => {
       camYaw += wrap(o.h + Math.PI - camYaw) * Math.min(1, dt * 3.5);
       const critter = veh === "possum" || veh === "pigeon" || (veh === "ride" && ride.k === "possum"), high = critter && o.y - ground(o.x, o.z) > 1.2;  // (the possum: close behind it, looking up a wall it is climbing)
       const yaw = camYaw + off[0], pitch = bsClamp((veh === "possum" && pos.mode === "climb" ? 0.3 : -0.2) + off[1], -1.2, 0.35), cp = Math.cos(pitch), sx = Math.sin(yaw) * cp, sz = Math.cos(yaw) * cp;
-      if (!o.air && !high) while (D > 2.5 && (solid(o.x + sx * D, o.z + sz * D) || solid(o.x + sx * D * 0.55, o.z + sz * D * 0.55))) D -= 1.25;
+      if (!o.air && !high) while (D > 2.5 && (solid(o.x + sx * D, o.z + sz * D) || solid(o.x + sx * D * 0.55, o.z + sz * D * 0.55) || (rexCam.d > 0.5 && [0.25, 0.4, 0.7, 0.85].some(f => solid(o.x + sx * D * f, o.z + sz * D * f))))) D -= 1.25;  // (further back in the T-rex fight: looked along more of the way, so it isn't put inside a building)
       const room = veh === "drone" && R6()?.floorAt(o.x, o.z, o.y) != null ? R6() : null;  // flying the drone indoors: the view stays in the room with it
       if (room) { D = Math.min(D, room.near(o.x, o.z)); while (D > 0.6 && room.floorAt(o.x + sx * D, o.z + sz * D, o.y) == null) D -= 0.3; }
       else if (veh === "drone" && R6() && o.y < R6().ceil + 1) while (D > 0.6 && R6().inHouse(o.x + sx * D, o.z + sz * D)) D -= 0.3;  // (just out of the door: the view comes out with it, not left behind the wall)
-      const px = o.x + sx * D, pz = o.z + sz * D, py0 = Math.max(o.y + (veh === "ride" ? RIDE_UP[ride.k] : veh === "car" ? (car.bus ? 3.4 : 1.5) : critter ? 0.9 : veh === "drone" ? (room ? 0.55 : 1.0) : 2.4) - Math.sin(pitch) * D, critter ? surf(px, pz) + 0.5 : ground(px, pz) + 0.7);
+      const px = o.x + sx * D, pz = o.z + sz * D, py0 = Math.max(o.y + (veh === "ride" ? RIDE_UP[ride.k] : veh === "car" ? (car.bus ? 3.4 : 1.5 + rexCam.d * 0.4) : critter ? 0.9 : veh === "drone" ? (room ? 0.55 : 1.0) : 2.4) - Math.sin(pitch) * D, critter ? surf(px, pz) + 0.5 : ground(px, pz) + 0.7);
       const py = room && room.ceilAt(px, pz, o.y) != null ? Math.min(py0, room.ceilAt(px, pz, o.y) - 0.2) : py0;
       // the view rides with what you're in and only eases its place round it (Ash, 15 November 2026: "When flying the plane it's a bit
       // laggy/choppy": it used to ease after the plane itself, so at speed it fell back further on a slow frame than a quick one and
@@ -22631,6 +23027,7 @@ const handle = async (m, post) => {
       const e = 1 - Math.exp(-dt * 9), to = [px - o.x, py - o.y, pz - o.z];
       if (!camOff || Math.hypot(F.pos.x - o.x - camOff[0], F.pos.z - o.z - camOff[2]) > 60) camOff = to; else for (let i = 0; i < 3; i++) camOff[i] += (to[i] - camOff[i]) * e;
       F.pos.x = o.x + camOff[0]; F.pos.y = Math.max(o.y + camOff[1], (critter ? surf(F.pos.x, F.pos.z) + 0.5 : ground(F.pos.x, F.pos.z) + 0.7)); F.pos.z = o.z + camOff[2]; F.yaw = yaw; F.pitch = pitch;
+      if (rexCam.shake > 0.01 && !matchMedia("(prefers-reduced-motion: reduce)").matches) { const k = Math.min(1.2, rexCam.shake) * 0.45; F.pos.x += (Math.random() - 0.5) * k; F.pos.y += (Math.random() - 0.5) * k; F.pos.z += (Math.random() - 0.5) * k; }  // the T-rex's footsteps and hits
       last = [F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch]; };
     // what is in reach of where you stand: a plane within 11 m, a parked car within 8 m, whichever is nearer
     const nearPlane = () => { let best = null, far = Infinity; for (const P of planes) { if (P.takenBy) continue; const d = Math.hypot(P.x - F.pos.x, P.z - F.pos.z); if (d < far) { far = d; best = P; } } return [best, far]; };
@@ -22649,8 +23046,8 @@ const handle = async (m, post) => {
       const pick = best && (!r2 || best.distance < (r2.distance ?? 11) + 4) ? best : r2;
       const B = T.traffic?.bus, db = B && B.x != null && !B.away ? Math.hypot(B.x - F.pos.x, B.z - F.pos.z) : Infinity;  // the bus that drives itself, within 9 m
       return db < 9 && (!pick || db < (pick.distance ?? 11) + 3) ? { bus: B, distance: db } : pick; };  // (someone in it wins over an empty one beside it, such as your own copy of the golden car they drove off in)
-    const RIDE_REACH = { car: 5.6, gold: 5.6, bus: 15, plane: 11, goldplane: 11, heli: 11, goldheli: 11, possum: 6 }, RIDE_BACK = { car: 7, gold: 7, bus: 13, plane: 15, goldplane: 15, heli: 14, goldheli: 14, possum: 3.6 },
-      RIDE_UP = { car: 1.5, gold: 1.5, bus: 3.4, plane: 2.4, goldplane: 2.4, heli: 2.4, goldheli: 2.4, possum: 0.9 };
+    const RIDE_REACH = { car: 5.6, gold: 5.6, hotrod: 5.6, bus: 15, plane: 11, goldplane: 11, heli: 11, goldheli: 11, possum: 6 }, RIDE_BACK = { car: 7, gold: 7, hotrod: 7.5, bus: 13, plane: 15, goldplane: 15, heli: 14, goldheli: 14, possum: 3.6 },
+      RIDE_UP = { car: 1.5, gold: 1.5, hotrod: 1.8, bus: 3.4, plane: 2.4, goldplane: 2.4, heli: 2.4, goldheli: 2.4, possum: 0.9 };
     let ride = null, shownRide = null;  // the player you're riding with: { id, name, k, at: [x, y, z, t] }; who the button last offered
     const CLING = { plane: 1.95, goldplane: 1.95, heli: 2.05, goldheli: 2.05, car: 1.45, gold: 1.45, bus: 3.3 };  // (cars too: Ash, 15 November 2026, "let the possum also get ontop of cars")  // what the possum can hold on to, and how high its top is
     // ---- Driving without being a gamer (Ash, 22 November 2026: "I'm trying to cater to both people used to pc games as well as not",
@@ -22923,11 +23320,11 @@ const handle = async (m, post) => {
         if (!townPerks().wasPigeon) { townPerkSet("wasPigeon", true); setTimeout(() => veh === "pigeon" && toast(touch ? "You're the pigeon! Hold Flap to take off and climb, push the stick to fly that way, and let go of Flap to glide down." : "You're the pigeon! Space flaps (take off, fly up), W flies the way you're looking, C dives. E to be human again.", 6500), wait ? 2500 : 0); } }
       else if (c.plane) { plane = c.plane; veh = "plane"; if (T.cfg?.place === "moo") loadRoofs(); /* (Moorooka's roofs, so planes and helicopters meet them) */ plane.v = 0; plane.spin = 0; plane.turn = 0; camYaw = plane.h + Math.PI; document.body.classList.add("bsdrive", "bsplane"); document.body.classList.toggle("bsheli", !!plane.heli); boostBtn.style.setProperty("--charge", "100%"); }
       else { if (c.own && !owns.includes(c.own)) { const G = T.traffic?.take?.(c.own); if (!G) return true; owns.push(G); c.own = G; }
-        car = c.own ? { own: c.own, gold: c.own.gold, bus: c.own.bus, x: c.own.x, z: c.own.z, h: c.own.h, dir: c.own.h, y: c.own.y, p: c.own.p, r: c.own.r, v: 0, steer: 0 } : { id: c.id, bus: !!c.bus, x: c.x, z: c.z, h: c.heading, dir: c.heading, y: ground(c.x, c.z) + 0.05, p: 0, r: 0, v: 0, steer: 0 };
+        car = c.own ? { own: c.own, gold: c.own.gold, bus: c.own.bus, hotrod: !!c.own.hotrod, x: c.own.x, z: c.own.z, h: c.own.h, dir: c.own.h, y: c.own.y, p: c.own.p, r: c.own.r, v: 0, steer: 0 } : { id: c.id, bus: !!c.bus, x: c.x, z: c.z, h: c.heading, dir: c.heading, y: ground(c.x, c.z) + 0.05, p: 0, r: 0, v: 0, steer: 0 };
         if (!car.own && !m.driveCar(c.id[0], c.id[1], car.x, car.y, car.z, car.h, 0, 0)) { car = null; toast("That car won't start. Try another one."); return true; }
         if (car.id) T.invStatic?.take(car.id);
         if (pos?.grip) { const r = pos.grip.ref; if (r === c.own || (r && Math.hypot(r.x - car.x, r.z - car.z) < 1.5)) { pos.grip.ref = car; toast("You're holding on to the roof. Off you go!", 2600); } }
-        veh = "car"; camYaw = car.h + Math.PI; document.body.classList.add("bsdrive"); showRing(charge < 0.999);
+        veh = "car"; camYaw = car.h + Math.PI; document.body.classList.add("bsdrive"); showRing(charge < 0.999); if (car.hotrod) rexArm();
         // the GPS button flashes green three times, to say you can use it now (Ash, 25 November 2026: "If I get into a car flash gps green twice
         // to let the user know they can use it")
         { const gb = $("bsGpsBtn"); if (gb) { gb.classList.remove("bsflash"); void gb.offsetWidth; gb.classList.add("bsflash"); setTimeout(() => gb.classList.remove("bsflash"), 2000); } }
@@ -23177,9 +23574,9 @@ const handle = async (m, post) => {
       peerGold = null;
       peerRk = null; };
     let peerShown = false;
-    C.pose = () => veh === "ride" ? null : veh === "possum" ? { k: "possum", x: pos.x, y: pos.y, z: pos.z, h: pos.h, p: pos.p, r: 0 } : veh === "drone" ? { k: "drone", x: dr.x, y: dr.y, z: dr.z, h: dr.h, p: dr.p, r: dr.r } : veh === "pigeon" ? { k: pg.gold ? "goldpigeon" : "pigeon", x: pg.x, y: pg.y, z: pg.z, h: pg.h, p: pg.p, r: pg.r } : veh === "car" ? { k: car.bus ? "bus" : car.gold ? "gold" : "car", x: car.x, y: car.y, z: car.z, h: car.h + (car.spinY || 0), p: car.p, r: car.r + (car.roll || 0) }
+    C.pose = () => veh === "ride" ? null : veh === "possum" ? { k: "possum", x: pos.x, y: pos.y, z: pos.z, h: pos.h, p: pos.p, r: 0 } : veh === "drone" ? { k: "drone", x: dr.x, y: dr.y, z: dr.z, h: dr.h, p: dr.p, r: dr.r } : veh === "pigeon" ? { k: pg.gold ? "goldpigeon" : "pigeon", x: pg.x, y: pg.y, z: pg.z, h: pg.h, p: pg.p, r: pg.r } : veh === "car" ? { k: car.bus ? "bus" : car.gold ? "gold" : car.hotrod ? "hotrod" : "car", x: car.x, y: car.y, z: car.z, h: car.h + (car.spinY || 0), p: car.p, r: car.r + (car.roll || 0) }
       : veh ? { k: plane.heli ? (plane.gold ? "goldheli" : "heli") : plane.gold ? "goldplane" : "plane", x: plane.x, y: plane.y, z: plane.z, h: plane.h, p: plane.p, r: plane.r + (plane.roll || 0) } : null;
-    C.where = () => veh === "ride" ? { kind: "ride", with: ride.name } : veh === "pigeon" ? { kind: "pigeon", x: pg.x, y: pg.y, z: pg.z, heading: pg.h, speed: pg.v } /* (it fell through to the plane's, and threw) */ : veh === "drone" ? { kind: "drone", x: dr.x, y: dr.y, z: dr.z, heading: dr.h, speed: dr.v } /* (so did the drone) */ : veh === "possum" ? { kind: "possum", x: pos.x, y: pos.y, z: pos.z, heading: pos.h, speed: pos.v, mode: pos.mode, up: pos.y - ground(pos.x, pos.z) } : veh === "car" ? { kind: "car", gold: !!car.gold, bus: !!car.bus, x: car.x, z: car.z, heading: car.h, dir: car.dir, speed: car.v, charge } : veh ? { kind: "plane", heli: !!plane.heli, x: plane.x, y: plane.y, z: plane.z, heading: plane.h, pitch: plane.p, speed: plane.v, air: plane.air } : null;  // for checking
+    C.where = () => veh === "ride" ? { kind: "ride", with: ride.name } : veh === "pigeon" ? { kind: "pigeon", x: pg.x, y: pg.y, z: pg.z, heading: pg.h, speed: pg.v } /* (it fell through to the plane's, and threw) */ : veh === "drone" ? { kind: "drone", x: dr.x, y: dr.y, z: dr.z, heading: dr.h, speed: dr.v } /* (so did the drone) */ : veh === "possum" ? { kind: "possum", x: pos.x, y: pos.y, z: pos.z, heading: pos.h, speed: pos.v, mode: pos.mode, up: pos.y - ground(pos.x, pos.z) } : veh === "car" ? { kind: "car", gold: !!car.gold, bus: !!car.bus, hotrod: !!car.hotrod, x: car.x, z: car.z, heading: car.h, dir: car.dir, speed: car.v, charge } : veh ? { kind: "plane", heli: !!plane.heli, x: plane.x, y: plane.y, z: plane.z, heading: plane.h, pitch: plane.p, speed: plane.v, air: plane.air } : null;  // for checking
     C.reread = () => { Object.assign(R, townPerkRide(rideSettings())); if (BS.raceRide && C.spdK) R.carAccel /= C.spdK; };
     // ---- for the race (townRace): its car and handicap, the power-ups, and changing to the plane and the possum on the way round
     C.raceRide = RR => { BS.raceRide = RR || null; const k = RR ? bsClamp(+RR.hc || 0, 0, 8) : 0;
@@ -23229,7 +23626,7 @@ const handle = async (m, post) => {
     C.toGold = () => { const G = planes.find(P => P.gold); if (!G) return false; if (veh) leave(false);
       const sn = Math.sin(G.h), cs = Math.cos(G.h), dx = sn * 7 - cs * 5, dz = cs * 7 + sn * 5; T.tween = null;
       F.pos.x = G.x + dx; F.pos.z = G.z + dz; F.pos.y = ground(F.pos.x, F.pos.z) + (T.walk ? F.eye : 14); F.yaw = Math.atan2(dx, dz); F.pitch = T.walk ? -0.06 : -0.6; at = 0; return true; };
-    C.dispose = () => { try { satMesh?.remove?.(); } catch {} try { autoMark?.remove?.(); } catch {} ezGo.remove(); ezL.remove(); ezR.remove(); upChip.remove(); unBtn.remove(); if (veh) leave(false); btn.onclick = null; btn.hidden = boostBtn.hidden = handBtn.hidden = flipBtn.hidden = true; plantBtn.remove(); plantMenu.remove(); gripBtn.remove(); pwBtn.remove(); tkBtn.remove(); flipBtn.removeEventListener("pointerdown", flipPress); F.hand = false; Object.entries(press).forEach(([k, f]) => boostBtn.removeEventListener(k, f)); Object.entries(handPress).forEach(([k, f]) => handBtn.removeEventListener(k, f));
+    C.dispose = () => { rexEnd(); Object.entries(spudOn).forEach(([k, f]) => spudBtn.removeEventListener(k, f)); spudBtn.remove(); rexHud?.remove(); rexCall?.remove(); try { rexP?.remove(); spudP?.remove(); } catch {} try { satMesh?.remove?.(); } catch {} try { autoMark?.remove?.(); } catch {} ezGo.remove(); ezL.remove(); ezR.remove(); upChip.remove(); unBtn.remove(); if (veh) leave(false); btn.onclick = null; btn.hidden = boostBtn.hidden = handBtn.hidden = flipBtn.hidden = true; plantBtn.remove(); plantMenu.remove(); gripBtn.remove(); pwBtn.remove(); tkBtn.remove(); flipBtn.removeEventListener("pointerdown", flipPress); F.hand = false; Object.entries(press).forEach(([k, f]) => boostBtn.removeEventListener(k, f)); Object.entries(handPress).forEach(([k, f]) => handBtn.removeEventListener(k, f));
       document.removeEventListener("visibilitychange", hidden); document.body.classList.remove("bsdrive", "bsplane"); snd.dispose(); showKeys(null); try { for (const P of planes) P.parts.remove(); for (const G of owns) G.parts.remove(); ring.remove(); possumMesh?.remove(); poleMesh?.remove(); } catch {} };
     return C;
   }
