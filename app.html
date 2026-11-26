@@ -9591,7 +9591,7 @@ const handle = async (m, post) => {
         // Ash, 16 November 2026: "The golden car is still too low in Logan, sitting inside the road")
         const LIFT = cfg.lift, b = m.bounds(), ground = (x = F.pos.x, z = F.pos.z) => { let g = Math.max(m.groundAt(x, z), m.waterAt ? m.waterAt(x, z) : m.waterLevel());
           if (LIFT && x > LIFT[0] && x < LIFT[2] && z > LIFT[1] && z < LIFT[3]) g += LIFT[4];
-          if (T.pads) for (const P of T.pads) { const dx = x - P.x, dz = z - P.z; if (Math.abs(dx * P.c - dz * P.s) <= P.hw && Math.abs(dx * P.s + dz * P.c) <= P.hd && P.top > g) g = P.top; }
+          if (T.pads) { const g0 = g; for (const P of T.pads) g = Math.max(g, padGround(P, x, z, g0)); }
           if (T.bal6) g = T.bal6.top(x, z, g);  // number 6's floor, decks and stairs, where you can step up onto them
           return g; };
         const { ceil = 4000, fast = 30, far = 7000, out = 9000, stride = 0, pad = 0, stand = [1, 30] } = cfg;  // a town's limits, unless the model is bigger (Logan)
@@ -16610,8 +16610,11 @@ const handle = async (m, post) => {
     const home = D.nr?.home;
     if (home && W.invHouse) { const [hx, hz, nx, nz] = home, ry = Math.atan2(nx, nz), half = 16.5, zBack = -17, zFront = 15.4, zc = (zBack + zFront) / 2;
       const [x, z] = m.fromLatLon(...townLL(hx, hz));
-      const top = m.addPad({ x: x + Math.sin(ry) * zc, z: z + Math.cos(ry) * zc, halfWidth: half + 0.4, halfDepth: (zFront - zBack) / 2 + 0.4, heading: ry, color: [0.105, 0.254, 0.061], lift: 0.25 });
-      if (Number.isFinite(top)) (T.pads ||= []).push({ x: x + Math.sin(ry) * zc, z: z + Math.cos(ry) * zc, c: Math.cos(ry), s: Math.sin(ry), hw: half + 0.4, hd: (zFront - zBack) / 2 + 0.4, top });
+      const top = m.addPad({ x: x + Math.sin(ry) * zc, z: z + Math.cos(ry) * zc, halfWidth: half + 0.4, halfDepth: (zFront - zBack) / 2 + 0.4, heading: ry, color: [0.105, 0.254, 0.061], lift: 0.12 });
+      // (the lawn's edge is a grassy bank down to the ground round it, 4 m wide, not a wall up to 1.4 m high where the street falls away;
+      // you walk and drive down it. Ash, 26 November 2026: "The grass on 11 Norman Rd is too high")
+      if (Number.isFinite(top)) { const P = { x: x + Math.sin(ry) * zc, z: z + Math.cos(ry) * zc, c: Math.cos(ry), s: Math.sin(ry), hw: half + 0.4, hd: (zFront - zBack) / 2 + 0.4, top, bank: 4 };
+        (T.pads ||= []).push(P); try { padBank(m, P, [0.105, 0.254, 0.061]); } catch (e) { console.warn("Town model: the lawn's bank couldn't be laid", e); } }
       const place = new THREE.Matrix4().makeTranslation(x - hx, top - G0, z - hz);
       lot(W.invHouse, half, zBack, zFront, place, skip);
       moving.forEach(r => whole(r, place));
@@ -16619,6 +16622,27 @@ const handle = async (m, post) => {
       if (W.invNormanSpot) stop("Norman Rd", W.invNormanSpot, place, [x, z]); }
     return jumps;
   }
+  // A grassy bank round a pad the app has laid (P: its middle, its sides' directions, half its width and depth, its top, the bank's width):
+  // from the pad's edge, out and down to the model's ground, the lawn's colour fading to a duller green at the foot. The ground height
+  // where you walk follows the same slope (padGround)
+  function padBank(m, P, col) {
+    const pts = [], add = (u, v, nu, nv) => pts.push([u, v, nu, nv]), steps = (a, b) => Math.max(2, Math.ceil(Math.abs(b - a) / 1.5));
+    const edge = (u0, v0, u1, v1, nu, nv) => { const n = steps(u0 + v0, u1 + v1); for (let i = 0; i < n; i++) add(u0 + (u1 - u0) * i / n, v0 + (v1 - v0) * i / n, nu, nv); };
+    const corner = (u, v, a0) => { for (let i = 0; i <= 6; i++) { const a = a0 + i / 6 * Math.PI / 2; add(u, v, Math.cos(a), Math.sin(a)); } };
+    const { hw, hd } = P;  // u across (P.c, -P.s), v along (P.s, P.c); round the outline anticlockwise from the +u side
+    edge(hw, -hd, hw, hd, 1, 0); corner(hw, hd, 0); edge(hw, hd, -hw, hd, 0, 1); corner(-hw, hd, Math.PI / 2);
+    edge(-hw, hd, -hw, -hd, -1, 0); corner(-hw, -hd, Math.PI); edge(-hw, -hd, hw, -hd, 0, -1); corner(hw, -hd, 1.5 * Math.PI);
+    const RINGS = [0, 0.25, 0.5, 0.75, 1], foot = [0.16, 0.22, 0.08], world = (u, v) => [P.x + u * P.c + v * P.s, P.z - u * P.s + v * P.c];
+    const grid = pts.map(([u, v, nu, nv]) => RINGS.map(t => { const [X, Z] = world(u + nu * P.bank * t, v + nv * P.bank * t), g = m.groundAt(X, Z);
+      return [X, P.top + (g - P.top) * t + 0.05 * t * (1 - t) * 4 + (t === 1 ? 0.04 : 0), Z, t]; }));
+    const pos = [], cols = [], put = q => { pos.push(q[0], q[1], q[2]); const t = q[3]; cols.push(col[0] + (foot[0] - col[0]) * t, col[1] + (foot[1] - col[1]) * t, col[2] + (foot[2] - col[2]) * t); };
+    for (let i = 0; i < grid.length; i++) { const A = grid[i], B = grid[(i + 1) % grid.length];
+      for (let r = 0; r + 1 < RINGS.length; r++) { put(A[r]); put(A[r + 1]); put(B[r + 1]); put(A[r]); put(B[r + 1]); put(B[r]); } }
+    m.addParts([{ positions: new Float32Array(pos), colors: new Float32Array(cols), color: [1, 1, 1], roughness: 1, doubleSide: true, matrix: new BS.B.THREE.Matrix4().elements }]); }
+  // the ground on a pad's bank: the slope from its top edge to the model's ground g, P.bank metres out (or g itself, if that's higher)
+  function padGround(P, x, z, g) { const dx = x - P.x, dz = z - P.z, u = Math.abs(dx * P.c - dz * P.s) - P.hw, v = Math.abs(dx * P.s + dz * P.c) - P.hd;
+    if (u <= 0 && v <= 0) return Math.max(g, P.top); if (!P.bank) return g; const d = Math.hypot(Math.max(0, u), Math.max(0, v));
+    return d >= P.bank ? g : Math.max(g, P.top + (g - P.top) * d / P.bank); }
   // The weather's town centre, cut out of its merged shapes and laid over the whole-town model's ground, which slopes where
   // the weather's is flat: every shape goes across with its heights measured from the ground, and the model lays it down so
   // that it follows the ground beneath it. A building comes whole or not at all (by its outline on the map); so does each
