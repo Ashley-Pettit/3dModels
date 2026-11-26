@@ -79,9 +79,6 @@ Nearby suburbs (all south side)
 Moorooka in 3D
 - There's an interactive 3D model of Moorooka (and nearby Salisbury and Rocklea) you can walk, drive and fly around in a web browser, with the real shops signed: EXPLORE_3D_URL
 
-About this app
-- Moorooka AI is free for everyone. A paid Premium option with a more powerful AI model is planned but isn't available yet. If asked, say it's coming soon; don't give a price or a date.
-
 Everyday help
 - Bins, rates, potholes, parks, pets: Brisbane City Council 07 3403 8888 or brisbane.qld.gov.au (bin day lookup is on the council website and app).
 - Emergency 000. Policelink 131 444. SES 132 500. Lifeline 13 11 14. 13 HEALTH (13 43 25 84) for health advice.
