@@ -9848,6 +9848,7 @@ const handle = async (m, post) => {
           // admin things (New to check, the golden rides) are in Settings, under Admin (Ash: "Seperate the admin stuff out of jump")
           const top = [...(T.gps ? [item({ townGps: "1" }, "GPS", "Type an address, or pick a place to go")] : []),
             ...(T.race ? [item({ townRace: "1" }, `Race around ${T.race.name}`, T.race.active() ? "In a race now" : T.race.host ? `Talk to ${T.race.host.name}: ${T.race.host.what}` : "Everyone here, standard cars, one lap")] : [])];
+          if (T.car?.bossGo && T.cfg?.place === "inv") top.push(item({ townBoss: "1" }, "Boss fight: T-rex", "Into the hotrod by The Hub. The T-rex comes in a few seconds"));  // (Ash, 26 November 2026: "Add a jump to boss fight")
           if (T.car?.canUnstickWalk?.()) top.push(item({ townUnstick: "1" }, "Unstick on foot", "Move to a clear spot nearby (U)"));
           const who = T.peers?.list?.() || []; if (!who.length) { list.prepend(...top); return; }
           const near = who.map(q => ({ ...q, d: Math.hypot(q.x - F.pos.x, q.z - F.pos.z) })).sort((a, b) => a.d - b.d);
@@ -9887,6 +9888,7 @@ const handle = async (m, post) => {
           if (e.target.closest("[data-town-race]")) { openList(false); T.race?.fromJump ? T.race.fromJump() : T.race?.open(); return; }
           if (e.target.closest("[data-town-gps]")) { openList(false); T.gps?.open(); return; }
           if (e.target.closest("[data-town-unstick]")) { openList(false); T.car?.unstick?.(); return; }
+          if (e.target.closest("[data-town-boss]")) { openList(false); T.car?.bossGo?.(); return; }
           const nw = e.target.closest("[data-town-new]"); if (nw) { const q = MOO_NEW[+nw.dataset.townNew]; openList(false); if (q) { T.tween = null; if (!T.walk) setMode(true);
             F.pos.set(q[2], ground(q[2], q[3]) + F.eye, q[3]); F.yaw = q[4]; F.pitch = q[5]; } return; }
           const gd = e.target.closest("[data-town-gold]"); if (gd) { openList(false); toGold(+gd.dataset.townGold); jump.focus({ preventScroll: true }); return; }
@@ -22476,6 +22478,17 @@ const handle = async (m, post) => {
       if (rex && rexRole === "host" && rex.st === "leave" && !rex.won) { Object.assign(rex, { live: true, far: 0 }); rexOut = false; rex.pose.sink = 0; rexEnter("roar"); rexSay("IT'S BACK!", 1600); rexLoop(); return; }
       rexArmed = rexMs(); rexStep = 0; rexLoop(); };
     let rexStep = 0;
+    // Jump to's Boss fight: beside the hotrod, in it, and the T-rex in about three and a half seconds (the ground shaking first) instead of
+    // twenty (Ash, 26 November 2026: "Add a jump to boss fight")
+    C.bossGo = () => { const G = owns.find(o => o.hotrod); if (!G) return false;
+      if (T.race?.active?.()) { toast("You're racing: leave the race with \u00d7 on the race card first.", 3000); return true; }
+      if (rex && rex.live) return true;
+      // (beside it, on whichever side is further from the other cars, so it's the one you get into)
+      const side = sd => [G.x + Math.cos(G.h) * 3.2 * sd, G.z - Math.sin(G.h) * 3.2 * sd], away = q => Math.min(...owns.filter(o => o !== G).map(o => Math.hypot(o.x - q[0], o.z - q[1])), 1e9);
+      const [x, z] = away(side(1)) >= away(side(-1)) ? side(1) : side(-1); T.standAt?.(x, z, Math.atan2(x - G.x, z - G.z), -0.1);
+      setTimeout(() => { if (veh) return; C.enter(); if (inHotrod() && !rex) { rexArmed = rexMs() - REX_WAIT + 3500; rexStep = 0; rexLoop(); }
+        else if (!inHotrod()) toast("Couldn't get you into the hotrod. Walk up to it on the lawn by The Hub and get in.", 3500, true); }, 350);
+      return true; };
     // a win, for everyone in on it: down it goes, fireworks and the count of wins
     const rexWon = () => { rexHudShow(); rexSay("VICTORY!", 3200); snd.roar?.(0.7); spudBtn.hidden = true; spudHeld = false; rexArmed = 0;
       let wins = 1; try { wins = (+localStorage.getItem("anRexWins") || 0) + 1; localStorage.setItem("anRexWins", String(wins)); } catch {}
