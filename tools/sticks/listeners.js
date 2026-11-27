@@ -19,7 +19,7 @@ const { chromium, devices } = require('playwright'); const town = process.argv[2
     const { result } = await cdp.send('Runtime.evaluate', { expression: /^(document|window)$/.test(expr) ? expr : `document.querySelector('${expr}')` });
     if (!result.objectId) { console.log(name, 'missing'); continue; }
     const { listeners } = await cdp.send('DOMDebugger.getEventListeners', { objectId: result.objectId });
-    const L = listeners.filter(l => /^(touch|pointer(?!lock))/.test(l.type))  /* (not pointerlockchange: no finger waits on it) */.map(l => `${l.type}${l.useCapture ? '(cap)' : ''}:${l.passive ? 'passive' : 'BLOCKING'}`);
+    const L = listeners.filter(l => /^(touch|pointer(?!lock)|gesture)/.test(l.type))  /* (not pointerlockchange: no finger waits on it) */.map(l => `${l.type}${l.useCapture ? '(cap)' : ''}:${l.passive ? 'passive' : 'BLOCKING'}`);
     bad += L.filter(s => /BLOCKING/.test(s)).length; console.log(name.padEnd(12), L.join(' ') || '(none)');
   }
   console.log(town, bad ? `${bad} listeners can cancel` : 'all passive');
