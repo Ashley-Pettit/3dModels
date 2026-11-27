@@ -9644,6 +9644,12 @@ const handle = async (m, post) => {
       frameTarget: saved?.frameTarget === 30 ? 30 : 60,
     };
   })();
+  // parts with shared points (`indices`) laid out as plain triangles, point by point, for a model that can't take indices (Logan's)
+  function townFlatParts(parts) {
+    return parts.map(q => { const I = q?.indices; if (!I || !I.length) return q; const out = { ...q }; delete out.indices;
+      for (const [key, n] of [["positions", 3], ["normals", 3], ["colors", 3], ["uvs", 2]]) { const src = q[key]; if (!src) continue; const dst = new Float32Array(I.length * n);
+        for (let i = 0; i < I.length; i++) { const o = I[i] * n; for (let c = 0; c < n; c++) dst[i * n + c] = src[o + c]; } out[key] = dst; }
+      return out; }); }
   function townModelPair(T, lib, box, cfg, opts, cb) {
     const key = "an3d-" + cfg.place, mem = navigator.deviceMemory || 8, touch = matchMedia("(pointer: coarse)").matches;
     let seen = {}; try { seen = JSON.parse(localStorage.getItem(key) || "{}") || {}; } catch {}
@@ -9671,11 +9677,15 @@ const handle = async (m, post) => {
     const handles = [];
     let ids = 0; const tag = mm => { mm.id = ++ids; const el = box.lastElementChild; if (el) el.dataset.anModel = String(mm.id); };
     cur = make(first, true);
+    // (Logan's model draws a part's points in order and ignores `indices`, so a shape made from shared points (the T-rex, Mumma, the hotrod,
+    // the health packs, Dino Land) came out as a jumble of stray triangles you could see through. There, each one's points are laid out in
+    // order first. Ash, 27 November 2026: "The models in Logan are not loading properly. E.g. Dino is see through")
+    const flat = cfg.place === "logan";
     const m = new Proxy({}, { get: (_, k) => {
       if (k === "ready") return ready;
       if (k === "dispose") return () => { dead = true; hiBox.hidden = true; try { cur.dispose(); } catch {} try { next?.dispose(); } catch {} };
       const v = cur[k]; if (typeof v !== "function") return v;
-      return (...a) => { const r = v.apply(cur, a);
+      return (...a) => { if (flat && k === "addParts" && Array.isArray(a[0])) a = [townFlatParts(a[0]), ...a.slice(1)]; const r = v.apply(cur, a);
         if (k === "setRemoved" && T.invStatic) T.invStatic.hideCars(a[0]?.cars || []);
         if (k === "addParts" || k === "addTrafficCar") { const H = handle(r); handles.push(H); log.push([k, a, H]); return H.proxy; }
         if (k === "addPad" || k === "addCars") log.push([k, a]); else if (LAST.includes(k)) last[k] = a;
@@ -22702,10 +22712,10 @@ const handle = async (m, post) => {
     // (rockets back up to 4, from 1.4: at 1.4 Mumma's 480 took about 340 hits and barely moved. Ash, 27 November 2026: "mumma was taking
     // almost 0 dmg from Missles". About 120 hits now, a minute or two of good flying)
     // the towns with a fight: what it's called there, where its hotrod waits, and its page (/<dir>/rex/). Logan's has no water between
-    // Mumma and the bunker (dry): the bunker comes up on open ground 400 m off instead
+    // Mumma and the bunker (dry): the bunker comes up on open ground 650 m off instead
     const REX_TOWN = { inv: { name: "Inverloch", dir: "inverloch", at: "by The Hub", lawn: "on the lawn by The Hub" },
       logan: { name: "Logan", dir: "logan", at: "out the front of the council", lawn: "on the lawn out the front of the council", dry: true } }[place] || null;
-    const REX_S = 2.6, REX_K = 0.9, REX_HP = 240, REX_WAIT = 20000, REX_SPUDS = 10, REX_NET = 150, MUM_K = 1.6, MUM_CAR = 0.12, CHOPPA_HITS = 35, REX_DMG = 0.9, TREX_DMG = 1.25, MUM_DMG = 0.625, AIR_DMG = 0.5, ROCKET = 2, RACE_HIT = 0.25, REX_SPD = 1.05, REPAIR = 2,
+    const REX_S = 2.6, REX_K = 0.9, REX_HP = 240, REX_WAIT = 20000, REX_SPUDS = 10, REX_NET = 150, MUM_K = 1.6, MUM_CAR = 0.12, CHOPPA_HITS = 35, REX_DMG = 0.9, TREX_DMG = 1.25, MUM_DMG = 0.625, AIR_DMG = 0.5, ROCKET = 2, RACE_HIT = 0.25, REX_SPD = 1.1, REPAIR = 2,
       RAGE_MS = 14000, RAGE_DMG = 1.3, RAGE_SPD = 1.2, HIT_MAX = 30, PACE = 2, TREX_PACE = 1.4, GAP = 2, MUM_GAP = 2.4, rexMs = () => performance.now();
     const RX = new THREE.Matrix4(), RB = new THREE.Matrix4(), RH = new THREE.Matrix4(), RT = new THREE.Matrix4(), RQ = new THREE.Matrix4(), RS = new THREE.Matrix4(), RV = new THREE.Vector3(), E3 = new THREE.Euler();
     let rex = null, rexP = null, rexPm = null, rexCorpse = null, bunkP = null, nukeP = null, rockP = null, fireP = null, beacP = null, rexArmed = 0, rexRaf = 0, rexLast = 0, rexHud = null, rexCall = null, spudP = null, spudHeld = false, spudCd = 0;
@@ -22823,17 +22833,19 @@ const handle = async (m, post) => {
       for (const [a, d] of ahead) { const q = at(a, d); if (q) return q; }
       for (const [a, d] of wide) { const q = at(a, d); if (q) return q; }
       return [car.x + Math.sin(view) * 50, car.z + Math.cos(view) * 50]; };
-    // the bunker's spot: across the water from Mumma. Out from her every 10 degrees, 10 m at a time: past at least 80 m of water, then 40 m of
-    // dry land with no building on it; the nearest of those (at least 200 m off, if it can). Failing that, dry ground about 400 m off.
-    // Its door faces back the way you came
+    // the bunker's spot: across the water from Mumma. Out from her every 10 degrees, 10 m at a time: past at least 80 m of water, then 180 m
+    // of dry land, to the first spot there with no building on it (up to 400 m in); the nearest of those (at least 200 m off, if it can).
+    // Failing that (Logan has no water), dry ground about 650 m off. Its door faces back the way you came. (Further from where she knocks you
+    // out of the sky: it was 40 m past the far shore, and Logan's 400 m off. Ash, 27 November 2026: "Move the bunker further away from where
+    // I get hit out of the sky")
     const bunkerSpot = () => { const R = rex, wet = (x, z) => ground(x, z) - m.groundAt(x, z) > 0.5, ok = (x, z) => ![[0, 0], [9, 0], [-9, 0], [0, 9], [0, -9]].some(([a, b]) => solid(x + a, z + b) || wet(x + a, z + b) || !inside(x + a, z + b));
       let best = null;
       for (let i = 0; i < 36; i++) { const a = i / 36 * Math.PI * 2, sx = Math.sin(a), sz = Math.cos(a); let water = 0, land = 0;
         for (let d = 10; d < 3000; d += 10) { const x = R.x + sx * d, z = R.z + sz * d; if (!inside(x, z)) break; if (wet(x, z)) { water += 10; land = 0; continue; }
-          if (water < 80) continue; land += 10; if (land < 40) continue; const bx = x - sx * 10, bz = z - sz * 10;
-          if (ok(bx, bz)) { const score = d < 200 ? d + 5000 : d; if (!best || score < best.score) best = { x: bx, z: bz, h: Math.atan2(-sx, -sz), score }; } break; } }
+          if (water < 80) continue; land += 10; if (land < 180) continue; if (land > 400) break; const bx = x - sx * 10, bz = z - sz * 10;
+          if (ok(bx, bz)) { const score = d < 200 ? d + 5000 : d; if (!best || score < best.score) best = { x: bx, z: bz, h: Math.atan2(-sx, -sz), score }; break; } } }
       if (best) return [best.x, best.z, best.h];
-      for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2, x = R.x + Math.sin(a) * 400, z = R.z + Math.cos(a) * 400; if (inside(x, z) && ok(x, z)) return [x, z, a + Math.PI]; }
+      for (const r of [650, 550, 450]) for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2, x = R.x + Math.sin(a) * r, z = R.z + Math.cos(a) * r; if (inside(x, z) && ok(x, z)) return [x, z, a + Math.PI]; }
       return [R.x + 300, R.z, -Math.PI / 2]; };
     // the host tells everyone what it's doing: [s, fight, host's name, x, z, heading, state, time in it, health, most health, phase, speed,
     // charge heading, tail spin, how many are fighting, Mumma (1), the bunker's x, z and heading (or 0s), how long since the nuke went
@@ -23017,7 +23029,8 @@ const handle = async (m, post) => {
       const FT = R.nukeFT || 9, t = Math.min(R.nukeT || 0, FT), a = nukeAt(t), b = nukeAt(Math.max(0, t - 0.25)), O = look(orb, [body[0] + (a[0] - body[0]) * 0.35, body[1] + (a[1] - body[1]) * 0.35, body[2] + (a[2] - body[2]) * 0.35]);
       let hx = a[0] - b[0], hz = a[2] - b[2], hl = Math.hypot(hx, hz); if (hl < 0.5) { hx = R.x - a[0]; hz = R.z - a[2]; hl = Math.hypot(hx, hz) || 1; } hx /= hl; hz /= hl;
       const ch = [a[0] - hx * 32, Math.max(a[1] - (a[1] - b[1]) * 2 + 7, m.groundAt(a[0] - hx * 32, a[2] - hz * 32) + 3), a[2] - hz * 32], Cc = look(ch, [a[0] + hx * 15, a[1], a[2] + hz * 15]);
-      const k = bsClamp((t - (R.nukeCr || 4) - 1.4) / 1.6, 0, 1), e = k * k * (3 - 2 * k); if (e <= 0) return Cc; if (e >= 1) return O;
+      // (round to her sooner and quicker: Ash, 27 November 2026, "When watching the missle come in pan to the Dino a little faster")
+      const k = bsClamp((t - (R.nukeCr || 4) - 0.6) / 1.1, 0, 1), e = k * k * (3 - 2 * k); if (e <= 0) return Cc; if (e >= 1) return O;
       const L = (p, q) => p + (q - p) * e; return [L(Cc[0], O[0]), L(Cc[1], O[1]), L(Cc[2], O[2]), Cc[3] + Math.atan2(Math.sin(O[3] - Cc[3]), Math.cos(O[3] - Cc[3])) * e, L(Cc[4], O[4])]; };
     // (70 m up, not 420: that high, the town's view left out everything within about 10 m of you, so the island looked hollow)
     // (and you're there on foot: a look round from above for 4 s, then you're standing on the island and can walk about among them, as far
@@ -23239,9 +23252,10 @@ const handle = async (m, post) => {
     // water within 90 m ahead of a flier, or under it
     const waterAhead = (q, far = 90) => { const h = q.dir ?? q.h ?? 0; for (let k = 0; k <= far; k += 15) if (wetAt(q.x + Math.sin(h) * k, q.z + Math.cos(h) * k)) return true; return false; };
     // (knocked out of the sky: flying to the bunker with the water close ahead (or under you), and not once you're at the bunker)
-    // (Logan has no water to cross: there it's on the last 200 m to the bunker. Ash, 27 November 2026: "start working on adding the boss
-    // fight to Logan ... You'll need to adjust a bit to suit Logan")
-    const knockable = q => { if (!q || !rex?.bunker || rex.nuke !== "ready" || up0(q) <= 4) return false; const d = Math.hypot(q.x - rex.bunker[0], q.z - rex.bunker[1]); return d > 60 && (REX_TOWN?.dry ? d < 200 : waterAhead(q, 200)); };
+    // (Logan has no water to cross: there it's once you're within 450 m of the bunker, which is 650 m off. Ash, 27 November 2026: "start
+    // working on adding the boss fight to Logan ... You'll need to adjust a bit to suit Logan", then "Move the bunker further away from
+    // where I get hit out of the sky")
+    const knockable = q => { if (!q || !rex?.bunker || rex.nuke !== "ready" || up0(q) <= 4) return false; const d = Math.hypot(q.x - rex.bunker[0], q.z - rex.bunker[1]); return d > 60 && (REX_TOWN?.dry ? d < 450 : waterAhead(q, 200)); };
     // knocked out of the sky: the helicopter back to its pad, you on the ground below (back on dry land), dizzy for 3 seconds (you stay put),
     // and the way now: a car, which turns into a boat on the water
     let dizzyTil = 0, dizzyAt = null, dizzyEl = null;
@@ -23261,15 +23275,25 @@ const handle = async (m, post) => {
     // (a bit further out than before: Ash, 27 November 2026, "Make the Dino's jump infront of me a bit more and a bit more infront")
     // (way out in front: 40 m plus 2.6 s of where you're going, so it's still well ahead when it lands even if you boost. Ash, 27 November
     // 2026: "When the Dino's jump the often need to jump waaaay infront so that they are a decent amount ahead of me even if I use boost")
-    const leapSpot = (tg, far = 1) => { const dir = tg.dir ?? tg.h, ahead = (40 + Math.max(12, tg.v || 22) * 2.6) * far;
+    // (Mumma further again, 48 m plus 3 s, and her landing follows where you're going while she's in the air, so she comes down way out in
+    // front of where you are by then and turns to chase you. Ash, 27 November 2026: "She needs to jump further forward predicting where
+    // I'll be and go way infront then chase me")
+    const leapSpot = (tg, far = 1) => { const dir = tg.dir ?? tg.h, ahead = (rex?.mum ? 48 + Math.max(12, tg.v || 22) * 3 : 40 + Math.max(12, tg.v || 22) * 2.6) * far;
       for (const k of [1, 0.75, 1.3, 0.5]) { const x = tg.x + Math.sin(dir) * ahead * k, z = tg.z + Math.cos(dir) * ahead * k; if (inside(x, z) && ground(x, z) - m.groundAt(x, z) < 0.5) return [x, z]; } return null; };
     // a leap to a spot, taking secs in the air (a long one, from far off, higher)
-    const leapTo = (L, secs) => { const R = rex; R.from = [R.x, R.z]; R.land = L; R.leapT = secs; rexEnter("leap"); };
+    const leapTo = (L, secs, far = 0) => { const R = rex; R.from = [R.x, R.z]; R.land = L; R.leapT = secs; R.leapFar = far; rexEnter("leap"); };
+    // where you'll be in t seconds, going the way you are
+    const aheadOf = (tg, t) => [tg.x + Math.sin(tg.dir ?? tg.h) * (tg.v || 0) * t, tg.z + Math.cos(tg.dir ?? tg.h) * (tg.v || 0) * t];
     // a pounce: at a helicopter, up through where it'll be and on past; at a car, down on where it'll be
-    const lungeAt = (tg, up) => { const R = rex, air = up > 8, lead = 0.5, px = tg.x + Math.sin(tg.dir ?? tg.h) * (tg.v || 0) * lead, pz = tg.z + Math.cos(tg.dir ?? tg.h) * (tg.v || 0) * lead, ux = px - R.x, uz = pz - R.z;
-      let land = [px, pz]; if (air) for (const k of [0.45, 0.25, 0.1]) { const lx = px + ux * k, lz = pz + uz * k; if (inside(lx, lz) && !wetAt(lx, lz)) { land = [lx, lz]; break; } }
+    // (aimed at where you'll be when it gets there: the crouch (1.5 s) and the flight to you. It was where you'd be in half a second, so a
+    // car going anywhere was long gone, and it came down where you used to be. And while it crouches it keeps aiming. Ash, 27 November
+    // 2026: "Mum needs to be more accurate when I'm evading. She often just chomps where I used to be")
+    const lungeAim = (tg, up, rem) => { const R = rex, air = up > 8, [px, pz] = aheadOf(tg, rem), ux = px - R.x, uz = pz - R.z;
+      let land = [px, pz]; if (air) { for (const k of [0.45, 0.25, 0.1]) { const lx = px + ux * k, lz = pz + uz * k; if (inside(lx, lz) && !wetAt(lx, lz)) { land = [lx, lz]; break; } } }
+      else if (!inside(px, pz) || wetAt(px, pz)) land = [tg.x, tg.z];
       R.from = [R.x, R.z]; R.land = land; R.leapT = air ? Math.min(0.92, Math.max(0.5, Math.hypot(ux, uz) / Math.max(1, Math.hypot(land[0] - R.x, land[1] - R.z)))) : 0.5;
-      R.jumpH = air ? Math.max(3 * R.s, Math.min(160, up - 4.2 * R.s + 3 + missBy(tg))) : 2.5 * R.s; R.cd.lunge = R.mum ? 8 : 11; rexEnter("lunge"); };
+      R.jumpH = air ? Math.max(3 * R.s, Math.min(160, up - 4.2 * R.s + 3 + (R.missV || 0))) : 2.5 * R.s; };
+    const lungeAt = (tg, up) => { const R = rex; R.missV = missBy(tg); lungeAim(tg, up, 1.5 + 1.2 * (up > 8 ? 0.75 : 1)); R.cd.lunge = R.mum ? 8 : 11; rexEnter("lunge"); };
     // the red flash round the edges, for the pounce
     let scareEl = null; const scare = () => { if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; if (!scareEl) { scareEl = document.createElement("div"); scareEl.className = "bs-scare"; scareEl.setAttribute("aria-hidden", "true"); $("bsFly")?.append(scareEl); }
       scareEl.hidden = false; scareEl.classList.remove("go"); void scareEl.offsetWidth; scareEl.classList.add("go"); clearTimeout(scareEl.tm); scareEl.tm = setTimeout(() => { if (scareEl) scareEl.hidden = true; }, 950); };
@@ -23365,12 +23389,12 @@ const handle = async (m, post) => {
           if (up < 4 && R.cd.dash <= 0 && d > 110 * K) { if (R.mum && Math.random() < 0.4) R.cd.dash = 6; else { go("dash"); break; } }
           // too far behind you: she leaps to catch you up, often landing in front (Ash, 27 November 2026: "Make mumma always able to jump catch
           // up to me or infront")
-          if (R.mum && up < 4 && R.cd.catch <= 0 && d > 70 * K) { const bx = tg.x - dx / d * 14 * K, bz = tg.z - dz / d * 14 * K, L = leapSpot(tg, Math.random() < 0.5 ? 1 : 0.35) || (inside(bx, bz) && !wetAt(bx, bz) ? [bx, bz] : null);
-            if (L) { leapTo(L, Math.max(1.3, Math.min(3.2, Math.hypot(L[0] - R.x, L[1] - R.z) / 95))); R.cd.catch = 2.5; break; } R.cd.catch = 1; }
+          if (R.mum && up < 4 && R.cd.catch <= 0 && d > 70 * K) { const bx = tg.x - dx / d * 14 * K, bz = tg.z - dz / d * 14 * K, far = Math.random() < 0.5 ? 1 : 0.35, LS = leapSpot(tg, far), L = LS || (inside(bx, bz) && !wetAt(bx, bz) ? [bx, bz] : null);
+            if (L) { leapTo(L, Math.max(1.3, Math.min(3.2, Math.hypot(L[0] - R.x, L[1] - R.z) / 95)), LS ? far : 0); R.cd.catch = 2.5; break; } R.cd.catch = 1; }
           // racing for the choppa (or on the move, with her after you): over you and down in front with a stomp, now and then way out in front
           // (Ash, 27 November 2026: "When I'm driving for the chopper jump mummy occasionally way infront of me")
           // (the T-rex too, once it's furious)
-          if ((race || ((R.mum || R.phase >= 2) && (tg.v || 0) > 8 && up < 4)) && R.cd.leap <= 0 && d > 10 * K && d < 90 * K) { const L = leapSpot(tg, Math.random() < (race ? 0.45 : 0.25) ? 1.5 : 1); if (L) { leapTo(L, Math.max(1.3, Math.min(2.8, Math.hypot(L[0] - R.x, L[1] - R.z) / 80))); break; } }
+          if ((race || ((R.mum || R.phase >= 2) && (tg.v || 0) > 8 && up < 4)) && R.cd.leap <= 0 && d > 10 * K && d < 90 * K) { const far = Math.random() < (race ? 0.45 : 0.25) ? 1.5 : 1, L = leapSpot(tg, far); if (L) { leapTo(L, Math.max(1.3, Math.min(2.8, Math.hypot(L[0] - R.x, L[1] - R.z) / 80)), far); break; } }
           // (the rest wait for the pause after the last move)
           if (R.cd.any > 0) break;
           // (4 s without a move, near enough: a stomp or a charge, whatever's waiting. Ash, 27 November 2026: "The first Dino was getting a bit
@@ -23386,7 +23410,12 @@ const handle = async (m, post) => {
           else if (R.cd.stomp <= 0 && up < 6 && d < 15 * K) go("stomp");
           else if (R.cd.bite <= 0 && up < 6 && d < 17 * K && d > 3 * K && a < 0.6) go("bite");
           break; }
-        case "bite": { stand(); look(); if (R.t < 0.75) to({ pitch: -0.1, neck: -0.55, jaw: 1.0 }, 6); else if (R.t < 1.0) { to({ pitch: 0.42, neck: 0.75, jaw: R.t > 0.9 ? 0 : 1.1 }, 16);
+        case "bite": { stand(); look();
+          // (Mumma: turned to, and stepping in on, where you'll be when her jaws shut, not where you were when she started. Ash, 27 November
+          // 2026: "Mum needs to be more accurate when I'm evading. She often just chomps where I used to be")
+          if (host && tg && R.mum && R.t < 0.86) { const [px, pz] = aheadOf(tg, 0.9 - R.t); turn(Math.atan2(px - R.x, pz - R.z), 4.5);
+            if (R.t > 0.45) { const reach = Math.hypot(px - R.x, pz - R.z) - 5.2 * s; if (reach > 0) { const st = Math.min(reach, 30 * K * dt), nx = R.x + Math.sin(R.h) * st, nz = R.z + Math.cos(R.h) * st; if (inside(nx, nz)) { R.x = nx; R.z = nz; } } } }
+          if (R.t < 0.75) to({ pitch: -0.1, neck: -0.55, jaw: 1.0 }, 6); else if (R.t < 1.0) { to({ pitch: 0.42, neck: 0.75, jaw: R.t > 0.9 ? 0 : 1.1 }, 16);
             if (!R.hitMe && R.t > 0.86) { R.hitMe = true; const bx = R.x + fx * 5.2 * s, bz = R.z + fz * 5.2 * s; if (dm < 80 * K) snd.crunch?.(); if (me && Math.hypot(me.x - bx, me.z - bz) < 4.6 * K && upOff(me) < 6 * s) meHit(R.phase === 3 ? 22 : 18, false, "Chomp!"); } }
           else to({ pitch: 0.04, neck: 0.12, jaw: 0.2 }, 4);
           if (R.t > 1.6) { R.cd.bite = (R.mum ? 0.75 : R.phase === 3 ? 1.6 : 2.4) * (R.mum ? PACE : TREX_PACE); go("walk"); } break; }
@@ -23428,6 +23457,7 @@ const handle = async (m, post) => {
         case "leap": { const T0 = 0.35, LT = R.leapT || 1.3, T1 = T0 + LT, HL = Math.min(90, 6 * s * Math.max(1, LT / 1.3));
           if (R.t < T0) { stand(); p.jump = 0; to({ pitch: -0.25, neck: -0.4, jaw: 0.6, legL: 0.35, legR: 0.35 }, 10); if (R.t < 0.05 && !R.roared) { R.roared = true; snd.roar?.(0.7); } }
           else if (R.t < T1) { const f = (R.t - T0) / (T1 - T0); p.jump = 4 * HL * f * (1 - f); to({ pitch: 0.2, neck: 0.3, jaw: 0.4, legL: -0.6, legR: -0.4, liftL: 0.4, liftR: 0.4 }, 8);
+            if (host && R.mum && R.leapFar && tg && up0(tg) < 4 && R.land && f < 0.85) { const L = leapSpot(tg, R.leapFar); if (L) { const ex = L[0] - R.land[0], ez = L[1] - R.land[1], el = Math.hypot(ex, ez), mx = 40 * dt; if (el > 0.01) { const k = Math.min(1, mx / el); R.land = [R.land[0] + ex * k, R.land[1] + ez * k]; } } }
             if (host && R.from && R.land) { R.x = R.from[0] + (R.land[0] - R.from[0]) * f; R.z = R.from[1] + (R.land[1] - R.from[1]) * f; R.h = Math.atan2(R.land[0] - R.from[0], R.land[1] - R.from[1]); R.v = Math.hypot(R.land[0] - R.from[0], R.land[1] - R.from[1]) / (T1 - T0); } }
           else { p.jump = 0; if (!R.slam) { R.slam = true; const lx = host ? R.x : R.tx, lz = host ? R.z : R.tz; R.ring = { x: lx, z: lz, r: 1, hit: false }; snd.thud(2.8); snd.roar?.(0.6);
               rexCam.shake = Math.max(rexCam.shake, Math.max(0.4, 1.6 - dm / 80)); for (let k = 0; k < 22; k++) { const a2 = Math.random() * Math.PI * 2; fxAdd(lx + Math.sin(a2) * 4 * K, m.groundAt(lx, lz) + 0.4, lz + Math.cos(a2) * 4 * K, Math.sin(a2) * 12, 4 + Math.random() * 5, Math.cos(a2) * 12, 1.1); }
@@ -23440,7 +23470,7 @@ const handle = async (m, post) => {
         case "skyleap": { const T0 = 0.32, T1 = 1.12, T2 = 1.55, T3 = 2.2, H = R.jumpH || 6 * s;
           if (R.t < T0) { stand(); p.jump = 0; to({ pitch: -0.3, neck: -0.5, jaw: 0.6, legL: 0.4, legR: 0.4 }, 10); if (R.t < 0.05 && !R.roared) { R.roared = true; snd.roar?.(0.8); } }
           else if (R.t < T1) { const f = (R.t - T0) / (T1 - T0); p.jump = H * (1 - (1 - f) * (1 - f)); to({ pitch: -0.35, neck: -0.7, jaw: 0.9, legL: -0.5, legR: -0.3, liftL: 0.4, liftR: 0.4 }, 8);
-            if (host && tg && up0(tg) > 4) R.land = [tg.x, tg.z];  // (after it all the way up)
+            if (host && tg && up0(tg) > 4) R.land = R.mum ? aheadOf(tg, Math.max(0, T1 + 0.12 - R.t)) : [tg.x, tg.z];  // (after it all the way up: Mumma to where it'll be when she snaps)
             if (host && R.from && R.land) { R.x = R.from[0] + (R.land[0] - R.from[0]) * f; R.z = R.from[1] + (R.land[1] - R.from[1]) * f; if (tg) turn(Math.atan2(dx, dz), 3); R.v = 0; } }
           else if (R.t < T2) { p.jump = H; to({ pitch: -0.2, neck: -0.9 + 0.5 * Math.sin((R.t - T1) * 18), yaw: 0.6 * Math.sin((R.t - T1) * 12), jaw: R.t - T1 < 0.2 ? 1.2 : 0 }, 14);
             if (!R.hitMe && me && me !== car && R.mouth && R.t - T1 > 0.12) { const [mx, my, mz] = R.mouth, kn = knockable(me), reach = kn ? 2.2 : 1;
@@ -23452,7 +23482,7 @@ const handle = async (m, post) => {
         // the pounce: down low, shaking and glowing red, roaring, then a leap at you (up through a helicopter and on past; down on a car), and
         // a stomp where she lands
         case "lunge": { const W = 1.5, FL = 1.2, H = R.jumpH || 2.5 * s, fp = Math.min(0.92, Math.max(0.5, R.leapT || 0.5));
-          if (R.t < W) { stand(); if (host && tg) turn(Math.atan2(dx, dz), 2.5); const k = R.t / W; p.jump = -0.5 * K * k; R.glow = Math.max(R.glow, 0.55 + 0.45 * Math.sin(R.t * 22));
+          if (R.t < W) { stand(); if (host && tg) { const u0 = up0(tg); lungeAim(tg, u0, W - R.t + FL * (u0 > 8 ? fp : 1)); turn(Math.atan2(R.land[0] - R.x, R.land[1] - R.z), 2.5); } const k = R.t / W; p.jump = -0.5 * K * k; R.glow = Math.max(R.glow, 0.55 + 0.45 * Math.sin(R.t * 22));
             to({ pitch: -0.32, neck: -0.25 + 0.1 * Math.sin(R.t * 30), jaw: 1.1, legL: 0.5, legR: 0.5 }, 10); if (!R.roared) { R.roared = true; snd.roar?.(1.2); }
             if (dm < 250 * K) rexCam.shake = Math.max(rexCam.shake, 0.2 + 0.6 * k); if (Math.random() < dt * 30) fxAdd(R.x + (Math.random() - 0.5) * 4 * K, m.groundAt(R.x, R.z) + 0.3, R.z + (Math.random() - 0.5) * 4 * K, (Math.random() - 0.5) * 6, 2 + Math.random() * 4, (Math.random() - 0.5) * 6, 0.8); }
           else if (R.t < W + FL) { const f = (R.t - W) / FL; p.jump = f < fp ? H * (1 - (1 - f / fp) ** 2) : H * (1 - ((f - fp) / (1 - fp)) ** 2);
