@@ -289,17 +289,18 @@ if os.path.exists(os.path.join(here, "local", "brands.json")):
                 ehead = ehead.replace('<base href="../../">', '<base href="../../">\n' + inverloch_preloads(), 1)
             with open(os.path.join(ex, "index.html"), "w", encoding="utf-8") as f:
                 f.write(stamped(ehead, lbody, ex) + lbody.strip() + "\n</body>\n</html>\n")
-            # Inverloch's T-rex fight invite (/<dir>/rex/): the same app, opening Explore, with its own link preview, so a "Seek help" link in
-            # WhatsApp or Messages shows "HELP! A T-rex is loose in Inverloch" and its picture (Ash, 27 November 2026: "I moreso meant the text
-            # and image when I invite a friend in WhatsApp or similar"). The link's ?rex=1&from=<name> puts them in the fight
-            if slug == "inv" and os.path.exists(os.path.join(here, "local", slug, "rex-share.jpg")):
+            # the T-rex fight invite (/<dir>/rex/), in Inverloch and Logan: the same app, opening Explore, with its own link preview, so a
+            # "Seek help" link in WhatsApp or Messages shows "HELP! A T-rex is loose in Inverloch" and its picture (Ash, 27 November 2026: "I
+            # moreso meant the text and image when I invite a friend in WhatsApp or similar"). The link's ?rex=1&from=<name> puts them in the
+            # fight. Any town with a local/<slug>/rex-share.jpg gets one (Logan's since 27 November 2026, with its fight)
+            if os.path.exists(os.path.join(here, "local", slug, "rex-share.jpg")):
                 rx = os.path.join(out, "rex"); os.makedirs(rx, exist_ok=True); shutil.copy(os.path.join(here, "local", slug, "rex-share.jpg"), rx)
-                rt, rdsc, ru = "🦖 HELP! A T-rex is loose in Inverloch", "Your mate needs backup. Tap to jump straight into the fight: you'll be in a car right next to it, spud gun loaded.", f"{url}rex/"
+                rt, rdsc, ru = f"🦖 HELP! A T-rex is loose in {sub}", "Your mate needs backup. Tap to jump straight into the fight: you'll be in a car right next to it, spud gun loaded.", f"{url}rex/"
                 rhead = ehead.replace(f"<title>{t}</title>", f"<title>{rt}</title>", 1)
                 for prop in ("og:title", "twitter:title"):
                     rhead = rhead.replace(f'"{prop}" content="{t}"', f'"{prop}" content="{rt}"')
                 rhead = (rhead.replace(dsc, rdsc).replace(f'content="{eu}"', f'content="{ru}"').replace(f'href="{eu}"', f'href="{ru}"')
-                              .replace(f"{eu}explore-share.jpg?v=2", f"{ru}rex-share.jpg?v=1").replace(f"{t}, seen from the air", "A T-rex towering over Inverloch's rooftops at sunset, a hotrod racing at it"))
+                              .replace(f"{eu}explore-share.jpg?v=2", f"{ru}rex-share.jpg?v=1").replace(f"{t}, seen from the air", f"A T-rex towering over {sub}'s rooftops at sunset, a hotrod racing at it"))
                 assert "rex-share.jpg" in rhead and rt in rhead and "an-explore" in rhead, "rex page head"
                 with open(os.path.join(rx, "index.html"), "w", encoding="utf-8") as f:
                     f.write(stamped(rhead, lbody, rx) + lbody.strip() + "\n</body>\n</html>\n")

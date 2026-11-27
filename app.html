@@ -9931,7 +9931,7 @@ const handle = async (m, post) => {
           // admin things (New to check, the golden rides) are in Settings, under Admin (Ash: "Seperate the admin stuff out of jump")
           const top = [...(T.gps ? [item({ townGps: "1" }, "GPS", "Type an address, or pick a place to go")] : []),
             ...(T.race ? [item({ townRace: "1" }, `Race around ${T.race.name}`, T.race.active() ? "In a race now" : T.race.host ? `Talk to ${T.race.host.name}: ${T.race.host.what}` : "Everyone here, standard cars, one lap")] : [])];
-          if (T.car?.bossGo && T.cfg?.place === "inv") top.push(item({ townBoss: "1" }, "Boss fight: T-rex", "Into the hotrod by The Hub. The T-rex comes in a few seconds"));  // (Ash, 26 November 2026: "Add a jump to boss fight")
+          if (T.car?.bossGo && (T.cfg?.place === "inv" || T.cfg?.place === "logan")) top.push(item({ townBoss: "1" }, "Boss fight: T-rex", `Into the hotrod ${T.cfg?.place === "logan" ? "out the front of the council" : "by The Hub"}. The T-rex comes in a few seconds`));  // (Ash, 26 November 2026: "Add a jump to boss fight")
           if (T.car?.canUnstickWalk?.()) top.push(item({ townUnstick: "1" }, "Unstick on foot", "Move to a clear spot nearby (U)"));
           const who = T.peers?.list?.() || []; if (!who.length) { list.prepend(...top); return; }
           const near = who.map(q => ({ ...q, d: Math.hypot(q.x - F.pos.x, q.z - F.pos.z) })).sort((a, b) => a.d - b.d);
@@ -18116,12 +18116,15 @@ const handle = async (m, post) => {
       cars: [MOO_RED6, MOO_GOLD_CAR], possum: MOO_POSSUM, pigeon: MOO_PIGEON },  // (the bus drives itself now: townTraffic)
     inv: { planes: [{ x: -210, z: -377, h: 1.571, name: "The plane", at: "on the lawn by The Hub", what: "On the lawn by The Hub, off A'Beckett Street. Walk up to it and get in" }],
       cars: [{ x: -228.5, z: -375.5, h: Math.PI, spare: true, name: "The red car", what: "On the lawn by The Hub, beside the plane" }, { x: -232.5, z: -375.5, h: Math.PI, gold: true, name: "The golden car", what: "On the lawn by The Hub. A fifth faster than the red one" },
-        // the potato hotrod, only in Inverloch (Ash, 26 November 2026): beside the golden car. 20 seconds after you get in, the T-rex comes (townCar)
-        { x: -237.2, z: -375.5, h: Math.PI, hotrod: true, name: "The hotrod", what: "A potato hot rod with a blower and flames, on the lawn by The Hub. Only in Inverloch. Get in if you dare" }],
+        // the potato hotrod (Ash, 26 November 2026): beside the golden car. 20 seconds after you get in, the T-rex comes (townCar). Logan has one too
+        { x: -237.2, z: -375.5, h: Math.PI, hotrod: true, name: "The hotrod", what: "A potato hot rod with a blower and flames, on the lawn by The Hub. Get in if you dare" }],
       more: { planes: [{ x: -1602.1, z: 422, h: 2.6, heli: true, name: "The helicopter", at: "behind 11 Norman Road", what: "On the grass behind 11 Norman Road" }], cars: [{ x: -207, z: -346, h: -1.683, bus: true, hide: [[-203.77, -345.76]], name: "The bus", what: "In A'Beckett Street, at the kerb across the road from The Hub" }] },
       roam: [[-278, -562], [627, -1086], [-108, -190], [17, -179], [-1585, 1221], [575, 1066]] },
     logan: { planes: [{ x: 5732, z: -12989, h: 1.0, name: "The plane", at: "on the big lawn in Civic Centre Park", what: "On the big open lawn in Civic Centre Park, behind the council, with room to take off" }],
-      cars: [{ x: 5816.2, z: -13302.9, h: 1.94, spare: true, name: "The red car", what: "On the lawn out the front of the council, by the plane" }, { x: 5788.7, z: -13204.6, h: 3.63, gold: true, name: "The golden car", what: "In the car park behind the council. A fifth faster than the red one" }],
+      cars: [{ x: 5816.2, z: -13302.9, h: 1.94, spare: true, name: "The red car", what: "On the lawn out the front of the council, by the plane" }, { x: 5788.7, z: -13204.6, h: 3.63, gold: true, name: "The golden car", what: "In the car park behind the council. A fifth faster than the red one" },
+        // Logan's potato hotrod and its T-rex (Ash, 27 November 2026: "start working on adding the boss fight to Logan. Make sure multiplayer
+        // works"): beside the red car, out the front of the council. 20 seconds after you get in, the T-rex comes (townCar)
+        { x: 5817.8, z: -13298.7, h: 1.94, hotrod: true, name: "The hotrod", what: "A potato hot rod with a blower and flames, on the lawn out the front of the council. Get in if you dare" }],
       more: { planes: [{ x: 5842.3, z: -12977.7, h: 1.0, heli: true, name: "The helicopter", at: "in Civic Centre Park, by the police station", what: "On the grass in Civic Centre Park, by Logan Central Police Station" }], cars: [{ x: 5752.7, z: -13341.2, h: -1.126, bus: true, name: "The bus", what: "At the bus stop on the street out the front of the council" }] },
       roam: [[5749, -13002], [6006, -13466], [5650, -13194], [7441, -11580], [5927, 564], [8554, -7453]] },
   };
@@ -22632,7 +22635,7 @@ const handle = async (m, post) => {
         if (p.t >= p.life) { sparks[i] = null; fx.setMatrix(i, NONE); continue; }
         p.vy -= 14 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; const k = p.s * (1 - p.t / p.life);
         M.compose(V.set(p.x, p.y, p.z), Q0.setFromEuler(E.set(p.t * 7, p.t * 5, 0, "YXZ")), SPK.set(k, k, k)); fx.setMatrix(i, M.elements.slice()); } };
-    // ---- the T-rex boss fight (Inverloch's hotrod only. Ash, 26 November 2026: "If I get in the car in 20 seconds start a boss fight
+    // ---- the T-rex boss fight (the hotrod, in Inverloch and Logan. Ash, 26 November 2026: "If I get in the car in 20 seconds start a boss fight
     // where a massive trex engages me in a boss battle"). 20 seconds after you get in the hotrod the ground starts to shake and a T-rex
     // two and a half times life size (13 m tall) bursts out of it in front of you. It stalks you and bites, stomps (a ring of dust you outrun), and once it's
     // angry charges (dodge it and it's dizzy: hits on it count double) and swipes its tail. You fight back by ramming it (faster hits
@@ -22672,6 +22675,10 @@ const handle = async (m, post) => {
     // about 1/3 of that speed", "It should feel hard but possible to win. Avoiding instant deaths")
     // (rockets back up to 4, from 1.4: at 1.4 Mumma's 480 took about 340 hits and barely moved. Ash, 27 November 2026: "mumma was taking
     // almost 0 dmg from Missles". About 120 hits now, a minute or two of good flying)
+    // the towns with a fight: what it's called there, where its hotrod waits, and its page (/<dir>/rex/). Logan's has no water between
+    // Mumma and the bunker (dry): the bunker comes up on open ground 400 m off instead
+    const REX_TOWN = { inv: { name: "Inverloch", dir: "inverloch", at: "by The Hub", lawn: "on the lawn by The Hub" },
+      logan: { name: "Logan", dir: "logan", at: "out the front of the council", lawn: "on the lawn out the front of the council", dry: true } }[place] || null;
     const REX_S = 2.6, REX_K = 0.9, REX_HP = 240, REX_WAIT = 20000, REX_SPUDS = 10, REX_NET = 150, MUM_K = 1.6, MUM_CAR = 0.12, CHOPPA_HITS = 35, REX_DMG = 0.9, TREX_DMG = 1.25, MUM_DMG = 0.625, AIR_DMG = 0.5, ROCKET = 4, RACE_HIT = 0.25, REX_SPD = 1.05, REPAIR = 2,
       RAGE_MS = 14000, RAGE_DMG = 1.3, RAGE_SPD = 1.2, HIT_MAX = 30, PACE = 2, TREX_PACE = 1.4, GAP = 2, MUM_GAP = 2.4, rexMs = () => performance.now();
     const RX = new THREE.Matrix4(), RB = new THREE.Matrix4(), RH = new THREE.Matrix4(), RT = new THREE.Matrix4(), RQ = new THREE.Matrix4(), RS = new THREE.Matrix4(), RV = new THREE.Vector3(), E3 = new THREE.Euler();
@@ -22709,10 +22716,10 @@ const handle = async (m, post) => {
     // (the link goes to Inverloch's own fight page, /inverloch/rex/, whose link preview is "HELP! A T-rex is loose in Inverloch" with its
     // picture; and the words with it say who's asking. Ash, 27 November 2026: "I moreso meant the text and image when I invite a friend in
     // WhatsApp or similar")
-    const rexInvite = async () => { const u = new URL(location.href); u.search = ""; u.hash = ""; if (/\/inverloch\//.test(u.pathname)) u.pathname = u.pathname.replace(/(\/inverloch\/).*$/, "$1rex/");
+    const rexInvite = async () => { const u = new URL(location.href); u.search = ""; u.hash = ""; if (/\/(inverloch|logan)\//.test(u.pathname)) u.pathname = u.pathname.replace(/(\/(inverloch|logan)\/).*$/, "$1rex/");
       u.searchParams.set("rex", "1"); const nm = String(playerName() || "").trim().slice(0, 16); if (nm) u.searchParams.set("from", nm);
-      const url = u.href, text = `🦖 HELP! A T-rex is rampaging through Inverloch and ${nm || "I"} ${nm ? "needs" : "need"} backup. Tap to jump in: you'll be in a car right next to it, spud gun loaded.`;
-      if (navigator.share) { try { await navigator.share({ title: "HELP! A T-rex is loose in Inverloch", text, url }); return; } catch (e) { if (e?.name === "AbortError") return; } }
+      const url = u.href, text = `🦖 HELP! A T-rex is rampaging through ${REX_TOWN.name} and ${nm || "I"} ${nm ? "needs" : "need"} backup. Tap to jump in: you'll be in a car right next to it, spud gun loaded.`;
+      if (navigator.share) { try { await navigator.share({ title: `HELP! A T-rex is loose in ${REX_TOWN.name}`, text, url }); return; } catch (e) { if (e?.name === "AbortError") return; } }
       try { await navigator.clipboard.writeText(`${text} ${url}`); toast("Help link copied. Paste it to them.", 2800); } catch { toast(`Send them this link: ${url}`, 8000, true); } };
     // the health bars along the top, with Invite, the nuke's way and the ghost's note; and the big words in the middle (only Invite takes a
     // tap: a finger goes through the rest)
@@ -22726,7 +22733,7 @@ const handle = async (m, post) => {
     let hudK = ""; const rexHudShow = () => { rexHudMake(); const on = !!rex && rex.live && !!rexRole, n = on ? rexCount() : 0, k = on ? [Math.ceil(rex.hp), Math.ceil(rex.maxHp), Math.ceil(rex.me), rex.phase, rex.st, n, rexOut, rexGhost, !!car?.hotrod, rex.mum, rex.nuke, !!rex.choppa, veh, !!rex.fixing, raging() ? Math.ceil((rex.rageTil - rexMs()) / 1000) : 0, rex.wings || 0, packWay()].join() : "";
       if (rexHud.hidden === on) { rexHud.hidden = !on; document.body.classList.toggle("bsboss", on); } if (k === hudK) return; hudK = k; if (!on) return;
       const [a, b] = rexHud.querySelectorAll(".bs-boss-bar i"); a.style.width = Math.max(0, rex.hp / rex.maxHp * 100) + "%"; b.style.width = (rexOut ? 0 : Math.max(0, rex.me)) + "%";
-      rexHud.querySelector(".bs-boss-name b").textContent = rex.mum ? "🦖 Mumma T-rex" : "🦖 The Inverloch Rex";
+      rexHud.querySelector(".bs-boss-name b").textContent = rex.mum ? "🦖 Mumma T-rex" : `🦖 The ${REX_TOWN.name} Rex`;
       rexHud.querySelector(".bs-boss-me b").textContent = rexGhost ? "👻 Out" : inChoppa() ? "🚁 Choppa" : car?.hotrod ? "🥔 Hotrod" : veh === "car" ? "🚗 You" : "🏃 You" + (rex.fixing ? " 🔧" : "");
       const rg = raging() ? Math.ceil((rex.rageTil - rexMs()) / 1000) : 0;
       const mood = rex.nuke ? "☢ Nuke her!" : !rex.mum && rex.st === "dead" ? "Down!" : rex.st === "dizzy" ? "Dizzy! Hit it now" : rex.mum && choppaWay() ? "Get to the choppa!" : rex.wings === 1 ? "Wings out!" : "";
@@ -22847,7 +22854,7 @@ const handle = async (m, post) => {
       rescueClear(); ghostOff(false); gloom(false); rexHide(); rex = null; rexRole = ""; rexFid = ""; rexHost = null; rexOut = false; spudBtn.hidden = true; spudHeld = false; nukeBtnShow(false); rexHudShow();
       };
     // you get in the hotrod: 20 seconds, footsteps from about 12, then up it comes
-    const rexArm = () => { if (place !== "inv" || T.race?.active?.() || rexRole === "guest" || rexGhost) return;
+    const rexArm = () => { if (!REX_TOWN || T.race?.active?.() || rexRole === "guest" || rexGhost) return;
       if (rex && rex.live) return;  // (already on: a wrecked host stays out till it's over)
       // (back in while it's walking off, not having beaten you: it turns round and the fight carries on where it was)
       if (rex && rexRole === "host" && rex.st === "leave" && !rex.won) { Object.assign(rex, { live: true, far: 0 }); rexOut = false; rex.pose.sink = 0; rexEnter("roar"); rexSay("IT'S BACK!", 1600); rexLoop(); return; }
@@ -23056,13 +23063,13 @@ const handle = async (m, post) => {
       g.fillText(`${who} TOOK DOWN`, 60, 110); g.fillStyle = "#ffd23a"; g.font = "900 84px system-ui, -apple-system, Segoe UI, sans-serif"; g.fillText("MUMMA T-REX!", 60, 196); g.shadowBlur = 0;
       g.fillStyle = "#fff"; g.font = "600 32px system-ui, -apple-system, Segoe UI, sans-serif"; const names = W.names.slice(0, 5).join(" · ") + (W.names.length > 5 ? ` +${W.names.length - 5}` : "");
       g.fillText(names, 60, 420); g.font = "500 26px system-ui, -apple-system, Segoe UI, sans-serif"; g.fillStyle = "rgba(255,255,255,0.85)";
-      g.fillText(`⏱ ${Math.floor(W.sec / 60)}:${String(W.sec % 60).padStart(2, "0")}  ·  ${new Date().toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" })}  ·  Inverloch, Explore`, 60, 462);
-      g.font = "600 24px system-ui, -apple-system, Segoe UI, sans-serif"; g.fillStyle = "#ffd23a"; g.fillText("ashley-pettit.github.io/3dModels/inverloch", 60, 590); return c; };
+      g.fillText(`⏱ ${Math.floor(W.sec / 60)}:${String(W.sec % 60).padStart(2, "0")}  ·  ${new Date().toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" })}  ·  ${REX_TOWN.name}, Explore`, 60, 462);
+      g.font = "600 24px system-ui, -apple-system, Segoe UI, sans-serif"; g.fillStyle = "#ffd23a"; g.fillText(`ashley-pettit.github.io/3dModels/${REX_TOWN.dir}`, 60, 590); return c; };
     let shareEl = null; const shareShow = () => { const W = lastWin; if (!W || BS.town !== T) return; let c; try { c = shareImage(W); } catch { return; }
       if (!shareEl) { shareEl = document.createElement("div"); shareEl.className = "bs-share-card"; shareEl.setAttribute("role", "dialog"); shareEl.setAttribute("aria-label", "Share your win"); $("bsFly")?.append(shareEl); }
       const img = document.createElement("img"), go = document.createElement("button"), no = document.createElement("button"); img.alt = "We took down Mumma T-rex"; img.src = c.toDataURL("image/png");
       go.type = no.type = "button"; go.className = "ok"; go.textContent = "Share picture"; no.textContent = "Close"; no.onclick = () => { shareEl.hidden = true; };
-      go.onclick = () => c.toBlob(async b => { if (!b) return; const f = new File([b], "mumma-t-rex.png", { type: "image/png" }), text = `${W.names.length > 1 ? "We" : "I"} took down Mumma T-rex in Inverloch!`, url = "https://ashley-pettit.github.io/3dModels/inverloch/";
+      go.onclick = () => c.toBlob(async b => { if (!b) return; const f = new File([b], "mumma-t-rex.png", { type: "image/png" }), text = `${W.names.length > 1 ? "We" : "I"} took down Mumma T-rex in ${REX_TOWN.name}!`, url = `https://ashley-pettit.github.io/3dModels/${REX_TOWN.dir}/`;
         try { if (navigator.canShare?.({ files: [f] })) { await navigator.share({ files: [f], text, url }); return; } } catch (e) { if (e?.name === "AbortError") return; }
         const a = document.createElement("a"), u = URL.createObjectURL(b); a.href = u; a.download = "mumma-t-rex.png"; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); }, "image/png");
       shareEl.replaceChildren(img, go, no); shareEl.hidden = false; clearTimeout(shareEl.tm); shareEl.tm = setTimeout(() => { if (shareEl) shareEl.hidden = true; }, 45000); };
@@ -23206,7 +23213,9 @@ const handle = async (m, post) => {
     // water within 90 m ahead of a flier, or under it
     const waterAhead = (q, far = 90) => { const h = q.dir ?? q.h ?? 0; for (let k = 0; k <= far; k += 15) if (wetAt(q.x + Math.sin(h) * k, q.z + Math.cos(h) * k)) return true; return false; };
     // (knocked out of the sky: flying to the bunker with the water close ahead (or under you), and not once you're at the bunker)
-    const knockable = q => !!q && !!rex?.bunker && rex.nuke === "ready" && up0(q) > 4 && Math.hypot(q.x - rex.bunker[0], q.z - rex.bunker[1]) > 60 && waterAhead(q, 200);
+    // (Logan has no water to cross: there it's on the last 200 m to the bunker. Ash, 27 November 2026: "start working on adding the boss
+    // fight to Logan ... You'll need to adjust a bit to suit Logan")
+    const knockable = q => { if (!q || !rex?.bunker || rex.nuke !== "ready" || up0(q) <= 4) return false; const d = Math.hypot(q.x - rex.bunker[0], q.z - rex.bunker[1]); return d > 60 && (REX_TOWN?.dry ? d < 200 : waterAhead(q, 200)); };
     // knocked out of the sky: the helicopter back to its pad, you on the ground below (back on dry land), dizzy for 3 seconds (you stay put),
     // and the way now: a car, which turns into a boat on the water
     let dizzyTil = 0, dizzyAt = null, dizzyEl = null;
@@ -23506,7 +23515,11 @@ const handle = async (m, post) => {
       else if (me && (me === car || (me.ride && !me.air)) && R.live && !R.nuke && R.st !== "dead" && (spudHeld || F.keys.has("KeyL")) && spudCd <= 0 && spuds.length < REX_SPUDS) { spudCd = 0.3;
         const hx = Math.sin(me.h), hz = Math.cos(me.h), x0 = me.x + hx * 1.4, y0 = me.y + (me.hotrod ? 2.2 : 1.7), z0 = me.z + hz * 1.4, tx = R.x + fx * 1.6 * s, ty = m.groundAt(R.x, R.z) + 3.4 * s, tz = R.z + fz * 1.6 * s;
         let vx = hx * 60 + Math.sin(me.dir ?? me.h) * me.v, vy = 3, vz = hz * 60 + Math.cos(me.dir ?? me.h) * me.v; const td = Math.hypot(tx - x0, tz - z0), aim = Math.abs(rexWrap(Math.atan2(tx - x0, tz - z0) - me.h));
+        // (right up close, its chest can be beside or behind you while its body is in front: then at its body, up where it counts. They
+        // went straight on under it, between its legs, and missed. Found bringing the fight to Logan, 27 November 2026)
+        const bx = R.x, by = m.groundAt(R.x, R.z) + 2.8 * s, bz = R.z, bd = Math.hypot(bx - x0, bz - z0), baim = Math.abs(rexWrap(Math.atan2(bx - x0, bz - z0) - me.h));
         if (td < 150 * K && aim < 0.6) { const T2 = td / 60; vx = (tx - x0) / T2; vz = (tz - z0) / T2; vy = (ty - y0) / T2 + 6 * T2; }
+        else if (bd < 20 * K && baim < 0.9) { const T2 = Math.max(0.05, bd / 60); vx = (bx - x0) / T2; vz = (bz - z0) / T2; vy = (by - y0) / T2 + 6 * T2; }
         spuds.push({ x: x0, y: y0, z: z0, vx, vy, vz, t: 0 }); snd.pop(); snd.tone?.(220, 90, 0.18, 0.08, "square"); }
       for (let i = spuds.length - 1; i >= 0; i--) { const q = spuds[i]; q.t += dt; if (!q.rk) q.vy -= 12 * dt; else if (Math.random() < dt * 30) fxAdd(q.x, q.y, q.z, (Math.random() - 0.5) * 2, Math.random() * 2, (Math.random() - 0.5) * 2, 0.4);
         // (a rocket turns towards her chest at 0.6 radians a second at most, and not at all once it's gone more than about 60 degrees off)
@@ -23570,7 +23583,7 @@ const handle = async (m, post) => {
         else if (lost) { rexSay("WRECKED!", 2600, true); spudBtn.hidden = true; ghostOff(false); if (rexOut && rexMs() - rexOutAt < 4000) deathRespawn(); /* (you were the last one out) */  }
         else { spudBtn.hidden = true; ghostOff(true);  } } };
     // the T-rex messages (townPeers' "rex"): what the host's is doing, a friend joining, hitting it, out, firing the nuke, and the end
-    C.rexGot = (raw, id) => { if (place !== "inv" || !Array.isArray(raw) || typeof raw[1] !== "string") return; const [k, fid] = raw;
+    C.rexGot = (raw, id) => { if (!REX_TOWN || !Array.isArray(raw) || typeof raw[1] !== "string") return; const [k, fid] = raw;
       if (k === "s") { if (rexRole === "guest" && fid === rexFid) { rexHeardOf.set(fid, { raw, id, at: rexMs() }); rexNet(raw); return; } if (rexRole) return;  // (kept fresh for a friend already in it, for Ride with or Own car later)
         rexHeardOf.set(fid, { raw, id, at: rexMs() }); if (raw[6] === "dead" || raw[6] === "leave" || raw[20] === 0) return;
         if (rexInvited && rexMs() - rexInvitedAt < 120000) { rexInvited = ""; rexJoin(fid); return; }
@@ -23584,10 +23597,10 @@ const handle = async (m, post) => {
       else if (k === "chop") { const g = rexGuests.get(id); if (g) g.choppa = true; }
       else if (k === "out") { const g = rexGuests.get(id); if (g) { g.out = true;  } } };
     // opened from an invite (?rex=1&from=Ash): straight into the fight when there's word of one
-    C.rexArrive = from => { if (place !== "inv") return; rexInvited = from || "your friend"; rexInvitedAt = rexMs();
+    C.rexArrive = from => { if (!REX_TOWN) return; rexInvited = from || "your friend"; rexInvitedAt = rexMs();
       for (const [fid, H] of rexHeardOf) if (rexMs() - H.at < 3000 && H.raw[6] !== "dead" && H.raw[6] !== "leave" && H.raw[20] !== 0) { rexInvited = ""; rexOffer(fid, H.raw[2], !!H.raw[15], true); return; }
       toast(`Looking for ${rexInvited}'s T-rex fight…`, 3000, true);
-      setTimeout(() => { if (rexInvited && !rexRole) { toast(`There's no T-rex fight on yet. You'll be asked to join when ${rexInvited} starts one (in the hotrod by The Hub).`, 6500, true); rexInvited = ""; } }, 25000); };
+      setTimeout(() => { if (rexInvited && !rexRole) { toast(`There's no T-rex fight on yet. You'll be asked to join when ${rexInvited} starts one (in the hotrod ${REX_TOWN.at}).`, 6500, true); rexInvited = ""; } }, 25000); };
     // the loop: while it's armed, up or on its way off. Stops itself when there's nothing left to do
     const rexLoop = () => { if (rexRaf) return; rexLast = rexMs(); const f = () => { rexRaf = 0; if (BS.town !== T || T.dead || !T.on) { rexEnd(); return; }
         const now = rexMs(), dt = Math.min(0.05, (now - rexLast) / 1000); rexLast = now;
@@ -23638,7 +23651,7 @@ const handle = async (m, post) => {
       const side = sd => [G.x + Math.cos(G.h) * 3.2 * sd, G.z - Math.sin(G.h) * 3.2 * sd], away = q => Math.min(...owns.filter(o => o !== G).map(o => Math.hypot(o.x - q[0], o.z - q[1])), 1e9);
       const [x, z] = away(side(1)) >= away(side(-1)) ? side(1) : side(-1); T.standAt?.(x, z, Math.atan2(x - G.x, z - G.z), -0.1);
       setTimeout(() => { if (veh) return; C.enter(); if (inHotrod() && !rex) { rexArmed = rexMs() - REX_WAIT + 3500; rexStep = 0; rexLoop(); }
-        else if (!inHotrod()) toast("Couldn't get you into the hotrod. Walk up to it on the lawn by The Hub and get in.", 3500, true); }, 350);
+        else if (!inHotrod()) toast(`Couldn't get you into the hotrod. Walk up to it ${REX_TOWN.lawn} and get in.`, 3500, true); }, 350);
       return true; };
     const rexEnd = () => { cancelAnimationFrame(rexRaf); rexRaf = 0; rexArmed = 0; if (rexRole === "host" && rexFid) rexSend(["end", rexFid, "gone"]); else if (rexRole === "guest") rexSend(["out", rexFid], rexHost);
       ghostOff(false); gloom(false); lowOn(false); dizzyTil = 1; dizzyTick(); rescueClear(); if (scareEl) scareEl.hidden = true; rex = null; rexRole = ""; rexFid = ""; rexHost = null; rexGuests.clear(); rexOut = false; rexHide(); rexOfferHide(); nukeBtnShow(false); if (nukeFlash) nukeFlash.hidden = true;
