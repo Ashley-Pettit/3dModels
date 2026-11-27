@@ -1380,6 +1380,18 @@ body.bsfly.bsboss .bs-gps { top: var(--bs-gps-t, calc(150px + env(safe-area-inse
 @media (max-width: 700px) { .bs-boss, .bs-boss-offer { top: calc(108px + env(safe-area-inset-top)); } body.bsfly.bsboss .toast { top: var(--bs-toast-t, calc(env(safe-area-inset-top, 0px) + 172px)); } }  /* (a phone: under the speed and the GPS) */
 .bs-boss-name { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; letter-spacing: 0.05em; text-transform: uppercase; }
 .bs-boss-name span { color: #ffd23a; margin-left: auto; }
+/* the boss fight, uncluttered (Ash, 27 November 2026: "Clean up the clutter. Hide the car upgrade during boss fight. Hide street signs gps,
+   flood during boss fight. Move things around to fit"): no upgrade chip, street names, GPS or Flood while it's on; how it's going
+   (angry, the car hits, how many of you) on a line of its own under the name, so the name never wraps; and on a phone the bars go up into
+   the row the speed and GPS had, the speed moving into your own bar's row */
+body.bsboss .bs-upchip, body.bsboss #bsGpsBtn, body.bsboss .bs-slides, body.bsboss #bsTownFloods { display: none !important; }
+.bs-boss-name { flex-wrap: wrap; row-gap: 3px; }
+.bs-boss-name .bs-boss-inv { margin-left: auto; }
+.bs-boss-name span { order: 3; flex-basis: 100%; margin-left: 0; font-size: 0.68rem; }
+.bs-boss-name span:empty { display: none; }
+body.bsboss .bs-boss-offer:not(.bs-boss-lobby) { top: var(--bs-toast-t, calc(160px + env(safe-area-inset-top))); }  /* (asked to join once it's on: under the bars, not over them) */
+.bs-boss-spd { display: none; font: 800 0.7rem var(--ui); white-space: nowrap; }
+@media (max-width: 700px) { body.bsboss #bsHeight { display: none !important; } body.bsboss .bs-boss { top: calc(64px + env(safe-area-inset-top)); } .bs-boss-spd:not(:empty) { display: inline; } }
 .bs-boss-inv { pointer-events: auto; border: 0; border-radius: 999px; padding: 3px 11px; background: #ffd23a; color: #1b1830; font: 800 0.72rem var(--ui); text-shadow: none; letter-spacing: 0; text-transform: none; cursor: pointer; }
 .bs-boss-offer { position: absolute; left: 50%; top: calc(64px + env(safe-area-inset-top)); transform: translateX(-50%); width: min(380px, calc(100% - 32px)); z-index: 4; pointer-events: auto; display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 14px; border-radius: 14px; background: rgba(22, 20, 40, 0.94); color: #fff; font: 600 0.88rem var(--ui); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
 .bs-boss-offer[hidden] { display: none; }
@@ -22844,7 +22856,7 @@ const handle = async (m, post) => {
     // the health bars along the top, with Invite, the nuke's way and the ghost's note; and the big words in the middle (only Invite takes a
     // tap: a finger goes through the rest)
     const rexHudMake = () => { if (rexHud) return; rexHud = document.createElement("div"); rexHud.className = "bs-boss"; rexHud.hidden = true; rexHud.setAttribute("role", "status");
-      rexHud.innerHTML = '<div class="bs-boss-name"><b></b><span></span><button type="button" class="bs-boss-inv">Seek help</button></div><div class="bs-boss-bar"><i></i></div><div class="bs-boss-me"><b></b><div class="bs-boss-bar"><i></i></div></div><div class="bs-boss-nuke" hidden><i aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em"><path d="M12 1.5 21.5 12H15.6v10.5H8.4V12H2.5z" fill="currentColor" stroke="#5c3a00" stroke-width="1.3" stroke-linejoin="round"/></svg></i><span></span></div><div class="bs-boss-ghost" hidden>👻 You’re out until the others win, or everyone’s out</div>';
+      rexHud.innerHTML = '<div class="bs-boss-name"><b></b><span></span><button type="button" class="bs-boss-inv">Seek help</button></div><div class="bs-boss-bar"><i></i></div><div class="bs-boss-me"><b></b><div class="bs-boss-bar"><i></i></div><small class="bs-boss-spd"></small></div><div class="bs-boss-nuke" hidden><i aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em"><path d="M12 1.5 21.5 12H15.6v10.5H8.4V12H2.5z" fill="currentColor" stroke="#5c3a00" stroke-width="1.3" stroke-linejoin="round"/></svg></i><span></span></div><div class="bs-boss-ghost" hidden>👻 You’re out until the others win, or everyone’s out</div>';
       const ib = rexHud.querySelector(".bs-boss-inv"); ib.setAttribute("aria-label", "Seek help: send friends a link to join the T-rex fight"); /* (was Invite: Ash, 27 November 2026, "Change invite to seek help") */ ib.onclick = () => { rexInvite(); ib.blur(); };
       rexCall = document.createElement("div"); rexCall.className = "bs-boss-call"; rexCall.hidden = true; rexCall.setAttribute("aria-hidden", "true"); $("bsFly")?.append(rexHud, rexCall); };
     let callT = 0; const rexSay = (text, ms = 1800, bad = false) => { rexHudMake(); rexCall.textContent = text; rexCall.classList.toggle("bad", bad); rexCall.hidden = false; rexCall.classList.remove("pop"); void rexCall.offsetWidth; rexCall.classList.add("pop"); clearTimeout(callT); callT = setTimeout(() => { rexCall.hidden = true; }, ms); };
@@ -22861,13 +22873,15 @@ const handle = async (m, post) => {
       const hits = rex.mum && !rex.choppa && !rex.nuke ? `🚗 ${rex.hitsAll || 0} of ${rex.hitsGoal || CHOPPA_HITS} car hits` : "";
       rexHud.querySelector(".bs-boss-name span").textContent = [rg ? `😡 Angry · ${rg} sec` : "", mood, hits, n > 1 ? `${n} of you` : ""].filter(Boolean).join(" · "); rexHud.classList.toggle("rage", !!rg);
       rexHud.querySelector(".bs-boss-ghost").hidden = !rexGhost; rexHud.querySelector(".bs-boss-nuke").hidden = !((rex.nuke && rex.nuke !== "done") || choppaWay() || packWay()); nukeWay = ""; };
+    // the speed (or the helicopter's) in your own bar's row, for a phone: its pill is hidden in a fight, to make room for the bars
+    let spdEl = null; const spdShow = () => { if (!rexHud || rexHud.hidden) return; spdEl ||= rexHud.querySelector(".bs-boss-spd"); const t = chip && veh ? chip.textContent : ""; if (spdEl && spdEl.textContent !== t) spdEl.textContent = t; };
     // the choppa's way shows once you've been told, till you're in a helicopter (or the nuke's up)
     const choppaWay = () => !!rex?.choppa && !rex.nuke && !inChoppa() && !rexOut && !!choppaOf();
     // the GPS card and the toasts go under the health bars (and the way row), however tall they are: the GPS card was over the way to
     // the choppa, and a toast over both. Measured now and then (two rects), and only changed when it's moved
-    let stackAt = 0, stackK = ""; const rexStack = force => { const now = rexMs(); if (!force && now - stackAt < 700) return; stackAt = now; const st = document.body.style;
+    let stackAt = 0, stackK = "", hudBot = 0; const rexStack = force => { const now = rexMs(); if (!force && now - stackAt < 700) return; stackAt = now; const st = document.body.style;
       if (!rexHud || rexHud.hidden) { if (stackK) { stackK = ""; st.removeProperty("--bs-gps-t"); st.removeProperty("--bs-toast-t"); } return; }
-      const b = rexHud.getBoundingClientRect().bottom, g = document.querySelector(".bs-gps:not([hidden])"), gh = g ? g.getBoundingClientRect().height : 0, k = Math.round(b) + "," + Math.round(gh);
+      const b = rexHud.getBoundingClientRect().bottom, g = document.querySelector(".bs-gps:not([hidden])"), gh = g ? g.getBoundingClientRect().height : 0, k = Math.round(b) + "," + Math.round(gh); hudBot = b;
       if (k === stackK) return; stackK = k; st.setProperty("--bs-gps-t", Math.round(b + 8) + "px"); st.setProperty("--bs-toast-t", Math.round(b + 8 + (gh ? gh + 8 : 0)) + "px"); };
     // the nuke's way, kept up as you go: how far the bunker is, and an arrow pointing at it (up the screen: straight ahead)
     // (and the choppa's, the same way, before the nuke's up)
@@ -23447,10 +23461,15 @@ const handle = async (m, post) => {
       const cp = Math.cos(cam.pitch), fx = -Math.sin(cam.yaw) * cp, fy = Math.sin(cam.pitch), fz = -Math.cos(cam.yaw) * cp, rx = Math.cos(cam.yaw), rz = -Math.sin(cam.yaw), ux = -fy * rz, uy = rz * fx - rx * fz, uz = fy * rx;
       const dist = Math.hypot(R.x - cam.x, R.z - cam.z), y = m.groundAt(R.x, R.z) + (p.rise + p.sink) * s + (p.jump || 0) + 6.4 * s + Math.max(1.6 * s, dist * 0.06) * 1.15;
       const dx = R.x - cam.x, dy = y - cam.y, dz = R.z - cam.z, depth = dx * fx + dy * fy + dz * fz, sx = depth < 1 ? 0 : w / 2 + (dx * rx + dz * rz) / depth * f * (h / 2), sy = depth < 1 ? 0 : h / 2 - (dx * ux + dy * uy + dz * uz) / depth * f * (h / 2);
-      const name = (R.mum ? "🦖 Mumma T-rex" : "🦖 T-rex") + (R.st === "dizzy" ? " 💫" : ""), onScreen = depth >= 1 && sx >= -40 && sx <= w + 40 && sy >= 0 && sy <= h;
+      // (its tag is never over the health bars, or the buttons above them: below them it shows, above them it doesn't)
+      const top = rexHud && !rexHud.hidden && hudBot ? hudBot + 30 : 0;
+      const name = (R.mum ? "🦖 Mumma T-rex" : "🦖 T-rex") + (R.st === "dizzy" ? " 💫" : ""), onScreen = depth >= 1 && sx >= -40 && sx <= w + 40 && sy >= top && sy <= h;
       if (onScreen) { if (dinoTag.textContent !== name) dinoTag.textContent = name; dinoTag.hidden = false; dinoTag.style.transform = `translate(${Math.round(sx)}px, ${Math.round(sy)}px) translate(-50%, -100%)`; dinoEdge.hidden = true; return; }
+      // (right in front of you and towering over the view, its tag would be off the top: none then, you can see her. It was put at the side
+      // instead, over the health bars: Ash, 27 November 2026, "Clean up the clutter")
+      if (depth >= 1 && sx >= 0 && sx <= w && sy < top) { dinoTag.hidden = true; dinoEdge.hidden = true; return; }
       dinoTag.hidden = true; const right = depth < 1 ? dx * rx + dz * rz >= 0 : sx > w / 2, far = dist < 1000 ? Math.round(dist / 10) * 10 + " m" : (dist / 1000).toFixed(1) + " km", t2 = (right ? "" : "\u25c0 ") + name + " " + far + (right ? " \u25b6" : "");
-      if (dinoEdge.textContent !== t2) dinoEdge.textContent = t2; dinoEdge.hidden = false; const ey = Math.round(bsClamp(depth < 1 ? h * 0.45 : sy, h * 0.25, h * 0.65));
+      if (dinoEdge.textContent !== t2) dinoEdge.textContent = t2; dinoEdge.hidden = false; const ey = Math.round(bsClamp(depth < 1 ? h * 0.45 : sy, Math.max(h * 0.25, hudBot + 64), h * 0.65));  // (never up over the health bars, or the big words under them)
       dinoEdge.style.transform = right ? `translate(${w - 8}px, ${ey}px) translate(-100%, -50%)` : `translate(8px, ${ey}px) translate(0, -50%)`; };
     // the yellow arrow over the boss (bigger the further off you are, so it's always there to see), and one over the choppa while you're
     // racing for it
@@ -23876,7 +23895,7 @@ const handle = async (m, post) => {
         // (and further back again the closer it is, up to 5 m more when it's on top of you, so all of it fits: Ash, 27 November 2026, "Try to
         // optimise the camera for the bossfight")
         const camOn = rex && rex.live && fighting(), cq = meNow(), cd = camOn && cq ? Math.hypot(rex.x - cq.x, rex.z - cq.z) : 1e9, near = camOn ? 5 * bsClamp(1 - cd / (45 * rex.k), 0, 1) : 0;
-        dizzyTick(); rexHudShow(); nukeWayShow(); rexStack(false); dinoTagShow(); rexCam.d = ease(rexCam.d, camOn ? (rex.mum ? 10.5 : 7) + near : 0, dt * 1.5); rexCam.up = ease(rexCam.up, camOn ? (rex.mum ? 0.12 : 0.06) : 0, dt * 1.5); rexCam.shake = Math.max(0, rexCam.shake - dt * 1.8);
+        dizzyTick(); rexHudShow(); spdShow(); nukeWayShow(); rexStack(false); dinoTagShow(); rexCam.d = ease(rexCam.d, camOn ? (rex.mum ? 10.5 : 7) + near : 0, dt * 1.5); rexCam.up = ease(rexCam.up, camOn ? (rex.mum ? 0.12 : 0.06) : 0, dt * 1.5); rexCam.shake = Math.max(0, rexCam.shake - dt * 1.8);
         if (rexArmed || rex || rexCam.d > 0.05 || rexCam.shake > 0) rexRaf = requestAnimationFrame(f); else { rexCam.d = 0; rexCam.up = 0; rexCam.shake = 0; } };
       rexRaf = requestAnimationFrame(f); };
     // for testing: Ash taps the version number in the corner and he's back to full health (Ash, 27 November 2026: "For testing purposes if I
@@ -24936,7 +24955,9 @@ const handle = async (m, post) => {
       unBtn.classList.add("walk"); unBtn.hidden = false;
       return true;
     };
-    const unPlace = () => { const o = $("bsFly")?.getBoundingClientRect(), r = boostBtn.getBoundingClientRect(); if (!o || !r.width) return; unBtn.style.left = Math.round(r.left + r.width / 2 - o.left) + "px"; unBtn.style.top = Math.round(r.top - o.top - 10) + "px"; };
+    // (above Spuds in a T-rex fight: Spuds is the one above Boost then, and Unstick sat right over it. Ash, 27 November 2026, "Move
+    // things around to fit")
+    const unPlace = () => { const o = $("bsFly")?.getBoundingClientRect(), sp = !spudBtn.hidden && spudBtn.getClientRects().length ? spudBtn.getBoundingClientRect() : null, r0 = boostBtn.getBoundingClientRect(), r = sp && sp.top < r0.top ? sp : r0; if (!o || !r.width) return; unBtn.style.left = Math.round(r.left + r.width / 2 - o.left) + "px"; unBtn.style.top = Math.round(r.top - o.top - 10) + "px"; };
     const unReset = () => { un.f = un.b = -1e9; un.trail = []; un.at = null; unBtn.hidden = true; unBtn.classList.remove("walk"); unBtn.style.left = unBtn.style.top = ""; };
     // (stuck, now: pushing to go, forward or back, nearly all of the last 3 seconds, and the car's gone less than 2.5 m in all that
     // time, however it wriggled. It was forward and back both pushed in the last 8 s while staying within 6 m: too late against a wall
