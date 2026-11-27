@@ -26198,18 +26198,24 @@ const handle = async (m, post) => {
     const at = g.index; if (at.count * 1 !== full) return; at.array = out; at.clearUpdateRanges?.(); at.addUpdateRange?.(0, n); at.needsUpdate = true;  /* (only the part in use goes to the graphics card: about a third of the 2.6 MB) */ g.setDrawRange(0, n); window.anTerrainTris = n / 3; };
   // 2 and 3. what's drawn, by distance and height
   const pick = () => { const L = []; window.anScene.traverse(o => { if (!(o.isMesh || o.isInstancedMesh)) return; let top = o; while (top.parent && top.parent !== window.anScene) top = top.parent;
-      const nm = top.name || ""; if (!/^(buildings|trees|guest|detail|square)$/.test(nm)) return;
+      const nm = top.name || ""; if (!/^(buildings|trees|guest|detail|square)$/.test(nm) || o.userData.anDyn) return;
       let c = null, r = 0;
-      const kept = o.userData.anBound; if (kept && kept.n === (o.isInstancedMesh ? o.userData.anN ?? o.count : -1) && kept.v === (o.isInstancedMesh ? o.instanceMatrix?.version : 0)) { L.push({ o, c: kept.c, r: kept.r, mask: o.userData.anMask ?? o.layers.mask, tree: nm === "trees" && o.isInstancedMesh }); return; }  // (worked out once: they don't move)
+      const kept = o.userData.anBound; if (kept && kept.n === (o.isInstancedMesh ? o.userData.anN ?? o.count : -1) && kept.v === (o.isInstancedMesh ? o.instanceMatrix?.version : 0)) { L.push({ o, c: kept.c, r: kept.r, mask: o.userData.anMask ?? o.layers.mask, tree: nm === "trees" && o.isInstancedMesh, v0: kept.v }); return; }  // (worked out once: they don't move)
       try { if (o.isInstancedMesh) { const a = o.instanceMatrix?.array; if (!a) return; let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9, y = 0; for (let i = 0; i < o.count; i++) { const x = a[i * 16 + 12], z = a[i * 16 + 14]; if (x < x0) x0 = x; if (x > x1) x1 = x; if (z < z0) z0 = z; if (z > z1) z1 = z; y = a[i * 16 + 13]; }
           if (!o.count) return; c = [(x0 + x1) / 2, y, (z0 + z1) / 2]; r = Math.hypot(x1 - x0, z1 - z0) / 2 + 12; }
         else { const s = o.geometry?.boundingSphere; if (!s) return; o.updateWorldMatrix?.(true, false); const e = o.matrixWorld.elements, sc = Math.max(Math.hypot(e[0], e[1], e[2]), Math.hypot(e[8], e[9], e[10]));
           if (sc < 1e-3) return; c = [e[0] * s.center.x + e[4] * s.center.y + e[8] * s.center.z + e[12], 0, e[2] * s.center.x + e[6] * s.center.y + e[10] * s.center.z + e[14]]; r = s.radius * sc; } } catch { return; }
       if (r > 420) return; if (o.isInstancedMesh) o.userData.anBound = { n: o.userData.anN ?? o.count, v: o.instanceMatrix?.version, c, r };
-      L.push({ o, c, r, mask: o.userData.anMask ?? o.layers.mask, tree: nm === "trees" && o.isInstancedMesh }); });
+      L.push({ o, c, r, mask: o.userData.anMask ?? o.layers.mask, tree: nm === "trees" && o.isInstancedMesh, at: o.isInstancedMesh ? null : o.matrixWorld.elements.slice(12, 15), v0: o.isInstancedMesh ? o.instanceMatrix?.version : undefined }); });
     return L; };
+  // (anything that moves isn't the lag saver's: a car, its wheels' hubcaps, a dinosaur. It judged them by where they'd been at the last
+  // look, up to 5 seconds before, and hid them while they were right in front of you: the hubcaps flashed on and off (Ash, 28 November
+  // 2026: "Wheels appear to flash on and off. Same for red car. Maybe anti lag related"). Seen to move, it's let go for good, shown as it was)
+  const moved = q => { if (q.o.isInstancedMesh ? q.v0 !== undefined && q.o.instanceMatrix?.version !== q.v0 : !!q.at && (Math.abs(q.o.matrixWorld.elements[12] - q.at[0]) > 0.05 || Math.abs(q.o.matrixWorld.elements[14] - q.at[2]) > 0.05 || q.o.matrixWorld.elements[0] === 0)) {
+      q.o.userData.anDyn = true; if (q.o.layers.mask === 0) q.o.layers.mask = q.mask; return true; } return false; };
   const cull = ci => { const now = performance.now(); if (now - candAt > 5000) { for (const q of cands) if (q.o.layers.mask === 0) q.o.layers.mask = q.mask; const t = performance.now(); cands = pick(); cost.pick = Math.max(cost.pick * 0.9, performance.now() - t); candAt = now; }
     const D = Math.min(6000, 700 + ci.alt * 8), thin = ci.alt > 200; let off = 0;
+    let dyn = false; for (const q of cands) if (q.o.userData.anDyn || moved(q)) dyn = true; if (dyn) cands = cands.filter(q => !q.o.userData.anDyn);
     for (const q of cands) { const far = Math.hypot(q.c[0] - ci.x, q.c[2] - ci.z) - q.r > D; const want = far ? 0 : q.mask; if (q.o.layers.mask !== want) q.o.layers.mask = want; if (far) off++;
       if (q.tree) { const N = q.o.userData.anN ?? (q.o.userData.anN = q.o.count), w = thin ? Math.ceil(N / 2) : N; if (q.o.count === N || q.o.count === Math.ceil(N / 2)) q.o.count = w; } }
     window.anDrawInfo = { D: Math.round(D), alt: Math.round(ci.alt), off, of: cands.length, ground: window.anTerrainTris }; };
