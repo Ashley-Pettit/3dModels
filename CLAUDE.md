@@ -110,7 +110,13 @@ has broken three times. Before any change that touches Explore's input, loading 
 
 - **Keep the stick listeners passive.** The `touchstart`/`touchmove`/`touchend` listeners on `.bs-joy` and the Up/Down buttons
   use `{ passive: true }`, and `touch-action: none` stops scrolling. A listener that can cancel makes iOS wait for the page; when the
-  page is busy it cancels the finger, and the stick resets (15 November 2026).
+  page is busy it cancels the finger, and the stick resets (15 November 2026). On a phone the same goes for every pointer
+  listener under the sticks: the view (`#bsGl`), the map (`#bsTown`), the sticks' own mouse listeners and the page-wide
+  `pointerdown` ones are registered with `passive: BS_PASSIVE` (true on a touch screen). An iPhone counts a pointer listener that
+  could cancel as a reason to wait too (21 November 2026, "Joystick broken" when walking with both sticks; that fix, #130, sat
+  unmerged until 27 November 2026). A new pointer or touch listener anywhere in Explore takes `{ passive: BS_PASSIVE }` (or
+  `passive: true`), never a bare `addEventListener(k, f)`. `tools/sticks/listeners.js` lists them at phone size: none of the touch
+  or pointer ones may say BLOCKING.
 - **Track each finger by its own id.** A stick takes the touch whose target is inside it (`el.contains(t.target)`), not
   `changedTouches[0]`: two thumbs landing together can arrive in one event. A finger on the view's left half must not steer or reset
   `F.stick` while the move stick is held (16 November 2026, "when I put two fingers on at once").
