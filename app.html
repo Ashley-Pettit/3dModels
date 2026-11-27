@@ -22686,15 +22686,19 @@ const handle = async (m, post) => {
     // harder and it 10% quicker (Ash, 27 November 2026: "When angry increase damage by 30% and speed by 10%. Last 10 seconds")
     const raging = () => !!rex && rexMs() < (rex.rageTil || 0), enrage = () => { if (rex) { rex.rageTil = rexMs() + RAGE_MS; hudK = ""; } };
     // the invite: shared (a phone's share sheet) or copied, as the race's is
-    const rexInvite = async () => { const u = new URL(location.href); u.search = ""; u.hash = ""; u.searchParams.set("rex", "1"); const nm = String(playerName() || "").trim().slice(0, 16); if (nm) u.searchParams.set("from", nm);
-      const url = u.href, text = `${nm || "I"} ${nm ? "needs" : "need"} a hand taking down a T-rex in Inverloch! Open this and you'll be in a car next to it.`;
-      if (navigator.share) { try { await navigator.share({ title: "T-rex fight in Inverloch", text, url }); return; } catch (e) { if (e?.name === "AbortError") return; } }
+    // (the link goes to Inverloch's own fight page, /inverloch/rex/, whose link preview is "HELP! A T-rex is loose in Inverloch" with its
+    // picture; and the words with it say who's asking. Ash, 27 November 2026: "I moreso meant the text and image when I invite a friend in
+    // WhatsApp or similar")
+    const rexInvite = async () => { const u = new URL(location.href); u.search = ""; u.hash = ""; if (/\/inverloch\//.test(u.pathname)) u.pathname = u.pathname.replace(/(\/inverloch\/).*$/, "$1rex/");
+      u.searchParams.set("rex", "1"); const nm = String(playerName() || "").trim().slice(0, 16); if (nm) u.searchParams.set("from", nm);
+      const url = u.href, text = `🦖 HELP! A T-rex is rampaging through Inverloch and ${nm || "I"} ${nm ? "needs" : "need"} backup. Tap to jump in: you'll be in a car right next to it, spud gun loaded.`;
+      if (navigator.share) { try { await navigator.share({ title: "HELP! A T-rex is loose in Inverloch", text, url }); return; } catch (e) { if (e?.name === "AbortError") return; } }
       try { await navigator.clipboard.writeText(`${text} ${url}`); toast("Help link copied. Paste it to them.", 2800); } catch { toast(`Send them this link: ${url}`, 8000, true); } };
     // the health bars along the top, with Invite, the nuke's way and the ghost's note; and the big words in the middle (only Invite takes a
     // tap: a finger goes through the rest)
     const rexHudMake = () => { if (rexHud) return; rexHud = document.createElement("div"); rexHud.className = "bs-boss"; rexHud.hidden = true; rexHud.setAttribute("role", "status");
       rexHud.innerHTML = '<div class="bs-boss-name"><b></b><span></span><button type="button" class="bs-boss-inv">Seek help</button></div><div class="bs-boss-bar"><i></i></div><div class="bs-boss-me"><b></b><div class="bs-boss-bar"><i></i></div></div><div class="bs-boss-nuke" hidden><i aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em"><path d="M12 1.5 21.5 12H15.6v10.5H8.4V12H2.5z" fill="currentColor" stroke="#5c3a00" stroke-width="1.3" stroke-linejoin="round"/></svg></i><span></span></div><div class="bs-boss-ghost" hidden>👻 You’re out until the others win, or everyone’s out</div>';
-      const ib = rexHud.querySelector(".bs-boss-inv"); ib.setAttribute("aria-label", "Seek help: send friends a link to join the T-rex fight");  // (was Invite: Ash, 27 November 2026, "Change invite to seek help") ib.onclick = () => { rexInvite(); ib.blur(); };
+      const ib = rexHud.querySelector(".bs-boss-inv"); ib.setAttribute("aria-label", "Seek help: send friends a link to join the T-rex fight"); /* (was Invite: Ash, 27 November 2026, "Change invite to seek help") */ ib.onclick = () => { rexInvite(); ib.blur(); };
       rexCall = document.createElement("div"); rexCall.className = "bs-boss-call"; rexCall.hidden = true; rexCall.setAttribute("aria-hidden", "true"); $("bsFly")?.append(rexHud, rexCall); };
     let callT = 0; const rexSay = (text, ms = 1800, bad = false) => { rexHudMake(); rexCall.textContent = text; rexCall.classList.toggle("bad", bad); rexCall.hidden = false; rexCall.classList.remove("pop"); void rexCall.offsetWidth; rexCall.classList.add("pop"); clearTimeout(callT); callT = setTimeout(() => { rexCall.hidden = true; }, ms); };
     // how many are fighting it: the host counts itself and the friends still in; a friend hears it from the host
@@ -22839,7 +22843,7 @@ const handle = async (m, post) => {
         gPop(x + (Math.random() - 0.5) * (near ? 40 : 20), m.groundAt(x, z) + (near ? 40 : 14) + Math.random() * 8, z + (Math.random() - 0.5) * (near ? 40 : 20)); snd.whoosh(); }, 2400 + i * 350); };
     // a hit on you: knocked about, the car hopping (and spinning, for a big one). Mumma's hit twice as hard. Wrecked, you're out: a ghost
     // till it's over, unless no one's left, when the T-rex wins
-    const meHit = (dmg, big, why) => { if (rollSafe() || veh === "ride") return;  // (a passenger isn't hurt: the driver is) if (!rex || !rex.live || rex.meCd > 0 || !fighting()) return; // (a tenth less from every dinosaur, and Mumma's a quarter harder than the T-rex's, not twice: smaller hits, more often. Ash, 27 November
+    const meHit = (dmg, big, why) => { if (rollSafe() || veh === "ride") return; /* (a passenger isn't hurt: the driver is) */ if (!rex || !rex.live || rex.meCd > 0 || !fighting()) return; // (a tenth less from every dinosaur, and Mumma's a quarter harder than the T-rex's, not twice: smaller hits, more often. Ash, 27 November
       // 2026: "Mummya damage is a bit too all or nothing. Less damaging more frequent attacks", "Reduce overall Dino dmg by 10%")
       // (angry: 30% harder. Never more than 30 at once, and 1.3 s at least between hits: "It should feel hard but possible to win. Avoiding
       // instant deaths", Ash, 27 November 2026)
