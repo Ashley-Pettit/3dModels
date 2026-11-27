@@ -19396,9 +19396,7 @@ const handle = async (m, post) => {
         to(eng.wf.frequency, (eng.heli ? 350 : 450) + 1500 * Math.min(1, speed / 70)); to(eng.wg.gain, eng.heli ? 0.03 + 0.045 * rev : Math.min(0.19, (speed / 45) ** 2 * 0.065) * (eng.plane ? 1.4 : 1) + (boost ? 0.055 : 0));
         to(eng.sg.gain, skid * 0.1, 0.03); },
       level(v) { vol = v; if (master) master.gain.value = 0.9 * v; },
-      // a recorded line (town3d/voice/SET/KEY.mp3): fetched when first wanted and kept as it came (a few KB), decoded only to be played,
-      // one at a time. Only two now, in an original deep action-movie voice (Kokoro's am_fenrir, slowed, lowered, with an echo): "Get to
-      // the choppa!" and "I'll be back." (Ash, 27 November 2026: "Original action-movie voice")
+      // Preload the compressed lines for this fight and decode one at a time for playback.
       voiceLoad(set, keys) { for (const k of keys) { const id = set + "/" + k; if (vbuf[id]) continue; vbuf[id] = fetch(TOWN3D + "voice/" + id + ".mp3").then(r => r.ok ? r.arrayBuffer() : null).catch(() => null); } },
       voice(set, key) { if (!vol) return; const a = ctx(), id = set + "/" + key; if (!a) return; this.voiceLoad(set, [key]);
         vbuf[id].then(b => b && new Promise((ok, no) => a.decodeAudioData(b.slice(0), ok, no))).then(d => { if (!d) return; try { vsrc?.stop(); } catch {}
@@ -22862,6 +22860,7 @@ const handle = async (m, post) => {
     const REX_TOWN = { inv: { name: "Inverloch", dir: "inverloch", at: "by The Hub", lawn: "on the lawn by The Hub" },
       logan: { name: "Logan", dir: "logan", at: "out the front of the council", lawn: "on the lawn out the front of the council", dry: true },
       moo: { name: "Moorooka", dir: "moorooka", at: "in the Woolworths car park", lawn: "in the Woolworths car park", dry: true } }[place] || null;  // (Moorooka's since 27 November 2026: no water to cross either)
+    const rexVoiceSet = place === "inv" ? "rex-inverloch" : "rex";
     const REX_S = 2.6, REX_SPUDS = 10, REX_NET = 150, PACK_MAX = 6, rexMs = () => performance.now();
     // the numbers Ash can change (REX_DEF, in Explore's Settings: rexApply puts them here). These are the usual ones. A friend in someone
     // else's fight has the starter's (the "cfg" message), and their own again after
@@ -23066,7 +23065,7 @@ const handle = async (m, post) => {
       rexArmed = rexMs(); rexStep = 0; rexLoop(); };
     let rexStep = 0, rexChop = false;
     // a win, for everyone in on it: Mumma down, fireworks round her and round you, a fanfare, the count of wins, and ghosts back
-    const rexWon = () => { rexHudShow(); rexSay("VICTORY!", 3600); rexTime(); if (rex?.mum) { setTimeout(() => { rexSay("I'LL BE BACK.", 2400); snd.voice?.("rex", "back"); }, 8000); setTimeout(epiStart, 11000); } snd.roar?.(0.7); spudBtn.hidden = true; spudHeld = false; rexArmed = 0; nukeBtnShow(false);
+    const rexWon = () => { rexHudShow(); rexSay("VICTORY!", 3600); rexTime(); if (rex?.mum) { setTimeout(() => { rexSay("I'LL BE BACK.", 2400); snd.voice?.(rexVoiceSet, "back"); }, 8000); setTimeout(epiStart, 11000); } snd.roar?.(0.7); spudBtn.hidden = true; spudHeld = false; rexArmed = 0; nukeBtnShow(false);
       let wins = 1; try { wins = (+localStorage.getItem("anRexWins") || 0) + 1; localStorage.setItem("anRexWins", String(wins)); } catch {}
       const n = rexRole === "host" ? 1 + rexGuests.size : rex?.nAll || rexCount(); ghostOff(false);
       
@@ -23104,7 +23103,7 @@ const handle = async (m, post) => {
     const choppaCount = () => { const R = rex; if (!R?.mum || R.nuke || R.choppa) return; R.hitsAll = (R.hitsAll || 0) + 1; hudK = "";
       if (R.hitsAll >= CHOPPA_HITS) { choppaCall(); rexSync(true); } };
     const choppaCall = () => { const R = rex, H = choppaOf(); R.choppa = true; hudK = ""; rexSay("THIS ISN'T WORKING…", 1500, true); snd.roar?.(0.5);
-      setTimeout(() => { if (rex === R && R.live && !R.nuke) { rexSay("GET TO THE CHOPPA!", 3200, true); snd.voice?.("rex", "choppa"); rexCam.shake = Math.max(rexCam.shake, 0.6); } }, 1500);
+      setTimeout(() => { if (rex === R && R.live && !R.nuke) { rexSay("GET TO THE CHOPPA!", 3200, true); snd.voice?.(rexVoiceSet, "choppa"); rexCam.shake = Math.max(rexCam.shake, 0.6); } }, 1500);
       // (no GPS: the arrow in the boss bar and the one over the choppa show the way. Ash, 27 November 2026: "When it says get to the
       // chopper don't use the standard gps")
        if (rexRole === "guest") rexSend(["chop", rexFid], rexHost); else for (const g of rexGuests.values()) g.choppa = true; R.choppaNear = false; };
@@ -23121,7 +23120,7 @@ const handle = async (m, post) => {
     const mumUp = (x, z, h, host) => { if (!mumMake()) return false; const B = rex; rexCorpse = { x: B.x, z: B.z, h: B.h, s: B.s, pose: { ...B.pose }, t: 0, glow: 0, st: "dead", corpse: true };
       const n = rexRole === "host" ? rexGuests.size : 0, keep = { n: B.n, hostName: B.hostName };
       Object.assign(B, rexNew(x, z, h, host, true), keep); B.maxHp = B.hp = B.base * (1 + n); /* (her full health times how many are in the fight: Ash, 27 November 2026, "Increase both Dino's hps by a factor of the number of players in the lobby") */ B.me = rexOut ? 0 : 100; enrage();
-      gloom(false); snd.voiceLoad?.("rex", ["choppa", "back"]); rexSay("MUMMA T-REX!", 2800, true); snd.roar?.(1); rexCam.shake = Math.max(rexCam.shake, 1.4); hudK = "";
+      gloom(false); snd.voiceLoad?.(rexVoiceSet, ["choppa", "back"]); rexSay("MUMMA T-REX!", 2800, true); snd.roar?.(1); rexCam.shake = Math.max(rexCam.shake, 1.4); hudK = "";
        return true; };
     // her wings, at 30% health: out with a roar, and she's angry again (Ash, 27 November 2026: "At 30% hp give her wings and start flying
     // after the chopper")
