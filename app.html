@@ -1408,7 +1408,8 @@ body.bsfly.bsboss .bs-gps { top: var(--bs-gps-t, calc(150px + env(safe-area-inse
 .bs-epi-line.on { opacity: 1; }
 .bs-epi-fade { position: absolute; inset: 0; background: #fff; opacity: 0; } .bs-epi-fade.go { animation: bsEpiFade 1.8s ease-in-out; }
 @keyframes bsEpiFade { 0% { opacity: 0; } 45%, 55% { opacity: 1; } 100% { opacity: 0; } }
-body.bsepi .bs-fly > :not(.bs-epi) { visibility: hidden !important; }
+body.bsepi .bs-fly > :not(.bs-epi):not(.bs-joy) { visibility: hidden !important; }
+body.bsepi .bs-peer, body.bsepi .bs-dino { visibility: hidden !important; }
 /* the nuke coming in: just the fight's bar and calls over the view (no buttons, help or names) */
 body.bscine .bs-fly > :not(.bs-boss):not(.bs-boss-call):not(.bs-epi):not(.bs-scare) { visibility: hidden !important; }
 body.bscine .bs-streets, body.bsepi .bs-streets, body.bscine .inv-label, body.bsepi .inv-label, body.bscine .lgn-label, body.bsepi .lgn-label { visibility: hidden !important; }
@@ -9756,7 +9757,7 @@ const handle = async (m, post) => {
         // model's ground, so the helicopter behind it, you and anything else there stand on the lawn rather than sink into it)
         // (Logan's council precinct lays its ground 25 cm over the terrain (precinct.ts GROUND): cars and people stand on that, not in it.
         // Ash, 16 November 2026: "The golden car is still too low in Logan, sitting inside the road")
-        const LIFT = cfg.lift, b = m.bounds(), ground = (x = F.pos.x, z = F.pos.z) => { let g = Math.max(m.groundAt(x, z), m.waterAt ? m.waterAt(x, z) : m.waterLevel());
+        const LIFT = cfg.lift, b = m.bounds(), ground = (x = F.pos.x, z = F.pos.z) => { const fo = T.floorOver?.(x, z); if (fo != null) return fo;  /* (Dino Land's island, up in the sky) */ let g = Math.max(m.groundAt(x, z), m.waterAt ? m.waterAt(x, z) : m.waterLevel());
           if (LIFT && x > LIFT[0] && x < LIFT[2] && z > LIFT[1] && z < LIFT[3]) g += LIFT[4];
           if (T.pads) { const g0 = g; for (const P of T.pads) g = Math.max(g, padGround(P, x, z, g0)); }
           if (T.bal6) g = T.bal6.top(x, z, g);  // number 6's floor, decks and stairs, where you can step up onto them
@@ -22024,15 +22025,17 @@ const handle = async (m, post) => {
     for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2; g.egg([Math.sin(a) * 2.3, 0.75, Math.cos(a) * 2.3], 0.28, 0.16, 0.28, FL[i % FL.length], 4, 6); }  // (flowers left round it)
     ["#ff9aa2", "#ffcf8f", "#fff59d", "#a8e6a3", "#9ad7ff", "#c9a7ff"].forEach((c, k) => { const R = 34 - k * 1.1, pts = []; for (let i = 0; i <= 20; i++) { const a = Math.PI * i / 20; pts.push([Math.cos(a) * R, Math.sin(a) * R * 0.8 - 2, -30]); } u.pipe(pts, () => 0.6, 6, () => townLin(c), 3, { side0: [0, 0, 1] }); });
     for (let i = 0; i < 7; i++) { const a = rnd() * Math.PI * 2, r = 20 + rnd() * 20, x = Math.sin(a) * r, z = Math.cos(a) * r, h = 1.5 + rnd() * 2.5; u.cone([x, 0, z], [x + (rnd() - 0.5), h, z + (rnd() - 0.5)], 0.45, 6, townLin(i % 2 ? "#a8f0ff" : "#ffc8f0")); }
-    return [g.part({ roughness: 0.9, doubleSide: true }), u.part({ unlit: true, emissive: [1, 1, 1], emissiveIntensity: 0.4 })]; }
+    return [g.part({ unlit: true, doubleSide: true }), u.part({ unlit: true, emissive: [1, 1, 1], emissiveIntensity: 0.4 })]; }  // (unlit: up there it's outside the town's shadows, which turned it a dull purple)
   // a baby T-rex (Dino Land), about 1.2 m tall and facing +Z: a round body, a big head, little arms, and big sad eyes looking down, a tear
   // on each cheek
   function townBabyParts(skin) { const g = townGeo(), C = townLin(skin), C2 = townMix(C, townLin("#fff3e0"), 0.45), W = townLin("#ffffff"), D = townLin("#2a2140"), Tr = townLin("#7fc8ff");
     g.egg([0, 0.62, 0], 0.32, 0.3, 0.42, C); g.egg([0, 0.55, 0.12], 0.24, 0.22, 0.3, C2); g.egg([0, 1.0, 0.36], 0.25, 0.23, 0.29, C); g.egg([0, 0.93, 0.6], 0.16, 0.12, 0.15, C2);
     for (const sx of [-1, 1]) { g.egg([sx * 0.13, 1.08, 0.57], 0.075, 0.08, 0.06, W, 6, 8); g.egg([sx * 0.13, 1.055, 0.62], 0.04, 0.045, 0.03, D, 5, 6); g.egg([sx * 0.14, 1.15, 0.58], 0.07, 0.015, 0.03, D, 4, 6);
-      g.egg([sx * 0.15, 0.97, 0.6], 0.022, 0.06, 0.022, Tr, 4, 6); g.egg([sx * 0.21, 0.68, 0.33], 0.05, 0.05, 0.1, C, 5, 6); g.egg([sx * 0.16, 0.28, 0.02], 0.1, 0.22, 0.12, C, 6, 8); g.egg([sx * 0.16, 0.06, 0.1], 0.1, 0.05, 0.16, C2, 5, 6); }
+      g.egg([sx * 0.15, 0.95, 0.6], 0.024, 0.1, 0.024, Tr, 4, 6); g.egg([sx * 0.21, 0.68, 0.33], 0.05, 0.05, 0.1, C, 5, 6); g.egg([sx * 0.16, 0.28, 0.02], 0.1, 0.22, 0.12, C, 6, 8); g.egg([sx * 0.16, 0.06, 0.1], 0.1, 0.05, 0.16, C2, 5, 6); }
     g.cone([0, 0.6, -0.3], [0, 0.32, -1.0], 0.2, 8, C);
     return [g.part({ roughness: 0.85 })]; }
+  // a tear (Dino Land): a little pale blue drop
+  function townTearParts() { const g = townGeo(); g.egg([0, 0, 0], 0.035, 0.055, 0.035, townLin("#9fdcff"), 5, 6); return [g.part({ unlit: true, emissive: [0.6, 0.85, 1], emissiveIntensity: 0.6 })]; }
   // a ghost, for a player the T-rex has wrecked (they're out till the others win or everyone's out): a white sheet floating 30 cm up,
   // its hem wavy, two dark eyes and an "oh" of a mouth facing +Z (Ash, 26 November 2026: "If I die ... Make me a ghost")
   function townGhostParts() { const g = townGeo(), W = townLin("#f4f8ff"), W2 = townLin("#d9e4f5"), D = townLin("#1b1830"), S = [];
@@ -22959,7 +22962,7 @@ const handle = async (m, post) => {
     // round and round Mumma (110 m out, 45 m up, once every 14 s), looking at her and the way it's coming from, and staying for the bang.
     // (Ash, 27 November 2026: "When the nuke is coming in make me invulnerable and spin the camera around mummy showing the nuke come in.
     // Initially do a camera chase of the missle then moving to a rotate around the Dino")
-    C.cine = () => { if (epi) return epiCam(); const R = rex; if (!R || !(R.nuke === "away" || (R.nuke === "boom" && (R.boomT || 0) < 6))) return null;
+    C.cine = () => { if (epi && !epi.walking) return epiCam(); const R = rex; if (!R || !(R.nuke === "away" || (R.nuke === "boom" && (R.boomT || 0) < 6))) return null;
       const look = (c, q) => [c[0], c[1], c[2], Math.atan2(-(q[0] - c[0]), -(q[2] - c[2])), Math.atan2(q[1] - c[1], Math.hypot(q[0] - c[0], q[2] - c[2]))];
       const gy = m.groundAt(R.x, R.z), body = [R.x, gy + 2.5 * R.s, R.z], oa = rexMs() / 1000 * Math.PI * 2 / 14, orb = [R.x + Math.sin(oa) * 110, gy + 45, R.z + Math.cos(oa) * 110];
       if (R.nuke === "boom") return look(orb, body);
@@ -22968,38 +22971,53 @@ const handle = async (m, post) => {
       const ch = [a[0] - hx * 32, Math.max(a[1] - (a[1] - b[1]) * 2 + 7, m.groundAt(a[0] - hx * 32, a[2] - hz * 32) + 3), a[2] - hz * 32], Cc = look(ch, [a[0] + hx * 15, a[1], a[2] + hz * 15]);
       const k = bsClamp((t - (R.nukeCr || 4) - 1.4) / 1.6, 0, 1), e = k * k * (3 - 2 * k); if (e <= 0) return Cc; if (e >= 1) return O;
       const L = (p, q) => p + (q - p) * e; return [L(Cc[0], O[0]), L(Cc[1], O[1]), L(Cc[2], O[2]), Cc[3] + Math.atan2(Math.sin(O[3] - Cc[3]), Math.cos(O[3] - Cc[3])) * e, L(Cc[4], O[4])]; };
+    // (70 m up, not 420: that high, the town's view left out everything within about 10 m of you, so the island looked hollow)
+    // (and you're there on foot: a look round from above for 4 s, then you're standing on the island and can walk about among them, as far
+    // as its edge; they look round at you when you come near and cry harder. Ash, 27 November 2026: "I want to be able to walk around in
+    // the fairly land. The baby Dino's should be super sad and crying")
     // Dino Land: 9.5 s after Mumma's VICTORY, a white flash, and you're watching a little island in the sky where her babies wait by the
     // nest for her (15 of them, sobbing and whimpering, now and then looking round at you), a few quiet lines at the bottom of the screen
     // and a slow sad tune, the view drifting round once. After 30 s, another white flash, and you're back in Inverloch beside the hotrod.
     // (Ash, 27 November 2026: "After killing the Dino I want to be teleported to fairly god Dino land with lots of upset small Dino's. And
     // a feeling of did I do the right thing. In 30 secs go back to Inverloch town")
-    const EPI_MS = 30000, EPI_LINES = [[2.5, "Somewhere far away…"], [7, "Her babies are still waiting for her to come home."], [13.5, "She was only protecting them."], [20, "Did you do the right thing?"]];
+    const EPI_TEARS = 30, EPI_MS = 30000, EPI_LINES = [[2.5, "Somewhere far away…"], [7, "Her babies are still waiting for her to come home."], [13.5, "She was only protecting them."], [20, "Did you do the right thing?"]];
     let epi = null;
     const epiEl = () => { let el = $("bsFly")?.querySelector(".bs-epi"); if (!el) { el = document.createElement("div"); el.className = "bs-epi"; el.setAttribute("aria-live", "polite"); el.innerHTML = '<div class="bs-epi-sky"></div><p class="bs-epi-line"></p><div class="bs-epi-fade"></div>'; $("bsFly")?.append(el); } return el; };
     const epiFlash = () => { const f = epiEl().querySelector(".bs-epi-fade"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); };
     const epiStart = () => { if (epi || BS.town !== T) return; const H = owns.find(o => o.hotrod) || owns[0], cx = (H?.x ?? F.pos.x) + 60, cz = (H?.z ?? F.pos.z) + 60;
-      epi = { t0: rexMs() + 900, x: cx, z: cz, y: m.groundAt(cx, cz) + 420, line: -1, beat: 0, sob: 0, parts: null, babies: [] }; const el = epiEl(); el.hidden = false; epiFlash();
+      epi = { t0: rexMs() + 900, x: cx, z: cz, y: m.groundAt(cx, cz) + 70, line: -1, beat: 0, sob: 0, parts: null, babies: [] }; const el = epiEl(); el.hidden = false; epiFlash();
       setTimeout(() => { if (!epi) return; try { if (veh) leave(false); } catch {}
-        try { const L = townDinoLandParts(), SK = ["#7fbf6a", "#c9a7ff", "#ffb38a"], B = Array.from({ length: 15 }, (_, i) => townBabyParts(SK[i % 3])[0]);
-          epi.parts = m.addParts([...L, ...B].map(q => ({ ...q, matrix: NONE.slice() }))); } catch (e) { console.warn("Dino Land couldn't be made", e); }
+        try { const L = townDinoLandParts(), SK = ["#7fbf6a", "#c9a7ff", "#ffb38a"], B = Array.from({ length: 15 }, (_, i) => townBabyParts(SK[i % 3])[0]), Tr = Array.from({ length: EPI_TEARS }, () => townTearParts()[0]);
+          epi.parts = m.addParts([...L, ...B, ...Tr].map(q => ({ ...q, matrix: NONE.slice() }))); } catch (e) { console.warn("Dino Land couldn't be made", e); }
+        epi.tears = Array.from({ length: EPI_TEARS }, (_, i) => ({ b: i % 15, sx: i % 2 ? 1 : -1, t: Math.random() * 0.7 }));
+        T.floorOver = (x, z) => epi && Math.hypot(x - epi.x, z - epi.z) < 47 ? epi.y + 0.05 : null;
         for (let i = 0; i < 15; i++) { const a = i / 15 * Math.PI * 2 + (i % 2) * 0.2, r = 5 + (i % 3) * 2.2; epi.babies.push({ x: Math.sin(a) * r, z: Math.cos(a) * r, h: Math.atan2(-Math.sin(a), -Math.cos(a)), ph: i * 1.7 }); }
         document.body.classList.add("bsepi"); el.querySelector(".bs-epi-sky").classList.add("on"); }, 800);
       const f = () => { if (!epi) return; if (BS.town !== T || T.dead) { epiEnd(false); return; } epiTick(); requestAnimationFrame(f); }; requestAnimationFrame(f); };
     const epiTick = () => { const E = epi, t = (rexMs() - E.t0) / 1000, el = epiEl(); if (t < 0) return;
       if (E.parts) { const P = E.parts; P.setMatrix(0, RT.makeTranslation(E.x, E.y, E.z).elements.slice()); P.setMatrix(1, RT.makeTranslation(E.x, E.y, E.z).elements.slice());
-        E.babies.forEach((b, i) => { const sob = Math.max(0, Math.sin(t * 2.3 + b.ph)) ** 6, look = Math.max(0, Math.sin(t * 0.37 + b.ph * 3)) > 0.93 ? 0.9 : 0, h = b.h + look * Math.sin(b.ph);
-          P.setMatrix(2 + i, RT.makeTranslation(E.x + b.x, E.y + 0.02 + sob * 0.06, E.z + b.z).multiply(RQ.makeRotationFromEuler(E3.set(0.32 - look * 0.25 + 0.06 * Math.sin(t * 9 + b.ph) * sob, h, 0.05 * Math.sin(t * 1.1 + b.ph), "YXZ"))).multiply(RS.makeScale(1.4, 1.4 - sob * 0.08, 1.4)).elements.slice()); }); }
+        const me = F.pos, mx = me.x - E.x, mz = me.z - E.z, on = !!E.walking;
+        if (on && Math.hypot(mx, mz) > 44) { const k = 44 / Math.hypot(mx, mz); me.x = E.x + mx * k; me.z = E.z + mz * k; }  // (the island's edge: no further)
+        E.mats = E.babies.map((b, i) => { const dme = on ? Math.hypot(mx - b.x, mz - b.z) : 99, near = dme < 7, rate = near ? 4.2 : 2.3, sob = Math.max(0, Math.sin(t * rate + b.ph)) ** 4,
+            toMe = Math.atan2(mx - b.x, mz - b.z), want = near ? toMe : b.h + (Math.max(0, Math.sin(t * 0.37 + b.ph * 3)) > 0.93 ? 0.9 * Math.sin(b.ph) : 0);
+          b.hh = b.hh == null ? b.h : b.hh + Math.atan2(Math.sin(want - b.hh), Math.cos(want - b.hh)) * Math.min(1, 1 / 30 * 3);
+          const M4 = RT.makeTranslation(E.x + b.x, E.y + 0.02 + sob * 0.08, E.z + b.z).multiply(RQ.makeRotationFromEuler(E3.set((near ? 0.15 : 0.38) + 0.1 * Math.sin(t * 11 + b.ph) * sob, b.hh, 0.06 * Math.sin(t * 1.3 + b.ph), "YXZ"))).multiply(RS.makeScale(1.4, 1.4 - sob * 0.1, 1.4)).clone();
+          P.setMatrix(2 + i, M4.elements.slice()); b.near = near; return M4; });
+        // (tears: from each eye, a drop at a time, faster for one near you)
+        E.tears.forEach((q, j) => { const b = E.babies[q.b], M4 = E.mats[q.b]; q.t += (b.near ? 1.6 : 1) / 60; if (q.t > 0.7) { q.t = 0; q.b = Math.floor(Math.random() * 15); }
+          const v = RV.set(q.sx * 0.15, 0.95, 0.62).applyMatrix4(M4); P.setMatrix(17 + j, RT.makeTranslation(v.x + q.sx * q.t * 0.25, v.y - 4.9 * q.t * q.t - q.t * 0.4, v.z).elements.slice()); }); }
       // (the lines, the tune, the whimpers, some sparkles)
       const n = EPI_LINES.filter(q => t >= q[0]).length - 1; if (n !== E.line) { E.line = n; const p = el.querySelector(".bs-epi-line"); p.classList.remove("on"); if (n >= 0) setTimeout(() => { if (epi === E) { p.textContent = EPI_LINES[n][1]; p.classList.add("on"); } }, 350); }
       if (t - E.beat > 0.8) { E.beat = t; const NOTE = [220, 261.6, 329.6, 293.7, 246.9, 196, 220, 174.6]; const f0 = NOTE[Math.floor(t / 0.8) % NOTE.length]; snd.tone?.(f0, f0 * 0.995, 1.3, 0.035, "triangle"); }
-      if (t - E.sob > 1.6 + Math.random()) { E.sob = t; const f1 = 820 + Math.random() * 260; snd.tone?.(f1, f1 * 0.55, 0.45, 0.03, "sine"); }
+      if (t - E.sob > 0.7 + Math.random() * 0.8) { E.sob = t; const nearOne = E.babies.some(b => b.near), f1 = 780 + Math.random() * 320; snd.tone?.(f1, f1 * 0.5, nearOne ? 0.7 : 0.45, nearOne ? 0.06 : 0.035, "sine"); if (nearOne && Math.random() < 0.5) setTimeout(() => snd.tone?.(f1 * 1.1, f1 * 0.6, 0.6, 0.05, "sine"), 260); }
       if (Math.random() < 0.25) gAdd(E.x + (Math.random() - 0.5) * 60, E.y + 1 + Math.random() * 10, E.z + (Math.random() - 0.5) * 60, 0, 0.6, 0, 1.4);
+      if (t > 4 && !E.walking && E.parts) { E.walking = true; T.standAt(E.x + 2, E.z + 16, Math.atan2(-(E.x - (E.x + 2)), -(E.z - (E.z + 16))), -0.12); }
       if (t > EPI_MS / 1000 - 1.6 && !E.out) { E.out = true; epiFlash(); setTimeout(() => epiEnd(true), 800); } };
-    const epiEnd = back => { const E = epi; if (!E) return; epi = null; try { E.parts?.remove(); } catch {} document.body.classList.remove("bsepi"); const el = $("bsFly")?.querySelector(".bs-epi");
+    const epiEnd = back => { const E = epi; if (!E) return; epi = null; T.floorOver = null; try { E.parts?.remove(); } catch {} document.body.classList.remove("bsepi"); const el = $("bsFly")?.querySelector(".bs-epi");
       if (el) { el.querySelector(".bs-epi-sky").classList.remove("on"); el.querySelector(".bs-epi-line").classList.remove("on"); setTimeout(() => { if (!epi) el.hidden = true; }, 1200); }
       if (back) { try { if (veh) leave(false); } catch {} const G = owns.find(o => o.hotrod) || owns[0]; if (G) { ownHome(G); T.standAt(G.x + Math.cos(G.h) * 3.2, G.z - Math.sin(G.h) * 3.2, G.h + Math.PI / 2, -0.12); } setTimeout(shareShow, 1800); } };
     // the view in Dino Land: round the island once, 26 m out and 7 m up, looking at the nest
-    const epiCam = () => { const E = epi; if (!E || !E.parts) return null; const t = (rexMs() - E.t0) / 1000, a = t * Math.PI * 2 / 34 + 0.6, c = [E.x + Math.sin(a) * 26, E.y + 7 - t * 0.08, E.z + Math.cos(a) * 26], q = [E.x, E.y + 1.2, E.z];
+    const epiCam = () => { const E = epi; if (!E || !E.parts || E.walking) return null; const t = (rexMs() - E.t0) / 1000, a = t * Math.PI * 2 / 34 + 0.6, c = [E.x + Math.sin(a) * 26, E.y + 7 - t * 0.08, E.z + Math.cos(a) * 26], q = [E.x, E.y + 1.2, E.z];
       return [c[0], c[1], c[2], Math.atan2(-(q[0] - c[0]), -(q[2] - c[2])), Math.atan2(q[1] - c[1], Math.hypot(q[0] - c[0], q[2] - c[2]))]; };
     // the share picture, after beating Mumma (when you're back from Dino Land): a 1200 x 630 card, sunset sky, a mushroom cloud behind a
     // dinosaur falling over, a helicopter, "WE TOOK DOWN MUMMA T-REX!" (or I, on your own), who was in it, how long it took, the date and
@@ -23581,6 +23599,7 @@ const handle = async (m, post) => {
       rexRaf = requestAnimationFrame(f); };
     // for testing: Ash taps the version number in the corner and he's back to full health (Ash, 27 November 2026: "For testing purposes if I
     // press on the version number set my hp to full")
+    C.epiTest = () => { epiStart(); return true; };  // (for checking Dino Land)
     C.shareTest = () => { lastWin = { sec: 395, names: [String(playerName() || "Me").slice(0, 16), "Barry"] }; shareShow(); return !!shareEl && !shareEl.hidden; };  // (for checking the share card)
     C.rexHeal = () => { if (!rex || !rex.live || !rexRole || rexOut) return false; rex.me = 100; hudK = ""; rexHudShow();  return true; };
     C.rexInfo = () => rex ? { x: rex.x, z: rex.z, h: rex.h, st: rex.st, hp: rex.hp, maxHp: rex.maxHp, me: rex.me, phase: rex.phase, live: rex.live, role: rexRole, n: rexCount(), mum: rex.mum, nuke: rex.nuke, bunker: rex.bunker, ghost: rexGhost, out: rexOut, t: rex.t, downed: !!rex.downed, dizzy: dizzyTil > rexMs(), hits: rex.myHits || 0, choppa: !!rex.choppa, inChoppa: inChoppa(), rockets: spuds.filter(q => q.rk).length, spudsN: spuds.length, wings: rex.wings || 0, rage: raging(), jump: rex.pose.jump || 0, rescue: rescue.length, safe: rollSafe(), s: rex.s, packs: packs.map(k => [Math.round(k.x), Math.round(k.z)]) } : rexArmed ? { armed: true } : null;  // (for checking)
