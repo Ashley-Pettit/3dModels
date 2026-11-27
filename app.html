@@ -9595,7 +9595,7 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=42", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=43", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
     moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=78", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
@@ -9751,6 +9751,7 @@ const handle = async (m, post) => {
       try { old.dispose(); } catch {}
       hiBox.hidden = true;
       try { T.bowls?.swapped?.(); } catch {}  // what was shaped to the old model's ground is made again on this one's (Moorooka's road medians)
+      try { T.gps?.swapped?.(); } catch {}  // older models need the line re-laid over their new ground
     };
     const upgrade = async () => {
       // wait for the view to be on screen, then see how smoothly the light one runs
@@ -20537,6 +20538,28 @@ const handle = async (m, post) => {
     for (const side of [1, -1]) for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2, b = (i + 1) / 24 * Math.PI * 2, r = 0.62, z = side * 1.53;
       dot.push(0, 0.1, z, r * Math.cos(a), 0.1 + r * Math.sin(a), z, r * Math.cos(b), 0.1 + r * Math.sin(b), z); }
     return gpsPinMade = { ring: new Float32Array(ring), beam: new Float32Array(beam), pin: new Float32Array(pin), pinN: new Float32Array(pinN), dot: new Float32Array(dot) }; }
+  function townGpsRibbon(pts, heightAt) {
+    const pos = [], halfWidth = 0.8;
+    let ax = pts[0], az = pts[1], prev;
+    const point = (x, z) => [x, heightAt(x, z), z];
+    for (let i = 2; i + 1 < pts.length; i += 2) {
+      const bx = pts[i], bz = pts[i + 1], length = Math.hypot(bx - ax, bz - az);
+      if (length < 0.05) continue;
+      const dx = (bx - ax) / length, dz = (bz - az) / length, nx = -dz * halfWidth, nz = dx * halfWidth;
+      const cross = prev ? prev.dx * dz - prev.dz * dx : 0;
+      const straight = prev && Math.abs(cross) < 1e-5 && prev.dx * dx + prev.dz * dz > 0;
+      const left = straight ? prev.left : point(ax - nx, az - nz);
+      const right = straight ? prev.right : point(ax + nx, az + nz);
+      const nextLeft = point(bx - nx, bz - nz), nextRight = point(bx + nx, bz + nz);
+      pos.push(...left, ...right, ...nextRight, ...left, ...nextRight, ...nextLeft);
+      // The inside edges overlap. Fill the outside wedge so a turn stays joined at road level.
+      if (cross < -1e-5) pos.push(...prev.right, ...right, ...point(ax, az));
+      if (cross > 1e-5) pos.push(...left, ...prev.left, ...point(ax, az));
+      prev = { dx, dz, left: nextLeft, right: nextRight };
+      ax = bx; az = bz;
+    }
+    return new Float32Array(pos);
+  }
   function townGps(T, m, F, ground, cfg, box) {
     const G = { places: [] }; let dead = false, net = null, netP = null, route = null, parts = null, hudT = 0, offT = 0, rerouteT = 0, ctl = null, sugT = 0, lastPick = null;
     const lin = hex => { const v = parseInt(hex.slice(1), 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255].map(c => Math.pow(c / 255, 2.2)); };
@@ -20760,17 +20783,16 @@ const handle = async (m, post) => {
     // where you are: your car, or you
     const here = () => { const w = T.car?.in ? T.car.where?.() : null; return w && w.x != null ? [w.x, w.z] : [F.pos.x, F.pos.z]; };
     const clearParts = () => { try { parts?.remove(); } catch {} parts = null; pinAt = null; };
-    const draw = (pts, pin) => { clearParts(); const pos = [], nor = [], col = [], c = lin("#3d8bff"), pc = lin("#ff4d6d"), W = 0.8;
-      const quad = (a, b, cc, d, k) => { for (const q of [a, b, cc, a, cc, d]) { pos.push(q[0], q[1], q[2]); nor.push(0, 1, 0); col.push(k[0], k[1], k[2]); } };
-      for (let i = 0; i + 3 < pts.length; i += 2) { const ax = pts[i], az = pts[i + 1], bx = pts[i + 2], bz = pts[i + 3], L = Math.hypot(bx - ax, bz - az); if (L < 0.05) continue;
-        const nx = -(bz - az) / L * W, nz = (bx - ax) / L * W, ya = ground(ax, az) + 0.18, yb = ground(bx, bz) + 0.18;
-        quad([ax - nx, ya, az - nz], [ax + nx, ya, az + nz], [bx + nx, yb, bz + nz], [bx - nx, yb, bz - nz], c); }
+    const draw = (pts, pin) => { clearParts();
+      // Older models only expose terrain height. Logan lifts its road shader higher than Moorooka.
+      const lift = cfg.place === "logan" ? 0.65 : 0.45;
+      const positions = townGpsRibbon(pts, (x, z) => ground(x, z) + lift);
       const ex = pin ? pin.x : pts[pts.length - 2], ez = pin ? pin.z : pts[pts.length - 1], g = ground(ex, ez);
       // the place itself: a map pin hovering over a glowing ring, turning slowly and bobbing, with a soft beam up through it you can see
       // from streets away (Ash, 26 November 2026: "Change the brown stick that the gps uses to mark its destination. Make it a pretty your
       // destination marker"; the stick was two flat red strips lit as if they lay on the ground, so they looked brown)
       const I = new BS.B.THREE.Matrix4().elements, mk = gpsPinShapes();
-      parts = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.6, doubleSide: true, matrix: I },
+      parts = m.addParts([{ positions, color: lin("#3d8bff"), unlit: true, opacity: cfg.place === "logan" ? 1 : 0.98, roadOverlay: cfg.place === "inv", matrix: I },
         { positions: mk.ring, color: [1, 0.34, 0.5], unlit: true, opacity: 0.85, doubleSide: true, matrix: new BS.B.THREE.Matrix4().makeTranslation(ex, g + 0.22, ez).elements },
         { positions: mk.beam, color: [1, 0.45, 0.6], unlit: true, opacity: 0.28, doubleSide: true, matrix: new BS.B.THREE.Matrix4().makeTranslation(ex, g, ez).elements },
         { positions: mk.pin, normals: mk.pinN, color: [1, 0.3, 0.45], emissive: [1, 0.3, 0.45], emissiveIntensity: 0.55, roughness: 0.35, doubleSide: true, matrix: I },
@@ -20827,6 +20849,7 @@ const handle = async (m, post) => {
       say(route ? `Going to ${route.dest.label}. Pick somewhere else, or Cancel.` : net ? "" : "GPS warming up. Type an address now: the way shows as soon as it's ready."); load().catch(() => {}); mark(); setTimeout(() => inp.focus(), 30); };
     G.close = () => { boxEl.hidden = true; ctl?.abort(); inp.blur(); };
     G.routePts = () => route && { pts: Array.from(route.pts), dest: route.dest };  // (for tests)
+    G.swapped = () => { if (route && cfg.place !== "inv") draw(route.pts, route.dest); };
     G.netInfo = () => net && { nodes: net.X.length, pieces: net.SA.length, ms: net.ms };  // (for tests: how big, and how long it took to build)
     G.stop = () => { if (route?.dest?.auto) T.car?.autoStop?.(); route = null; clearParts(); card.hidden = true; document.getElementById("bsGpsBtn")?.setAttribute("aria-pressed", "false"); };
     G.active = () => !!route;
