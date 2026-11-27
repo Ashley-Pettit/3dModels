@@ -1947,16 +1947,21 @@ body.bsme .bs-height, body.bstown.bsme .bs-height { left: 16px; top: calc(62px +
 @media (max-height: 560px) { .bs-emotes { grid-template-columns: repeat(4, auto); } }
 .bs-keys-now { margin: 0; font-weight: 700; }
 .bs-keys-now:empty { display: none; }
-.bs-keys dl, .bs-keys-q { display: none; margin: 0; }
+.bs-keys dl, .bs-keys-q, .bs-keys-h { display: none; margin: 0; }
 body.bsdrive .bs-fly-tip { display: none !important; }
 @media (hover: hover) and (pointer: fine) {
-  .bs-keys { left: 16px; top: auto; bottom: calc(16px + env(safe-area-inset-bottom)); transform: none; max-width: 300px; padding: 10px 12px 9px; text-align: left; }
+  /* (tidied, 27 November 2026: a title saying what it's for, the keys in a column of their own lined up on the right, a little
+     wider so less wraps, and clear of the test laser's button) */
+  .bs-keys { left: 16px; top: auto; bottom: calc(16px + env(safe-area-inset-bottom)); transform: none; max-width: 340px; padding: 10px 12px 10px; text-align: left; }
+  body:has(.bs-laser:not([hidden])) .bs-keys { bottom: calc(44px + env(safe-area-inset-bottom)); }
   .bs-keys-now { margin-bottom: 8px; font-size: 0.84rem; }
-  .bs-keys dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; }
-  .bs-keys dt { display: flex; gap: 3px; }
+  .bs-keys-h { display: block; margin: 1px 0 8px; font: 800 0.7rem/1.2 var(--ui); letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.75; }
+  .bs-keys-h:empty { display: none; }
+  .bs-keys dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 10px; align-items: center; }
+  .bs-keys dt { display: flex; gap: 3px; justify-content: flex-end; }
   .bs-keys dd { margin: 0; }
-  .bs-keys kbd { min-width: 20px; box-sizing: border-box; padding: 3px 5px 2px; border-radius: 5px; background: #fff; color: #1b1830; font: 700 0.68rem/1.1 var(--ui); text-align: center; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(27, 24, 48, 0.22); }
-  .bs-keys-q { display: block; margin-top: 8px; opacity: 0.7; font-size: 0.72rem; }
+  .bs-keys kbd { min-width: 22px; box-sizing: border-box; padding: 3px 5px 2px; border-radius: 5px; background: #fff; color: #1b1830; font: 700 0.68rem/1.1 var(--ui); text-align: center; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(27, 24, 48, 0.22); }
+  .bs-keys-q { display: block; margin-top: 9px; padding-top: 7px; border-top: 1px solid rgba(255, 255, 255, 0.12); opacity: 0.7; font-size: 0.72rem; }
   /* (the list is back, without what the buttons on screen already show with their keys: Ash, 16 November 2026, "On desktop I can't see
      the controls anymore") */
   .bs-keys.off dl { display: none; }
@@ -1968,7 +1973,7 @@ body.bsdrive .bs-fly-tip { display: none !important; }
   .bs-keys-x:hover { background: rgba(255, 255, 255, 0.26); }
   .bs-keys-x:focus-visible { outline: 2px solid #ffd166; outline-offset: 2px; }
   .bs-keys.off { padding: 0; }
-  .bs-keys.off .bs-keys-q, .bs-keys.off .bs-keys-now { display: none; }
+  .bs-keys.off .bs-keys-q, .bs-keys.off .bs-keys-now, .bs-keys.off .bs-keys-h { display: none; }
   .bs-keys.off .bs-keys-x { position: static; width: auto; height: auto; padding: 8px 12px; background: none; font: 700 0.78rem/1 var(--ui); }
 }
 /* On a desktop, the key that does the same as a button sits at its bottom right corner as a small keycap (Ash, 14 November 2026:
@@ -2643,7 +2648,7 @@ body.bsfly .toast.show { transform: translate(-50%, 0); }
     <p class="bs-locktip" id="bsLockTip" hidden>The mouse looks around. <kbd>Esc</kbd> gives it back. <kbd>M</kbd> Settings <kbd>J</kbd> Jump to <kbd>P</kbd> Share <kbd>L</kbd> Flood</p>
     <button class="bs-fly-x bs-flip" type="button" id="bsFlipBtn" data-key="X" aria-label="Spin round (X)" hidden>180</button>
     <button class="bs-fly-x bs-edit" type="button" id="bsEditBtn" aria-pressed="false" aria-controls="bsAdmin" aria-label="Edit the map" title="Edit the map" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg></button>
-    <div class="bs-keys" id="bsKeys" hidden><button type="button" class="bs-keys-x" id="bsKeysX" aria-label="Hide the controls">×</button><p class="bs-keys-now" id="bsKeysNow"></p><dl id="bsKeysList"></dl><p class="bs-keys-q">? hides the buttons</p></div>
+    <div class="bs-keys" id="bsKeys" hidden><button type="button" class="bs-keys-x" id="bsKeysX" aria-label="Hide the controls">×</button><p class="bs-keys-now" id="bsKeysNow"></p><p class="bs-keys-h" id="bsKeysH"></p><dl id="bsKeysList"></dl><p class="bs-keys-q">? hides the buttons</p></div>
     <p class="bs-camtip" id="bsCamTip" hidden>Press <kbd>?</kbd> to bring the buttons back</p>
     <button class="bs-fly-x bs-fly-lock" type="button" id="bsFlyLock" hidden>Use this view for the weather</button>
     <div class="bs-ud" role="group" aria-label="Fly up or down">
@@ -22530,8 +22535,10 @@ const handle = async (m, post) => {
     // controls, don't include those that are already on the screen"); none for the possum
     const KEYS_FEW = { walk: [[["W", "A", "S", "D"], "Walk"], [["Right click"], "Walk forwards"], [["Scroll"], "Forwards and back"], [["Shift"], "Run"], [["Space"], "Jump"], [["Mouse"], "Look around"]],
       car: [[["W", "S"], "Go, brake or reverse (scroll too)"], [["A", "D"], "Steer"]],
-      plane: [[["W", "S"], "Power up, power down (scroll too)"], [["A", "D"], "Turn"], [["\u2193", "\u2191"], "Climb, come down"]],
-      heli: [[["W", "S"], "Forward, back (scroll too)"], [["A", "D"], "Turn"], [["\u2193", "\u2191"], "Up, down"]] };
+      // (the plane's and the helicopter's in full, keys on one side and what they do on the other: Ash, 27 November 2026, "Polish up the
+      // computer key layout. Show the keys bottom left when in helicopter or plane")
+      plane: [[["W", "S"], "More power, less power (scroll too)"], [["A", "D"], "Turn (\u2190 \u2192 too)"], [["\u2193"], "Nose up: climb"], [["\u2191"], "Nose down: dive"], [["Mouse"], "Look around"]],
+      heli: [[["W", "S"], "Forward, back (scroll too)"], [["A", "D"], "Turn (\u2190 \u2192 too)"], [["Space", "\u2193"], "Up"], [["C", "\u2191"], "Down"], [["Mouse"], "Look around"]] };
     KEYS_FEW.bus = KEYS_FEW.gold = KEYS_FEW.car;
     KEYS.bus = KEYS.car; KEYS.gold = [...KEYS.car.slice(0, 4), [["X"], "180: hop and spin round, still going"], ...KEYS.car.slice(4)];
     KEYS.possum = [[["W", "A", "S", "D"], "Run that way, from where you're looking (the arrows too)"], [["W"], "Into a street light or a wall: climb it"], [["S"], "Walk backwards (on a wall: let go)"], [["Space"], "Jump (off a wall too)"], [["Shift"], "Boost"], [["Q"], "Grippy on or off: holds on to cars, planes and tree tops (on or against a car you hold on; only Grippy off lets go)"], [["Drag"], "Look around"], [["E"], "Human again"]];
@@ -22540,18 +22547,23 @@ const handle = async (m, post) => {
     KEYS.pigeon = [[["W", "A", "S", "D"], "Walk, or fly, that way from where you're looking"], [["Space"], "Flap: take off, and fly up"], [["C"], "Dive"], [["Shift"], "Faster"], [["E"], "Human again"]];
     // (only the sky rings' count and way: no tips bottom left, Ash, 16 November 2026, "The bottom left tooltips other that ? Aren't needed")
     const hint = text0 => { const text = /^Ring \d/.test(text0 || "") ? text0 : ""; if (keysNow.textContent !== text) { keysNow.textContent = text; if (touch) keysBox.hidden = !text; } };
-    const keysX = $("bsKeysX"), keysHid = () => { try { return localStorage.getItem("an-keyshide") === "1"; } catch { return false; } };
+    // (closed in one thing, it stays closed only in that kind of thing: closing it in the car or on foot no longer hides it in the plane and
+    // the helicopter, where it opens until closed there. Ash, 27 November 2026, "Show the keys bottom left when in helicopter or plane")
+    const keysH = $("bsKeysH"), keysGroup = k => /^(car|bus|gold)$/.test(k || "") ? "car" : k || "walk"; let keysKind = null;
+    const keysX = $("bsKeysX"), keysHid = () => { try { const g = keysGroup(keysKind), own = localStorage.getItem("an-keyshide-" + g); if (own != null) return own === "1";
+      return g === "plane" || g === "heli" ? false : localStorage.getItem("an-keyshide") === "1"; } catch { return false; } };
+    const KEYS_TITLE = { walk: "On foot", car: "Driving", bus: "Driving the bus", gold: "The golden car", plane: "Flying the plane", heli: "Flying the helicopter", drone: "Flying the drone" };
     const keysOff = off => { keysBox.classList.toggle("off", off); keysQ.textContent = "? hides the buttons"; keysX.textContent = off ? "Controls" : "\u00d7";
       keysX.setAttribute("aria-label", off ? "Show the controls" : "Hide the controls"); };
-    keysX.onclick = e => { e.stopPropagation(); const off = !keysBox.classList.contains("off"); try { localStorage.setItem("an-keyshide", off ? "1" : "0"); } catch {} keysOff(off); keysX.blur(); };
-    const showKeys = kind => { keysNow.textContent = ""; keysOff(keysHid()); keysBox.hidden = !kind || touch || kind === "possum" || kind === "pigeon";  // (no list for the possum: Ash, 16 November 2026, "I don't think any are needed")  // (on a phone it shows once there is something to say)
+    keysX.onclick = e => { e.stopPropagation(); const off = !keysBox.classList.contains("off"); try { localStorage.setItem("an-keyshide-" + keysGroup(keysKind), off ? "1" : "0"); } catch {} keysOff(off); keysX.blur(); };
+    const showKeys = kind => { keysKind = kind; keysNow.textContent = ""; keysOff(keysHid()); keysH.textContent = KEYS_TITLE[kind] || ""; keysBox.hidden = !kind || touch || kind === "possum" || kind === "pigeon";  // (no list for the possum: Ash, 16 November 2026, "I don't think any are needed")  // (on a phone it shows once there is something to say)
       const RODMAP = (() => { if (!townIsRod()) return null; const L = rodLayout(), cx = kind === "walk" ? "walk" : /^(car|bus|gold)$/.test(kind) ? "car" : null; if (!cx) return null;
         const by = { W: "KeyW", A: "KeyA", S: "KeyS", D: "KeyD", Shift: "ShiftLeft", Space: "Space" }, m = {}; for (const [id, def] of ROD_ACTIONS[cx]) { const lab = Object.keys(by).find(k => by[k] === def); if (lab && L[cx]?.[id]) m[lab] = keyName(L[cx][id]); } return m; })();
       keysList.replaceChildren(...[...(kind === "walk" && document.body.classList.contains("bsgmap") && matchMedia("(hover: hover) and (pointer: fine)").matches ? [[["W", "A", "S", "D"], "Walk"], [["Click"], "Walk there"], [["Hold and drag"], "Look around"], [["Scroll"], "Forwards and back"], [["Space"], "Jump"]] : KEYS_FEW[kind] || []), ...(/^(car|bus|gold)$/.test(kind) ? (gmDesk() ? [[["Click"], "The road, and the car drives you there"]] : [[["G"], "Drive for me, and stop"], [["<", ">"], "The next left, the next right"]]) : [])].map(([ks, what]) => [RODMAP ? ks.map(k => RODMAP[k] || k) : ks, what]).filter(([ks]) => !(kind === "plane" && plane && !canBoost(plane) && ks[0] === "Shift")).flatMap(([ks, what]) => { const dt = document.createElement("dt"), dd = document.createElement("dd");
         for (const key of ks) { const kb = document.createElement("kbd"); kb.textContent = key; dt.append(kb); } dd.textContent = what; return [dt, dd]; }));
       // in a car, in teal: M for Settings, to change the controls style (Ash, 25 November 2026: "In the controls panel show in teal the user
       // can click m to change to a different driving style")
-      if (/^(car|gold)$/.test(kind)) { const dt = document.createElement("dt"), dd = document.createElement("dd"), kb = document.createElement("kbd"); kb.textContent = "M"; dt.append(kb); dt.className = dd.className = "bs-key-teal"; dd.textContent = "Change the controls style (Gamer or Simple)"; keysList.append(dt, dd); }
+      if (/^(car|gold)$/.test(kind)) { const dt = document.createElement("dt"), dd = document.createElement("dd"), kb = document.createElement("kbd"); kb.textContent = "M"; dt.append(kb); dt.className = dd.className = "bs-key-teal"; dd.textContent = "Controls style: Gamer or Simple"; keysList.append(dt, dd); }
       // the stick and the Up and Down buttons say what they do in it
       if (joyName) joyName.textContent = kind === "plane" ? "Fly: up, down, turn" : kind === "heli" ? "Go and turn" : kind === "car" ? "Drive" : kind === "possum" ? "Run and turn" : "Move";
       // (the plane's are Faster and Slower, its power: Ash, 24 November 2026, "I now can't adjust throttle". The helicopter's stay Up and Down)
