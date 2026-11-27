@@ -313,6 +313,25 @@ need a contributor photo or survey with modelling permission before release. The
 vertex colours. Number 11 is still drawn by Explore. The bundle is built from the source for revision 42 plus the number 13
 change, using the same renderer build.
 
+### Norman Road from Florida Avenue to the eastern dead end
+
+The [Bass Coast Shire Public Road Register](https://www.basscoast.vic.gov.au/assets/general-images/Public-Road-Register-March-2024.pdf)
+lists 275.4 m between Florida and Ebor Avenues and 95.6 m east of Ebor. The Explore review follows
+both frontages over that entire run, including the dead end short of Surf Parade.
+
+- 26 roofprints across 23 property groups use the [Microsoft Global ML Building Footprints](https://github.com/microsoft/GlobalMLBuildingFootprints)
+  Australian tile 311223133, release 12 November 2026, CDLA-Permissive-2.0. [Vicmap Address and Property](https://www.land.vic.gov.au/maps-and-spatial/spatial-data/vicmap-catalogue/vicmap-property)
+  are State of Victoria data under CC BY 4.0. The centreline follows the existing OpenStreetMap geometry (ODbL).
+- The facade kit models framed openings, sill depth, cladding, eaves and roof seams alongside the authored number 11 and 13 models.
+  Mapped roof edges and cadastral placement are the evidence. Storey estimates, roof profiles, finishes and joinery are provisional.
+  Street View and satellite were consulted in their viewer. No Google imagery or new Street View-derived features enter the candidate.
+- The update includes 1A, 1B and 2B east of Ebor. Number 1–3 retains the current scene because the open source has older footprints.
+  Number 23 keeps its existing placeholder pending a current, reusable footprint. Number 14A and number 19 have no matched roof and
+  have been marketed as vacant. Number 14B overlaps number 14's record and shares its single roof. The corner houses at 2 Ebor Avenue
+  remain in the scene. The formerly mislabelled outbuilding west of 13 is on number 15's parcel.
+- The renderer uses the same revision-42 release source as the number 13 draft, with the two Norman Road patches.
+  The candidate adds no media assets to Explore. The review captures and provenance are outside the delivery bundle.
+
 ## Inverloch's power poles cast no shadows
 
 Ash, 13 November 2026: "remove power pole shadows from Inverloch". The timber power poles and their wires along the
