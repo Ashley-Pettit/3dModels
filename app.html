@@ -9740,6 +9740,13 @@ const handle = async (m, post) => {
     // they'll stand (and round both, the model draws its small things: cars with proper shapes, letterboxes, bins, power lines)
     const cfg = T.cfg, inv = cfg.place === "inv", D = INV_TOWN, home = D.nr?.home, clearLatLon = [], clearPolygons = [], detailLatLon = [];
     if (inv && BS.W.invClock) { const [lat, lon] = townLL(D.c[0], D.c[1]); clearLatLon.push({ lat, lon, r: 4.5 }); detailLatLon.push({ lat, lon, r: 260 }); }
+    // the model's power poles that land in a road (each is set out beside its own street, so where another street runs past, one can stand
+    // in it): taken out, so none stands in the road. Seven in the detail round the town centre, one right in the middle of A'Beckett
+    // Street by Alma Street (Ash, 27 November 2026: "In Inverloch there is a power pole in the middle of the road near city centre. Move or
+    // remove that"). Found by laying the poles out as the model does (every 42 m, 2.5 m past each street's edge) and keeping those inside
+    // another street's width; the wires to each go with it
+    if (inv) for (const [lat, lon] of [[-38.6337246, 145.7267682], [-38.6339579, 145.7292535], [-38.6348371, 145.7287447], [-38.6342723, 145.7293649],
+      [-38.6338849, 145.7295854], [-38.6329661, 145.7297324], [-38.6348155, 145.7301642]]) clearLatLon.push({ lat, lon, r: 1.5 });
     if (inv && home && BS.W.invHouse) { const [lat, lon] = townLL(home[0], home[1]); clearLatLon.push({ lat, lon, r: 24 }); detailLatLon.push({ lat, lon, r: 170 }); }
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
     townModelLoad(cfg).then(lib => {
@@ -9949,6 +9956,8 @@ const handle = async (m, post) => {
           const x = G.x + dx, z = G.z + dz; F.pos.set(x, ground(x, z) + F.eye, z); F.yaw = Math.atan2(-(G.x - x), -(G.z - z)); F.pitch = -0.15; };
         const toPlayer = id => { const q = (T.peers?.list?.() || []).find(v => v.id === id); if (!q) return toast("They've just left.", 2200);
           T.tween = null;
+          // in a car, the bus, a plane or a helicopter: in with them, as a passenger (Ash, 27 November 2026)
+          if (T.car?.rideWith?.(id)) return;
           if (q.high) { if (T.walk) setMode(false); const x = q.x + Math.sin(q.h) * 30, z = q.z + Math.cos(q.h) * 30;  // up in the air: fly in beside them, looking at them
             F.pos.set(x, Math.max(q.y, ground(x, z) + 20), z); F.yaw = Math.atan2(-(q.x - x), -(q.z - z)); F.pitch = -0.1; return toast(`You're with ${q.name}. They're flying.`, 2200); }
           if (!T.walk) setMode(true); const sx = Math.sin(q.h), sz = Math.cos(q.h); let x = q.x + sx * 6, z = q.z + sz * 6;
@@ -19242,11 +19251,22 @@ const handle = async (m, post) => {
   function rideSettings() { let o = {}; try { o = JSON.parse(localStorage.getItem("an3d-rides") || "{}") || {}; } catch {}
     const r = {}; for (const k in RIDE_DEF) { const [d, , , lo, hi] = RIDE_DEF[k], v = o[k] == null || o[k] === "" ? NaN : +o[k]; r[k] = Number.isFinite(v) ? bsClamp(v, lo, hi) : d; } return r; }
   function townSound() {
-    let ac = null, master = null, hiss = null, eng = null, vol = 1, vsrc = null; const vbuf = {};
+    let ac = null, master = null, hiss = null, eng = null, vol = 1, vsrc = null, hush = false, kick = false; const vbuf = {};
     const ctx = () => { if (!ac) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
         ac = new AC(); master = ac.createGain(); master.gain.value = 0.9 * vol; master.connect(ac.destination);
-        hiss = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate); const d = hiss.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
-      if (ac.state === "suspended") ac.resume().catch(() => {}); return ac; };
+        hiss = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate); const d = hiss.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+        ac.onstatechange = () => { if (ac?.state === "interrupted") kick = true; }; }
+      if (ac.state !== "running" && !hush) ac.resume().catch(() => {}); return ac; };
+    // the sound back after the app's been away (Ash, 27 November 2026: "If I minimise the screen and come back on mobile I lose sound"): on
+    // a phone, put away, the sound goes "interrupted" (not "suspended", the only state it was woken from), and it only wakes again in a
+    // touch. So on coming back it's asked to wake, and again on the first touch or key after that, given a nudge (off and on) if it says
+    // it's running but was put away. The listeners are passive: they never hold up a touch (the sticks)
+    const wake = () => { if (!ac || hush || document.hidden) return; if (ac.state !== "running") { ac.resume().catch(() => {}); return; }
+      if (kick) { kick = false; const a = ac; a.suspend().then(() => a.resume()).catch(() => {}); } };
+    const touched = () => { if (ac && !hush && (kick || ac.state !== "running")) wake(); };
+    const back = () => { if (!document.hidden) wake(); };
+    for (const ev of ["touchend", "pointerup", "keydown"]) document.addEventListener(ev, touched, { capture: true, passive: true });
+    window.addEventListener("pageshow", back); window.addEventListener("focus", back);
     const noise = () => { const s = ac.createBufferSource(); s.buffer = hiss; s.loop = true; return s; };
     // a short sound: noise through a filter, and a low note, both dying away
     const hit = (len, cut, loud, note) => { const a = ctx(); if (!a) return; const t = a.currentTime;
@@ -19323,8 +19343,9 @@ const handle = async (m, post) => {
             g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.22 * k, t0 + 0.04); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.28); o.connect(g); g.connect(master); o.start(t0); o.stop(t0 + 0.3); } } },
       stop() { if (!eng || !ac) return; const e = eng, t = ac.currentTime; eng = null; for (const g of [e.out, e.wg, e.sg]) g.gain.setTargetAtTime(0, t, 0.06);
         setTimeout(() => e.all.forEach(n => { try { n.stop(); } catch {} }), 500); },
-      quiet(on) { if (ac) (on ? ac.suspend() : ac.resume()).catch(() => {}); },
-      dispose() { this.stop(); const a = ac; ac = null; if (a) setTimeout(() => a.close().catch(() => {}), 700); },
+      quiet(on) { hush = !!on; if (!ac) return; if (on) { kick = matchMedia("(pointer: coarse)").matches; ac.suspend().catch(() => {}); } else ac.resume().then(() => { if (ac?.state !== "running") kick = true; }).catch(() => { kick = true; }); },
+      dispose() { this.stop(); for (const ev of ["touchend", "pointerup", "keydown"]) document.removeEventListener(ev, touched, { capture: true }); window.removeEventListener("pageshow", back); window.removeEventListener("focus", back);
+        const a = ac; ac = null; if (a) setTimeout(() => a.close().catch(() => {}), 700); },
     };
   }
   // The plane: a small high-winged four-seater, white with a blue stripe. Nose to +Z, wheels on y = 0. Returns the body and, apart,
@@ -21714,13 +21735,18 @@ const handle = async (m, post) => {
       return [b.part({}), r.part({}), d.part({ opacity: 0.2, unlit: true })];
     }
     if (car === "bus") {  // a city bus, 11 m long: windows down both sides, a yellow sign over the windscreen. Nose to +Z, wheels on y = 0
+      // (the door on the left, the kerb side in Australia, ahead of the front wheel; it was on the right, over the wheel. The wheels stand
+      // a little out from the sides: their faces were flush with them, and the two flickered over which to draw. Ash, 27 November 2026:
+      // "The bus has its door on the wrong side for Australia. Also the wheels are doing the weird pixelated thing when objects clash".
+      // +x is the bus's left: facing +z, with x east and z south)
       const COL = lin(stripe), SIGN = lin("#f2c230");
       b.box(-1.25, 1.25, 0.38, 3.0, -5.5, 5.5, COL); b.box(-1.2, 1.2, 3.0, 3.12, -5.2, 5.2, WHITE);
-      for (const sx of [-1, 1]) { b.quad([sx * 1.262, 1.55, 4.6], [sx * 1.262, 1.55, -5.0], [sx * 1.262, 2.55, -5.0], [sx * 1.262, 2.55, 4.6], GLASS);
-        for (const z of [3.7, -3.4]) b.wheel(sx * 1.08, 0.5, z, 0.5, 0.34); b.box(sx * 1.0 - 0.14, sx * 1.0 + 0.14, 0.75, 0.95, 5.5, 5.53, lin("#fff6d8")); b.box(sx * 1.0 - 0.14, sx * 1.0 + 0.14, 0.8, 1.05, -5.53, -5.5, lin("#b3202a")); }
+      for (const sx of [-1, 1]) { const front = sx > 0 ? 4.05 : 4.6; b.quad([sx * 1.27, 1.55, front], [sx * 1.27, 1.55, -5.0], [sx * 1.27, 2.55, -5.0], [sx * 1.27, 2.55, front], GLASS);
+        for (const z of [3.45, -3.4]) b.wheel(sx * 1.16, 0.5, z, 0.5, 0.3); b.box(sx * 1.0 - 0.14, sx * 1.0 + 0.14, 0.75, 0.95, 5.5, 5.53, lin("#fff6d8")); b.box(sx * 1.0 - 0.14, sx * 1.0 + 0.14, 0.8, 1.05, -5.53, -5.5, lin("#b3202a")); }
       b.quad([-1.15, 1.35, 5.512], [1.15, 1.35, 5.512], [1.15, 2.5, 5.512], [-1.15, 2.5, 5.512], GLASS); b.quad([-0.9, 2.58, 5.514], [0.9, 2.58, 5.514], [0.9, 2.92, 5.514], [-0.9, 2.92, 5.514], SIGN);
       b.quad([1.15, 1.6, -5.512], [-1.15, 1.6, -5.512], [-1.15, 2.5, -5.512], [1.15, 2.5, -5.512], GLASS);
-      b.quad([-1.264, 0.5, 3.0], [-1.264, 0.5, 4.3], [-1.264, 2.6, 4.3], [-1.264, 2.6, 3.0], DARK);  // the door
+      b.quad([1.28, 2.65, 4.2], [1.28, 2.65, 5.35], [1.28, 0.45, 5.35], [1.28, 0.45, 4.2], DARK);  // the door
+      b.quad([1.285, 0.5, 4.75], [1.285, 2.6, 4.75], [1.285, 2.6, 4.79], [1.285, 0.5, 4.79], lin("#9aa3ad"));  // (where its two leaves meet)
       return [b.part({ roughness: 0.45 })];
     }
     if (car === "bush") {  // a bush a construction worker (or the possum) plants: a rounded lump of leaves about 1 m tall. stripe: which green
@@ -22672,7 +22698,7 @@ const handle = async (m, post) => {
     // about 1/3 of that speed", "It should feel hard but possible to win. Avoiding instant deaths")
     // (rockets back up to 4, from 1.4: at 1.4 Mumma's 480 took about 340 hits and barely moved. Ash, 27 November 2026: "mumma was taking
     // almost 0 dmg from Missles". About 120 hits now, a minute or two of good flying)
-    const REX_S = 2.6, REX_K = 0.9, REX_HP = 240, REX_WAIT = 20000, REX_SPUDS = 10, REX_NET = 150, MUM_K = 1.6, MUM_CAR = 0.12, CHOPPA_HITS = 35, REX_DMG = 0.9, TREX_DMG = 1.25, MUM_DMG = 0.625, AIR_DMG = 0.5, ROCKET = 4, RACE_HIT = 0.25, REX_SPD = 1.05, REPAIR = 2,
+    const REX_S = 2.6, REX_K = 0.9, REX_HP = 240, REX_WAIT = 20000, REX_SPUDS = 10, REX_NET = 150, MUM_K = 1.6, MUM_CAR = 0.12, CHOPPA_HITS = 35, REX_DMG = 0.9, TREX_DMG = 1.25, MUM_DMG = 0.625, AIR_DMG = 0.5, ROCKET = 2, RACE_HIT = 0.25, REX_SPD = 1.05, REPAIR = 2,
       RAGE_MS = 14000, RAGE_DMG = 1.3, RAGE_SPD = 1.2, HIT_MAX = 30, PACE = 2, TREX_PACE = 1.4, GAP = 2, MUM_GAP = 2.4, rexMs = () => performance.now();
     const RX = new THREE.Matrix4(), RB = new THREE.Matrix4(), RH = new THREE.Matrix4(), RT = new THREE.Matrix4(), RQ = new THREE.Matrix4(), RS = new THREE.Matrix4(), RV = new THREE.Vector3(), E3 = new THREE.Euler();
     let rex = null, rexP = null, rexPm = null, rexCorpse = null, bunkP = null, nukeP = null, rockP = null, fireP = null, beacP = null, rexArmed = 0, rexRaf = 0, rexLast = 0, rexHud = null, rexCall = null, spudP = null, spudHeld = false, spudCd = 0;
@@ -24473,6 +24499,13 @@ const handle = async (m, post) => {
       for (const G of [...owns.filter(G => !G.takenBy), ...(T.traffic?.cars || []).filter(D => D.x != null && !D.away && !D.bus)]) { const d = Math.hypot(G.x - x, G.z - z); if (d < r && (!best || d < best.distance)) best = { own: G, gold: G.gold, distance: d, x: G.x, z: G.z, heading: G.h }; }
       const c = parked(x, z, r); return c && (!best || c.distance < best.distance) ? c : best; };
     C.enterCar = c => { if (veh || !c) return false; want = c; try { C.enter(); } finally { want = null; } return veh === "car"; };
+    // into another player's car, bus, plane or helicopter with them, from wherever you are (Jump to, on a player: Ash, 27 November 2026,
+    // "If I click jump to and it's a player. If they are in a chopper or plane or car get in with them. Didn't work for heli just now"):
+    // stood beside it, then in as a passenger, up in the air too
+    C.rideWith = id => { const q = (T.peers?.list?.() || []).find(v => v.id === id); if (!q || !RIDE_REACH[q.k] || q.k === "possum") return false;
+      if (veh === "ride" && ride?.id === id) return true;
+      try { T.standAt?.(q.x + Math.cos(q.h || 0) * 3, q.z - Math.sin(q.h || 0) * 3, q.h || 0, -0.1); want = { ride: q, distance: 0 }; C.enter(); } catch (e) { console.warn("Couldn't get in with them", e); } finally { want = null; }
+      return veh === "ride"; };
     // a race (townRace): out of whatever you're in, then into a standard car (one of the model's parked ones, brought to your place on
     // the grid: not the golden car or a bus), with your upgrades as always
     C.out = () => { if (veh) leave(false); };
