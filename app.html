@@ -1236,6 +1236,7 @@ body.bsfly.flypeek .bs-joy, body.bsfly.flypeek .bs-ud, body.bsfly.flypeek .bs-fl
 body.bsfly.flypeek .bs-fly-x.bs-fly-peek { top: calc(64px + env(safe-area-inset-top)); left: auto; right: 16px; transform: none; background: #fff; color: #1b1830; }
 body.bsfly.flypeek .bs-fly-x.bs-fly-lock { display: none !important; }
 body.bsfly #bsGl { touch-action: none; cursor: crosshair; }
+html:has(body.bsfly), body.bsfly { touch-action: pan-x pan-y; }  /* (no pinch-zoom or double-tap zoom while flying, on a phone: what the gesture listeners did, without making it wait for the page) */
 /* The whole-town model (Admin > 3D scenes > Inverloch 3D model): its own canvas over the weather's, flown with Explore's controls.
    It never takes a touch or click itself, so the sticks, the mouse look and the keys all work as they do in Explore. */
 .inv-embed-credit, .lgn-embed-credit { display: none !important; }  /* the 3D models' map, elevation and flood credits are in Settings, under About */
@@ -8988,9 +8989,12 @@ const handle = async (m, post) => {
       Object.entries(h).forEach(([k, f]) => el.addEventListener(k, f, { passive: /^touch/.test(k) || (BS_PASSIVE && k !== "contextmenu") }));  // passive, as the sticks
       return { el, h, end: stop };
     });
-    // No pinch-zoom or page scroll while flying (iPhone Safari)
+    // No pinch-zoom or page scroll while flying. On a phone that's the page's touch-action (body.bsfly: pan-x pan-y), not these: a
+    // gesture listener that could cancel, on the whole page, makes an iPhone wait for the page before it moves any finger once two are
+    // down, and when the page was busy it let go of them and the stick sprang back (Ash, 28 November 2026: "the bug appears to be
+    // reduced but not gone. Lag related"). They stay for a Mac's trackpad pinch
     F.noGesture = e => e.preventDefault();
-    ["gesturestart", "gesturechange"].forEach(k => document.addEventListener(k, F.noGesture, { passive: false }));
+    if (!BS_PASSIVE) ["gesturestart", "gesturechange"].forEach(k => document.addEventListener(k, F.noGesture, { passive: false }));
     clearTimeout(F.tipT); F.tipT = setTimeout(() => tip.classList.add("dim"), 6000);
     const look = (dx, dy, k) => { F.yaw -= dx * k; F.pitch = bsClamp(F.pitch - dy * k, -1.45, 1.45); };
     const typing = e => /^(INPUT|TEXTAREA|SELECT)$/.test(e.target?.tagName || "");
