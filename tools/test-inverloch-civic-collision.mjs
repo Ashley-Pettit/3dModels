@@ -94,4 +94,13 @@ assert.equal(town.depth(320,400,0,0,.35),0);
 const hostCar = {x:300,z:380,h:0};
 town.own(hostCar,false); assert.ok(town.depth(300,380,0,0,.35)>0);
 town.own(hostCar,true); assert.equal(town.depth(300,380,0,0,.35),0);
+// The kerbside bus must clear the retained awning post in both directions on leaving its bay.
+const bay = source.match(/cars: \[\{ x: ([-.\d]+), z: ([-.\d]+), h: (-1\.683), bus: true, hide:/);
+assert.ok(bay);
+const [busX,busZ,busH]=bay.slice(1).map(Number), busStop=makeIndex();
+busStop.post(-207.422857,-345.533777,.06);
+assert.ok(busStop.depth(-207,-346,busH,5.55,1.27)>0);
+assert.equal(busStop.depth(busX,busZ,busH,5.55,1.27),0);
+for (const step of [-2.5,2.5]) assert.ok(busStop.canDrive(busX,busZ,busH,
+  busX+step*Math.sin(busH),busZ+step*Math.cos(busH),busH,5.55,1.27));
 console.log('A\'Beckett static collision fixtures passed');
