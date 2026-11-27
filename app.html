@@ -22662,7 +22662,7 @@ const handle = async (m, post) => {
     const RX = new THREE.Matrix4(), RB = new THREE.Matrix4(), RH = new THREE.Matrix4(), RT = new THREE.Matrix4(), RQ = new THREE.Matrix4(), RS = new THREE.Matrix4(), RV = new THREE.Vector3(), E3 = new THREE.Euler();
     let rex = null, rexP = null, rexPm = null, rexCorpse = null, bunkP = null, nukeP = null, rockP = null, fireP = null, beacP = null, rexArmed = 0, rexRaf = 0, rexLast = 0, rexHud = null, rexCall = null, spudP = null, spudHeld = false, spudCd = 0;
     // (with friends: rexRole "host" runs it, "guest" has joined someone else's, "" neither; rexFid the fight; rexOut: wrecked; rexGhost: and floating about)
-    let rexRole = "", rexFid = "", rexHost = null, rexNetAt = 0, rexHeard = 0, rexOut = false, rexGhost = false, rexInvited = "", rexInvitedAt = 0;
+    let rexRole = "", rexFid = "", rexHost = null, rexNetAt = 0, rexHeard = 0, rexOut = false, rexGhost = false, rexInvited = "", rexInvitedAt = 0, rexAway = false;
     const spuds = [], rexCam = { d: 0, shake: 0, up: 0 }, rexGuests = new Map(), rexSeen = new Set(), rexHeardOf = new Map();
     const rexSend = (d, to) => T.peers?.rexSend?.(d, to), rexName = id => String(T.peers?.nameOf?.(id) || "A player").replace(/[<>]/g, "").slice(0, 16);
     const spudBtn = document.createElement("button"); spudBtn.type = "button"; spudBtn.className = "bs-fly-x bs-flip bs-spud"; spudBtn.textContent = "Spuds"; spudBtn.dataset.key = "L"; spudBtn.hidden = true; spudBtn.setAttribute("aria-label", "Fire the spud gun (L)");
@@ -23509,29 +23509,37 @@ const handle = async (m, post) => {
     // the card asking you in: "Ash is fighting a T-rex!", Join the fight or Not now (once a fight; gone after 20 s)
     let offerEl = null, offerT = 0;
     const rexOfferHide = () => { clearTimeout(offerT); if (offerEl) offerEl.hidden = true; };
-    const rexOffer = (fid, name, mum, force = false) => { if ((rexSeen.has(fid) && !force) || rexRole || rexGhost || T.race?.active?.()) return; rexSeen.add(fid);
+    const rexOffer = (fid, name, mum, force = false) => { if ((rexSeen.has(fid) && !force) || (rexRole && !(rexRole === "guest" && rexFid === fid)) || rexGhost || T.race?.active?.()) return; rexSeen.add(fid);
       if (!offerEl) { offerEl = document.createElement("div"); offerEl.className = "bs-boss-offer"; offerEl.setAttribute("role", "dialog"); offerEl.setAttribute("aria-label", "A T-rex fight"); $("bsFly")?.append(offerEl); }
       // (ride with them, or your own car: Ash, 27 November 2026, "When joining a boss fight in progress let me select ride with x or own car")
-      const p = document.createElement("p"), rd = document.createElement("button"), yes = document.createElement("button"), no = document.createElement("button"), who = String(name || "them").slice(0, 16); p.textContent = `🦖 ${name || "A player"} is fighting ${mum ? "Mumma T-rex" : "a T-rex"}! Join in and take it down together.`;
-      rd.type = yes.type = no.type = "button"; rd.className = yes.className = "ok"; rd.textContent = `Ride with ${who}`; yes.textContent = "Own car"; no.textContent = "Not now";
+      const p = document.createElement("p"), rd = document.createElement("button"), yes = document.createElement("button"), no = document.createElement("button"), who = String(name || "them").slice(0, 16); p.textContent = `🦖 ${name || "A player"} is fighting ${mum ? "Mumma T-rex" : "a T-rex"}! You're in it: jump in next to it, or get in any car where you are.`;
+      rd.type = yes.type = no.type = "button"; rd.className = yes.className = "ok"; rd.textContent = `Ride with ${who}`; yes.textContent = "Own car"; no.textContent = "Stay here";
       rd.onclick = () => { rexOfferHide(); rexJoin(fid, "ride"); }; yes.onclick = () => { rexOfferHide(); rexJoin(fid, "car"); }; no.onclick = rexOfferHide;
       const H = rexHeardOf.get(fid), hp = H && (T.peers?.list?.() || []).find(v => v.id === H.id); rd.hidden = !(hp && RIDE_REACH[hp.k]);  // (only if they're in something you can ride in)
       offerEl.replaceChildren(p, rd, yes, no); offerEl.hidden = false; clearTimeout(offerT); offerT = setTimeout(rexOfferHide, 20000); };
     // in: a car (one of the town's, brought over) about 40 m off it (80 for Mumma), on the host's side of it, facing it
-    const rexJoin = (fid, how = "car") => { const H = rexHeardOf.get(fid); if (!H || rexMs() - H.at > 8000) { toast("That T-rex fight isn't on any more.", 3000, true); return; } if (rexRole || rexGhost) return;
-      const [, , hn, x, z] = H.raw, mum = !!H.raw[15], hp = (T.peers?.list?.() || []).find(v => v.id === H.id), base = hp ? Math.atan2(hp.x - x, hp.z - z) : Math.random() * Math.PI * 2;
+    // (everyone in Inverloch is in a fight once there's one on: "here" puts you in it where you are, seeing the dinosaur, its health and
+    // everything (the nuke too), and you're fighting it as soon as you're in a car (or the choppa, against Mumma). Ash, 27 November 2026:
+    // "With the Dino and mumma if more than one player is in they should all be part of the boss fight and should all see the nuke
+    // animation. I played once and my friend couldn't see the Dino I was fighting". "Ride with" and "Own car" still bring you over to it,
+    // also once you're in)
+    const rexJoin = (fid, how = "car") => { const H = rexHeardOf.get(fid); if (!H || rexMs() - H.at > 8000) { if (how !== "here") toast("That T-rex fight isn't on any more.", 3000, true); return; }
+      const already = rexRole === "guest" && rexFid === fid; if ((rexRole && !already) || rexGhost) return;
+      const [, , hn, x, z] = H.raw, mum = !!H.raw[15], hp = (T.peers?.list?.() || []).find(v => v.id === H.id), base = hp ? Math.atan2(hp.x - x, hp.z - z) : Math.random() * Math.PI * 2, me0 = String(playerName() || "").slice(0, 16);
+      if (how === "here") { if (already || !rexMake() || (mum && !mumMake())) return; rexRole = "guest"; rexFid = fid; rexHost = H.id; rexOut = false; rexHeard = rexMs(); rexAway = false;
+        rex = rexNew(x, z, H.raw[5], false, mum); rexNet(H.raw); rexHudMake(); hudK = ""; rexSend(["join", fid, me0], H.id); rexLoop(); return; }
       // riding with them: beside their car or helicopter (even up in the air), then in as a passenger; if that can't be done, your own car
       if (how === "ride" && hp && RIDE_REACH[hp.k] && rexMake() && (!mum || mumMake())) { rexRole = "guest"; rexFid = fid; rexHost = H.id; rexOut = false; rexHeard = rexMs();
         try { if (veh) leave(false); T.standAt?.(hp.x + Math.cos(hp.h || 0) * 3, hp.z - Math.sin(hp.h || 0) * 3, hp.h || 0, -0.1); want = { ride: hp, distance: 0 }; C.enter(); } catch {} finally { want = null; }
-        if (veh === "ride") { rex = rexNew(x, z, H.raw[5], false, mum); rexNet(H.raw); rexHudMake(); hudK = ""; rexSend(["join", fid, String(playerName() || "").slice(0, 16)], H.id); rexSay(`RIDING WITH ${String(hn || "THEM").toUpperCase().slice(0, 16)}!`, 2000); rexLoop(); return; }
-        rexRole = ""; rexFid = ""; rexHost = null; }
+        if (veh === "ride") { if (!already) { rex = rexNew(x, z, H.raw[5], false, mum); rexNet(H.raw); rexHudMake(); hudK = ""; } rexSend(["join", fid, me0], H.id); rexAway = false; rexSay(`RIDING WITH ${String(hn || "THEM").toUpperCase().slice(0, 16)}!`, 2000); rexLoop(); return; }
+        if (!already) { rexRole = ""; rexFid = ""; rexHost = null; } }
       let spot = null; for (const da of [0.5, -0.5, 1, -1, 0, 1.6, -1.6, Math.PI]) for (const r of mum ? [80, 100, 60] : [40, 55, 30]) { const a = base + da, sx = x + Math.sin(a) * r, sz = z + Math.cos(a) * r, h = Math.atan2(x - sx, z - sz);
         if (!spot && inside(sx, sz) && ground(sx, sz) - m.groundAt(sx, sz) < 0.35 && fits(CAR, sx, sz, h)) spot = [sx, sz, h]; }
       if (!spot || !rexMake() || (mum && !mumMake())) { toast("Couldn't find a car near the T-rex. Try again in a moment.", 3000, true); return; }
       rexRole = "guest"; rexFid = fid; rexHost = H.id; rexOut = false; rexHeard = rexMs();
-      if (!T.toStart?.(spot[0], spot[1], spot[2]) || veh !== "car") { rexRole = ""; rexFid = ""; rexHost = null; toast("Couldn't find a car near the T-rex. Try again in a moment.", 3000, true); return; }
-      rex = rexNew(x, z, H.raw[5], false, mum); rexNet(H.raw); rexHudMake(); hudK = ""; rexSend(["join", fid, String(playerName() || "").slice(0, 16)], H.id);
-       rexLoop(); };
+      if (!T.toStart?.(spot[0], spot[1], spot[2]) || veh !== "car") { if (!already) { rexRole = ""; rexFid = ""; rexHost = null; } toast("Couldn't find a car near the T-rex. Try again in a moment.", 3000, true); return; }
+      if (!already) { rex = rexNew(x, z, H.raw[5], false, mum); rexNet(H.raw); rexHudMake(); hudK = ""; } rexSend(["join", fid, me0], H.id); rexAway = false;
+      rexLoop(); };
     // a friend's copy, told what the host's is doing
     const rexNet = raw => { const [, , hn, x, z, h, st, t, hp, mx, ph, v, lock, spin, n, mum, bx, bz, bh, nt, live, lost, all, jh, rg, wg, lt, lx, lz] = raw; rexHeard = rexMs(); const R = rex; if (!R) return;
       if (mum && !R.mum) { if (!mumUp(+x || 0, +z || 0, +h || 0, false)) return; }  // (the T-rex is down, and here's Mumma)
@@ -23548,9 +23556,10 @@ const handle = async (m, post) => {
         else { spudBtn.hidden = true; ghostOff(true);  } } };
     // the T-rex messages (townPeers' "rex"): what the host's is doing, a friend joining, hitting it, out, firing the nuke, and the end
     C.rexGot = (raw, id) => { if (place !== "inv" || !Array.isArray(raw) || typeof raw[1] !== "string") return; const [k, fid] = raw;
-      if (k === "s") { if (rexRole === "guest" && fid === rexFid) { rexNet(raw); return; } if (rexRole) return;
+      if (k === "s") { if (rexRole === "guest" && fid === rexFid) { rexHeardOf.set(fid, { raw, id, at: rexMs() }); rexNet(raw); return; } if (rexRole) return;  // (kept fresh for a friend already in it, for Ride with or Own car later)
         rexHeardOf.set(fid, { raw, id, at: rexMs() }); if (raw[6] === "dead" || raw[6] === "leave" || raw[20] === 0) return;
-        if (rexInvited && rexMs() - rexInvitedAt < 120000) { rexInvited = ""; rexJoin(fid); } else rexOffer(fid, String(raw[2] || "").slice(0, 16) || rexName(id), !!raw[15]); return; }
+        if (rexInvited && rexMs() - rexInvitedAt < 120000) { rexInvited = ""; rexJoin(fid); return; }
+        if (!T.race?.active?.()) rexJoin(fid, "here"); rexOffer(fid, String(raw[2] || "").slice(0, 16) || rexName(id), !!raw[15]); return; }
       if (k === "end") { rexHeardOf.delete(fid); if (rexRole === "guest" && fid === rexFid && rex && rex.live) rexGuestEnd("gone"); return; }
       if (rexRole !== "host" || fid !== rexFid || !rex) return;
       if (k === "join") { if (!rexGuests.has(id)) { const nm = String(raw[2] || "").replace(/[<>]/g, "").slice(0, 16) || rexName(id); rexGuests.set(id, { name: nm, out: false });
@@ -23574,7 +23583,8 @@ const handle = async (m, post) => {
           // a friend out of their car (not as a ghost): out of the fight. The host: when no one's left fighting it, it stomps off, the
           // T-rex having won if anyone was wrecked
           // (on foot or in the choppa against Mumma, you're still in)
-          if (rexRole === "guest") { if (!stillIn() && !rexGhost && !rexOut && rex.live) { rexSend(["out", rexFid], rexHost); rexGuestEnd("left"); } }
+          if (rexRole === "guest") { const inIt = stillIn(); if (!inIt && !rexAway && !rexGhost && !rexOut && rex.live) { rexAway = true; rexSend(["out", rexFid], rexHost); }
+            else if (inIt && rexAway && rex.live) { rexAway = false; rexSend(["join", rexFid, String(playerName() || "").slice(0, 16)], rexHost); } }
           else if (rex.live && !rexTarget() && !(rexOut && !rexGhost)) { if (rexOut || [...rexGuests.values()].some(g => g.out)) rexLost(); else rexOver("🦖 The T-rex lost interest and stomped off. Get back in the hotrod to take it on again."); }
           if (rex) rexTick(dt); if (rex) rexSync(false); }
         const noSpud = !(rex && rex.live && fighting() && !rex.nuke); if (spudBtn.hidden !== noSpud) spudBtn.hidden = noSpud;
