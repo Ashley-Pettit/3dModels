@@ -1404,7 +1404,7 @@ body.bsfly.bsboss .bs-gps { top: var(--bs-gps-t, calc(150px + env(safe-area-inse
 /* Dino Land (after Mumma): a pink and lilac sky over it, a quiet line at the bottom, and a white flash in and out */
 .bs-epi { position: absolute; inset: 0; z-index: 40; pointer-events: none; } .bs-epi[hidden] { display: none; }
 .bs-epi-sky { position: absolute; inset: 0; opacity: 0; transition: opacity 1.2s; background: linear-gradient(to bottom, rgba(255, 170, 220, 0.55), rgba(200, 175, 255, 0.35) 45%, rgba(255, 255, 255, 0) 80%); } .bs-epi-sky.on { opacity: 1; }
-.bs-epi-line { position: absolute; left: 50%; bottom: calc(14% + env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(90%, 640px); margin: 0; text-align: center; color: #fff; font: italic 500 clamp(1.05rem, 3.2vw, 1.6rem)/1.35 Georgia, "Times New Roman", serif; text-shadow: 0 2px 14px rgba(60, 20, 80, 0.8); opacity: 0; transition: opacity 1.1s; }
+.bs-epi-line { position: absolute; left: 50%; top: calc(16% + env(safe-area-inset-top)); bottom: auto; transform: translateX(-50%); width: min(90%, 640px); margin: 0; text-align: center; color: #fff; font: italic 500 clamp(1.05rem, 3.2vw, 1.6rem)/1.35 Georgia, "Times New Roman", serif; text-shadow: 0 2px 14px rgba(60, 20, 80, 0.8); opacity: 0; transition: opacity 1.1s; }
 .bs-epi-line.on { opacity: 1; }
 .bs-epi-fade { position: absolute; inset: 0; background: #fff; opacity: 0; } .bs-epi-fade.go { animation: bsEpiFade 1.8s ease-in-out; }
 @keyframes bsEpiFade { 0% { opacity: 0; } 45%, 55% { opacity: 1; } 100% { opacity: 0; } }
@@ -21969,6 +21969,12 @@ const handle = async (m, post) => {
   // The T-rex, life size here (12 m nose to tail, hips 3.2 m up) and drawn bigger. Its parts, each about its own joint: 0 the body and neck,
   // 1 the head (about the top of the neck), 2 the lower jaw (about its hinge, in the head's frame), 3 and 4 the legs (about the hips), 5 the
   // tail (about its root), 6 the little arms (with the body). TOWN_REX holds the joints
+  // the T-rex (or Mumma) angry: glowing red eyes, and heavy dark brows pulled down into a V over them. Worn on the head, in the head's own
+  // frame, only while it's angry (Ash, 27 November 2026: "When angry make the Dino look angry")
+  function townAngryParts() { const e = townGeo(), b = townGeo(), RED = townLin("#ff2a14"), BROW = townLin("#160604");
+    for (const sx of [-1, 1]) { e.egg([sx * 0.445, 0.42, 0.575], 0.09, 0.105, 0.115, RED, 6, 10); b.egg([sx * 0.532, 0.42, 0.6], 0.012, 0.075, 0.022, BROW, 4, 6);  // (a black slit in it)
+      b.loft([[0.86, 0.46, 0.23], [0.63, 0.58, 0.37], [0.38, 0.71, 0.5]].map(([z, y, x]) => ({ p: [sx * x, y, z], rx: 0.085, ry: 0.065 })), 6, () => BROW); }
+    return [e.part({ unlit: true }), b.part({ roughness: 0.7 })]; }
   const TOWN_REX = { neck: [0, 4.05, 3.35], jaw: [0, -0.36, 0.05], hipL: [0.78, 3.05, 0.15], hipR: [-0.78, 3.05, 0.15], tail: [0, 3.22, -1.2] };
   function townRexParts(mum = false) {
     // (Mumma, twice as big and super angry: rusty red-brown with dark stripes and red eyes)
@@ -22715,10 +22721,10 @@ const handle = async (m, post) => {
     // Mumma and the bunker (dry): the bunker comes up on open ground 650 m off instead
     const REX_TOWN = { inv: { name: "Inverloch", dir: "inverloch", at: "by The Hub", lawn: "on the lawn by The Hub" },
       logan: { name: "Logan", dir: "logan", at: "out the front of the council", lawn: "on the lawn out the front of the council", dry: true } }[place] || null;
-    const REX_S = 2.6, REX_K = 0.9, REX_HP = 240, REX_WAIT = 20000, REX_SPUDS = 10, REX_NET = 150, MUM_K = 1.6, MUM_CAR = 0.12, CHOPPA_HITS = 35, REX_DMG = 0.9, TREX_DMG = 1.25, MUM_DMG = 0.625, AIR_DMG = 0.5, ROCKET = 2, RACE_HIT = 0.25, REX_SPD = 1.1, REPAIR = 2,
-      RAGE_MS = 14000, RAGE_DMG = 1.3, RAGE_SPD = 1.2, HIT_MAX = 30, PACE = 2, TREX_PACE = 1.4, GAP = 2, MUM_GAP = 2.4, rexMs = () => performance.now();
+    const REX_S = 2.6, REX_K = 0.9, REX_HP = 240, REX_WAIT = 20000, REX_SPUDS = 10, REX_NET = 150, MUM_K = 1.6, MUM_CAR = 0.12, CHOPPA_HITS = 35, REX_DMG = 0.9, TREX_DMG = 1.25, MUM_DMG = 0.625, AIR_DMG = 0.5, ROCKET = 2, RACE_HIT = 0.25, REX_SPD = 1.1, REPAIR = 0.5,
+      RAGE_MS = 16000, RAGE_DMG = 1.3, RAGE_SPD = 1.44, HIT_MAX = 30, PACE = 2, TREX_PACE = 1.4, GAP = 2, MUM_GAP = 2.4, rexMs = () => performance.now();
     const RX = new THREE.Matrix4(), RB = new THREE.Matrix4(), RH = new THREE.Matrix4(), RT = new THREE.Matrix4(), RQ = new THREE.Matrix4(), RS = new THREE.Matrix4(), RV = new THREE.Vector3(), E3 = new THREE.Euler();
-    let rex = null, rexP = null, rexPm = null, rexCorpse = null, bunkP = null, nukeP = null, rockP = null, fireP = null, beacP = null, rexArmed = 0, rexRaf = 0, rexLast = 0, rexHud = null, rexCall = null, spudP = null, spudHeld = false, spudCd = 0;
+    let angP = null, rex = null, rexP = null, rexPm = null, rexCorpse = null, bunkP = null, nukeP = null, rockP = null, fireP = null, beacP = null, rexArmed = 0, rexRaf = 0, rexLast = 0, rexHud = null, rexCall = null, spudP = null, spudHeld = false, spudCd = 0;
     // (with friends: rexRole "host" runs it, "guest" has joined someone else's, "" neither; rexFid the fight; rexOut: wrecked; rexGhost: and floating about)
     let rexRole = "", rexFid = "", rexHost = null, rexNetAt = 0, rexHeard = 0, rexOut = false, rexGhost = false, rexInvited = "", rexInvitedAt = 0, rexAway = false;
     const spuds = [], rexCam = { d: 0, shake: 0, up: 0 }, rexGuests = new Map(), rexSeen = new Set(), rexHeardOf = new Map();
@@ -22807,8 +22813,8 @@ const handle = async (m, post) => {
     const nukeMake = () => { try { if (!bunkP) bunkP = m.addParts(townBunkerParts().map(q => ({ ...q, matrix: NONE.slice() }))); if (!nukeP) nukeP = m.addParts(townNukeParts().map(q => ({ ...q, matrix: NONE.slice() }))); return true; } catch (e) { console.warn("The nuke couldn't be made", e); return false; } };
     const hideAllOf = (P, n) => { if (P) for (let i = 0; i < n; i++) P.setMatrix(i, NONE.slice()); };
     // the end of a fight: everything it made let go (made again for the next one)
-    const rexHide = () => { for (const P of [rexP, rexPm, spudP, rockP, fireP, beacP, bunkP, nukeP, packP, warnP, laserP]) try { P?.remove(); } catch {}
-      rexP = rexPm = spudP = rockP = fireP = beacP = bunkP = nukeP = packP = warnP = laserP = null; laserBtn.hidden = true; lowOn(false); packs.length = 0; spuds.length = 0; slotK.fill(0); rexCorpse = null; dinoTag?.remove(); dinoEdge?.remove(); dinoTag = dinoEdge = null; };
+    const rexHide = () => { for (const P of [rexP, rexPm, spudP, rockP, fireP, beacP, bunkP, nukeP, packP, warnP, laserP, angP]) try { P?.remove(); } catch {}
+      rexP = rexPm = spudP = rockP = fireP = beacP = bunkP = nukeP = packP = warnP = laserP = angP = null; laserBtn.hidden = true; lowOn(false); packs.length = 0; spuds.length = 0; slotK.fill(0); rexCorpse = null; dinoTag?.remove(); dinoEdge?.remove(); dinoTag = dinoEdge = null; };
     const slotK = new Uint8Array(REX_SPUDS);  // (what each spud slot showed last frame: 0 nothing, 1 a spud, 2 a rocket)
     const rexFwd = (R = rex) => [Math.sin(R.h), Math.cos(R.h)];
     // (sizes: the T-rex 10% smaller, Mumma 20% smaller (1.6 times the T-rex's old size, from 2): Ash, 27 November 2026, "Make mumma 20%
@@ -22985,7 +22991,8 @@ const handle = async (m, post) => {
     // around town that I can collect to heal myself to full. If below 30% add a waypoint to the nearest one. They shouldn't be too common
     // and I should on average have to drive at least 200m to find")
     const PACKS = 3, PACK_MS = 30000, packs = []; let packP = null, packAt = 0, warnP = null;
-    const packWay = () => !!rex && rex.live && !rexOut && !rexGhost && rex.me < 30 && packs.length > 0;
+    // (the way to the nearest pack from 55%, not 30%: Ash, 27 November 2026, "Show hp indicator earlier at 55%")
+    const packWay = () => !!rex && rex.live && !rexOut && !rexGhost && rex.me < 55 && packs.length > 0;
     const packNear = () => { const q = meNow() || F.pos; let b = null, bd = Infinity; for (const k of packs) { const d = Math.hypot(k.x - q.x, k.z - q.z); if (d < bd) { bd = d; b = k; } } return b; };
     const packDrop = () => { const q = meNow() || F.pos; for (let i = 0; i < 40; i++) { const a = Math.random() * Math.PI * 2, r = 220 + Math.random() * 260, x = q.x + Math.sin(a) * r, z = q.z + Math.cos(a) * r;
         if (!inside(x, z) || wetAt(x, z) || !fits(CAR, x, z, a) || packs.some(k => Math.hypot(k.x - x, k.z - z) < 150)) continue; packs.push({ x, z, y: m.groundAt(x, z) }); return true; } return false; };
@@ -23022,10 +23029,15 @@ const handle = async (m, post) => {
     // round and round Mumma (110 m out, 45 m up, once every 14 s), looking at her and the way it's coming from, and staying for the bang.
     // (Ash, 27 November 2026: "When the nuke is coming in make me invulnerable and spin the camera around mummy showing the nuke come in.
     // Initially do a camera chase of the missle then moving to a rotate around the Dino")
-    C.cine = () => { if (epi && !epi.walking) return epiCam(); const R = rex; if (!R || !(R.nuke === "away" || (R.nuke === "boom" && (R.boomT || 0) < 6))) return null;
+    C.cine = () => { if (epi && !epi.walking) return epiCam(); const R = rex; if (!R || !(R.nuke === "away" || (R.nuke === "boom" && (R.boomT || 0) < 7))) return null;
       const look = (c, q) => [c[0], c[1], c[2], Math.atan2(-(q[0] - c[0]), -(q[2] - c[2])), Math.atan2(q[1] - c[1], Math.hypot(q[0] - c[0], q[2] - c[2]))];
       const gy = m.groundAt(R.x, R.z), body = [R.x, gy + 2.5 * R.s, R.z], oa = rexMs() / 1000 * Math.PI * 2 / 14, orb = [R.x + Math.sin(oa) * 110, gy + 45, R.z + Math.cos(oa) * 110];
-      if (R.nuke === "boom") return look(orb, body);
+      // the blast: from where it was, round her more slowly and pulling back and up as the fireball and the cloud rise, looking up with the
+      // cloud, the view shaking at first (Ash, 27 November 2026: "Polish the final camera view of the missle hitting the trex")
+      if (R.nuke === "boom") { const bt = R.boomT || 0, [bx0, by0, bz0] = R.boomAt || [R.x, gy, R.z]; if (R.boomOa == null) R.boomOa = oa;
+        const e1 = bsClamp(bt / 6.5, 0, 1), ez = e1 * e1 * (3 - 2 * e1), a2 = R.boomOa + bt * Math.PI * 2 / 40, dist = 110 + 190 * ez, hy = 45 + 55 * ez;
+        const up3 = q => 1 - Math.pow(1 - bsClamp(q, 0, 1), 3), ly = by0 + Math.max(2.5 * R.s, 125 * up3((bt - 0.4) / 3.2) * 0.55), sh = 2.6 * Math.max(0, 1 - bt / 1.8);
+        return look([bx0 + Math.sin(a2) * dist + Math.sin(bt * 37) * sh, by0 + hy + Math.sin(bt * 29 + 1) * sh, bz0 + Math.cos(a2) * dist + Math.cos(bt * 41) * sh], [bx0, ly, bz0]); }
       const FT = R.nukeFT || 9, t = Math.min(R.nukeT || 0, FT), a = nukeAt(t), b = nukeAt(Math.max(0, t - 0.25)), O = look(orb, [body[0] + (a[0] - body[0]) * 0.35, body[1] + (a[1] - body[1]) * 0.35, body[2] + (a[2] - body[2]) * 0.35]);
       let hx = a[0] - b[0], hz = a[2] - b[2], hl = Math.hypot(hx, hz); if (hl < 0.5) { hx = R.x - a[0]; hz = R.z - a[2]; hl = Math.hypot(hx, hz) || 1; } hx /= hl; hz /= hl;
       const ch = [a[0] - hx * 32, Math.max(a[1] - (a[1] - b[1]) * 2 + 7, m.groundAt(a[0] - hx * 32, a[2] - hz * 32) + 3), a[2] - hz * 32], Cc = look(ch, [a[0] + hx * 15, a[1], a[2] + hz * 15]);
@@ -23154,6 +23166,7 @@ const handle = async (m, post) => {
     // (her wings come off, and she's furious: Ash, 27 November 2026, "Getting her to 0% takes off her wings but she gets super mad and jumps
     // lots swiping")
     const nukeReady = () => { const R = rex; R.hp = 0; R.nuke = "ready"; if (R.host) { R.bunker = bunkerSpot(); rexSync(true); } nukeShow();
+      if (R.mum && R.host && (R.st === "fly" || (R.pose?.jump || 0) > 6)) { R.fallH = R.jumpH = Math.max(R.pose?.jump || 0, 0); rexEnter("fall"); }  // (out of the sky, properly: the "fall" state)
       if (R.mum) { if (R.wings === 1) { snd.crunch?.(); snd.roar?.(1.2); rexCam.shake = Math.max(rexCam.shake, 1); for (let k = 0; k < 26; k++) { const a = Math.random() * Math.PI * 2; fxAdd(R.x + Math.sin(a) * 2 * R.k, m.groundAt(R.x, R.z) + 4.3 * R.s, R.z + Math.cos(a) * 2 * R.k, Math.sin(a) * 8, 3 + Math.random() * 5, Math.cos(a) * 8, 1.2); } } R.wings = 2; enrage(); }
       rexSay("NUKE READY!", 2600, true); setTimeout(() => { if (rex === R && R.nuke === "ready") rexSay("SHE'S FURIOUS! DODGE!", 1800, true); }, 2700); hudK = ""; };
     const nukeShow = () => { const R = rex; if (!R?.bunker || !nukeMake()) return; const [x, z, h] = R.bunker; const y = m.groundAt(x, z);
@@ -23208,7 +23221,11 @@ const handle = async (m, post) => {
       RB.copy(RX).multiply(RT.makeTranslation(0, J.hipL[1], J.hipL[2])).multiply(RQ.makeRotationFromEuler(E.set(p.pitch, 0, p.roll, "YXZ"))).multiply(RT.makeTranslation(0, -J.hipL[1], -J.hipL[2]));
       P.setMatrix(0, RB.elements.slice()); P.setMatrix(6, RB.elements.slice());
       RH.copy(RB).multiply(RT.makeTranslation(...J.neck)).multiply(RQ.makeRotationFromEuler(E.set(p.neck, p.yaw, 0, "YXZ"))); P.setMatrix(1, RH.elements.slice());
-      if (!R.corpse) { RV.set(0, -0.25, 1.75).applyMatrix4(RH); R.mouth = [RV.x, RV.y, RV.z]; const e = RH.elements, l = Math.hypot(e[8], e[9], e[10]) || 1; R.mdir = [e[8] / l, e[9] / l, e[10] / l]; }
+      if (!R.corpse) { RV.set(0, -0.25, 1.75).applyMatrix4(RH); R.mouth = [RV.x, RV.y, RV.z]; const e = RH.elements, l = Math.hypot(e[8], e[9], e[10]) || 1; R.mdir = [e[8] / l, e[9] / l, e[10] / l];
+        // (angry: the red eyes and the brows on, and a slow red pulse through it where the town can show one)
+        const mad = R === rex && R.live && R.st !== "dead" && rexMs() < (R.rageTil || 0); if (mad && !angP) try { angP = parts(townAngryParts()); } catch (er) { console.warn("The angry face couldn't be made", er); }
+        if (angP && (mad || R.angOn)) { R.angOn = mad; const M = mad ? RH.elements.slice() : NONE.slice(); angP.setMatrix(0, M); angP.setMatrix(1, M.slice()); }
+        if (mad) R.glow = Math.max(R.glow || 0, 0.35 + 0.2 * Math.sin(rexMs() / 160)); }
       P.setMatrix(2, RH.clone().multiply(RT.makeTranslation(...J.jaw)).multiply(RQ.makeRotationX(p.jaw)).elements);
       const legBase = R.st === "dead" || R.corpse ? RB : RX;
       P.setMatrix(3, legBase.clone().multiply(RT.makeTranslation(J.hipL[0], J.hipL[1] + p.liftL, J.hipL[2])).multiply(RQ.makeRotationX(p.legL)).elements);
@@ -23368,7 +23385,7 @@ const handle = async (m, post) => {
         case "roar": { stand(); to({ pitch: -0.12, neck: -0.65, jaw: 0.85, tail: 0, tailP: -0.15 }, 5); look(); if (R.t < 0.1 && !R.roared) { R.roared = true; snd.roar?.(1); rexCam.shake = Math.max(rexCam.shake, dm < 150 * K ? 0.6 * K : 0); }
           if (R.t > 1.6) go(R.won || !R.live ? "leave" : "walk"); break; }
         case "walk": { const race = R.mum && !R.nuke && !!tg?.race;  // (racing you for the choppa: she keeps up, up to 46 m/s)
-          to({ pitch: 0.04, neck: 0.12, jaw: 0.15 + 0.1 * Math.sin(R.t * 3), tailP: 0 }, 3); const airK = R.mum && tg && up0(tg) > 6 ? 1.35 : 1; look(); walk((d > 14 * K ? (race ? Math.min(46, 14 + d * 0.5) : R.mum && d > 60 * K ? 26 : 12 * fast) : d > 8 * K ? 6 * K : 0) * airK, true, race && d > 14 * K);  // (Mumma runs to catch you up)
+          to(raging() ? { pitch: 0.1, neck: -0.08, jaw: 0.42 + 0.18 * Math.sin(R.t * 13), tailP: 0.15 * Math.sin(R.t * 5) } : { pitch: 0.04, neck: 0.12, jaw: 0.15 + 0.1 * Math.sin(R.t * 3), tailP: 0 }, raging() ? 6 : 3); /* (angry: head down, snarling) */ const airK = R.mum && tg && up0(tg) > 6 ? 1.35 : 1; look(); walk((d > 14 * K ? (race ? Math.min(46, 14 + d * 0.5) : R.mum && d > 60 * K ? 26 : 12 * fast) : d > 8 * K ? 6 * K : 0) * airK, true, race && d > 14 * K);  // (Mumma runs to catch you up)
           if (!host) break; if (!tg) { go("leave"); break; }
           // too far away: it gives up after six seconds of everyone being 320 m off (not Mumma, waiting on the nuke: she's not giving up)
           R.far = d > 320 && !R.nuke && !R.mum ? R.far + dt : 0; if (R.far > 6) { rexOver("💨 You outran the T-rex. Get out and back in the hotrod to face it again."); break; }
@@ -23437,6 +23454,23 @@ const handle = async (m, post) => {
               const dizzy = !R.hitTg && !(R.mum && (tg?.race || R.nuke)); go(dizzy ? "dizzy" : "walk"); if (dizzy) rexSay("DIZZY!", 1300); } } break; }
         // dizzy: longer (5 s, 4.5 for Mumma), swaying and staggering about with its head lolling, stars going round it (Ash, 27 November 2026:
         // "When dizzy stay dizzy a bit longer and look dizzy")
+        // knocked out of the sky at no health, her wings torn off: she tumbles down trailing smoke, hits the ground with a crash, lies on her
+        // side stunned, then gets up roaring, furious. (She dropped straight down in half a second. Ash, 27 November 2026: "If I take out
+        // mumma to 0% she falls out of the sky. Try to polish this experience")
+        case "fall": { const H0 = R.fallH || R.jumpH || 0, TF = Math.max(0.8, Math.sqrt(2 * H0 / 18)), w = R.t;
+          if (host) { R.v = ease(R.v, 0, dt * 0.7); const nx = R.x + Math.sin(R.h) * R.v * dt, nz = R.z + Math.cos(R.h) * R.v * dt; if (inside(nx, nz)) { R.x = nx; R.z = nz; } }
+          if (w < TF) { const f = w / TF; p.jump = H0 * (1 - f * f);
+            to({ roll: 0.45 * Math.sin(w * 3.4) + 0.9 * f, pitch: -0.25 - 0.3 * f, neck: -0.6 + 0.3 * Math.sin(w * 7), jaw: 1.1, yaw: 0.6 * Math.sin(w * 5), legL: -0.9 + 0.6 * Math.sin(w * 11), legR: -0.5 - 0.6 * Math.sin(w * 13), liftL: 0.5, liftR: 0.5, tail: 0.5 * Math.sin(w * 6) }, 10);
+            if (!R.roared) { R.roared = true; snd.roar?.(1.4); snd.whoosh(); }
+            if (Math.random() < dt * 40) fxAdd(R.x + (Math.random() - 0.5) * 2 * K, m.groundAt(R.x, R.z) + p.jump + 4 * s, R.z + (Math.random() - 0.5) * 2 * K, (Math.random() - 0.5) * 3, 2 + Math.random() * 2, (Math.random() - 0.5) * 3, 1.4); }
+          else { p.jump = 0; const g = w - TF;
+            if (!R.down) { R.down = true; snd.thud(3); snd.crunch?.(); snd.roar?.(0.5); rexCam.shake = Math.max(rexCam.shake, Math.max(0.5, 2 - dm / 120)); if (dm < 300 * K) scare();
+              for (let k = 0; k < 34; k++) { const a = Math.random() * Math.PI * 2, sp = 8 + Math.random() * 10; fxAdd(R.x + Math.sin(a) * 5 * K, m.groundAt(R.x, R.z) + 0.5, R.z + Math.cos(a) * 5 * K, Math.sin(a) * sp, 3 + Math.random() * 6, Math.cos(a) * sp, 1.3); }
+              if (rexRole && !rexGhost) rexSay("SHE'S DOWN!", 1500, true); }
+            to({ roll: g < 1.8 ? 1.35 : 0, pitch: 0.05, neck: g < 1.8 ? -0.5 : 0.3, jaw: g < 1.8 ? 0.8 + 0.1 * Math.sin(w * 9) : 1.2, legL: g < 1.8 ? 0.3 * Math.sin(w * 8) : 0, legR: 0, liftL: 0, liftR: 0, tail: 0, yaw: 0 }, g < 1.8 ? 6 : 2.6);
+            if (g > 1.8 && g - dt <= 1.8) { snd.roar?.(1.3); rexCam.shake = Math.max(rexCam.shake, 0.6); if (rexRole && !rexGhost) rexSay("SHE'S UP! AND FURIOUS!", 1700, true); }
+            if (g > 3) { p.roll = 0; if (host) { R.jumpH = 0; R.fallH = 0; } go("walk"); } }
+          break; }
         case "dizzy": { stand(); const w = R.t; to({ pitch: 0.12 + 0.06 * Math.sin(w * 2.2), neck: 0.5 + 0.3 * Math.sin(w * 3.1), yaw: 0.75 * Math.sin(w * 2.6), jaw: 0.6 + 0.25 * Math.sin(w * 5), roll: 0.17 * Math.sin(w * 2.6 + 0.8), legL: 0.15 * Math.sin(w * 2.6), legR: -0.15 * Math.sin(w * 2.6) }, 6);
           if (host) R.h = rexWrap(R.h + Math.sin(w * 1.3) * dt * 0.6);
           if (Math.random() < dt * 26) { const q = w * 4.5 + Math.random() * 0.5, rr = 1.1 * s, hx = R.x + fx * 4.4 * s, hz = R.z + fz * 4.4 * s, hy = m.groundAt(R.x, R.z) + 5.4 * s; gAdd(hx + Math.cos(q) * rr, hy + Math.sin(q * 2) * 0.15 * s, hz + Math.sin(q) * rr, -Math.sin(q) * 2.5, 0.3, Math.cos(q) * 2.5, 0.8); }
@@ -23536,7 +23570,7 @@ const handle = async (m, post) => {
         case "leave": { R.far = 0; if (R.t < 0.1 && me && host) R.h = rexWrap(Math.atan2(R.x - me.x, R.z - me.z)); to({ pitch: 0.04, neck: 0.1, jaw: 0.1, yaw: 0 }, 3); walk(10, false);
           if (R.t > 5) p.sink = -Math.min(5, (R.t - 5) * 1.5); if (R.t > 8.5) rexGone(); break; } }
       if (!rex) return;
-      if (R.st !== "leap" && R.st !== "skyleap" && R.st !== "lunge" && R.st !== "fly") p.jump = ease(p.jump || 0, 0, dt * 8);
+      if (R.st !== "leap" && R.st !== "skyleap" && R.st !== "lunge" && R.st !== "fly" && R.st !== "fall") p.jump = ease(p.jump || 0, 0, dt * 8);
       if (R.st !== "walk" && R.st !== "charge" && R.st !== "leave") p.tail = ease(p.tail, 0.08 * Math.sin(R.t * 2), dt * 2);
       // you and it bumping: it's solid (its hips, chest and tail root); hitting it at speed hurts it
       if (me && me === car && R.live && R.st !== "rise" && R.st !== "dead" && (p.jump || 0) < 3) { const vx = Math.sin(me.dir ?? me.h) * me.v, vz = Math.cos(me.dir ?? me.h) * me.v;
@@ -23680,7 +23714,7 @@ const handle = async (m, post) => {
           rexSay(/behind/.test(at) ? "IT'S BEHIND THE HOUSE!" : "THERE'S THE CHOPPA!", 2400);
            } }
         nukeBtnShow(!!(rex && rex.live && rex.nuke === "ready" && atConsole())); heliPowShow(); packTick(); warnDraw(); lowTick(); laserTick();
-        { const cn = !!(rex && (rex.nuke === "away" || (rex.nuke === "boom" && (rex.boomT || 0) < 6))); if (cn !== document.body.classList.contains("bscine")) document.body.classList.toggle("bscine", cn); } if (rex && !rexT0) rexT0 = rexMs(); else if (!rex) rexT0 = 0;
+        { const cn = !!(rex && (rex.nuke === "away" || (rex.nuke === "boom" && (rex.boomT || 0) < 7))); if (cn !== document.body.classList.contains("bscine")) document.body.classList.toggle("bscine", cn); } if (rex && !rexT0) rexT0 = rexMs(); else if (!rex) rexT0 = 0;
         if (nukeBtn && !nukeBtn.hidden && (F.keys.has("Digit0") || F.keys.has("Numpad0"))) nukeAsk();
         // (the view further back and up while it's after you, and tipped up a little, so her head's in it: 7 m back, 10.5 for Mumma.
         // Ash, 26 November 2026, "During the boss fight zoom the camera out a bit"; 27 November, "zoom the camera out a bit more so I can see
