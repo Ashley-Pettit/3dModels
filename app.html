@@ -24137,7 +24137,13 @@ const handle = async (m, post) => {
       const {own,id} = previous, grid = T.invStatic;
       if (!grid?.wholeTown || own?.takenBy || (own ? car?.own === own : car?.id?.[0] === id[0] && car.id[1] === id[1])) return false;
       const source = own || m.parkedCarBlocker(...id);
-      if (!source) return true;
+      if (!source) {
+        // A car masked after it was parked still owns a driven slot. Its hidden home can safely reclaim it.
+        if (id && m.resetCar(...id)) {
+          const bay = grid.originalBay(id); if (bay) grid.park(id,bay.x,bay.z,bay.h);
+        }
+        return true;
+      }
       const camera = m.getCamera(), peers = T.peers?.list?.() || [];
       const watched = (x,z) => {
         const dx = x-camera.x, dz = z-camera.z, dist = Math.hypot(dx,dz);
