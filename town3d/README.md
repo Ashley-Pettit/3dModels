@@ -299,6 +299,17 @@ range requests (one 600 MB file, 3.6 MB of it read). Street View still gives eac
 - For the whole town: Microsoft's outlines put about 4,700 buildings where the model has its 5,712 made-up houses (and 311
   OpenStreetMap ones). Each would get its colours from the satellite, and Street View detail only where it matters.
 
+## Inverloch Rotary clock photo pass
+
+The Explore clock in `app.html` uses separate front gold and rear navy cogs, a smaller ketch
+silhouette, and tapered hands with counterweights. The two dated or historical reference views
+support these proportions. The dimensions are visual estimates. The scene uses authored meshes and
+dial artwork.
+
+Reference photos are [Inverloch by Dalysporter, 17 December 2013, CC BY-SA 3.0](https://commons.wikimedia.org/wiki/File:Inverloch_Victoria.jpg)
+and [the Inverloch Rotary clocktower, supplied by Travel Victoria, capture date unknown](https://www.travelvictoria.com.au/images/inverloch/photos/inverloch-004.jpg),
+under [Travel Victoria's CC BY 4.0 photo terms](https://www.travelvictoria.com.au/about/photos/).
+
 ## Inverloch's power poles cast no shadows
 
 Ash, 13 November 2026: "remove power pole shadows from Inverloch". The timber power poles and their wires along the

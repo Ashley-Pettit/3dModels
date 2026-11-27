@@ -6991,11 +6991,15 @@ const handle = async (m, post) => {
           pts.forEach(([ang, r], j) => { const x = Math.cos(ang) * r, y = Math.sin(ang) * r; (k || j) ? sh.lineTo(x, y) : sh.moveTo(x, y); }); }
         if (holeR) { const h = new THREE.Path(); h.absarc(0, 0, holeR, 0, Math.PI * 2, true); sh.holes.push(h); }
         const g2 = new THREE.ExtrudeGeometry(sh, { depth: 0.3, bevelEnabled: false, curveSegments: 4 }); g2.translate(0, 0, -0.15); return g2; };
-      // the navy gear: the same as the gold one, on the same centre, turned half a tooth so its teeth show between the gold ones
+      // The historic views show the navy cog behind the gold cog, with daylight around the inset clock housing.
       const navy = new THREE.MeshStandardMaterial({ color: 0x1f2f86, roughness: .55, metalness: .1 });
-      const back = new THREE.Mesh(gear(26, Ro, Ri, true), navy); back.scale.z = 0.6; back.position.set(0, CY, 0); back.rotation.z = Math.PI / 26; tower.add(back);  // centred on the gold one, its teeth in the gold one's gaps; thinner, so their faces never fight
-      // the clock itself: a gold gear with square teeth, its face a plain blue band with gold rims round a big white dial
-      const front = new THREE.Mesh(gear(26, Ro, Ri, true, 2.05), gold); front.position.y = CY; tower.add(front);
+      const frontZ = 0.36, backZ = -0.36;
+      const back = new THREE.Mesh(gear(26, Ro, Ri, true), navy);
+      back.scale.z = 0.6; back.position.set(0, CY, backZ); back.rotation.z = Math.PI / 26; tower.add(back);
+      const front = new THREE.Mesh(gear(26, Ro, Ri, true, 2.05), gold);
+      front.position.set(0, CY, frontZ); tower.add(front);
+      const housing = new THREE.Mesh(new THREE.CylinderGeometry(2.04, 2.04, frontZ - backZ, 32), navy);
+      housing.rotation.x = Math.PI / 2; housing.position.y = CY; tower.add(housing);
       const cv = document.createElement("canvas"); cv.width = cv.height = 512; const g = cv.getContext("2d"), C = 256;
       g.fillStyle = "#e9ad2c"; g.beginPath(); g.arc(C, C, C, 0, Math.PI * 2); g.fill();
       g.fillStyle = "#1d3fa0"; g.beginPath(); g.arc(C, C, C * 0.93, 0, Math.PI * 2); g.fill();
@@ -7013,12 +7017,26 @@ const handle = async (m, post) => {
       for (let n = 0; n < 12; n++) { const a2 = n / 12 * Math.PI * 2 - Math.PI / 2; g.save(); g.translate(C + Math.cos(a2) * C * 0.465, C + Math.sin(a2) * C * 0.465); g.rotate(a2 + Math.PI / 2); g.fillText(ROMAN[n], 0, 0); g.restore(); }
       const tex = new THREE.CanvasTexture(cv); tex.anisotropy = 4; if ("colorSpace" in tex) tex.colorSpace = THREE.SRGBColorSpace;
       const faceMat = new THREE.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: 0xfff1d0, emissiveIntensity: 0, roughness: .55 });
-      const hands = [];
-      [0, Math.PI].forEach(ry => { const side = new THREE.Group(); side.rotation.y = ry; side.position.y = CY;
-        const face = new THREE.Mesh(new THREE.CircleGeometry(Ri + 0.02, 64), faceMat); face.position.z = 0.16; side.add(face);
-        const mk = (len, w) => { const p = new THREE.Group(), h = new THREE.Mesh(new THREE.BoxGeometry(w, len, 0.04), black); h.position.y = len / 2 - 0.15; p.add(h); p.position.z = 0.2; side.add(p); return p; };
-        const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.08, 12), black); hub.rotation.x = Math.PI / 2; hub.position.z = 0.23; side.add(hub);
-        hands.push([mk(0.8, 0.11), mk(1.18, 0.07)]); tower.add(side); });
+      const handShape = (reach, half, tail) => {
+        const points = [[-half * 0.7, -tail], [half * 0.7, -tail], [half, -tail * 0.6], [half, 0.10],
+          [half * 0.24, reach - 0.065], [0, reach], [-half * 0.24, reach - 0.065], [-half, 0.10], [-half, -tail * 0.6]];
+        const geometry = new THREE.ExtrudeGeometry(new THREE.Shape(points.map(([x, y]) => new THREE.Vector2(x, y))), { depth: 0.04, bevelEnabled: false });
+        geometry.translate(0, 0, -0.02);
+        return geometry;
+      };
+      const hourHand = handShape(0.65, 0.078, 0.20), minuteHand = handShape(1.03, 0.046, 0.23), hands = [];
+      [[0, frontZ + 0.16], [Math.PI, backZ - 0.10]].forEach(([ry, z]) => {
+        const side = new THREE.Group(); side.rotation.y = ry; side.position.set(0, CY, z);
+        side.add(new THREE.Mesh(new THREE.CircleGeometry(Ri + 0.02, 64), faceMat));
+        const mount = (geometry, depth) => {
+          const pivot = new THREE.Group(); pivot.position.z = depth;
+          pivot.add(new THREE.Mesh(geometry, black)); side.add(pivot);
+          return pivot;
+        };
+        const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.08, 12), black);
+        hub.rotation.x = Math.PI / 2; hub.position.z = 0.095; side.add(hub);
+        hands.push([mount(hourHand, 0.043), mount(minuteHand, 0.065)]); tower.add(side);
+      });
       // the ship on top: a black gaff-rigged ketch sailing right, fixed to the tops of the poles
       const V = (pts) => new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y)));
       const shipShapes = [
@@ -7030,7 +7048,7 @@ const handle = async (m, post) => {
         V([[-1.85, 0.5], [-1.2, 0.5], [-1.2, 2.1], [-1.7, 1.75]]),                                          // mizzen
       ];
       const ship = new THREE.Mesh(new THREE.ExtrudeGeometry(shipShapes, { depth: 0.06, bevelEnabled: false }), black);
-      ship.position.set(-0.15, CY + Ro + 0.45, -0.03); ship.scale.setScalar(1.02); tower.add(ship);
+      ship.position.set(-0.15, CY + Ro + 0.45, -0.03); ship.scale.set(0.70, 0.71, 1.02); tower.add(ship);
       // the plaza: red brick, a garden bed of grasses and the four mosaic blocks
       const brick = new THREE.Mesh(new THREE.BoxGeometry(11.6, 0.3, 6.4), new THREE.MeshStandardMaterial({ color: 0xa4523f, roughness: 1 })); brick.position.set(-2.3, 0.15, -0.6); clk.add(brick);  // sized to the bed and blocks, so it stays off the road
       const bed = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 2.8, 0.45, 18), new THREE.MeshStandardMaterial({ color: 0x4a3426, roughness: 1 })); bed.position.set(0, 0.4, -0.3); clk.add(bed);
