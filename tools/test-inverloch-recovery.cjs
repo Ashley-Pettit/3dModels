@@ -61,3 +61,12 @@ test("a native car can use its own space without masking another parked car", ()
   const crowded = fixture({ driver, cars: [driver, second] });
   assert.equal(crowded.vacant(0, 0, 0, 2.25, 0.95), false);
 });
+
+test("the town-wide index keeps a pedestrian clear of the borrowed car on exit", () => {
+  const driver = { id: [10, 10], x: 0, z: 0, h: 0 };
+  const f = fixture({ driver });
+  f.T.invStatic = { wholeTown: true, depth: () => 0 };
+  assert.equal(f.walkClear(0, 1.8), false);
+  assert.ok(f.walkClear(-1.8, 0));
+  assert.ok(f.vacant(0, 0, 0, 2.25, 0.95));
+});

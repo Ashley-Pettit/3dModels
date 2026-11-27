@@ -25217,7 +25217,7 @@ const handle = async (m, post) => {
       if (T.traffic?.occupied) {
         if (T.traffic.occupied(length ? (car?.bus ? "bus" : "car") : "walk", x, z, h, ground(x, z))) return false;
       } else if (T.traffic?.cars?.some(overlapsCar)) return false;
-      if (T.invStatic?.wholeTown) return true;  // the index holds all parked cars and excludes the actively driven one
+      if (T.invStatic?.wholeTown) return !(car?.id && !length && overlapsCar(car));  // the index excludes the active native car
       const reach = radius + 2.6;  // covers the longest native ute, in any orientation
       const near = parked(x, z, reach);
       if (!near) return true;
