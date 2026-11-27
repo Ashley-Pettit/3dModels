@@ -299,6 +299,20 @@ range requests (one 600 MB file, 3.6 MB of it read). Street View still gives eac
 - For the whole town: Microsoft's outlines put about 4,700 buildings where the model has its 5,712 made-up houses (and 311
   OpenStreetMap ones). Each would get its colours from the satellite, and Street View detail only where it matters.
 
+### 13 Norman Road exterior preview
+
+Number 13 uses a single-storey L-shaped shell based on [Microsoft Global ML Building Footprints](https://github.com/microsoft/GlobalMLBuildingFootprints)
+(12 November 2026, Australia tile 311223133, CDLA-Permissive-2.0). The source shows a roughly 6.4 m-wide, 22.3 m-deep main strip, a wider
+rear wing and an approximately 13 m street setback. The model shifts the outline about 1.25 m across the lot to fit the
+[Vicmap Property](https://www.land.vic.gov.au/maps-and-spatial/spatial-data/vicmap-catalogue/vicmap-property) parcel (PFI 5283723,
+State of Victoria, CC BY 4.0) and insets the modelled walls beneath the eaves. Microsoft estimates mean building height at 4.6 m.
+The footprint west of this parcel belongs outside number 13.
+
+The gables, roof metalwork, weatherboards, glazing, joinery and low planting are review fixtures. Their location and materials
+need a contributor photo or survey with modelling permission before release. The 3D assets use original procedural geometry and
+vertex colours. Number 11 is still drawn by Explore. The bundle is built from the source for revision 42 plus the number 13
+change, using the same renderer build.
+
 ## Inverloch's power poles cast no shadows
 
 Ash, 13 November 2026: "remove power pole shadows from Inverloch". The timber power poles and their wires along the
