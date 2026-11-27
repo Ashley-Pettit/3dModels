@@ -9958,7 +9958,7 @@ const handle = async (m, post) => {
           // admin things (New to check, the golden rides) are in Settings, under Admin (Ash: "Seperate the admin stuff out of jump")
           const top = [...(T.gps ? [item({ townGps: "1" }, "GPS", "Type an address, or pick a place to go")] : []),
             ...(T.race ? [item({ townRace: "1" }, `Race around ${T.race.name}`, T.race.active() ? "In a race now" : T.race.host ? `Talk to ${T.race.host.name}: ${T.race.host.what}` : "Everyone here, standard cars, one lap")] : [])];
-          if (T.car?.bossGo && (T.cfg?.place === "inv" || T.cfg?.place === "logan")) top.push(item({ townBoss: "1" }, "Boss fight: T-rex", `Into the hotrod ${T.cfg?.place === "logan" ? "out the front of the council" : "by The Hub"}. The T-rex comes in a few seconds`));  // (Ash, 26 November 2026: "Add a jump to boss fight")
+          if (T.car?.bossGo && ["inv", "logan", "moo"].includes(T.cfg?.place)) top.push(item({ townBoss: "1" }, "Boss fight: T-rex", `Into the hotrod ${T.cfg?.place === "logan" ? "out the front of the council" : T.cfg?.place === "moo" ? "in the Woolworths car park" : "by The Hub"}. The T-rex comes in a few seconds`));  // (Ash, 26 November 2026: "Add a jump to boss fight")
           if (T.car?.canUnstickWalk?.()) top.push(item({ townUnstick: "1" }, "Unstick on foot", "Move to a clear spot nearby (U)"));
           const who = T.peers?.list?.() || []; if (!who.length) { list.prepend(...top); return; }
           const near = who.map(q => ({ ...q, d: Math.hypot(q.x - F.pos.x, q.z - F.pos.z) })).sort((a, b) => a.d - b.d);
@@ -18142,7 +18142,11 @@ const handle = async (m, post) => {
   // Inverloch city. Parked inside cars atm")
   const TOWN_RIDES = {
     moo: { planes: [...MOO_PLANES, { x: -464, z: -1533, h: 2.71, heli: true, name: "The helicopter", at: "on the field off School Road", what: "On the open grass off School Road, near Nathan Terrace. Walk up to it and get in" }, ...mooDayRides()],
-      cars: [MOO_RED6, MOO_GOLD_CAR], possum: MOO_POSSUM, pigeon: MOO_PIGEON },  // (the bus drives itself now: townTraffic)
+      cars: [MOO_RED6, MOO_GOLD_CAR,
+        // Moorooka's potato hotrod and its T-rex (Ash, 27 November 2026: "Add the Dino's to moorooka, move the car for it into Woolworths
+        // carpark"): in the car park on the Woolworths centre's far side from Beaudesert Road, in the aisle between the parked cars and the building. 20 seconds after you get in, the T-rex comes (townCar)
+        { x: -299.6, z: -398.8, h: 2.63, hotrod: true, name: "The hotrod", what: "A potato hot rod with a blower and flames, in the Woolworths car park. Get in if you dare" }],
+      possum: MOO_POSSUM, pigeon: MOO_PIGEON },  // (the bus drives itself now: townTraffic)
     inv: { planes: [{ x: -210, z: -377, h: 1.571, name: "The plane", at: "on the lawn by The Hub", what: "On the lawn by The Hub, off A'Beckett Street. Walk up to it and get in" }],
       cars: [{ x: -228.5, z: -375.5, h: Math.PI, spare: true, name: "The red car", what: "On the lawn by The Hub, beside the plane" }, { x: -232.5, z: -375.5, h: Math.PI, gold: true, name: "The golden car", what: "On the lawn by The Hub. A fifth faster than the red one" },
         // the potato hotrod (Ash, 26 November 2026): beside the golden car. 20 seconds after you get in, the T-rex comes (townCar). Logan has one too
@@ -22769,7 +22773,8 @@ const handle = async (m, post) => {
     // the towns with a fight: what it's called there, where its hotrod waits, and its page (/<dir>/rex/). Logan's has no water between
     // Mumma and the bunker (dry): the bunker comes up on open ground 650 m off instead
     const REX_TOWN = { inv: { name: "Inverloch", dir: "inverloch", at: "by The Hub", lawn: "on the lawn by The Hub" },
-      logan: { name: "Logan", dir: "logan", at: "out the front of the council", lawn: "on the lawn out the front of the council", dry: true } }[place] || null;
+      logan: { name: "Logan", dir: "logan", at: "out the front of the council", lawn: "on the lawn out the front of the council", dry: true },
+      moo: { name: "Moorooka", dir: "moorooka", at: "in the Woolworths car park", lawn: "in the Woolworths car park", dry: true } }[place] || null;  // (Moorooka's since 27 November 2026: no water to cross either)
     const REX_S = 2.6, REX_SPUDS = 10, REX_NET = 150, PACK_MAX = 6, rexMs = () => performance.now();
     // the numbers Ash can change (REX_DEF, in Explore's Settings: rexApply puts them here). These are the usual ones. A friend in someone
     // else's fight has the starter's (the "cfg" message), and their own again after
@@ -22814,7 +22819,7 @@ const handle = async (m, post) => {
     // (the link goes to Inverloch's own fight page, /inverloch/rex/, whose link preview is "HELP! A T-rex is loose in Inverloch" with its
     // picture; and the words with it say who's asking. Ash, 27 November 2026: "I moreso meant the text and image when I invite a friend in
     // WhatsApp or similar")
-    const rexInvite = async () => { const u = new URL(location.href); u.search = ""; u.hash = ""; if (/\/(inverloch|logan)\//.test(u.pathname)) u.pathname = u.pathname.replace(/(\/(inverloch|logan)\/).*$/, "$1rex/");
+    const rexInvite = async () => { const u = new URL(location.href); u.search = ""; u.hash = ""; if (/\/(inverloch|logan|moorooka)\//.test(u.pathname)) u.pathname = u.pathname.replace(/(\/(inverloch|logan|moorooka)\/).*$/, "$1rex/");
       u.searchParams.set("rex", "1"); const nm = String(playerName() || "").trim().slice(0, 16); if (nm) u.searchParams.set("from", nm);
       const url = u.href, text = `🦖 HELP! A T-rex is rampaging through ${REX_TOWN.name} and ${nm || "I"} ${nm ? "needs" : "need"} backup. Tap to jump in: you'll be in a car right next to it, spud gun loaded.`;
       if (navigator.share) { try { await navigator.share({ title: `HELP! A T-rex is loose in ${REX_TOWN.name}`, text, url }); return; } catch (e) { if (e?.name === "AbortError") return; } }
