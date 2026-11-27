@@ -6510,6 +6510,9 @@ const handle = async (m, post) => {
   // stick springs back to the middle. touch-action: none does the job preventDefault did (Ash, 21 November 2026: "Joystick broken.
   // You've done this before", when walking with both sticks; #130, brought in 27 November 2026: "Remember you did a pr for this that we never merged")
   const BS_PASSIVE = matchMedia("(pointer: coarse)").matches;
+  // the town that's open, for the Lighter Moorooka code at the end of the page, which is outside this scope: it asked for BS itself and threw
+  // "BS is not defined" four times a second, so it never ran (Ash, 27 November 2026, passing on what was seen while filming)
+  window.anTownNow = () => BS.town;
   const BS = { B: null, W: {}, raf: 0, three: null, state: { cover: .3, rain: 0, storm: 0, wind: 15 }, target: { cover: .3, rain: 0, storm: 0, wind: 15 },
     ptr: { tx: 0, ty: 0, x: 0, y: 0 }, view: { mode: "live", ms: Date.now(), play: true }, D: null, lastT: 0, shown: "" };
   const BS_KIND = { sun: "Sunny", partly: "Partly cloudy", cloud: "Cloudy", rain: "Showers", storm: "Thunderstorms" };
@@ -26121,8 +26124,8 @@ const handle = async (m, post) => {
 //  3. trees: from over 200 m up, every other tree is skipped
 (() => {
   let tLast = null, tArr = null, tTimer = 0, cands = [], candAt = 0;
-  const T3 = () => window.anCam && window.anScene && BS.town?.on && BS.town?.cfg?.place === "moo";
-  const camInfo = () => { const c = window.anCam, p = c.position, g = BS.town?.model?.groundAt?.(p.x, p.z) ?? 0; return { x: p.x, y: p.y, z: p.z, alt: Math.max(0, p.y - g) }; };
+  const town = () => window.anTownNow?.(), T3 = () => window.anCam && window.anScene && town()?.on && town()?.cfg?.place === "moo";
+  const camInfo = () => { const c = window.anCam, p = c.position, g = town()?.model?.groundAt?.(p.x, p.z) ?? 0; return { x: p.x, y: p.y, z: p.z, alt: Math.max(0, p.y - g) }; };
   // 1. the ground
   const terrain = ci => { const A = window.anTerrain; if (!A?.g?.index) return; const hf = A.i, g = A.g, nx = hf.nx, nz = hf.nz, B = 32;
     const near = 260 + ci.alt * 0.5, fmin = ci.alt > 400 ? 4 : ci.alt > 150 ? 2 : 1;
@@ -26139,23 +26142,28 @@ const handle = async (m, post) => {
         if (!edge) { tri([c, r], [c, r + f], [c + f, r]); tri([c + f, r], [c, r + f], [c + f, r + f]); continue; }
         const m = [c + f / 2, r + f / 2], P = []; for (let k = 0; k < f; k++) P.push([c + k, r]); for (let k = 0; k < f; k++) P.push([c + f, r + k]); for (let k = 0; k < f; k++) P.push([c + f - k, r + f]); for (let k = 0; k < f; k++) P.push([c, r + f - k]);
         for (let k = 0; k < P.length; k++) tri(m, P[k], P[(k + 1) % P.length]); } }
-    const at = g.index; if (at.count * 1 !== full) return; at.array = out; at.needsUpdate = true; g.setDrawRange(0, n); window.anTerrainTris = n / 3; };
+    const at = g.index; if (at.count * 1 !== full) return; at.array = out; at.clearUpdateRanges?.(); at.addUpdateRange?.(0, n); at.needsUpdate = true;  /* (only the part in use goes to the graphics card: about a third of the 2.6 MB) */ g.setDrawRange(0, n); window.anTerrainTris = n / 3; };
   // 2 and 3. what's drawn, by distance and height
   const pick = () => { const L = []; window.anScene.traverse(o => { if (!(o.isMesh || o.isInstancedMesh)) return; let top = o; while (top.parent && top.parent !== window.anScene) top = top.parent;
       const nm = top.name || ""; if (!/^(buildings|trees|guest|detail|square)$/.test(nm)) return;
       let c = null, r = 0;
+      const kept = o.userData.anBound; if (kept && kept.n === (o.isInstancedMesh ? o.userData.anN ?? o.count : -1) && kept.v === (o.isInstancedMesh ? o.instanceMatrix?.version : 0)) { L.push({ o, c: kept.c, r: kept.r, mask: o.userData.anMask ?? o.layers.mask, tree: nm === "trees" && o.isInstancedMesh }); return; }  // (worked out once: they don't move)
       try { if (o.isInstancedMesh) { const a = o.instanceMatrix?.array; if (!a) return; let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9, y = 0; for (let i = 0; i < o.count; i++) { const x = a[i * 16 + 12], z = a[i * 16 + 14]; if (x < x0) x0 = x; if (x > x1) x1 = x; if (z < z0) z0 = z; if (z > z1) z1 = z; y = a[i * 16 + 13]; }
           if (!o.count) return; c = [(x0 + x1) / 2, y, (z0 + z1) / 2]; r = Math.hypot(x1 - x0, z1 - z0) / 2 + 12; }
         else { const s = o.geometry?.boundingSphere; if (!s) return; o.updateWorldMatrix?.(true, false); const e = o.matrixWorld.elements, sc = Math.max(Math.hypot(e[0], e[1], e[2]), Math.hypot(e[8], e[9], e[10]));
           if (sc < 1e-3) return; c = [e[0] * s.center.x + e[4] * s.center.y + e[8] * s.center.z + e[12], 0, e[2] * s.center.x + e[6] * s.center.y + e[10] * s.center.z + e[14]]; r = s.radius * sc; } } catch { return; }
-      if (r > 420) return; L.push({ o, c, r, mask: o.userData.anMask ?? o.layers.mask, tree: nm === "trees" && o.isInstancedMesh }); });
+      if (r > 420) return; if (o.isInstancedMesh) o.userData.anBound = { n: o.userData.anN ?? o.count, v: o.instanceMatrix?.version, c, r };
+      L.push({ o, c, r, mask: o.userData.anMask ?? o.layers.mask, tree: nm === "trees" && o.isInstancedMesh }); });
     return L; };
-  const cull = ci => { const now = performance.now(); if (now - candAt > 5000) { for (const q of cands) if (q.o.layers.mask === 0) q.o.layers.mask = q.mask; cands = pick(); candAt = now; }
+  const cull = ci => { const now = performance.now(); if (now - candAt > 5000) { for (const q of cands) if (q.o.layers.mask === 0) q.o.layers.mask = q.mask; const t = performance.now(); cands = pick(); cost.pick = Math.max(cost.pick * 0.9, performance.now() - t); candAt = now; }
     const D = Math.min(6000, 700 + ci.alt * 8), thin = ci.alt > 200; let off = 0;
     for (const q of cands) { const far = Math.hypot(q.c[0] - ci.x, q.c[2] - ci.z) - q.r > D; const want = far ? 0 : q.mask; if (q.o.layers.mask !== want) q.o.layers.mask = want; if (far) off++;
       if (q.tree) { const N = q.o.userData.anN ?? (q.o.userData.anN = q.o.count), w = thin ? Math.ceil(N / 2) : N; if (q.o.count === N || q.o.count === Math.ceil(N / 2)) q.o.count = w; } }
     window.anDrawInfo = { D: Math.round(D), alt: Math.round(ci.alt), off, of: cands.length, ground: window.anTerrainTris }; };
-  setInterval(() => { try { if (!T3()) return; const ci = camInfo(); cull(ci); if (performance.now() - tTimer > 400) { tTimer = performance.now(); terrain(ci); } } catch (e) { console.warn("Moorooka draw distance", e); } }, 250);
+  let cost = { cull: 0, terrain: 0, pick: 0 };  // (how long each took last time, in ms: anDrawInfo.ms, for checking it never holds up a frame)
+  setInterval(() => { try { if (!T3()) return; const ci = camInfo(); let t = performance.now(); cull(ci); cost.cull = performance.now() - t;
+      if (performance.now() - tTimer > 400) { tTimer = performance.now(); t = tTimer; terrain(ci); cost.terrain = Math.max(cost.terrain * 0.9, performance.now() - t); }
+      if (window.anDrawInfo) window.anDrawInfo.ms = { cull: +cost.cull.toFixed(1), terrain: +cost.terrain.toFixed(1), pick: +cost.pick.toFixed(1) }; } catch (e) { console.warn("Moorooka draw distance", e); } }, 250);
 })();
 
 
