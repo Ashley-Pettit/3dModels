@@ -22325,7 +22325,7 @@ const handle = async (m, post) => {
       T.hideCars = [[home.x, home.z]]; return home; };  // (where it stands then is a parked car of the model's: that one goes)
     const owns = RIDES.cars.filter(home => !home.spare || !m.nearestCar).map(parkAt).map(home => { const G = { x: home.x, z: home.z, h: home.h, y: 0, p: 0, r: 0, gold: !!home.gold, bus: !!home.bus, hotrod: !!home.hotrod, home0: [home.x, home.z, home.h] };
       const [y, p, r] = G.bus ? lie(G, 3.6, 1.1) : lie(G, 1.3, 0.8); G.y = y; G.p = p; G.r = r;
-      { const L = G.hotrod ? townHotrodParts() : G.bus ? townPlaneParts("#2f7fc4", "bus") : townPlaneParts(G.gold ? "#e8b923" : "#c8322b", true);  // (the red car keeps its older shape: Ash, 27 November 2026, "Revert my red car back to how it was") if (G.hotrod) { G.wheels = L.wheels; G.spin = [0, 0]; G.steer = 0; }
+      { const L = G.hotrod ? townHotrodParts() : G.bus ? townPlaneParts("#2f7fc4", "bus") : townPlaneParts(G.gold ? "#e8b923" : "#c8322b", true); if (G.hotrod) { G.wheels = L.wheels; G.spin = [0, 0]; G.steer = 0; }  // (the red car keeps its older shape: Ash, 27 November 2026, "Revert my red car back to how it was")
         G.np = L.length; G.parts = m.addParts(L.map(q => ({ ...q, matrix: M.identity().elements.slice() }))); } showOwn(G); return G; });
     const gold = owns.find(G => G.gold) || owns[0];
     // a parked car of the model's that stands where one of ours is put goes (Inverloch's bus: see TOWN_RIDES)
