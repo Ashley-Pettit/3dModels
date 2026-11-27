@@ -8934,7 +8934,12 @@ const handle = async (m, post) => {
       const mine = e => [...e.changedTouches].find(t => t.identifier === id);
       const h = {
         // two fingers down at once can come in one event: take the one on this stick, not just the first
-        touchstart: e => { if (id !== null) return; const ts = [...e.changedTouches], t = ts.find(q => el.contains(q.target)) || ts[0]; id = t.identifier; set(t); tip.classList.add("dim"); },
+        touchstart: e => {
+          if (id !== null) return;
+          const t = [...e.changedTouches].find(q => el.contains(q.target));
+          if (!t) return;
+          id = t.identifier; set(t); tip.classList.add("dim");
+        },
         touchmove: e => { const t = mine(e); if (t) set(t); },
         touchend: e => { if (mine(e)) end(); }, touchcancel: e => { if (mine(e)) end(); },
         pointerdown: e => { if (e.pointerType !== "mouse") return; id = "m"; try { el.setPointerCapture(e.pointerId); } catch {} set(e); tip.classList.add("dim"); e.preventDefault(); },
@@ -9041,7 +9046,10 @@ const handle = async (m, post) => {
         // a finger on the view's left half moves you, unless you're already holding the move stick: then it looks round like one on the
         // right half (Ash, 23 November 2026, on his iPhone: "I use right hand to drag right - only works intermittently". A drag to the
         // right often starts left of the middle, and was taken as a second move finger and ignored)
-        F.touches.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, t0: performance.now(), move: e.clientX < innerWidth / 2 && !F.joys?.some(j => j.move && j.held()) }); tip.classList.add("dim"); },
+        // Only one view touch can steer, so another finger can't overwrite or release its input.
+        const move = e.clientX < innerWidth / 2 && !F.joys?.some(j => j.move && j.held())
+          && ![...F.touches.values()].some(t => t.move);
+        F.touches.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, t0: performance.now(), move }); tip.classList.add("dim"); },
       pointermove: e => {
         if (e.pointerType === "mouse") { const D = F.drag;
           if (D?.car) { D.x = e.clientX; D.y = e.clientY; if (!D.on && Math.hypot(D.x - D.sx, D.y - D.sy) > 6) mdGo(D); if (D.on) mdSteer(D); return; }  // (driving with the mouse: no looking round)
