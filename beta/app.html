@@ -10266,6 +10266,8 @@ const handle = async (m, post) => {
       [-38.627680894, 145.744189406],
     ]) clearLatLon.push({ lat, lon, r: 0.25 });
     if (inv && home && BS.W.invHouse) { const [lat, lon] = townLL(home[0], home[1]); clearLatLon.push({ lat, lon, r: 24 }); detailLatLon.push({ lat, lon, r: 170 }); }
+    if (inv) clearLatLon.push({ lat: -38.63836026, lon: 145.72087250, r: 0.16 }); // 6 Western Street: displaced shell 4062.
+    if (inv) clearLatLon.push({ lat: -38.63833999, lon: 145.72104764, r: 0.16 }); // 6 Western Street: displaced shell 4063.
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
     if (inv) clearPolygons.push({ latLon: INV_GLADE_SHELTER });
     if (inv) clearPolygons.push({ latLon: invScrewCreekMask(), roads: true });
@@ -10363,6 +10365,7 @@ const handle = async (m, post) => {
               if (to && m.driveCar?.(c.id[0], c.id[1], to.x, ground(to.x, to.z) + 0.05, to.z, B.h, 0, 0)) grid.park(c.id, to.x, to.z, B.h, ground(to.x, to.z) + 0.05, 0, 0);
               else grid.park(c.id, B.x, B.z, B.h); } } catch (e) { console.warn("Inverloch: couldn't move the parked cars stuck in poles", e); }
           } else invAddDesignedWalls(T, m.designedWallFootprints?.());
+          if (m.addParts) invWesternStreet6(T, m, BS.B.THREE);
           if (m.addParts) try { townSurfParadeBeachAccess(T, m); }
             catch (e) { console.warn("Inverloch: Surf Parade beach access couldn't be added", e); }
         }
@@ -18350,6 +18353,91 @@ const handle = async (m, post) => {
   // Inverloch Motel at 39 Powlett Street. Follow the highway leg of mapped fence 988785313,
   // inset into Vicmap parcel 5287818 with the service driveway at the west end left open.
   // Mapillary views 1615864943147134 and 1669414413672530, maxim752, 18 January 2025.
+  // 6 Western Street. The two-storey pale gable, open entry cover and inner approach share one batch.
+  function invWesternStreet6(T, model, THREE) {
+    const origin = [-802.52,145.30], angle = 7.35 * Math.PI / 180;
+    const c = Math.cos(angle), s = Math.sin(angle);
+    const local = (u,v) => [u*c-v*s,u*s+v*c];
+    const world = ([u,v]) => local(u,v).map((p,i)=>p+origin[i]);
+    const walls = [[27.24,-4.08],[27.24,4.24],[0.48,4.24],[0.48,-4.08]];
+    const eaves = [[27.65,-4.53],[27.65,4.67],[0.07,4.67],[0.07,-4.53]];
+    const stone = new THREE.Color(0xc9c1aa), lowerStone = new THREE.Color(0xbeb6a0);
+    const skirt = new THREE.Color(0xaba38d), light = new THREE.Color(0xbfc7c4);
+    const trim = new THREE.Color(0xd5d4c4), shadow = new THREE.Color(0x454e4d);
+    const shutter = new THREE.Color(0xaab2aa), groundTint = new THREE.Color(0xb6ac98);
+    const positions = [], colors = [];
+    const grade = p => model.groundAt(...world(p));
+    const floor = grade([.48,.08]) + .065, top = 4.70;
+    const at = ([u,v],y) => { const [x,z] = local(u,v); return [x,y,z]; };
+    const tri = (a,b,d,tint) => {
+      positions.push(...a,...b,...d);
+      for (let i=0; i<3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,d,e,tint) => { tri(a,b,d,tint); tri(a,d,e,tint); };
+    const panel = (u,a,b,low,high,paint) =>
+      quad(at([u,a],low),at([u,b],low),at([u,b],high),at([u,a],high),paint);
+    walls.forEach((a,i) => {
+      const b=walls[(i+1)%walls.length];
+      const mid=[(a[0]+b[0])/2,(a[1]+b[1])/2];
+      const foot=Math.min(grade(a),grade(b),grade(mid))-floor-.13;
+      quad(at(a,foot),at(b,foot),at(b,.13),at(a,.13),skirt);
+      quad(at(a,.13),at(b,.13),at(b,2.31),at(a,2.31),lowerStone);
+      quad(at(a,2.31),at(b,2.31),at(b,top+.02),at(a,top+.02),stone);
+    });
+    const [ea,eb,ec,ed]=eaves.map(p=>at(p,top));
+    const ridgeFront=at([.07,.08],6.05), ridgeBack=at([27.65,.08],6.05);
+    quad(ea,ridgeBack,ridgeFront,ed,light);
+    quad(eb,ec,ridgeFront,ridgeBack,light);
+    tri(at([.48,-4.08],top),at([.48,.08],6.05),at([.48,4.24],top),stone);
+    tri(at([27.24,-4.08],top),at([27.24,4.24],top),at([27.24,.08],6.05),stone);
+    eaves.forEach((a,i) => {
+      const b=eaves[(i+1)%eaves.length];
+      quad(at(a,top-.12),at(b,top-.12),at(b,top),at(a,top),trim);
+    });
+    for (const [left,right] of [[-3.55,-.45],[.41,2.76]]) {
+      panel(.454,left,right,3.05,4.32,trim);
+      const width=(right-left)/3;
+      for (let i=0; i<3; i++) {
+        const a=left+i*width+.068,b=left+(i+1)*width-.065;
+        panel(.423,a,b,3.14,4.25,shadow);
+        for (let j=1; j<=3; j++) panel(.405,a,b,3.14+j*.267,3.18+j*.267,shutter);
+      }
+    }
+    panel(.448,1.5,2.53,.04,2.27,shadow);
+    const canopyTop=2.62, canopyRidge=3.04;
+    const coverA=at([-1.51,.73],canopyTop),coverB=at([-1.51,3.77],canopyTop);
+    const coverC=at([.55,3.77],canopyTop),coverD=at([.55,.73],canopyTop);
+    const coverFront=at([-1.51,2.25],canopyRidge),coverBack=at([.55,2.25],canopyRidge);
+    quad(coverA,coverD,coverBack,coverFront,light);
+    quad(coverB,coverFront,coverBack,coverC,light);
+    tri(coverA,coverFront,coverB,trim);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    for (const v of [.88,3.64]) {
+      const a=[-1.42,v-.055], b=[-1.42,v+.055], e=[-1.31,v+.055], d=[-1.31,v-.055];
+      const down=p=>at(p,grade(p)-floor-.05);
+      for (const [p,q] of [[a,b],[b,e],[e,d],[d,a]]) quad(down(p),down(q),at(q,canopyTop),at(p,canopyTop),trim);
+      const [x,z]=world([-1.365,v]);
+      grid.worldBox(x,z,angle,.11,.11);
+    }
+    const apron = [[-1.78,6.48,8.13],[0.35,6.0,8.72],[2.86,6.22,9.08],[5.4,6.37,8.93],[7.56,6.45,8.46]];
+    const paved = p => at(p,grade(p)-floor+.043);
+    const row = ([u,lo,hi]) => [paved([u,lo]),paved([u,(lo+hi)/2]),paved([u,hi])];
+    for (let i=1; i<apron.length; i++) {
+      const [a,b]=[apron[i-1],apron[i]], steps=Math.ceil((b[0]-a[0])/1.15);
+      let prev=row(a);
+      for (let j=1; j<=steps; j++) {
+        const next=row(a.map((x,k)=>x+(b[k]-x)*j/steps));
+        quad(prev[0],next[0],next[1],prev[1],groundTint);
+        quad(prev[1],next[1],next[2],prev[2],groundTint);
+        prev=next;
+      }
+    }
+    const matrix=new THREE.Matrix4().makeTranslation(origin[0],floor,origin[1]).elements;
+    model.addParts([{ positions:new Float32Array(positions), colors:new Float32Array(colors), matrix,roughness:.87,doubleSide:true }]);
+    grid.polygon(walls.map(world));
+  }
+
+
   function invMotelFrontage(T, model, THREE) {
     const points = [[-800.60,-1062.98], [-766.60,-1071.23], [-728.16,-1057.54], [-727.08,-1056.91]];
     const sections = [];
