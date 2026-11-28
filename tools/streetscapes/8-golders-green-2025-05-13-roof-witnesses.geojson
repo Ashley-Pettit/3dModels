@@ -1,0 +1,247 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.713304,
+          -38.63273
+        ]
+      },
+      "properties": {
+        "role": "northwest main eave",
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.71337505,-38.63281387&level=20",
+        "corroboratingArchive": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.71337505,-38.63281387&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "usedForMainEnvelope": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.713552,
+          -38.632754
+        ]
+      },
+      "properties": {
+        "role": "northeast main eave",
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.71337505,-38.63281387&level=20",
+        "corroboratingArchive": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.71337505,-38.63281387&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "usedForMainEnvelope": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.713531,
+          -38.632914
+        ]
+      },
+      "properties": {
+        "role": "southeast main eave",
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.71337505,-38.63281387&level=20",
+        "corroboratingArchive": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.71337505,-38.63281387&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "usedForMainEnvelope": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.713351,
+          -38.632896
+        ]
+      },
+      "properties": {
+        "role": "southwest eave beside lower roof",
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.71337505,-38.63281387&level=20",
+        "corroboratingArchive": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.71337505,-38.63281387&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "usedForMainEnvelope": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.713344,
+          -38.632811
+        ]
+      },
+      "properties": {
+        "role": "roof return beside lower roof",
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.71337505,-38.63281387&level=20",
+        "corroboratingArchive": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.71337505,-38.63281387&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "usedForMainEnvelope": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.713295,
+          -38.632801
+        ]
+      },
+      "properties": {
+        "role": "west end of main ridge",
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.71337505,-38.63281387&level=20",
+        "corroboratingArchive": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.71337505,-38.63281387&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "usedForMainEnvelope": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.713545,
+          -38.632822
+        ]
+      },
+      "properties": {
+        "role": "east end of main ridge",
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.71337505,-38.63281387&level=20",
+        "corroboratingArchive": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.71337505,-38.63281387&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "usedForMainEnvelope": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.713277,
+          -38.632889
+        ]
+      },
+      "properties": {
+        "role": "lower southwest roof eave",
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.71337505,-38.63281387&level=20",
+        "corroboratingArchive": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.71337505,-38.63281387&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "usedForMainEnvelope": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.713162,
+          -38.632838
+        ]
+      },
+      "properties": {
+        "role": "west crossover kerb",
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.71337505,-38.63281387&level=20",
+        "corroboratingArchive": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.71337505,-38.63281387&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "usedForMainEnvelope": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.713226,
+          -38.632851
+        ]
+      },
+      "properties": {
+        "role": "west crossover halfway",
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.71337505,-38.63281387&level=20",
+        "corroboratingArchive": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.71337505,-38.63281387&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "usedForMainEnvelope": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.713276,
+          -38.632845
+        ]
+      },
+      "properties": {
+        "role": "west crossover high point",
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.71337505,-38.63281387&level=20",
+        "corroboratingArchive": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.71337505,-38.63281387&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "usedForMainEnvelope": false
+      }
+    }
+  ]
+}
