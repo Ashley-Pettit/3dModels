@@ -51,14 +51,19 @@ export function summarize(report) {
   const {startUtcMs} = report.timing;
   const skin = report.thermal.map(sample => sample.sensors['VIRTUAL-SKIN']?.[0]).filter(Number.isFinite);
   const compositorWindows = [];
+  let latestPresentation = -Infinity;
   for (const {deviceEpochMs, periodNs, presentNs} of report.presentation) {
-    if (!Number.isFinite(deviceEpochMs) || !Number.isFinite(startUtcMs)) continue;
-    const seconds = (presentNs.at(-1) - presentNs[0]) / 1e9;
+    // SurfaceFlinger returns a rolling history; seed the cursor even for setup samples.
+    const fresh = presentNs.filter(ns => ns > latestPresentation);
+    if (!fresh.length) continue;
+    latestPresentation = fresh.at(-1);
+    if (fresh.length < 2 || !Number.isFinite(deviceEpochMs) || !Number.isFinite(startUtcMs)) continue;
+    const seconds = (latestPresentation - fresh[0]) / 1e9;
     // Both the browser replay start and the SurfaceFlinger snapshot use the phone's epoch.
     const elapsed = (deviceEpochMs - startUtcMs) / 1000 - seconds / 2;
     if (elapsed < 1 || elapsed > report.end / 1000 - 0.5) continue;
     compositorWindows.push({approximateElapsedSeconds: round(elapsed), seconds: round(seconds),
-      fps: round((presentNs.length - 1) / seconds), displayHz: round(1e9 / periodNs)});
+      fps: round((fresh.length - 1) / seconds), displayHz: round(1e9 / periodNs)});
   }
   return {
     seconds: report.end / 1000, replayedMetres: round(report.progress.at(-1).metres),
