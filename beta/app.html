@@ -10288,6 +10288,7 @@ const handle = async (m, post) => {
             if (T.deckY != null ? T.deckY > y - 2.5 : y - m.groundAt(x, z) < 3) { if (best == null || y > best) best = y; } } }
         return best; };
       T.decks = L; }).catch(() => {});
+    if (inv) clearLatLon.push({ lat: -38.63166933, lon: 145.72236838, r: 0.16 }); // 6 Banksia Place: the roof contains seeded trunk 35390.
     const glade = inv ? import(new URL("glade-soundshell.mjs", new URL(cfg.assets, document.baseURI)))
       .then(async mod => ({ ...mod, kit: await mod.loadGlade(new URL(cfg.assets, document.baseURI)) }))
       .catch(error => { console.warn("Inverloch: Soundshell asset could not be loaded", error); return null; }) : null;
@@ -10400,6 +10401,7 @@ const handle = async (m, post) => {
           // then the town's shops and places, under their own heading (Moorooka)
           ...mine.filter(g => g.group).map(g => ({ name: g.name, group: g.group, what: g.what, walk: g.walk, fly: above(g.target[0], g.target[1], g.walk.yaw) }))];
 
+        if (inv && m.addParts) invBanksiaPlace6(T, m, BS.B.THREE);
         // ---- Walk or Fly ----
         const tideBox = $("bsTownTide"), tideIn = $("bsTownTideIn"), tideOut = $("bsTownTideOut"), tidal = m.tide.max > m.tide.min, tideBtn = $("bsTideBtn");
         tideBtn.setAttribute("aria-expanded", "false"); tideBtn.onclick = () => { tideBox.hidden = !tideBox.hidden; tideBtn.setAttribute("aria-expanded", String(!tideBox.hidden)); };  // Moorooka has no tide to move
@@ -17241,6 +17243,104 @@ const handle = async (m, post) => {
       shown = !far; for (let i = 0; i < parts.length; i++) h.setMatrix(i, shown ? I : FAR); } };
   }
   // Bunurong Environment Centre. Two mapped landmarks at the Ramsey foreshore approach.
+  // 6 Banksia Place. Low hips, a cream garage and the open timber porch face the court.
+  function invBanksiaPlace6(T, model, THREE) {
+    const x0 = -675, z0 = -598, eaveHeight = 2.69;
+    const outline = [[10.92,7.33],[10.92,-2.16],[3.38,-2.16],[3.38,-8.22],
+      [-10.27,-8.22],[-12.0,-5.52],[-12.0,-0.24],[-5.24,-0.24],
+      [-5.24,7.33]];
+    const walls = outline.map(([x,z]) => [x + x0, z + z0]);
+    const roof = [[11.4,7.81,0],[11.4,-2.64,0],[3.86,-2.64,0],[3.86,-8.7,0],
+      [-10.53,-8.7,0],[-12.48,-5.66,0],[-12.48,0.24,0],[-5.72,0.24,0],
+      [-5.72,7.81,0],[-6.72,-3.96,1.42],[-0.3,-3.96,1.42],[-0.3,2.61,1.42],
+      [6.61,2.61,1.34]];
+    const roofFaces = [[0,1,12],[0,12,8],[1,2,12],[2,11,12],
+      [8,12,11],[8,11,7],[2,3,10],[2,10,11],
+      [3,4,10],[4,9,10],[4,5,9],[5,6,9],
+      [6,7,9],[7,11,9],[9,11,10]];
+    const ground = (x,z) => model.groundAt(x+x0,z+z0);
+    const floor = ground(-7.54,-8.34)+.09, eave = floor+eaveHeight;
+    const positions = [], colors = [];
+    const brick = new THREE.Color(0xc8b18b), cream = new THREE.Color(0xe3d7be);
+    const tiles = new THREE.Color(0x444b52), fascia = new THREE.Color(0x343c42);
+    const glass = new THREE.Color(0x475456), dark = new THREE.Color(0x342d29);
+    const paving = new THREE.Color(0xa6a69c);
+    const point = (x,z,y) => [x,y,z];
+    const triangle = (a,b,c,colour) => {
+      positions.push(...a,...b,...c);
+      for (let i=0; i<3; i++) colors.push(colour.r,colour.g,colour.b);
+    };
+    const quad = (a,b,c,d,colour) => { triangle(a,b,c,colour); triangle(a,c,d,colour); };
+    const upward = (a,b,c,colour) => {
+      const ny = (b[2]-a[2])*(c[0]-a[0])-(b[0]-a[0])*(c[2]-a[2]);
+      if (ny>0) triangle(a,b,c,colour); else triangle(a,c,b,colour);
+    };
+    const band = (a,b,bottom,top,colour) => quad(point(...b,bottom),point(...b,top),
+      point(...a,top),point(...a,bottom),colour);
+    for (let i=0; i<outline.length; i++) {
+      const j=(i+1)%outline.length, a=outline[i], b=outline[j];
+      band(a,b,Math.min(ground(...a),ground(...b),floor)-.10,eave,brick);
+      band(roof[i].slice(0,2),roof[j].slice(0,2),eave-.12,eave,fascia);
+    }
+    const cap = roof.map(([x,z,h]) => point(x,z,eave+h));
+    for (const [a,b,c] of roofFaces) upward(cap[a],cap[b],cap[c],tiles);
+
+    const front = (left,right,z,low,high,colour) => band([right,z],[left,z],low,high,colour);
+    front(-9.95,-5.11,-8.245,floor+.02,floor+2.23,cream);
+    front(-4.71,-2.53,-8.246,floor+.82,floor+2.01,cream);
+    front(-1.47,.70,-8.246,floor+.02,floor+2.16,cream);
+    front(-1.39,.62,-8.254,floor+.04,floor+2.08,dark);
+    front(-.43,-.37,-8.26,floor+.04,floor+2.08,cream);
+    front(1.02,3.12,-8.246,floor+.82,floor+2.01,cream);
+    for (const [left,right] of [[-4.62,-2.62],[1.11,3.03]]) {
+      front(left,right,-8.254,floor+.91,floor+1.92,glass);
+      const middle=(left+right)/2;
+      front(middle-.033,middle+.033,-8.26,floor+.91,floor+1.92,cream);
+      front(left,right,-8.26,floor+1.38,floor+1.43,cream);
+    }
+    // The higher front gable meets the first roof pitch behind the entrance.
+    const gableLeft = point(-2.31,-8.72,eave+.025), gableRight = point(1.55,-8.72,eave+.025);
+    const gablePeak = point(-.38,-8.72,eave+1.22), gableEnd = point(-.38,-4.62,eave+1.26);
+    triangle(gableLeft,gablePeak,gableRight,cream);
+    upward(gableLeft,gableEnd,gablePeak,tiles);
+    upward(gableRight,gablePeak,gableEnd,tiles);
+    front(-.41,-.35,-8.727,eave+.06,eave+1.14,dark);
+
+    const porchTop = floor+2.39;
+    const [frontZ,backZ,left,right,centre] = [-10.66,-8.10,-2.63,1.70,-.465];
+    const frontLeft=point(left,frontZ,porchTop), frontRight=point(right,frontZ,porchTop);
+    const backLeft=point(left,backZ,porchTop), backRight=point(right,backZ,porchTop);
+    const frontPeak=point(centre,frontZ,porchTop+.79), backPeak=point(centre,backZ,porchTop+.79);
+    quad(frontLeft,backLeft,backPeak,frontPeak,tiles);
+    quad(frontPeak,backPeak,backRight,frontRight,tiles);
+    triangle(frontLeft,frontPeak,frontRight,cream);
+    front(centre-.036,centre+.036,frontZ-.008,porchTop+.04,porchTop+.72,dark);
+    quad(frontLeft,frontRight,backRight,backLeft,cream);
+    const posts = [[[-2.34,-10.39],[-2.34,-10.18],[-2.13,-10.18],[-2.13,-10.39]],
+      [[1.19,-10.39],[1.19,-10.18],[1.40,-10.18],[1.40,-10.39]]];
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    for (const post of posts) {
+      const bottom = Math.min(...post.map(p=>ground(...p)))-.04;
+      for (let i=0; i<post.length; i++) band(post[i],post[(i+1)%post.length],bottom,porchTop,cream);
+      grid.polygon(post.map(([x,z]) => [x+x0,z+z0]));
+    }
+    // Pave the parts of the garage apron and the front walk visible inside this title.
+    const pavedStrip = rows => {
+      const samples = rows.map(([left,right,z]) => [left,(left+right)/2,right]
+        .map(x => point(x,z,ground(x,z)+.026)));
+      for (let i=1; i<samples.length; i++) for (let j=0; j<2; j++) {
+        const near=samples[i-1], far=samples[i];
+        upward(near[j],far[j],far[j+1],paving);
+        upward(near[j],far[j+1],near[j+1],paving);
+      }
+    };
+    pavedStrip([[-9.97,-5.08,-8.23],[-9.24,-4.43,-9.62],[-8.31,-3.49,-11.16],[-7.16,-2.42,-12.91]]);
+    pavedStrip([[-1.10,.34,-8.23],[-1.10,.28,-9.62],[-1.10,.22,-10.99],[-1.04,.23,-12.49]]);
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().makeTranslation(x0,0,z0).elements, roughness: .88 }]);
+    grid.polygon(walls);
+  }
+
   function townMuseumFrontage(m, THREE, grid) {
     // Charger node 12869788102 beside the north edge of car-park way 768985478.
     const [x,z] = m.fromLatLon(-38.6346880,145.7289911);
