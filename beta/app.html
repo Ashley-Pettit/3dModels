@@ -9751,7 +9751,7 @@ const handle = async (m, post) => {
       while (!dead && BS.town === T && !signal?.aborted) {
         const fly = BS.fly, now = performance.now();
         if (fly?.joys?.some(joy => joy.held()) || fly?.touches?.size || movementKeys.some(key => fly?.keys?.has(key)) ||
-            fly?.drag || fly?.rmb || fly?.vert || fly?.mw) lastHeld = now;
+            fly?.drag || fly?.rmb || fly?.vert || fly?.mw || fly?.boost || fly?.hand) lastHeld = now;
         if (now - lastHeld >= 350) break;
         await new Promise(resolve => setTimeout(resolve, 100));
       }
