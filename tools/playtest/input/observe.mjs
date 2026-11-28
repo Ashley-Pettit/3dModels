@@ -23,7 +23,8 @@ export function observe({ url, mode, destination }) {
     return {
       at: performance.now(), ids: context.ids, place: scene?.cfg?.place, preset: scene?.pair?.initialPreset,
       cur: model?.id, next: scene?.pair?.next?.id, spinner: document.getElementById('bsHiRes')?.hidden === false,
-      visible: document.visibilityState, knobs: knobs(), on: scene?.on, walk: scene?.walk,
+      visible: document.visibilityState, knobs: knobs(), sticks: context.readSticks?.() ?? null,
+      on: scene?.on, walk: scene?.walk,
       buffer: activeCanvas && [activeCanvas.width, activeCanvas.height],
     };
   };
@@ -81,7 +82,7 @@ export function observe({ url, mode, destination }) {
     }, { capture: true, passive: true });
     document.addEventListener(type, event => {
       const row = touchRows.get(event);
-      if (row) Object.assign(row, { after: performance.now(), knobs: knobs() });
+      if (row) Object.assign(row, { after: performance.now(), knobs: knobs(), sticks: context.readSticks?.() ?? null });
     }, { passive: true });
   }
   if (context.supported.includes('longtask')) {
@@ -180,9 +181,9 @@ export function observe({ url, mode, destination }) {
     let metres = 0;
     for (let i = 2; i < points.length; i += 2) metres += Math.hypot(points[i] - points[i - 2], points[i + 1] - points[i - 1]);
     const resources = performance.getEntriesByType('resource')
-      .filter(e => /(?:-model.*\.js|town(?:-v\d+)?\.json|height\.png|ground[^/]*webp|detail|worker)/i.test(e.name))
+      .filter(e => /(?:-model.*\.js|town(?:-v\d+)?\.json|height\.png|ground[^/]*webp|detail|worker|\/town3d\/logan\/(?:map\.json|roads\.bin)(?:[?#]|$))/i.test(e.name))
       .map(e => ({ url: e.name, start: e.startTime, end: e.responseEnd, transfer: e.transferSize, workerStart: e.workerStart }));
     return { ...context, route: { label: route?.dest?.label, points, metres }, resources,
-      savedQuality: localStorage.getItem('an3d-inv'), serviceWorker: navigator.serviceWorker.controller?.scriptURL ?? null };
+      savedQuality: localStorage.getItem('an3d-inv'), serviceWorker: navigator.serviceWorker?.controller?.scriptURL ?? null };
   };
 }

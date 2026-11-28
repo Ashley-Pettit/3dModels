@@ -73,7 +73,7 @@ export async function connect(port) {
       }
       if (method === 'Network.responseReceived') {
         const { type, response: { url, status, fromDiskCache, fromServiceWorker } } = params;
-        if (type === 'Document' || /(?:inverloch|moorooka|logan)-model[^/]*\.js|(?:town(?:-v\d+)?|detail)\.json/i.test(url))
+        if (type === 'Document' || /(?:inverloch|moorooka|logan)-model[^/]*\.js|(?:town(?:-v\d+)?|detail)\.json|\/town3d\/logan\/(?:map\.json|roads\.bin)(?:[?#]|$)/i.test(url))
           responses.set(params.requestId, { type, url, status, fromDiskCache, fromServiceWorker });
       }
     });
@@ -89,6 +89,42 @@ export async function connect(port) {
       }
       return result.result.value;
     }
+    async function installStickReader() {
+      // The published page exposes anTownNow(), whose closure holds BS. Keep the probe in
+      // the disposable test context and read BS.fly afresh when the game replaces it.
+      const group = 'input-playtest-sticks';
+      const properties = objectId => client.send('Runtime.getProperties', { objectId, ownProperties: true });
+      try {
+        const fn = await client.send('Runtime.evaluate', { expression: 'window.anTownNow', objectGroup: group });
+        if (fn.result.type !== 'function') return false;
+        const details = await properties(fn.result.objectId);
+        const scopes = details.internalProperties?.find(p => p.name === '[[Scopes]]')?.value;
+        if (!scopes?.objectId) return false;
+        const list = await properties(scopes.objectId);
+        for (const { value } of list.result) {
+          if (!value?.description?.startsWith('Closure')) continue;
+          const scope = await properties(value.objectId);
+          const host = scope.result.find(p => p.name === 'BS')?.value;
+          if (!host?.objectId) continue;
+          const reader = await client.send('Runtime.callFunctionOn', {
+            objectId: host.objectId, returnByValue: true,
+            functionDeclaration: `function() {
+              const sample = () => {
+                const fly = this.fly;
+                return fly?.stick && fly.lookStick
+                  ? [[fly.stick.x, fly.stick.y], [fly.lookStick.x, fly.lookStick.y]] : null;
+              };
+              window.inputPlaytest.readSticks = sample;
+              return sample() !== null;
+            }`,
+          });
+          return reader.result.value === true;
+        }
+        return false;
+      } finally {
+        await client.send('Runtime.releaseObjectGroup', { objectGroup: group });
+      }
+    }
     async function assets() {
       return Promise.all([...responses].map(async ([requestId, response]) => {
         try {
@@ -100,7 +136,7 @@ export async function connect(port) {
         }
       }));
     }
-    return { ...client, evaluate, errors, assets };
+    return { ...client, evaluate, errors, assets, installStickReader };
   }
   return { ...browser, version, page };
 }

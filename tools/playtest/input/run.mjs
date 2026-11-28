@@ -4,6 +4,7 @@ import { parseArgs } from 'node:util';
 import { setTimeout as pause } from 'node:timers/promises';
 import { connect } from './cdp.mjs';
 import { observe } from './observe.mjs';
+import { stickChecks } from './stick-checks.mjs';
 
 const help = `Usage: node tools/playtest/input/run.mjs --mode auto|norman|gps|sticks --url URL --out FILE [options]
   --port 9222                Local Chrome/ADB CDP port
@@ -94,11 +95,7 @@ function timing(data, start, end) {
 
 function assess(data) {
   const { marks, models, buffers, terrain, touches, visibility } = data;
-  const isDeflected = value => typeof value === 'string' && value.length > 0 &&
-    [...value.matchAll(/(-?\d+(?:\.\d+)?)px/g)].some(match => Math.abs(Number(match[1])) > 1);
-  const hasPair = row => row?.ids.join(',') === '1,2' && row.knobs?.every(isDeflected);
-  const hasMove = row => row?.ids.join(',') === '1' && isDeflected(row.knobs?.[0]) && !row.knobs?.[1];
-  const reset = row => row?.ids.length === 0 && row.knobs?.every(knob => !knob);
+  const { moveForward, hasPair, hasMove, reset } = stickChecks(report.ready.centers);
   const start = marks['pair-deflected']?.at;
   const end = marks['hold-end']?.at;
   const selected = marks['gps-selected'];
@@ -114,8 +111,8 @@ function assess(data) {
       for (const event of ['right-view-down', 'right-view-move', 'left-view-down', 'left-view-move',
         'look-down', 'look-move', 'simultaneous-view']) {
         const row = marks[`${pass}/${event}`];
-        failed(row?.ids.join(',') === '1,2' && isDeflected(row.knobs?.[0]),
-          `${pass}/${event}: both IDs and a deflected Move stick were expected`);
+        failed(row?.ids.join(',') === '1,2' && moveForward(row),
+          `${pass}/${event}: expected both IDs and live forward input matching the Move knob`);
       }
       for (const event of ['move-only', 'right-view-up', 'left-view-up', 'look-up']) {
         failed(hasMove(marks[`${pass}/${event}`]), `${pass}/${event}: Move should be the only held stick`);
@@ -218,6 +215,7 @@ try {
   report.ready = ready;
   console.log('Ready', ready.stamp, ready.preset, 'model', ready.cur, 'buffer', ready.buffer);
   requireFixture(!options['expect-stamp'] || ready.stamp === options['expect-stamp'], 'Unexpected Explore stamp');
+  requireFixture(await page.installStickReader(), 'The live Move and Look input vectors were unavailable');
   const point = (name, id, x = 0, y = 0) => ({ id, x: ready.centers[name].x + x, y: ready.centers[name].y + y });
   const move = point('move', 1, mode === 'gps' ? 4 : 3, -24);
   const right = point('look', 2, mode === 'gps' ? 16 : 8, mode === 'gps' ? 7 : 1);
