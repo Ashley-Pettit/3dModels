@@ -10166,6 +10166,9 @@ const handle = async (m, post) => {
         return best; };
       T.decks = L; }).catch(() => {});
     townModelLoad(cfg).then(lib => {
+      // 45 Meanderri Drive. These two positions are inside the dated roof and the fitted walls.
+      if (inv) clearLatLon.push({ lat: -38.62946905, lon: 145.7432936, r: 0.16 }); // Seeded trunk 33464.
+      if (inv) clearLatLon.push({ lat: -38.62946905, lon: 145.74337399, r: 0.16 }); // Seeded trunk 33465.
       if (T.dead) return;
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
         ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cd69429f" } : cfg.assets;
@@ -10240,6 +10243,7 @@ const handle = async (m, post) => {
         if (cfg.place === "moo" && m.addParts && m.getCamera && !OFF.has("bal6")) try { T.bal6 = townBalcony6(T, m); } catch (e) { T.bal6 = null; console.warn("Town model: number 6's house and balcony couldn't be added", e); }  // number 6 as it is, or with the balcony concept
         if (cfg.place === "moo" && m.addParts) try { townHouse24(T, m); } catch (e) { console.warn("Town model: 24 Beaudesert Road couldn't be added", e); }  // Pandy's house as it really is (a demo)
         if (cfg.place === "moo" && m.addParts) try { townHousesLite(T, m); } catch (e) { console.warn("Town model: the houses drawn the light way couldn't be added", e); }
+        if (inv && m.addParts) invMeanderriDrive45(T, m, BS.B.THREE);
         // the planes (townCar), each with somewhere to stand beside it
         const rides = m.addParts ? TOWN_RIDES[cfg.place] : null;
         // golden ones only for Ash (Ash, 15 November 2026: "Only show the teleport to the golden objects if user name is ash or Ashley")
@@ -18866,6 +18870,59 @@ const handle = async (m, post) => {
     const [x, z] = at(access - 2, 0), target = at(8, 0);
     const stop = { name: "Boat ramp jetty", walk: { x, z, yaw: Math.atan2(x - target[0], z - target[1]), pitch: -0.06 }, target };
     return { blockers, bearing, deckAt, stop };
+  }
+
+  // 45 Meanderri Drive. The hip, eaves and documented street-front panels share one mesh.
+  function invMeanderriDrive45(town, model, THREE) {
+    const x0 = 1164.36, z0 = -832.28, eave = 2.68;
+    const outline = [[-8.01,6.73], [-9.78,-3.72], [8.05,-6.62], [9.73,3.59]];
+    const roof = [[-8.174,6.962,0], [-10.011,-3.885,0], [8.215,-6.849,0], [9.959,3.752,0], [-3.82,0.643,1.01], [3.815,-0.653,1.01]];
+    const faces = [[4,1,0], [5,2,1], [4,5,1], [5,3,2], [4,0,3], [5,4,3]];
+    const walls = outline.map(([x,z]) => [x + x0, z + z0]);
+    const ground = walls.map(([x,z]) => model.groundAt(x,z));
+    const floor = Math.max(...ground) + 0.07;
+    const [wall, siding, steel, trim, garage, door, stone, glass] =
+      [0xa6a9aa, 0x92999c, 0x647179, 0x717c82, 0x4d5457, 0x393f40, 0x575458, 0x455b60].map(hex => new THREE.Color(hex));
+    const positions = [], colors = [];
+    const triangle = (a,b,c,tint) => {
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,c,d,tint) => { triangle(a,b,c,tint); triangle(a,c,d,tint); };
+    const at = ([x,z],y) => [x,y,z];
+    const fascia = eave - 0.12;
+    for (let i = 0; i < outline.length; i++) {
+      const j = (i + 1) % outline.length;
+      const a = outline[i], b = outline[j], r = roof[i], s = roof[j];
+      const skirt = Math.min(ground[i],ground[j]) - floor - 0.3;
+      quad(at(a,skirt),at(a,fascia),at(b,fascia),at(b,skirt),wall);
+      quad(at(r,fascia),at(r,eave),at(s,eave),at(s,fascia),trim);
+      quad(at(a,fascia),at(r,fascia),at(s,fascia),at(b,fascia),trim);
+    }
+    const cap = roof.map(([x,z,rise]) => [x,eave + rise,z]);
+    for (const [a,b,c] of faces) triangle(cap[a],cap[b],cap[c],steel);
+
+    // On the east wall, work from the double garage at the north end towards the living windows.
+    const [nx,nz] = outline[2], [sx,sz] = outline[3];
+    const dx = sx - nx, dz = sz - nz, length = Math.hypot(dx,dz);
+    const facade = (u,y,offset) => [nx + dx * u + dz / length * offset, y, nz + dz * u - dx / length * offset];
+    const panel = (left,right,bottom,top,offset,tint) => quad(
+      facade(left,bottom,offset),facade(left,top,offset),facade(right,top,offset),facade(right,bottom,offset),tint);
+    panel(0.07,0.49,0.06,2.20,0.008,trim);
+    panel(0.085,0.475,0.09,2.12,0.014,garage);
+    for (const y of [0.63,1.15,1.68]) panel(0.087,0.473,y,y + 0.018,0.019,door);
+    panel(0.505,0.547,0.04,2.5,0.010,stone);
+    panel(0.547,0.669,0.08,2.26,0.009,door);
+    panel(0.690,0.963,0.10,2.34,0.008,siding);
+    panel(0.71,0.749,0.35,2.01,0.013,trim);
+    panel(0.716,0.743,0.41,1.95,0.018,glass);
+    panel(0.775,0.941,1.51,2.01,0.013,trim);
+    panel(0.782,0.934,1.57,1.95,0.018,glass);
+
+    model.addParts([{positions:new Float32Array(positions),colors:new Float32Array(colors),roughness:0.86,
+      matrix:new THREE.Matrix4().makeTranslation(x0,floor,z0).elements}]);
+    const grid = town.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
   }
 
   // the address the model itself fetched a file from (Logan adds ?v=), so the browser serves it from its cache
