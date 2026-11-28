@@ -10268,6 +10268,8 @@ const handle = async (m, post) => {
     if (inv && home && BS.W.invHouse) { const [lat, lon] = townLL(home[0], home[1]); clearLatLon.push({ lat, lon, r: 24 }); detailLatLon.push({ lat, lon, r: 170 }); }
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
     if (inv) clearPolygons.push({ latLon: INV_GLADE_SHELTER });
+    if (inv) clearLatLon.push({ lat: -38.63190805, lon: 145.73943759, r: 0.16 }); // 113–115 Bayview Avenue: retire false shell 2998.
+    if (inv) clearLatLon.push({ lat: -38.63188327, lon: 145.73958976, r: 0.16 }); // 113–115 Bayview Avenue: retire false shell 2999.
     if (inv) clearPolygons.push({ latLon: invScrewCreekMask(), roads: true });
     // Moorooka's bridges (town.json's roads marked as one): their decks, so a car drives over them, not down through them into the creek.
     // The deck is as the model draws it (moorooka-model.js ?v=79): straight from one end's ground to the other's, a metre's hump in the
@@ -10295,7 +10297,7 @@ const handle = async (m, post) => {
       if (T.dead) return;
       if (gladeAsset) clearLatLon.push(...gladeAsset.clearings);
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
-        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cd69429f" } : cfg.assets;
+        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=d5a8278b" } : cfg.assets;
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
         { onProgress: (f, label) => { if (!T.on && !T.dead) tip.textContent = `Loading the town model: ${String(label).toLowerCase()}…`; },
           onFloodLevel: v => T.onFlood?.(v),
@@ -10366,6 +10368,7 @@ const handle = async (m, post) => {
           if (m.addParts) try { townSurfParadeBeachAccess(T, m); }
             catch (e) { console.warn("Inverloch: Surf Parade beach access couldn't be added", e); }
         }
+        if (inv && m.addParts) invBayviewAvenue113115(T, m, BS.B.THREE);
         if (inv && m.addParts) try { mine.push(invWestJetty(T, BS.B.THREE)); } catch (e) { console.warn("Inverloch: the west jetty could not be added", e); }
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
@@ -17954,6 +17957,71 @@ const handle = async (m, post) => {
   // that it follows the ground beneath it. A building comes whole or not at all (by its outline on the map); so does each
   // thing in the street (a car, a lamp, a tree), by where it stands; the streets and footpaths are trimmed exactly at the
   // block's edge.
+  // 113–115 Bayview Avenue. Two confirmed houses replace a shared displaced shell and an east duplicate.
+  function invBayviewAvenue113115(T, model, THREE) {
+    const sites = [
+      {type:113, origin:[809.64901167,-562.2301633], cos:0.998661319, sin:0.051725918, walls:[[0.56,0.58],[0.56,7.14],[5.51,7.14],[5.51,14.69],[10.59,14.69],[10.59,0.58]], eaves:[[0.22,0.24],[10.93,0.24],[10.93,15.03],[5.17,15.03],[5.17,7.48],[0.22,7.48]], faces:[[[[0.22,3.75],[0.22,0.24],[10.93,0.24]],[[0.22,3.75],[10.93,0.24],[10.93,3.75]]],[[[5.17,15.03],[5.17,7.48],[10.93,15.03]],[[10.93,15.03],[5.17,7.48],[10.93,3.75]],[[10.93,3.75],[5.17,7.48],[0.22,3.75]],[[0.22,3.75],[5.17,7.48],[0.22,7.48]]]]},
+      {type:115, origin:[822.50706938,-562.67275822], cos:0.999610115, sin:-0.027921639, walls:[[1.93,0.61],[2.36,3.81],[4.64,3.81],[4.64,14.76],[12.74,14.76],[12.74,0.61]], eaves:[[1.54,0.27],[13.08,0.27],[13.08,15.1],[4.3,15.1],[4.3,4.15],[2.06,4.15]], faces:[[[[4.3,0.27],[4.3,4.15],[2.06,4.15]],[[4.3,0.27],[2.06,4.15],[1.54,0.27]]],[[[4.3,15.1],[4.3,4.15],[8.68,15.1]],[[8.68,15.1],[4.3,4.15],[8.68,0.27]],[[8.68,0.27],[4.3,4.15],[4.3,0.27]]],[[[8.68,15.1],[8.68,0.27],[13.08,0.27]],[[8.68,15.1],[13.08,0.27],[13.08,15.1]]]]}
+    ];
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    const parts = sites.map(({ origin:[x0,z0], cos, sin, walls, eaves, faces, type }) => {
+      const world = ([u,v]) => [x0+u*cos+v*sin,z0+u*sin-v*cos];
+      const at = ([u,v],y) => [u*cos+v*sin,y,u*sin-v*cos];
+      const perimeter = walls.map(world);
+      const grade = perimeter.map(p => model.groundAt(...p));
+      const floor = Math.max(...grade) + .035;
+      const roofHeight = type === 113
+        ? ([,v]) => 2.48+.084*Math.min(v,3.75)-.014*Math.max(v-3.75,0)
+        : ([u]) => 2.63+(u<4.3 ? .047*(u-4.3) : .198*(4.38-Math.abs(u-8.68)));
+      const roofColours = (type === 113 ? [0xc7cecd,0xcdd3d2] : [0x929a96,0xadb4b1,0xd0d4ce])
+        .map(hex => new THREE.Color(hex));
+      const wallsColour = new THREE.Color(type===113 ? 0xa8a497 : 0x9f9b8f);
+      const fascia = new THREE.Color(type===113 ? 0xaeb7b4 : 0x909691);
+      const skirt = new THREE.Color(0x76746c), frame = new THREE.Color(0xc8c6b8), glass = new THREE.Color(0x505d5d);
+      const positions = [], colors = [];
+      const tri = (a,b,c,paint) => {
+        positions.push(...a,...b,...c);
+        for (let i=0; i<3; i++) colors.push(paint.r,paint.g,paint.b);
+      };
+      const quad = (a,b,c,d,paint) => { tri(a,b,c,paint); tri(a,c,d,paint); };
+      const top = p => at(p,roofHeight(p));
+      const cutAxis = type===113 ? 1 : 0;
+      const cuts = type===113 ? [3.75] : [4.3,8.68];
+      const along = (ring, edgePart) => ring.forEach((a,i) => {
+        const b=ring[(i+1)%ring.length];
+        const span=b[cutAxis]-a[cutAxis];
+        const stops=[0,...cuts.map(v => (v-a[cutAxis])/span).filter(t => t>0 && t<1).sort((u,v) => u-v),1];
+        const edge=t=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+        for (let k=1; k<stops.length; k++) {
+          const p=edge(stops[k-1]),q=edge(stops[k]);
+          edgePart(p,q);
+        }
+      });
+      along(walls,(a,b) => {
+        const mid = world([(a[0]+b[0])/2,(a[1]+b[1])/2]);
+        const bottom=Math.min(model.groundAt(...world(a)),model.groundAt(...world(b)),model.groundAt(...mid))-floor-.16;
+        quad(at(a,bottom),at(b,bottom),at(b,.15),at(a,.15),skirt);
+        quad(at(a,.15),at(b,.15),at(b,roofHeight(b)-.09),at(a,roofHeight(a)-.09),wallsColour);
+      });
+      along(eaves,(a,b) => quad(at(a,roofHeight(a)-.13),at(b,roofHeight(b)-.13),top(b),top(a),fascia));
+      faces.forEach((section,i) => {
+        for (const [a,b,c] of section) tri(top(a),top(b),top(c),roofColours[i]);
+      });
+      const pane=(u,v,w,low,high,tint) =>
+        quad(at([u,v],low),at([u+w,v],low),at([u+w,v],high),at([u,v],high),tint);
+      const [frontV, inletU, wide] = type===113 ? [.58,1.62,2.62] : [.61,3.19,2.45];
+      pane(inletU,frontV-.025,wide,.93,2.12,frame);
+      pane(inletU+.085,frontV-.043,wide-.17,1.01,2.04,glass);
+      pane(inletU+wide*.49,frontV-.052,.067,1.01,2.04,frame);
+      return { mesh:{positions:new Float32Array(positions), colors:new Float32Array(colors),
+          matrix:new THREE.Matrix4().makeTranslation(x0,floor,z0).elements, roughness:.88, doubleSide:true},
+        perimeter };
+    });
+    model.addParts(parts.map(p => p.mesh));
+    for (const part of parts) grid.polygon(part.perimeter);
+  }
+
+
   function townModelBlock(T, m, { THREE, TG, toTG, look, glows, plain, skip, drop }) {
     const D = INV_TOWN, G0 = 2.2, LIFT = 0.08, REACH = 150, cx0 = D.c[0], cz0 = D.c[1];
     // the town's metres to the model's (a hair bigger each way: the model's are true metres)
