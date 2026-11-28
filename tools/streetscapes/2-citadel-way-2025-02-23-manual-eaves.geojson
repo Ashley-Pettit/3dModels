@@ -1,0 +1,71 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.749155,
+              -38.62822
+            ],
+            [
+              145.74923,
+              -38.628189
+            ],
+            [
+              145.749257,
+              -38.62821
+            ],
+            [
+              145.749329,
+              -38.628176
+            ],
+            [
+              145.749372,
+              -38.628222
+            ],
+            [
+              145.749356,
+              -38.628245
+            ],
+            [
+              145.749444,
+              -38.628342
+            ],
+            [
+              145.749308,
+              -38.628407
+            ],
+            [
+              145.749269,
+              -38.628368
+            ],
+            [
+              145.749155,
+              -38.62822
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "address": "2 Citadel Way, Inverloch",
+        "parcelPFI": "135513479",
+        "captureDate": "2025-02-23",
+        "sourceSceneObjectId": 6072276,
+        "source": "Esri World Imagery / Vantor WV03",
+        "sourceResolutionM": 0.31,
+        "reportedAccuracyM": 5,
+        "mapViewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.74933854,-38.62830236&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "attribution": "Esri, Vantor, Earthstar Geographics and the GIS User Community",
+        "captureMethod": "Manual eave points from the ArcGIS Online Map Viewer Location tool, WGS84 XY.",
+        "interpretation": "Slate roof at the bend. Tree canopy and the nominal source registration mean the perimeter is approximate. Inset and parcel margin apply to the final wall.",
+        "vicmapLicence": "State of Victoria, CC BY 4.0",
+        "legacySlot": 4352
+      }
+    }
+  ]
+}
