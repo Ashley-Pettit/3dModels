@@ -1,0 +1,35 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "manual-aerial-41-estuary-view-two-storey-core",
+      "properties": {
+        "address": "41 Estuary View, Inverloch VIC 3996",
+        "vicmapAddressPfi": "425873816",
+        "vicmapParcelPfi": "425873847",
+        "lot": "17 PS804492",
+        "observation": "Approximate four eaves of the principal two-storey residence, excluding attached one-storey garage, entry and upper decks, and detached structures.",
+        "method": "Manually identified four visible principal roof witnesses with ArcGIS Map Viewer Location capture. The Ray White plan and overhead image corroborate massing and the roof junctions. The wall envelope uses an estimated inset and inherits the imagery's positional uncertainty.",
+        "storeys": 2,
+        "imagery": {
+          "credit": "Esri World Imagery, Esri Community Maps Contributors and Vantor",
+          "objectId": 6072276,
+          "captureDate": "2025-02-23",
+          "nominalResolutionM": 0.31,
+          "reportedAccuracyM": 5,
+          "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.76210,-38.630246&level=20",
+          "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+        },
+        "brochure": "https://raywhiteinverloch.com.au/properties/sold-residential/vic/inverloch-3996/house/3114367",
+        "plan": "https://www.domain.com.au/41-estuary-view-inverloch-vic-3996-2019336458",
+        "permitReference": "https://www.basscoast.vic.gov.au/assets/agendas-minutes/minutes/Open_Minutes_21_March_2018.pdf",
+        "parcelSource": "Vicmap Address and Vicmap Property, © State of Victoria, CC BY 4.0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[145.761998, -38.630185], [145.762151, -38.630169], [145.762176, -38.630310], [145.762060, -38.630339], [145.761998, -38.630185]]]
+      }
+    }
+  ]
+}
