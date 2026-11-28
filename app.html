@@ -10143,6 +10143,8 @@ const handle = async (m, post) => {
       [-38.627680894, 145.744189406],
     ]) clearLatLon.push({ lat, lon, r: 0.25 });
     if (inv && home && BS.W.invHouse) { const [lat, lon] = townLL(home[0], home[1]); clearLatLon.push({ lat, lon, r: 24 }); detailLatLon.push({ lat, lon, r: 170 }); }
+    // Retire the two displaced structures belonging to 25 Glendale Court.
+    if (inv) for (const [lat, lon] of [[-38.630626614, 145.711598562], [-38.630568060, 145.711753606]]) clearLatLon.push({ lat, lon, r: .16 });
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
     if (inv) clearPolygons.push({ latLon: INV_GLADE_SHELTER });
     if (inv) clearPolygons.push({ latLon: invScrewCreekMask(), roads: true });
@@ -10214,6 +10216,7 @@ const handle = async (m, post) => {
           if (m.addParts) townGlade(T, m, BS.B.THREE);
           invMotelFrontage(T, m, BS.B.THREE);
           const buildings = m.buildingBlockers?.();
+          if (m.addParts) invGlendaleHouse25(T, m, BS.B.THREE);
           if (buildings) {
             const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
             grid.addTown(buildings, m.parkedCarBlockers());
@@ -18329,6 +18332,56 @@ const handle = async (m, post) => {
     const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
     for (const ring of solids) grid.polygon(ring);
     for (const [x,z] of palms) grid.post(x,z,0.13);
+  }
+
+  // 25 Glendale Court. Keep the covered rear recess outside the enclosed core.
+  function invGlendaleHouse25(town, model, THREE) {
+    const originX = -1599, originZ = -716;
+    const wall = [[-10.303, -0.533], [8.352, -9.705], [13.310, 0.298], [-5.345, 9.470]];
+    const eave = [[-11.215, -0.843], [8.660, -10.614], [14.222, 0.608], [-5.653, 10.379]];
+    const world = wall.map(([x,z]) => [x + originX,z + originZ]);
+    const ground = world.map(([x,z]) => model.groundAt(x,z));
+    const floor = Math.max(...ground) + .06;
+    const brick = new THREE.Color(0x9b6454), trim = new THREE.Color(0xc3b6aa);
+    const roof = new THREE.Color(0x707577), glass = new THREE.Color(0x394746);
+    const positions = [], colors = [];
+    const triangle = (a,b,c,tint) => {
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,c,d,tint) => { triangle(a,b,c,tint); triangle(a,c,d,tint); };
+    const at = ([x,z],y) => [x,y,z];
+    const eaveHeight = 2.72;
+    for (let i = 0; i < wall.length; i++) {
+      const j = (i + 1) % wall.length;
+      const a = wall[i], b = wall[j], ea = eave[i], eb = eave[j];
+      quad(at(a,ground[i] - floor - .13),at(a,eaveHeight - .10),
+        at(b,eaveHeight - .10),at(b,ground[j] - floor - .13),brick);
+      quad(at(a,eaveHeight - .10),at(ea,eaveHeight - .10),at(eb,eaveHeight - .10),at(b,eaveHeight - .10),trim);
+      quad(at(ea,eaveHeight - .10),at(ea,eaveHeight),at(eb,eaveHeight),at(eb,eaveHeight - .10),trim);
+    }
+    const [a,b,c,d] = eave.map(p => at(p,eaveHeight));
+    const left = [(a[0] + d[0]) / 2,(a[2] + d[2]) / 2];
+    const right = [(b[0] + c[0]) / 2,(b[2] + c[2]) / 2];
+    const ridge = f => [left[0] + (right[0] - left[0]) * f, eaveHeight + 1.63, left[1] + (right[1] - left[1]) * f];
+    const r0 = ridge(.235), r1 = ridge(.765);
+    quad(a,r0,r1,b,roof); quad(c,r1,r0,d,roof);
+    triangle(b,r1,c,roof); triangle(d,r0,a,roof);
+
+    const [p,q] = [wall[1],wall[2]];
+    const nx = q[1] - p[1], nz = p[0] - q[0], span = Math.hypot(nx,nz);
+    const edge = (f,y,offset) => [p[0] + (q[0] - p[0]) * f + nx * offset / span,
+      y,p[1] + (q[1] - p[1]) * f + nz * offset / span];
+    const panel = (l,r,low,high,offset,tint) =>
+      quad(edge(l,low,offset),edge(l,high,offset),edge(r,high,offset),edge(r,low,offset),tint);
+    for (const [from,to] of [[.12,.39],[.54,.80]]) {
+      panel(from,to,.58,1.97,.025,trim);
+      panel(from + .012,to - .012,.64,1.91,.031,glass);
+    }
+    const matrix = new THREE.Matrix4().makeTranslation(originX,floor,originZ).elements;
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors), roughness: .90, matrix }]);
+    const grid = town.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(world);
   }
 
   // Things made for the model's town centre alone. The foot of the Rotary clock as in photos of it: brick paving, a planted
