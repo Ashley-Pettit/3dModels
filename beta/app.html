@@ -10242,6 +10242,7 @@ const handle = async (m, post) => {
     // Inverloch: the town centre and number 11 come across from the weather's Inverloch (below): keep the ground clear where
     // they'll stand (and round both, the model draws its small things: cars with proper shapes, letterboxes, bins, power lines)
     const cfg = T.cfg, inv = cfg.place === "inv", D = INV_TOWN, home = D.nr?.home, clearLatLon = [], clearPolygons = [], detailLatLon = [];
+    if (inv) clearLatLon.push({ lat: -38.63386285, lon: 145.70516710, r: 0.16 }); // 11 Dalmont Bay Court: seed 37688 under the witnessed upper house.
     // Keep the seeded tree indices stable. Clear only trunks enclosed by the two surveyed Bayview school roofs.
     if (inv) for (const [lat, lon] of [
       [-38.63102523, 145.72813660], [-38.63101172, 145.72819115], [-38.63104325, 145.72849263],
@@ -10374,6 +10375,7 @@ const handle = async (m, post) => {
         if (cfg.place === "moo") try { T.room6 = townRoom6(T, m); } catch (e) { console.warn("Town model: number 6's room couldn't be drawn", e); }  // (where the drone waited till 24 November 2026)
         if (cfg.place === "moo" && m.addParts && m.getCamera && !OFF.has("bal6")) try { T.bal6 = townBalcony6(T, m); } catch (e) { T.bal6 = null; console.warn("Town model: number 6's house and balcony couldn't be added", e); }  // number 6 as it is, or with the balcony concept
         if (cfg.place === "moo" && m.addParts) try { townHouse24(T, m); } catch (e) { console.warn("Town model: 24 Beaudesert Road couldn't be added", e); }  // Pandy's house as it really is (a demo)
+        if (inv && m.addParts) invDalmontBayCourt11(T, m, BS.B.THREE);
         if (cfg.place === "moo" && m.addParts) try { townHousesLite(T, m); } catch (e) { console.warn("Town model: the houses drawn the light way couldn't be added", e); }
         // the planes (townCar), each with somewhere to stand beside it
         const rides = m.addParts ? TOWN_RIDES[cfg.place] : null;
@@ -23149,6 +23151,85 @@ const handle = async (m, post) => {
         if (shown >= 0 && shown !== f) parts.setMatrix(shown, TOWN_WHEEL_FAR.slice()); parts.setMatrix(f, el); shown = f; },
       hide() { if (parts && shown >= 0) parts.setMatrix(shown, TOWN_WHEEL_FAR.slice()); shown = -1; },
       remove() { try { parts?.remove(); } catch {} parts = null; shown = -1; } }; }
+  // 11 Dalmont Bay Court. The cream upper house and low brick garage share one guest.
+  function invDalmontBayCourt11(T, model, THREE) {
+    const [x0,z0,cos,sin] = [-2169.4608402,-340.60655245,0.99320618,-0.11636789];
+    const house = [[1.035,5.693], [11.332,6.019], [11.418,19.259], [3.039,20.222]];
+    const houseRoof = [[0.62,5.32], [11.69,5.67], [11.78,19.58], [2.73,20.62]];
+    const garage = [[0.173,0.22], [11.744,0.22], [11.555,5.75], [-0.063,5.75]];
+    const garageRoof = [[0.02,0.06], [11.91,0.06], [11.71,5.91], [-0.23,5.91]];
+    const positions = [], colours = [];
+    const render = new THREE.Color(0xd6c7ad), cladding = new THREE.Color(0x737773);
+    const brick = new THREE.Color(0x72625b), roofing = new THREE.Color(0x777b7e);
+    const trim = new THREE.Color(0x9c9d95), frame = new THREE.Color(0x373c3d);
+    const glass = new THREE.Color(0x66828a), door = new THREE.Color(0x474b4a);
+    const dark = new THREE.Color(0x3b403f), solar = new THREE.Color(0x435560);
+    const local = ([u,v]) => [u*cos+v*sin,u*sin-v*cos];
+    const world = p => { const [x,z] = local(p); return [x+x0,z+z0]; };
+    const at = (p,y) => { const [x,z] = local(p); return [x,y,z]; };
+    const ground = p => model.groundAt(...world(p));
+    const tri = (a,b,c,paint) => {
+      positions.push(...a,...b,...c);
+      for (let i=0; i<3; i++) colours.push(paint.r,paint.g,paint.b);
+    };
+    const quad = (a,b,c,d,paint) => { tri(a,b,c,paint); tri(a,c,d,paint); };
+    const roofFace = (ring,height,paint,soffit) => {
+      const [a,b,c,d] = ring.map(p=>at(p,height(p)));
+      quad(a,b,c,d,paint);
+      for (let i=0; i<ring.length; i++) {
+        const p=ring[i], q=ring[(i+1)%ring.length], y=height(p), z=height(q);
+        quad(at(p,y-soffit),at(q,z-soffit),at(q,z),at(p,y),trim);
+      }
+    };
+    const walls = (ring,height,finish) => {
+      ring.forEach((a,i)=> {
+        const b=ring[(i+1)%ring.length];
+        quad(at(a,ground(a)-.13),at(b,ground(b)-.13),at(b,height(b)),at(a,height(a)),finish(i));
+      });
+    };
+    // The west elevations run from the garage end toward the far end of the house.
+    const panel = (ring,a,b,y0,y1,offset,paint) => {
+      const near=ring[0], far=ring[3], du=far[0]-near[0], dv=far[1]-near[1], len=Math.hypot(du,dv);
+      const p=(t,y)=>at([near[0]+du*t-dv*offset/len,near[1]+dv*t+du*offset/len],y);
+      quad(p(a,y0),p(b,y0),p(b,y1),p(a,y1),paint);
+    };
+
+    const floor = Math.max(...house.map(ground))+.04, upperFloor = floor+2.67;
+    const top = floor+5.32;
+    const upperY = ([u,v]) => top+.26-.018*u+.015*v;
+    walls(house,p=>upperY(p)-.12,i=>i===1 ? cladding : render);
+    roofFace(houseRoof,upperY,roofing,.16);
+    panel(house,.48,.575,upperFloor+.03,top+.12,.029,cladding);
+    for (const [a,b,c,d] of [[.175,.25,.81,1.77],[.303,.37,.80,1.76],[.637,.699,.49,2.20],[.778,.84,.49,2.19]]) {
+      panel(house,a,b,upperFloor+c,upperFloor+d,.032,frame);
+      panel(house,a+.008,b-.008,upperFloor+c+.08,upperFloor+d-.08,.043,glass);
+    }
+    for (let i=0; i<3; i++) panel(house,.509,.541,upperFloor+.36+.48*i,upperFloor+.65+.48*i,.051,glass);
+    panel(house,.492,.559,floor+.03,floor+2.14,.047,door);
+    // The solar band sits flush on the shallow upper roof.
+    for (let r=0; r<2; r++) for (let i=0; i<6; i++) {
+      const u=3.17+i*1.19, v=12.52+r*1.26;
+      const points=[[u,v],[u+1.10,v],[u+1.10,v+1.14],[u,v+1.14]];
+      const [a,b,c,d] = points.map(p=>at(p,upperY(p)+.026));
+      quad(a,b,c,d,solar);
+    }
+
+    const garageFloor = Math.max(ground(garage[0]),ground(garage[3]))+.035;
+    const garageY = ([u]) => garageFloor+3.13+.012*u;
+    walls(garage,p=>garageY(p)-.085,()=>brick);
+    roofFace(garageRoof,garageY,cladding,.135);
+    panel(garage,.081,.929,garageFloor+.025,garageFloor+2.44,.031,frame);
+    panel(garage,.096,.911,garageFloor+.052,garageFloor+2.37,.043,door);
+    for(let i=1; i<=9; i++)
+      panel(garage,.096,.911,garageFloor+.22*i,garageFloor+.22*i+.023,.052,dark);
+
+    model.addParts([{positions:new Float32Array(positions),colors:new Float32Array(colours),
+      matrix:new THREE.Matrix4().makeTranslation(x0,0,z0).elements,roughness:.86,doubleSide:true}]);
+    const collision=T.invStatic??=invCivicCollision((x,z)=>[x,z],()=>false);
+    collision.polygon(house.map(world));
+    collision.polygon(garage.map(world));
+  }
+
   function townCarPart(kind, hex) { const k = ((kind | 0) % 3 + 3) % 3;
     if (!townCarCache[k]) townCarCache[k] = TOWN_CAR_SHAPES.cars[k].map(b64 => { const b = Uint8Array.from(atob(b64), ch => ch.charCodeAt(0)), dv = new DataView(b.buffer), n = b.length / 7, p = new Float32Array(n * 3), ci = new Uint8Array(n);
       for (let i = 0; i < n; i++) { for (let j = 0; j < 3; j++) p[i * 3 + j] = dv.getInt16(i * 7 + j * 2, true) / 1000; ci[i] = b[i * 7 + 6]; } return { p, ci }; });
