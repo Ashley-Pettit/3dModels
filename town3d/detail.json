@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-miriam-court-3-v1",
+      "x": -2180.62531738,
+      "z": 716.59098633,
+      "size": 89.96301758,
+      "file": "detail-miriam-court-3-v1.webp",
+      "lo": "detail-miriam-court-3-v1-lo.webp"
     }
   ]
 }
