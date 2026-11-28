@@ -152,6 +152,19 @@ def inverloch_preloads(page_body):
 </script>""".replace("MODEL", json.dumps(model[1])).replace("TOWN_MAP", json.dumps(town_map[1]))
 
 
+def direct_inverloch_body(page_body):
+    # bsLite drops these weather/Listen scenes for every town on the direct Explore entry,
+    # including a different town restored on reload. Keep them on full app and preview pages.
+    # (From Bangerz's #388; on the beta Inverloch page only for now.)
+    start = "    // BEGIN LISTEN_AND_BOWLS_WEATHER_SCENES\n"
+    end = "    // END LISTEN_AND_BOWLS_WEATHER_SCENES\n"
+    if page_body.count(start) != 1 or page_body.count(end) != 1:
+        raise ValueError("Expected one marked group of weather-only scenes")
+    before, scenes = page_body.split(start)
+    _, after = scenes.split(end)
+    return before + after
+
+
 # A build stamp: the app checks version.json against it and reloads itself when the site has a newer app
 # (phones keep a home-screen app open for days without reloading).
 def stamped(hd, bd, folder):
@@ -195,8 +208,9 @@ if os.path.exists(beta_src):
         if bplace == "inv":
             xh = xh.replace('<base href="../../">', '<base href="../../">\n' + inverloch_preloads(bbody), 1)
         os.makedirs(os.path.join(site, "beta", bdir), exist_ok=True)
+        route_body = direct_inverloch_body(bbody) if bplace == "inv" else bbody
         with open(os.path.join(site, "beta", bdir, "index.html"), "w", encoding="utf-8") as f:
-            f.write(bstamp(xh, bbody, os.path.join(site, "beta", bdir)) + bbody.strip() + "\n</body>\n</html>\n")
+            f.write(bstamp(xh, route_body, os.path.join(site, "beta", bdir)) + route_body.strip() + "\n</body>\n</html>\n")
 shutil.copytree(os.path.join(here, "icons"), os.path.join(site, "icons"), dirs_exist_ok=True)
 shutil.copy(os.path.join(here, "manifest.webmanifest"), site)
 shutil.copy(os.path.join(here, "sw.js"), site)
