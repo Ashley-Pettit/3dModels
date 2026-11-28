@@ -10257,6 +10257,8 @@ const handle = async (m, post) => {
     // another street's width; the wires to each go with it
     if (inv) for (const [lat, lon] of [[-38.6337246, 145.7267682], [-38.6339579, 145.7292535], [-38.6348371, 145.7287447], [-38.6342723, 145.7293649],
       [-38.6338849, 145.7295854], [-38.6329661, 145.7297324], [-38.6348155, 145.7301642]]) clearLatLon.push({ lat, lon, r: 1.5 });
+    if (inv) clearLatLon.push({ lat: -38.62709535, lon: 145.74066359, r: 0.16 }); // 71 Cuttriss Street: superseded generated slot 1055.
+    if (inv) clearLatLon.push({ lat: -38.62712238, lon: 145.74049132, r: 0.16 }); // 71 Cuttriss Street: superseded generated slot 1056.
     // Building centres on the verified vacant parcels at 1, 12, 16 and 17 Mountain Ash Close.
     // Centre masks remove these legacy shells and their blockers without changing their packed slots.
     if (inv) for (const [lat, lon] of [
@@ -10368,6 +10370,7 @@ const handle = async (m, post) => {
         }
         if (inv && m.addParts) try { mine.push(invWestJetty(T, BS.B.THREE)); } catch (e) { console.warn("Inverloch: the west jetty could not be added", e); }
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
+        if (inv && m.addParts) invCuttrissStreet71(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
@@ -18889,6 +18892,75 @@ const handle = async (m, post) => {
   const streetsPref = () => { try { return localStorage.getItem(STREETS_KEY) === "1"; } catch { return false; } };  // off to start with (Ash, 14 November 2026: "Names start off")
   const streetsSave = on => { try { localStorage.setItem(STREETS_KEY, on ? "1" : "0"); } catch {} };
   // The late-2024 west boat-ramp jetty. The native pier across the slipway is the older east jetty.
+  // 71 Cuttriss Street. The light house and open carport share one untextured batch.
+  function invCuttrissStreet71(T, model, THREE) {
+    const roof = [[918.97,-1108.02],[928.89,-1100.17],[923.11,-1094.59],[915.17,-1102.26]];
+    const walls = [[919.07,-1107.41],[928.26,-1100.14],[923.11,-1095.17],[915.71,-1102.32]];
+    const cover = [[928.86,-1100.26],[932.17,-1097.67],[928.95,-1094.88],[926.12,-1097.07]];
+    const x0 = 924, z0 = -1101;
+    const ground = walls.map(([x,z]) => model.groundAt(x,z));
+    const floor = Math.max(...ground) + .09;
+    const lean = point => 2.67 + .045 * (point[0] - x0);
+    const roofY = point => lean(point) + .17;
+    const coverY = point => 2.51 + .025 * (point[1] - z0);
+    const positions = [], colors = [];
+    const p = ([x,z],y) => [x-x0,y,z-z0];
+    const quad = (a,b,c,d,hex) => {
+      const color = new THREE.Color(hex);
+      positions.push(...a,...b,...c,...a,...c,...d);
+      for (let i=0; i<6; i++) colors.push(color.r,color.g,color.b);
+    };
+    const edgePoint = (a,b,u,depth=0) => {
+      const dx=b[0]-a[0], dz=b[1]-a[1], length=Math.hypot(dx,dz);
+      return [a[0]+dx*u+depth*dz/length,a[1]+dz*u-depth*dx/length];
+    };
+    const elevation = (ring, top, fascia, metal, depth) => {
+      const topPoints = ring.map(a => p(a,top(a)));
+      if ((ring[1][1]-ring[0][1])*(ring[2][0]-ring[0][0]) > (ring[1][0]-ring[0][0])*(ring[2][1]-ring[0][1]))
+        quad(topPoints[0],topPoints[1],topPoints[2],topPoints[3],metal);
+      else quad(topPoints[0],topPoints[3],topPoints[2],topPoints[1],metal);
+      ring.forEach((a,i) => {
+        const j=(i+1)%ring.length, b=ring[j];
+        quad(p(a,top(a)-depth),p(b,top(b)-depth),topPoints[j],topPoints[i],fascia);
+      });
+    };
+    walls.forEach((a,i) => {
+      const j=(i+1)%walls.length, b=walls[j], base=Math.min(ground[i],ground[j])-floor-.08;
+      quad(p(a,base),p(b,base),p(b,lean(b)),p(a,lean(a)),0xd7d8d0);
+    });
+    elevation(roof,roofY,0xc2c7c3,0xbac7c9,.17);
+    elevation(cover,coverY,0x34493e,0xb6c0bf,.15);
+    const underside=cover.map(a => p(a,coverY(a)-.15));
+    quad(...underside,0x57665a);
+
+    const a=walls[0], b=walls[1];
+    const panel = (lo,hi,y0,y1,color,depth) => {
+      const l=edgePoint(a,b,lo,depth), r=edgePoint(a,b,hi,depth);
+      quad(p(l,y0),p(r,y0),p(r,y1),p(l,y1),color);
+    };
+    for (const [lo,hi] of [[.10,.225],[.29,.415],[.63,.775],[.805,.955]]) {
+      panel(lo,hi,.91,2.06,0x63716b,.034);
+      panel(lo+.009,hi-.009,.97,2,0x718488,.041);
+    }
+    panel(.489,.576,.115,2.23,0xe1e3d8,.039);
+    panel(.499,.566,.2,2.17,0x4c665c,.048);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
+    const cx=cover.reduce((sum,point)=>sum+point[0],0)/4, cz=cover.reduce((sum,point)=>sum+point[1],0)/4;
+    for (const pos of cover) {
+      const [x,z]=[pos[0]*.89+cx*.11,pos[1]*.89+cz*.11], r=.055;
+      const bottom=model.groundAt(x,z)-floor-.04, top=coverY([x,z])-.15;
+      const corners=[[x-r,z-r],[x+r,z-r],[x+r,z+r],[x-r,z+r]];
+      corners.forEach((l,i) => {
+        const r=corners[(i+1)%4];
+        quad(p(l,bottom),p(r,bottom),p(r,top),p(l,top),0x3a584b);
+      });
+      grid.worldBox(x,z,0,2*r,2*r);
+    }
+    model.addParts([{ positions:new Float32Array(positions), colors:new Float32Array(colors),
+      matrix:new THREE.Matrix4().makeTranslation(x0,floor,z0).elements, roughness:.88, doubleSide:true }]);
+  }
+
   function invWestJetty(T, THREE) {
     const decks = new WeakMap();
     const fit = model => {
