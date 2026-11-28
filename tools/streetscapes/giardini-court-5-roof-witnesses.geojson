@@ -1,0 +1,101 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.714905,
+              -38.635709
+            ],
+            [
+              145.714937,
+              -38.635736
+            ],
+            [
+              145.714977,
+              -38.635714
+            ],
+            [
+              145.714999,
+              -38.635717
+            ],
+            [
+              145.715044,
+              -38.635763
+            ],
+            [
+              145.715083,
+              -38.635794
+            ],
+            [
+              145.714921,
+              -38.635865
+            ],
+            [
+              145.714871,
+              -38.635801
+            ],
+            [
+              145.71491,
+              -38.635781
+            ],
+            [
+              145.714882,
+              -38.635734
+            ],
+            [
+              145.714905,
+              -38.635709
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "address": "5 Giardini Court, Inverloch",
+        "parcelPFI": "128909680",
+        "scene": 6072283,
+        "publisher": "Esri World Imagery / Vantor LG04",
+        "captureDate": "2025-05-13",
+        "groundSampleDistanceM": 0.34,
+        "reportedPositionAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.715055,-38.635996&level=20",
+        "method": "ArcGIS Online Map Viewer / Map Tools / Location / Capture. Conservative visually discernible roof eaves and ground witnesses.",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "role": "Main roof eaves used to bound the fit."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.715106,
+            -38.635786
+          ],
+          [
+            145.715158,
+            -38.635783
+          ]
+        ]
+      },
+      "properties": {
+        "address": "5 Giardini Court, Inverloch",
+        "parcelPFI": "128909680",
+        "scene": 6072283,
+        "publisher": "Esri World Imagery / Vantor LG04",
+        "captureDate": "2025-05-13",
+        "groundSampleDistanceM": 0.34,
+        "reportedPositionAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.715055,-38.635996&level=20",
+        "method": "ArcGIS Online Map Viewer / Map Tools / Location / Capture. Conservative visually discernible roof eaves and ground witnesses.",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "role": "Paved approach witnesses used to keep the access clear."
+      }
+    }
+  ]
+}
