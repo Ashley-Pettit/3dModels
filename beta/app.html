@@ -17488,6 +17488,9 @@ const handle = async (m, post) => {
     // Leave the timber seams inside the connector, clear of the taller shared path at the join.
     joints([-70.95,-199.37, -55.99,-184.5], 1.64, 0.15, 0.27, 0x79654e, 1.4);
 
+    // The Soundshell (T.glade, #426) stands on this same mapped roof. Where it is installed, the open picnic shelter that #391 drew
+    // in its place is left out (its gable and posts came through the shell); the path seams above stay.
+    if (T.glade) { m.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colours), matrix, roughness: 0.97, onGround: true }]); return; }
     const [[ax, az], [bx, bz], [cx, cz], [dx, dz]] = INV_GLADE_SHELTER.map(([lat, lon]) => m.fromLatLon(lat, lon));
     const x = (ax + bx + cx + dx) / 4, z = (az + bz + cz + dz) / 4;
     const width = Math.hypot(bx - ax, bz - az), depth = Math.hypot(dx - ax, dz - az);
