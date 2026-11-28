@@ -1,0 +1,73 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "20-hobson-place-main-roof-20250513",
+      "properties": {
+        "view": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70541689636,-38.63552713981&level=20",
+        "scene": 6072283,
+        "date": "2025-05-13",
+        "provider": "Vantor LG04 via Esri World Imagery",
+        "attribution": "Esri, Vantor, Earthstar Geographics and the GIS User Community",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "samplingM": 0.34,
+        "positionalAccuracyM": 5,
+        "scope": "Observed principal eaves of the original single-storey house and garage. The oldest selling agent's street photo independently locates the integrated enclosed garage at the southeast return. The later agent's photo shows an open, supported alfresco. The estimated wall model is conservatively cropped at the west rear to keep the less certain open area outside the solid.",
+        "listedPlanText": "https://www.realestate.com.au/sold/property-house-vic-inverloch-140548995",
+        "originalFrontPhotoListing": "https://www.realestate.com.au/sold/property-house-vic-inverloch-123609494"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.705226,
+              -38.63545
+            ],
+            [
+              145.705273,
+              -38.63545
+            ],
+            [
+              145.70528,
+              -38.635428
+            ],
+            [
+              145.705516,
+              -38.635447
+            ],
+            [
+              145.705515,
+              -38.635494
+            ],
+            [
+              145.705501,
+              -38.635511
+            ],
+            [
+              145.705492,
+              -38.635553
+            ],
+            [
+              145.705444,
+              -38.635545
+            ],
+            [
+              145.705399,
+              -38.635541
+            ],
+            [
+              145.705218,
+              -38.635521
+            ],
+            [
+              145.705226,
+              -38.63545
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
