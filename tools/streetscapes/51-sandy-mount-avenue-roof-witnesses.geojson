@@ -1,0 +1,99 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "activeParcelPFI": "5286849",
+    "activeAddressPFI": "53200335",
+    "source": "Vicmap Basemaps \u00a9 State of Victoria, AERIAL_WM_256",
+    "candidateImageryAcquisitions": [
+      "2021-12-13",
+      "2023-01-08"
+    ],
+    "imageryMetadata": "https://services-ap1.arcgis.com/P744lA0wf4LlBZ84/ArcGIS/rest/services/Aerial_Imagery_viewable/FeatureServer/0",
+    "esriReference": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.72502397,-38.63155587&level=20",
+    "esriScene": "6072228",
+    "esriCaptureDate": "2022-03-26",
+    "streetViewReference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=zPPGEjbLutOkApNpWdge3w&heading=273&pitch=3",
+    "streetViewDate": "2025-10",
+    "licensedCrosscheck": "microsoft-311223133-880daee4956820a1",
+    "originalRoadSide": "inverloch-road-b50a4e7fe56ebad93fb9-right",
+    "positionNotes": "The trees partly obscure the north-east roof. The enclosed outline is inset to the visible form."
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "visible eave extent with a conservative northeast recess"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.72498574852943,
+              -38.63160701944514
+            ],
+            [
+              145.72513192892075,
+              -38.63162273402712
+            ],
+            [
+              145.7251439988613,
+              -38.63155882803896
+            ],
+            [
+              145.72511449456215,
+              -38.63155254220098
+            ],
+            [
+              145.72510108351707,
+              -38.63151482716153
+            ],
+            [
+              145.72504073381424,
+              -38.631507493679344
+            ],
+            [
+              145.72500988841057,
+              -38.63149701727491
+            ],
+            [
+              145.72498574852943,
+              -38.63160701944514
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "observed driveway centreline from concrete cross-over"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.72531700134277,
+            -38.63153158940374
+          ],
+          [
+            145.72527810931206,
+            -38.63152635120347
+          ],
+          [
+            145.72522714734077,
+            -38.63152425592326
+          ],
+          [
+            145.725180208683,
+            -38.63153263704375
+          ],
+          [
+            145.72515472769737,
+            -38.63153997052337
+          ]
+        ]
+      }
+    }
+  ]
+}
