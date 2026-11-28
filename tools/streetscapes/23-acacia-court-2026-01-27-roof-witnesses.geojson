@@ -1,0 +1,131 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.696174,
+              -38.645343
+            ],
+            [
+              145.696345,
+              -38.645308
+            ],
+            [
+              145.696361,
+              -38.645352
+            ],
+            [
+              145.696326,
+              -38.645375
+            ],
+            [
+              145.696354,
+              -38.645464
+            ],
+            [
+              145.69629,
+              -38.645482
+            ],
+            [
+              145.696298,
+              -38.645508
+            ],
+            [
+              145.696231,
+              -38.645525
+            ],
+            [
+              145.696204,
+              -38.645464
+            ],
+            [
+              145.696174,
+              -38.645343
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source": "Esri World Imagery / Vantor LG03",
+        "scene": 6072300,
+        "capture": "2026-01-27",
+        "groundSampleDistanceM": 0.34,
+        "reportedPositionAccuracyM": 5,
+        "manualMethod": "ArcGIS Online Map Viewer, Map Tools, Location, Capture mode. Points manually selected at the visible cream roof eaves and approaches.",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.69625342,-38.64540615&level=20",
+        "digitizingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "parcel": "Lot 49 PS624542",
+        "parcelPfi": "129812971",
+        "sourceId": "microsoft-311223133-02fa381836609b9e",
+        "role": "Observed pale main roof eaves"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.696118,
+            -38.645362
+          ],
+          [
+            145.696146,
+            -38.645303
+          ],
+          [
+            145.696233,
+            -38.645244
+          ],
+          [
+            145.69637,
+            -38.645192
+          ]
+        ]
+      },
+      "properties": {
+        "source": "Esri World Imagery / Vantor LG03",
+        "scene": 6072300,
+        "capture": "2026-01-27",
+        "groundSampleDistanceM": 0.34,
+        "reportedPositionAccuracyM": 5,
+        "manualMethod": "ArcGIS Online Map Viewer, Map Tools, Location, Capture mode. Points manually selected at the visible cream roof eaves and approaches.",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.69625342,-38.64540615&level=20",
+        "digitizingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "parcel": "Lot 49 PS624542",
+        "parcelPfi": "129812971",
+        "sourceId": "microsoft-311223133-02fa381836609b9e",
+        "role": "Visible adjoining apron and lane"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.696369,
+          -38.645415
+        ]
+      },
+      "properties": {
+        "source": "Esri World Imagery / Vantor LG03",
+        "scene": 6072300,
+        "capture": "2026-01-27",
+        "groundSampleDistanceM": 0.34,
+        "reportedPositionAccuracyM": 5,
+        "manualMethod": "ArcGIS Online Map Viewer, Map Tools, Location, Capture mode. Points manually selected at the visible cream roof eaves and approaches.",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.69625342,-38.64540615&level=20",
+        "digitizingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "parcel": "Lot 49 PS624542",
+        "parcelPfi": "129812971",
+        "sourceId": "microsoft-311223133-02fa381836609b9e",
+        "role": "Darker eastern cover, enclosure unresolved"
+      }
+    }
+  ]
+}

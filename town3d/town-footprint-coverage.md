@@ -1,6 +1,6 @@
 # Inverloch building-footprint coverage
 
-The footprint pass uses mapped roof outlines for the existing Explore model, whose WGS84 bounds are `[145.684, -38.668, 145.776, -38.606]`. The A’Beckett Street and Norman Road corridors and their authored scenes are excluded. The pass preserves 181 protected packed buildings, all 311 original mapped buildings and the order and style fields of the original packed entries.
+The footprint pass uses mapped roof outlines for the existing Explore model, whose WGS84 bounds are `[145.684, -38.668, 145.776, -38.606]`. The A’Beckett Street and Norman Road corridors and their authored scenes are excluded. The pass preserves 181 protected packed buildings, all 311 original mapped buildings and the order and style fields of the original packed entries. See the [23 Acacia Court footprint and evidence](23-acacia-court-coverage.md) for that site fit.
 
 | Placement | Count |
 | --- | ---: |

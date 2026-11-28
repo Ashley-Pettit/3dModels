@@ -10274,6 +10274,9 @@ const handle = async (m, post) => {
     // middle, and 0.6 m up, coming up from the road over its first and last 8 m. Under a bridge (a road under an overpass) you stay down:
     // the deck only counts for something no more than 2.5 m under it (T.deckY: the car's height now), or, on foot, for a deck within 3 m
     // of the ground. Ash, 28 November 2026: "in moorooka fix the bridges so my car will drive over them"
+    // 23 Acacia Court: the traced main walls enclose the two seeded tree positions.
+    if (inv) clearLatLon.push({ lat: -38.64537774, lon: 145.69622336, r: 0.16 }); // Seeded trunk 42486.
+    if (inv) clearLatLon.push({ lat: -38.64540927, lon: 145.69623197, r: 0.16 }); // Seeded trunk 42531.
     if (cfg.place === "moo") townStreetData(cfg).then(d => { const L = [];
       for (const r of d.town?.roads || []) { if (!(r[2] & 1) || !Array.isArray(r[5]) || r[5].length < 4) continue; const P = r[5].map(v => v / 10), n = P.length / 2, cum = [0];
         for (let i = 1; i < n; i++) cum.push(cum[i - 1] + Math.hypot(P[i * 2] - P[i * 2 - 2], P[i * 2 + 1] - P[i * 2 - 1]));
@@ -10366,6 +10369,7 @@ const handle = async (m, post) => {
           if (m.addParts) try { townSurfParadeBeachAccess(T, m); }
             catch (e) { console.warn("Inverloch: Surf Parade beach access couldn't be added", e); }
         }
+        if (inv && m.addParts) invAcaciaCourt23(T, m, BS.B.THREE);
         if (inv && m.addParts) try { mine.push(invWestJetty(T, BS.B.THREE)); } catch (e) { console.warn("Inverloch: the west jetty could not be added", e); }
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
@@ -18888,6 +18892,53 @@ const handle = async (m, post) => {
   const STREETS_KEY = "an3d-streets";
   const streetsPref = () => { try { return localStorage.getItem(STREETS_KEY) === "1"; } catch { return false; } };  // off to start with (Ash, 14 November 2026: "Names start off")
   const streetsSave = on => { try { localStorage.setItem(STREETS_KEY, on ? "1" : "0"); } catch {} };
+  // 23 Acacia Court. The main cream roof and walls share one vertex-coloured batch.
+  function invAcaciaCourt23(town, model, THREE) {
+    const walls = [[-2937.2,944.6], [-2939.9,945.4], [-2942.0,939.4], [-2944.5,926.7],
+      [-2931.5,923.3], [-2930.5,927.4], [-2932.7,929.4], [-2933.8,929.7],
+      [-2934.0,930.3], [-2931.7,939.6], [-2935.5,940.9], [-2935.9,941.6],
+      [-2937.5,942.1], [-2937.7,942.7]];
+    const roof = [[0.756,7.102,0.95], [1.8,8.4,0.0], [2.2,7.7,0.0], [5.476,-6.327,0.95],
+      [5.0,-3.8,0.0], [7.2,-5.8,0.0], [5.068,-8.002,0.95], [-6.8,-6.5,0.0],
+      [-4.998,-5.369,0.95], [3.9,-3.5,0.0], [2.692,-4.777,0.95], [2.087,-2.964,0.95],
+      [1.145,6.423,0.95], [0.2,8.9,0.0], [-1.02,7.657,0.95], [-1.57,9.308,0.95],
+      [-4.3,6.2,0.0], [-2.2,12.2,0.0], [0.5,11.4,0.0], [0.0,9.5,0.0],
+      [6.2,-9.9,0.0], [4.233,-5.197,0.95], [-2.801,5.792,0.95], [4.154,5.393,0.95],
+      [3.7,-2.9,0.0], [6.0,6.4,0.0]];
+    const faces = [[0,1,2], [3,4,5], [6,7,8], [9,10,11], [2,12,0], [13,14,15], [16,8,7], [15,16,17],
+      [15,18,19], [7,6,20], [10,9,21], [14,13,0], [8,16,22], [15,19,13], [5,20,6], [16,15,22],
+      [5,6,3], [18,15,17], [21,4,3], [1,0,13], [4,21,9], [12,2,23], [24,9,11], [23,2,25],
+      [23,24,11], [24,23,25], [14,0,12], [12,23,11], [6,21,3], [10,6,8], [14,22,15], [22,12,11],
+      [21,6,10], [12,22,14], [11,10,8], [22,11,8]];
+    const x0 = -2937.7, z0 = 933.2, eave = 2.76;
+    const ground = walls.map(([x, z]) => model.groundAt(x, z));
+    const floor = Math.max(...ground) + 0.08;
+    const positions = [], colors = [];
+    const wall = new THREE.Color(0xd7cbb6), trim = new THREE.Color(0xebddc1), steel = new THREE.Color(0xe5d6b5);
+    const triangle = (a, b, c, tint) => {
+      positions.push(...a, ...b, ...c);
+      for (let i = 0; i < 3; i++) colors.push(tint.r, tint.g, tint.b);
+    };
+    const quad = (a, b, c, d, tint) => {
+      triangle(a, b, c, tint);
+      triangle(a, c, d, tint);
+    };
+    const corner = (i, y) => [walls[i][0] - x0, y, walls[i][1] - z0];
+    for (let i = 0; i < walls.length; i++) {
+      const next = (i + 1) % walls.length;
+      const base = Math.min(ground[i], ground[next]) - floor - 0.34;
+      const fascia = eave - 0.12;
+      quad(corner(i, base), corner(i, fascia), corner(next, fascia), corner(next, base), wall);
+      quad(corner(i, fascia), corner(i, eave), corner(next, eave), corner(next, fascia), trim);
+    }
+    const cap = roof.map(([x, z, rise]) => [x, eave + rise, z]);
+    for (const [a, b, c] of faces) triangle(cap[a], cap[b], cap[c], steel);
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors), roughness: 0.88,
+      matrix: new THREE.Matrix4().makeTranslation(x0, floor, z0).elements }]);
+    const grid = town.invStatic ??= invCivicCollision((x, z) => [x, z], () => false);
+    grid.polygon(walls);
+  }
+
   // The late-2024 west boat-ramp jetty. The native pier across the slipway is the older east jetty.
   function invWestJetty(T, THREE) {
     const decks = new WeakMap();
