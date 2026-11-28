@@ -10121,6 +10121,61 @@ const handle = async (m, post) => {
     return { length, half, point, local, nearby };
   })();
 
+  // 8 Western Street. Resolve the roof returns and the courtyard recess as one house.
+  function invWesternStreet8(T, model, THREE) {
+    const walls = [[-799.0,166.4],[-795.28,163.41],[-777.49,164.58],
+      [-777.19,172.1],[-780.98,173.95],[-783.24,169.16],
+      [-788.75,169.44],[-788.75,173.92],[-795.35,174.66],
+      [-795.35,168.34]];
+    const roof = [[-799.6,166.46,0],[-795.39,163.07,0],[-777.17,164.27,0],
+      [-776.85,172.3,0],[-781.14,174.39,0],[-783.44,169.5,0],
+      [-788.42,169.75,0],[-788.42,174.22,0],[-795.68,175.03,0],
+      [-795.68,168.54,0],[-794.25,166.25,0.94],[-788.65,166.8,0.52],
+      [-780.1,167.7,1.13],[-792.4,171.5,1.08],[-786.28,163.67,0]];
+    const faces = [[1,11,14,12436933],[10,1,0,12436933],[11,1,10,12436933],
+      [14,11,12,13357259],[12,2,14,13357259],[2,12,3,14080980],
+      [3,12,4,11055534],[4,12,5,12041402],[5,12,11,14211536],
+      [11,6,5,14211536],[9,10,0,11647417],[11,13,6,13028038],
+      [13,11,10,13028038],[13,10,9,13028038],[6,13,7,12764864],
+      [7,13,8,11450552],[8,13,9,12173761]];
+    const solar = [[[-793.0288,163.4884,0.0696],[-791.5712,163.5844,0.0696],[-791.1642,164.1206,0.1502],[-792.6218,164.0246,0.1502]],[[-791.389,163.5964,0.0696],[-789.9314,163.6924,0.0696],[-789.5244,164.2285,0.1502],[-790.982,164.1326,0.1502]],[[-789.7492,163.7044,0.0696],[-788.2005,163.8064,0.0696],[-787.7935,164.3425,0.1502],[-789.3422,164.2405,0.1502]]];
+    const x0 = -787.59, z0 = 168.24, floor = model.groundAt(x0,z0)+.08, wallTop = 2.72;
+    const positions = [], colors = [];
+    const point = ([x,z],y) => [x-x0,y,z-z0];
+    const triangle = (a,b,c,hex) => {
+      const color = new THREE.Color(hex);
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(color.r,color.g,color.b);
+    };
+    const quad = (a,b,c,d,hex) => { triangle(a,b,c,hex); triangle(a,c,d,hex); };
+    const rising = ([x,z,lift]) => point([x,z],wallTop+lift);
+    for (let i = 0; i < walls.length; i++) {
+      const j = (i+1)%walls.length, a = walls[i], b = walls[j];
+      const along = t => [a[0]+t*(b[0]-a[0]),a[1]+t*(b[1]-a[1])];
+      const low = Math.min(-.13,...[0,.25,.5,.75,1].map(t => model.groundAt(...along(t))-floor-.15));
+      quad(point(a,low),point(a,wallTop),point(b,wallTop),point(b,low),0xc3bfb4);
+      quad(point(roof[i],wallTop-.11),rising(roof[i]),rising(roof[j]),point(roof[j],wallTop-.11),0xb8bcb8);
+      quad(point(roof[i],wallTop-.11),point(roof[j],wallTop-.11),point(b,wallTop-.11),point(a,wallTop-.11),0xd0ccbd);
+    }
+    for (const [a,b,c,hex] of faces) triangle(rising(roof[a]),rising(roof[b]),rising(roof[c]),hex);
+    for (const [a,b,c,d] of solar) quad(rising(a),rising(d),rising(c),rising(b),0x43545c);
+    const panel = (side,start,end,low,high,hex,pad) => {
+      const a = walls[side], b = walls[(side+1)%walls.length];
+      const dx = b[0]-a[0], dz = b[1]-a[1], length = Math.hypot(dx,dz);
+      const p = (s,y) => point([a[0]+(dx*s+dz*pad)/length,a[1]+(dz*s-dx*pad)/length],y);
+      quad(p(start,low),p(start,high),p(end,high),p(end,low),hex);
+    };
+    // The photographs resolve the roof and setbacks more clearly than joinery.
+    for (const [side,left,right] of [[0,.95,2.95],[8,1.0,3.15],[3,.78,2.61],[6,.96,3.3],[7,2.0,4.63]]) {
+      panel(side,left,right,.87,2.18,0xe1dfd2,.031);
+      panel(side,left+.09,right-.09,.96,2.09,0x59686b,.042);
+    }
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().makeTranslation(x0,floor,z0).elements, roughness: .87 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
+  }
+
   function invScrewCreekMask() {
     const { length, point } = INV_SCREW_CREEK;
     // Clear the shared endpoint by a few millimetres so the native bridge's solid rails disappear.
@@ -10249,6 +10304,9 @@ const handle = async (m, post) => {
       [-38.63116937, 145.72886301], [-38.63110856, 145.72815383], [-38.63106352, 145.72848114],
       [-38.63104775, 145.72879123], [-38.63113333, 145.72894915]
     ]) clearLatLon.push({ lat, lon, r: 0.16 });
+    if (inv) clearLatLon.push({ lat: -38.6385134, lon: 145.72086963, r: 0.16 }); // 8 Western Street: retire overlapping stock 4058.
+    if (inv) clearLatLon.push({ lat: -38.63856745, lon: 145.72106199, r: 0.16 }); // 8 Western Street: retire overlapping stock 4059.
+    if (inv) clearLatLon.push({ lat: -38.6385179, lon: 145.72103903, r: 0.16 }); // 8 Western Street: retire overlapping stock 40307.
     if (inv && BS.W.invClock) { const [lat, lon] = townLL(D.c[0], D.c[1]); clearLatLon.push({ lat, lon, r: 4.5 }); detailLatLon.push({ lat, lon, r: 260 }); }
     // the model's power poles that land in a road (each is set out beside its own street, so where another street runs past, one can stand
     // in it): taken out, so none stands in the road. Seven in the detail round the town centre, one right in the middle of A'Beckett
@@ -10295,7 +10353,7 @@ const handle = async (m, post) => {
       if (T.dead) return;
       if (gladeAsset) clearLatLon.push(...gladeAsset.clearings);
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
-        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cd69429f" } : cfg.assets;
+        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=4f138bc6" } : cfg.assets;
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
         { onProgress: (f, label) => { if (!T.on && !T.dead) tip.textContent = `Loading the town model: ${String(label).toLowerCase()}…`; },
           onFloodLevel: v => T.onFlood?.(v),
@@ -10369,6 +10427,7 @@ const handle = async (m, post) => {
         if (inv && m.addParts) try { mine.push(invWestJetty(T, BS.B.THREE)); } catch (e) { console.warn("Inverloch: the west jetty could not be added", e); }
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
+        if (inv && m.addParts) invWesternStreet8(T, m, BS.B.THREE);
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
         if (cfg.place === "moo") try { T.room6 = townRoom6(T, m); } catch (e) { console.warn("Town model: number 6's room couldn't be drawn", e); }  // (where the drone waited till 24 November 2026)

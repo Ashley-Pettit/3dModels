@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-western-street-8-v1",
+      "x": -840.95864258,
+      "z": 121.22638068,
+      "size": 105.60875977,
+      "file": "detail-western-street-8-v1.webp",
+      "lo": "detail-western-street-8-v1-lo.webp"
     }
   ]
 }
