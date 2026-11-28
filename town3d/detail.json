@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-florida-avenue-69-v1",
+      "x": -1756.23456055,
+      "z": -140.77902273,
+      "size": 86.05158203,
+      "file": "detail-florida-avenue-69-v1.webp",
+      "lo": "detail-florida-avenue-69-v1-lo.webp"
     }
   ]
 }

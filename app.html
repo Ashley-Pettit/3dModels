@@ -10008,6 +10008,51 @@ const handle = async (m, post) => {
     });
   }
 
+  // 69 Florida Avenue. The pale hipped roof and enclosed main house share one batch.
+  function invFloridaAvenue69(T, model, THREE) {
+    const walls = [[-1725.38,-107.66],[-1706.69,-102.46],[-1708.98,-93.81],[-1727.44,-98.92]];
+    const eaves = [[-1725.63,-108.08],[-1706.28,-102.70],[-1708.74,-93.39],[-1727.85,-98.68]];
+    const x0 = -1717.12, z0 = -100.72, floor = model.groundAt(x0,z0)+.09, wallTop = 2.58;
+    const positions = [], colors = [];
+    const point = ([x,z],y) => [x-x0,y,z-z0];
+    const triangle = (a,b,c,hex) => {
+      const color = new THREE.Color(hex);
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(color.r,color.g,color.b);
+    };
+    const quad = (a,b,c,d,hex) => { triangle(a,b,c,hex); triangle(a,c,d,hex); };
+    const roof = eaves.map(p => point(p,wallTop));
+    const west = point([-1722.20,-102.46],4.05), east = point([-1712.01,-99.57],4.05);
+    for (let i = 0; i < walls.length; i++) {
+      const j = (i+1)%walls.length, a = walls[i], b = walls[j];
+      const mid = [(a[0]+b[0])/2,(a[1]+b[1])/2];
+      const base = Math.min(-.12,Math.min(model.groundAt(...a),model.groundAt(...b),model.groundAt(...mid))-floor-.13);
+      quad(point(a,base),point(a,.16),point(b,.16),point(b,base),0x9b9989);
+      quad(point(a,.16),point(a,wallTop),point(b,wallTop),point(b,.16),0xc5c6ba);
+      quad(point(eaves[i],wallTop-.12),roof[i],roof[j],point(eaves[j],wallTop-.12),0xb4bcb8);
+      quad(point(eaves[i],wallTop-.12),point(eaves[j],wallTop-.12),point(b,wallTop-.12),point(a,wallTop-.12),0xb2b4a7);
+    }
+    quad(roof[0],west,east,roof[1],0xe0e2d9);
+    quad(roof[2],east,west,roof[3],0xcad0cd);
+    triangle(roof[0],roof[3],west,0xd6dbd4);
+    triangle(roof[1],east,roof[2],0xd8ddd5);
+    const panel = (side,start,end,low,high,hex,pad) => {
+      const a = walls[side], b = walls[(side+1)%walls.length];
+      const dx = b[0]-a[0], dz = b[1]-a[1], length = Math.hypot(dx,dz);
+      const p = (s,y) => point([a[0]+(dx*s+dz*pad)/length,a[1]+(dz*s-dx*pad)/length],y);
+      quad(p(start,low),p(start,high),p(end,high),p(end,low),hex);
+    };
+    // Representative joinery scale where trees hide the actual facade from the road.
+    for (const [side,left,right] of [[1,1.35,3.38],[1,5.05,7.05],[2,4.3,6.3],[2,12.8,14.8]]) {
+      panel(side,left,right,.94,2.12,0xe0dfd4,.03);
+      panel(side,left+.085,right-.085,1.03,2.03,0x626f73,.05);
+    }
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().makeTranslation(x0,floor,z0).elements, roughness: .86 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
+  }
+
   function invScrewCreekBridge(model, THREE) {
     const { length, half, point, local, nearby } = INV_SCREW_CREEK;
     const start = -0.006, end = length + 0.006, westJoin = 6, eastJoin = length - 9;
@@ -10126,6 +10171,8 @@ const handle = async (m, post) => {
       [-38.63116937, 145.72886301], [-38.63110856, 145.72815383], [-38.63106352, 145.72848114],
       [-38.63104775, 145.72879123], [-38.63113333, 145.72894915]
     ]) clearLatLon.push({ lat, lon, r: 0.16 });
+    if (inv) clearLatLon.push({ lat: -38.63609241, lon: 145.71035534, r: 0.16 }); // 69 Florida Avenue: retire overlapping stock 222.
+    if (inv) clearLatLon.push({ lat: -38.63611493, lon: 145.71016297, r: 0.16 }); // 69 Florida Avenue: retire overlapping stock 223.
     if (inv && BS.W.invClock) { const [lat, lon] = townLL(D.c[0], D.c[1]); clearLatLon.push({ lat, lon, r: 4.5 }); detailLatLon.push({ lat, lon, r: 260 }); }
     // the model's power poles that land in a road (each is set out beside its own street, so where another street runs past, one can stand
     // in it): taken out, so none stands in the road. Seven in the detail round the town centre, one right in the middle of A'Beckett
@@ -10168,7 +10215,7 @@ const handle = async (m, post) => {
     townModelLoad(cfg).then(lib => {
       if (T.dead) return;
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
-        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cd69429f" } : cfg.assets;
+        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=bd01ded9" } : cfg.assets;
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
         { onProgress: (f, label) => { if (!T.on && !T.dead) tip.textContent = `Loading the town model: ${String(label).toLowerCase()}…`; },
           onFloodLevel: v => T.onFlood?.(v),
@@ -10232,6 +10279,7 @@ const handle = async (m, post) => {
             catch (e) { console.warn("Inverloch: Surf Parade beach access couldn't be added", e); }
         }
         if (inv && m.addParts) try { mine.push(invWestJetty(T, BS.B.THREE)); } catch (e) { console.warn("Inverloch: the west jetty could not be added", e); }
+        if (inv && m.addParts) invFloridaAvenue69(T, m, BS.B.THREE);
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
