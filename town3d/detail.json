@@ -1,20 +1,68 @@
 {
- "patches": [
-  {
-   "name": "town",
-   "x": -499.37,
-   "z": -690.77,
-   "size": 640.0,
-   "file": "detail-town.webp",
-   "lo": "detail-town-lo.webp"
-  },
-  {
-   "name": "norman",
-   "x": -1767.13,
-   "z": 209.85,
-   "size": 384.0,
-   "file": "detail-norman.webp",
-   "lo": "detail-norman-lo.webp"
-  }
- ]
+  "patches": [
+    {
+      "name": "town",
+      "x": -499.37,
+      "z": -690.77,
+      "size": 640.0,
+      "file": "detail-town.webp",
+      "lo": "detail-town-lo.webp"
+    },
+    {
+      "name": "norman",
+      "x": -1767.13,
+      "z": 209.85,
+      "size": 384.0,
+      "file": "detail-norman.webp",
+      "lo": "detail-norman-lo.webp"
+    },
+    {
+      "name": "detail-pad-ripple-drive-2262",
+      "x": -2061.3265332,
+      "z": 793.83726705,
+      "size": 105.60875977,
+      "file": "detail-pad-ripple-drive-2262.webp",
+      "lo": "detail-pad-ripple-drive-2262-lo.webp"
+    },
+    {
+      "name": "detail-pad-high-street-1461",
+      "x": 176.01459961,
+      "z": -445.80023864,
+      "size": 113.43163086,
+      "file": "detail-pad-high-street-1461.webp",
+      "lo": "detail-pad-high-street-1461-lo.webp"
+    },
+    {
+      "name": "detail-pad-toorak-road-258",
+      "x": -1834.46327148,
+      "z": -152.51060795,
+      "size": 113.43163086,
+      "file": "detail-pad-toorak-road-258.webp",
+      "lo": "detail-pad-toorak-road-258-lo.webp"
+    },
+    {
+      "name": "detail-pad-abbott-street-3600",
+      "x": -977.85888672,
+      "z": -242.45276136,
+      "size": 105.60875977,
+      "file": "detail-pad-abbott-street-3600.webp",
+      "lo": "detail-pad-abbott-street-3600-lo.webp"
+    },
+    {
+      "name": "detail-mountain-ash-vacant-lots-v1",
+      "x": 1181.25353516,
+      "z": -1083.21636932,
+      "size": 246.42043945,
+      "file": "detail-mountain-ash-vacant-lots-v1.webp",
+      "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-bennison-way-vacant-lot-v1",
+      "x": 1838.37470703,
+      "z": -817.3004375,
+      "size": 105.60875977,
+      "file": "detail-bennison-way-vacant-lot-v1.webp",
+      "lo": "detail-bennison-way-vacant-lot-v1-lo.webp"
+    }
+  ]
 }
