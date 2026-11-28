@@ -10121,6 +10121,45 @@ const handle = async (m, post) => {
     return { length, half, point, local, nearby };
   })();
 
+  // 18 Toorak Road: the enclosed pale gable observed through the tree canopy.
+  function invToorakRoad18(T, model, THREE) {
+    const walls = [[-1150.98,-5.74],[-1143.22,-5.05],[-1144.16,5.43],[-1151.92,4.73]];
+    const eaves = [[-1151.28,-6.10],[-1142.87,-5.35],[-1143.86,5.79],[-1152.28,5.03]];
+    const x0 = -1147, z0 = -.88, floor = model.groundAt(x0,z0)+.08;
+    const wallTop = 2.48, ridgeTop = 3.83;
+    const positions = [], colors = [];
+    const point = ([x,z],y) => [x-x0,y,z-z0];
+    const mid = (a,b) => [(a[0]+b[0])/2,(a[1]+b[1])/2];
+    const triangle = (a,b,c,hex) => {
+      const color = new THREE.Color(hex);
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(color.r,color.g,color.b);
+    };
+    const quad = (a,b,c,d,hex) => { triangle(a,b,c,hex); triangle(a,c,d,hex); };
+    const roof = eaves.map(p => point(p,wallTop));
+    const north = point(mid(eaves[0],eaves[1]),ridgeTop), south = point(mid(eaves[2],eaves[3]),ridgeTop);
+    for (let i = 0; i < walls.length; i++) {
+      const j = (i+1)%walls.length, a = walls[i], b = walls[j];
+      quad(point(a,.10),point(a,wallTop),point(b,wallTop),point(b,.10),0xcec9b9);
+      for (let k = 0; k < 4; k++) {
+        const between = t => [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+        const p = between(k/4), q = between((k+1)/4);
+        const foot = Math.min(-.07,Math.min(model.groundAt(...p),model.groundAt(...mid(p,q)),model.groundAt(...q))-floor-.13);
+        quad(point(p,foot),point(p,.10),point(q,.10),point(q,foot),0xb2ac9c);
+      }
+      quad(point(eaves[i],wallTop-.12),roof[i],roof[j],point(eaves[j],wallTop-.12),0xc8c9c3);
+      quad(point(eaves[i],wallTop-.12),point(eaves[j],wallTop-.12),point(b,wallTop-.12),point(a,wallTop-.12),0xb8b6a9);
+    }
+    quad(roof[0],roof[3],south,north,0xdadcd8);
+    quad(north,south,roof[2],roof[1],0xcdd3ce);
+    triangle(point(walls[0],wallTop),point(mid(walls[0],walls[1]),ridgeTop),point(walls[1],wallTop),0xcec9b9);
+    triangle(point(walls[2],wallTop),point(mid(walls[2],walls[3]),ridgeTop),point(walls[3],wallTop),0xcec9b9);
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().makeTranslation(x0,floor,z0).elements, roughness: .86 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
+  }
+
   function invScrewCreekMask() {
     const { length, point } = INV_SCREW_CREEK;
     // Clear the shared endpoint by a few millimetres so the native bridge's solid rails disappear.
@@ -10265,6 +10304,8 @@ const handle = async (m, post) => {
       [-38.627782237, 145.744849779],
       [-38.627680894, 145.744189406],
     ]) clearLatLon.push({ lat, lon, r: 0.25 });
+    if (inv) clearLatLon.push({ lat: -38.63707207, lon: 145.71682986, r: 0.16 }); // 18 Toorak Road: displaced house 4031.
+    if (inv) clearLatLon.push({ lat: -38.63693244, lon: 145.71681264, r: 0.16 }); // 18 Toorak Road: displaced house 4032.
     if (inv && home && BS.W.invHouse) { const [lat, lon] = townLL(home[0], home[1]); clearLatLon.push({ lat, lon, r: 24 }); detailLatLon.push({ lat, lon, r: 170 }); }
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
     if (inv) clearPolygons.push({ latLon: INV_GLADE_SHELTER });
@@ -10295,7 +10336,7 @@ const handle = async (m, post) => {
       if (T.dead) return;
       if (gladeAsset) clearLatLon.push(...gladeAsset.clearings);
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
-        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cd69429f" } : cfg.assets;
+        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=500769b2" } : cfg.assets;
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
         { onProgress: (f, label) => { if (!T.on && !T.dead) tip.textContent = `Loading the town model: ${String(label).toLowerCase()}…`; },
           onFloodLevel: v => T.onFlood?.(v),
@@ -10384,6 +10425,7 @@ const handle = async (m, post) => {
             return { x: P.x + dx, z: P.z + dz, yaw: Math.atan2(dx, dz), pitch: -0.06 }; })(), target: [P.x, P.z] });
         if (rides) for (const G of rides.cars) { if ((G.spare && m.nearestCar) || G.gold) continue; /* a red car of the app's own only where the model has no cars to hand over */ const dx = Math.sin(G.h) * (G.bus ? 13 : 5.5), dz = Math.cos(G.h) * (G.bus ? 13 : 5.5);  // in front of its nose (nearer to it than to a car parked beside it)
           mine.push({ name: G.name, group: "Things to drive and fly", what: G.what, walk: { x: G.x + dx, z: G.z + dz, yaw: Math.atan2(dx, dz), pitch: -0.1 }, target: [G.x, G.z] }); }
+        if (inv && m.addParts) invToorakRoad18(T, m, BS.B.THREE);
         // the possum (Moorooka): on the footpath in Kingwell Street, a few steps from it
         if (rides?.possum) { const S = rides.possum; mine.push({ name: S.name, group: "Things to drive and fly", what: S.what, walk: { ...S.stand, pitch: -0.12 }, target: [S.x, S.z] }); }
         if (rides?.pigeon) { const S = rides.pigeon; mine.push({ name: S.name, group: "Things to drive and fly", what: S.what, walk: { ...S.stand, pitch: -0.25 }, target: [S.x, S.z] }); }
