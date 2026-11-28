@@ -10121,6 +10121,147 @@ const handle = async (m, post) => {
     return { length, half, point, local, nearby };
   })();
 
+  // 51 Sandy Mount Avenue. The recessed roof leaves the east driveway open.
+  function invSandyMount51(T, model, THREE) {
+    const [x0,z0,cos,sin] = [-436.60090405,-598.66668192,0.99073839,0.13578457];
+    const walls = [[11.93,6.29],
+      [11.93,0.88],
+      [1.13,0.88],
+      [1.13,10.59],
+      [8.17,10.59],
+      [8.17,6.29]];
+    const eaves = [[12.41,6.77],
+      [12.41,0.4],
+      [8.65,0.4],
+      [7.65,0.4],
+      [0.65,0.4],
+      [0.65,11.07],
+      [8.65,11.07],
+      [8.65,6.77]], hips = [[[4.65,7.07,1.16],[4.65,4.4,1.16],[0.65,0.4,0.0]],
+      [[0.65,11.07,0.0],[4.65,7.07,1.16],[0.65,0.4,0.0]],
+      [[4.65,4.4,1.16],[8.15,6.27,0.145],[8.15,0.9,0.145]],
+      [[8.65,11.07,0.0],[8.65,6.77,0.0],[4.65,7.07,1.16]],
+      [[8.15,6.27,0.145],[4.65,7.07,1.16],[8.65,6.77,0.0]],
+      [[4.65,7.07,1.16],[8.15,6.27,0.145],[4.65,4.4,1.16]],
+      [[8.15,0.9,0.145],[0.65,0.4,0.0],[4.65,4.4,1.16]],
+      [[0.65,0.4,0.0],[8.15,0.9,0.145],[8.65,0.4,0.0]],
+      [[4.65,7.07,1.16],[0.65,11.07,0.0],[8.65,11.07,0.0]],
+      [[10.03,4.39,0.6902],[8.15,0.9,0.145],[8.15,6.27,0.145]],
+      [[8.15,0.9,0.145],[10.03,4.39,0.6902],[10.03,2.78,0.6902]],
+      [[10.03,4.39,0.6902],[12.41,6.77,0.0],[12.41,0.4,0.0]],
+      [[12.41,0.4,0.0],[10.03,2.78,0.6902],[10.03,4.39,0.6902]],
+      [[8.65,0.4,0.0],[8.15,0.9,0.145],[10.03,2.78,0.6902]],
+      [[12.41,0.4,0.0],[8.65,0.4,0.0],[10.03,2.78,0.6902]],
+      [[10.03,4.39,0.6902],[8.65,6.77,0.0],[12.41,6.77,0.0]],
+      [[8.65,6.77,0.0],[10.03,4.39,0.6902],[8.15,6.27,0.145]]];
+    const positions = [], colours = [];
+    const render = new THREE.Color(0xa5846e), roof = new THREE.Color(0x675e55);
+    const fascia = new THREE.Color(0x908174);
+    const offset = ([u,v]) => [u*cos+v*sin,u*sin-v*cos];
+    const world = p => { const [x,z] = offset(p); return [x+x0,z+z0]; };
+    const point = (p,y) => { const [x,z] = offset(p); return [x,y,z]; };
+    const ground = p => model.groundAt(...world(p));
+    const tri = (a,b,c,paint) => {
+      positions.push(...a,...b,...c);
+      for (let i=0; i<3; i++) colours.push(paint.r,paint.g,paint.b);
+    };
+    const quad = (a,b,c,d,paint) => { tri(a,b,c,paint); tri(a,c,d,paint); };
+    const top = Math.max(...walls.map(ground))+2.67;
+    walls.forEach((a,i) => {
+      const b=walls[(i+1)%walls.length];
+      quad(point(a,ground(a)-.12),point(b,ground(b)-.12),point(b,top+.02),point(a,top+.02),render);
+    });
+    hips.forEach(face => tri(...face.map(p => point(p,top+p[2])),roof));
+    eaves.forEach((p,i) => {
+      const q=eaves[(i+1)%eaves.length];
+      quad(point(p,top-.115),point(q,top-.115),point(q,top),point(p,top),fascia);
+    });
+    model.addParts([{positions:new Float32Array(positions),colors:new Float32Array(colours),
+      matrix:new THREE.Matrix4().makeTranslation(x0,0,z0).elements,roughness:.9,doubleSide:true}]);
+    (T.invStatic??=invCivicCollision((x,z)=>[x,z],()=>false)).polygon(walls.map(world));
+    // Feather only the historic slab and the verified in-lot driveway. Keep the public crossover visible.
+    const groundPatch = new Image();
+    groundPatch.onload = () => {
+      if (!T.on || T.model !== model) return;
+      const [x,z,width,depth] = [-430.0, -613.25, 20.0, 18.25];
+      const y = .035;
+      model.addParts([{positions:new Float32Array([x,y,z,x,y,z+depth,x+width,y,z+depth,
+          x,y,z,x+width,y,z+depth,x+width,y,z]),uvs:new Float32Array([0,1,0,0,1,0,0,1,1,0,1,1]),
+        matrix:new THREE.Matrix4().elements,onGround:true,map:groundPatch,opacity:.999,roughness:.94}]);
+    };
+    groundPatch.src = "data:image/webp;base64," +
+      "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";
+  }
+
   function invScrewCreekMask() {
     const { length, point } = INV_SCREW_CREEK;
     // Clear the shared endpoint by a few millimetres so the native bridge's solid rails disappear.
@@ -10265,6 +10406,7 @@ const handle = async (m, post) => {
       [-38.627782237, 145.744849779],
       [-38.627680894, 145.744189406],
     ]) clearLatLon.push({ lat, lon, r: 0.25 });
+    if (inv) clearLatLon.push({ lat: -38.63155898, lon: 145.72515344, r: 0.16 }); // 51 Sandy Mount Avenue: packed house 4006.
     if (inv && home && BS.W.invHouse) { const [lat, lon] = townLL(home[0], home[1]); clearLatLon.push({ lat, lon, r: 24 }); detailLatLon.push({ lat, lon, r: 170 }); }
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
     if (inv) clearPolygons.push({ latLon: INV_GLADE_SHELTER });
@@ -10376,6 +10518,7 @@ const handle = async (m, post) => {
         if (cfg.place === "moo" && m.addParts) try { townHouse24(T, m); } catch (e) { console.warn("Town model: 24 Beaudesert Road couldn't be added", e); }  // Pandy's house as it really is (a demo)
         if (cfg.place === "moo" && m.addParts) try { townHousesLite(T, m); } catch (e) { console.warn("Town model: the houses drawn the light way couldn't be added", e); }
         // the planes (townCar), each with somewhere to stand beside it
+        if (inv && m.addParts) invSandyMount51(T, m, BS.B.THREE);
         const rides = m.addParts ? TOWN_RIDES[cfg.place] : null;
         // golden ones only for Ash (Ash, 15 November 2026: "Only show the teleport to the golden objects if user name is ash or Ashley")
         // (the golden ones are under "Just for you" at the top of the list instead, made each time it opens: players(), below)
