@@ -17040,14 +17040,14 @@ const handle = async (m, post) => {
       [1.64, 0.13, [-136.8,-227.8, -125.07,-244.12]],
     ];
     const positions = [], colours = [];
-    function joints(line, width, height, interval, hex) {
+    function joints(line, width, height, interval, hex, endClearance = 0.12) {
       const tint = new THREE.Color(hex), half = width / 2, gap = 0.022;
       let next = interval / 2;
       for (let i = 2; i < line.length; i += 2) {
         const ax = line[i - 2], az = line[i - 1], dx = line[i] - ax, dz = line[i + 1] - az;
         const length = Math.hypot(dx, dz), ux = dx / length, uz = dz / length;
         for (; next < length; next += interval) {
-          if (next < 0.12 || length - next < 0.12) continue;
+          if (next < endClearance || length - next < endClearance) continue;
           const X = ax + next * ux, Z = az + next * uz;
           for (const [a, b] of [[-1,-1], [-1,1], [1,1], [-1,-1], [1,1], [1,-1]]) {
             positions.push(X + a * gap * ux - b * half * uz, height, Z + a * gap * uz + b * half * ux);
@@ -17058,7 +17058,8 @@ const handle = async (m, post) => {
       }
     }
     for (const [width, height, line] of concrete) joints(line, width, height, 4.3, 0xa39d91);
-    joints([-70.95,-199.37, -55.99,-184.5], 1.64, 0.13, 0.27, 0x79654e);  // mapped timber connector
+    // Leave the timber seams inside the connector, clear of the taller shared path at the join.
+    joints([-70.95,-199.37, -55.99,-184.5], 1.64, 0.15, 0.27, 0x79654e, 1.4);
 
     const [[ax, az], [bx, bz], [cx, cz], [dx, dz]] = INV_GLADE_SHELTER.map(([lat, lon]) => m.fromLatLon(lat, lon));
     const x = (ax + bx + cx + dx) / 4, z = (az + bz + cz + dz) / 4;
