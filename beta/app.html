@@ -9607,7 +9607,7 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model-v45n.js?v=46", assets: TOWN3D, place: "inv", pre: ["town-v45.json?v=1bef586b", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model-v45n.js?v=47", assets: TOWN3D, place: "inv", pre: ["town-v45.json?v=1bef586b", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
     moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=80", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
@@ -9780,30 +9780,65 @@ const handle = async (m, post) => {
       try { T.bowls?.swapped?.(); } catch {}  // what was shaped to the old model's ground is made again on this one's (Moorooka's road medians)
       try { T.gps?.swapped?.(); } catch {}  // older models need the line re-laid over their new ground
     };
-    const upgrade = async () => {
+    let activeQuality = first, pendingQuality = null;
+    const currentTown = () => !dead && BS.town === T;
+    // Compatible Inverloch tiers keep the scene, guest handles and player-owned vehicle on one canvas.
+    const changeQuality = async (target, initialLoadMs) => {
+      pendingQuality = target;
+      try {
+        if (graphics && (target === "medium" || target === "low") && cur.setQualityInPlace) {
+          const start = performance.now();
+          let applied = false;
+          try { applied = await cur.setQualityInPlace(target); }
+          catch (error) { if (currentTown()) console.warn("Inverloch quality transition failed; replacing the scene", error); }
+          if (applied) {
+            if (!currentTown()) return false;
+            activeQuality = target;
+            // Count both pieces of initialization, excluding time the player spent in Low.
+            if (target !== "low") save({ q: target, ms: Math.round(initialLoadMs + performance.now() - start) });
+            return true;
+          }
+        }
+        if (!currentTown()) return false;
+        const n = next = make(target, false); tag(n);
+        const el = rootOf(n); if (el) el.style.visibility = "hidden";
+        try { await n.ready; } catch { if (next === n) drop(); return false; }
+        if (next !== n || !currentTown()) return false;
+        const loadMs = Math.round(performance.now() - n.t0);
+        await swapTo(n, target);
+        if (cur !== n || !currentTown()) return false;
+        activeQuality = target;
+        if (target !== "low") save({ q: target, ms: loadMs });
+        return true;
+      } finally {
+        pendingQuality = null;
+        if (currentTown()) hiBox.hidden = true;
+      }
+    };
+    const upgrade = async initialLoadMs => {
       // wait for the view to be on screen, then see how smoothly the light one runs
       for (let i = 0; i < 600 && !T.on && !dead; i++) await new Promise(ok => setTimeout(ok, 100));
       await new Promise(ok => setTimeout(ok, 1500));
       if (dead || BS.town !== T) return;
       const f = await fps(2000);
-      if (f < 55 && !window.__anForceUp) return;  // not a steady 60: stay light (__anForceUp: for testing on slow machines)
+      if (!currentTown() || (f < 55 && !window.__anForceUp)) return;
       hiBox.hidden = false;
-      next = make(best, false); tag(next); const el = rootOf(next); if (el) el.style.visibility = "hidden";
-      const n = next;
-      try { await n.ready; } catch { if (next === n) drop(); return; }
-      if (dead || next !== n || BS.town !== T) return;
-      save({ q: best, ms: Math.round(performance.now() - n.t0) });
-      await swapTo(n, best);
+      if (!await changeQuality(best, initialLoadMs)) return;
       // the sharp one has to keep up: if it can't, back to light, and this device stays light
       await new Promise(ok => setTimeout(ok, 1500));
       if (dead || BS.town !== T) return;
       const g = await fps(2500);
-      if (g && g < 40 && !window.__anForceUp) { save({ slow: true }); const back = make("low", false); tag(back); const be = rootOf(back); if (be) be.style.visibility = "hidden";
-        try { await back.ready; } catch { return; } if (!dead && BS.town === T) await swapTo(back, "low"); }
+      if (currentTown() && g && g < 40 && !window.__anForceUp) {
+        save({ slow: true });
+        await changeQuality("low", initialLoadMs);
+      }
     };
     T.pair = { initialPreset, presets, get cur() { return cur; }, get next() { return next; },
+      get quality() { return activeQuality; }, get pendingQuality() { return pendingQuality; },
       setFrameTarget(target) { cur?.setFrameTarget?.(target); next?.setFrameTarget?.(target); } };
-    const ready = cur.ready.then(() => { if (!direct) upgrade(); else if (!manual && first === best) save({ q: best, ms: Math.round(performance.now() - cur.t0) }); });
+    const ready = cur.ready.then(() => { const loadMs = Math.round(performance.now() - cur.t0);
+      if (!direct) upgrade(loadMs).catch(error => { if (currentTown()) { hiBox.hidden = true; console.warn("Town quality upgrade failed", error); } });
+      else if (!manual && first === best) save({ q: best, ms: loadMs }); });
     return m;
   }
   function townModelOn(T) {
