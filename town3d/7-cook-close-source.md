@@ -1,0 +1,9 @@
+# 7 Cook Close
+
+Esri World Imagery scene 6072283 was captured by Vantor on 13 May 2025 at 0.34 m ground sample distance with 5 m stated positioning accuracy. Six conservative visible roof controls were sampled with the ArcGIS Online Map Viewer Location tool. The 98.46 m² wall ring follows their inset overlap with Microsoft outline `microsoft-311223133-c88ec781eabcdb1c` inside active Vicmap Lot 26 PS519041, parcel PFI 100747926. Canopy and vines obscure parts of the overall roof. The model represents the confirmed enclosed core. [Dated aerial](https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70797958,-38.63773238&level=20) · [Esri digitizing terms](https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data) · [Microsoft footprints](https://github.com/microsoft/GlobalMLBuildingFootprints) · [CDLA-Permissive-2.0](https://cdla.dev/permissive-2-0/) · [Vicmap Property, © State of Victoria, CC BY 4.0](https://discover.data.vic.gov.au/en_AU/dataset/vicmap-property-parcel-polygon-with-parcel-detail)
+
+Visible controls in order
+
+`145.7079259, -38.6376886` · `145.7079568, -38.6376672` · `145.7080178, -38.6376766` · `145.7080406, -38.6377473` · `145.7080366, -38.6378028` · `145.7079313, -38.6378007`
+
+The Stockdale & Leggo 2016 sale image corroborates cream render, shallow charcoal tile hips, a pale garage door and narrow dark-glazed windows. Door and window placement, roof pitch and height are approximate. The shaded approach, pergola and exact solar placement fall outside the supported geometry. The new walls leave 3.52 m to the sampled front shade and 21.78 m to the modeled road edge. Only the generated trunk 39908 within the walls is masked. Adjacent site geometry and ground keep their existing treatment. [Stockdale & Leggo sale archive](https://www.realestate.com.au/sold/property-house-vic-inverloch-123514030)

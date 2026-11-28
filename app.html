@@ -10169,6 +10169,7 @@ const handle = async (m, post) => {
       if (T.dead) return;
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
         ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cd69429f" } : cfg.assets;
+      if (inv) clearLatLon.push({ lat: -38.63773643, lon: 145.7079579, r: 0.16 }); // 7 Cook Close, seeded trunk 39908.
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
         { onProgress: (f, label) => { if (!T.on && !T.dead) tip.textContent = `Loading the town model: ${String(label).toLowerCase()}…`; },
           onFloodLevel: v => T.onFlood?.(v),
@@ -10251,6 +10252,7 @@ const handle = async (m, post) => {
           mine.push({ name: G.name, group: "Things to drive and fly", what: G.what, walk: { x: G.x + dx, z: G.z + dz, yaw: Math.atan2(dx, dz), pitch: -0.1 }, target: [G.x, G.z] }); }
         // the possum (Moorooka): on the footpath in Kingwell Street, a few steps from it
         if (rides?.possum) { const S = rides.possum; mine.push({ name: S.name, group: "Things to drive and fly", what: S.what, walk: { ...S.stand, pitch: -0.12 }, target: [S.x, S.z] }); }
+        if (inv && m.addParts) invCookClose7(T, m, BS.B.THREE);
         if (rides?.pigeon) { const S = rides.pigeon; mine.push({ name: S.name, group: "Things to drive and fly", what: S.what, walk: { ...S.stand, pitch: -0.25 }, target: [S.x, S.z] }); }
         // Places to jump to: each as somewhere to stand (walking) and a view from above (flying). Where the model knows a
         // spot on the kerb of the nearest street (Moorooka's does), you stand there; otherwise a few steps back from the place.
@@ -18874,6 +18876,54 @@ const handle = async (m, post) => {
     const note = list => { for (const r of list.getEntries ? list.getEntries() : list) { try { BS.assetSeen.set(new URL(r.name).pathname, r.name); } catch {} } };
     note(performance.getEntriesByType("resource")); try { new PerformanceObserver(note).observe({ type: "resource", buffered: true }); } catch {} };
   const townAsset = (cfg, f) => BS.assetSeen?.get(new URL(cfg.assets + f, document.baseURI).pathname) || cfg.assets + f;
+  // 7 Cook Close. The cream render, low tiled hips and approach-facing accents share one mesh.
+  function invCookClose7(town, model, THREE) {
+    const x0 = -1917.203, z0 = 82.042, eave = 2.60;
+    const outline = [[4.113,6.328], [-3.657,6.128], [-4.087,-5.282], [-1.927,-7.192], [2.573,-6.302], [4.423,0.988]];
+    const roof = [[-1.49,-5.576,0.91], [-1.927,-7.192,0.0], [-4.087,-5.282,0.0], [-2.211,4.665,0.91], [-3.657,6.128,0.0], [-2.561,-4.629,0.91], [1.352,-5.014,0.91], [4.423,0.988,0.0], [2.573,-6.302,0.0], [2.7,4.791,0.91], [4.113,6.328,0.0], [2.912,1.132,0.91]];
+    const faces = [[0,1,2], [3,2,4], [2,3,5], [6,7,8], [2,5,0], [9,3,4], [6,1,0], [9,4,10], [1,6,8], [7,9,10], [7,6,11], [9,7,11], [5,11,6], [6,0,5], [11,3,9], [3,11,5]];
+    const walls = outline.map(([x,z]) => [x + x0,z + z0]);
+    const ground = walls.map(([x,z]) => model.groundAt(x,z));
+    const floor = Math.max(...ground) + 0.07;
+    const wall = new THREE.Color(0xe0d5b7), trim = new THREE.Color(0xcac9b5), roofGrey = new THREE.Color(0x68737a);
+    const positions = [], colors = [];
+    const triangle = (a,b,c,tint) => {
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,c,d,tint) => { triangle(a,b,c,tint); triangle(a,c,d,tint); };
+    const at = ([x,z],y) => [x,y,z];
+    const fascia = eave - 0.11;
+    for (let i = 0; i < outline.length; i++) {
+      const j = (i + 1) % outline.length;
+      const a = outline[i], b = outline[j];
+      const skirt = Math.min(ground[i],ground[j]) - floor - 0.3;
+      quad(at(a,skirt),at(a,fascia),at(b,fascia),at(b,skirt),wall);
+      quad(at(a,fascia),at(a,eave),at(b,eave),at(b,fascia),trim);
+    }
+    const cap = roof.map(([x,z,rise]) => [x,eave + rise,z]);
+    for (const [a,b,c] of faces) triangle(cap[a],cap[b],cap[c],roofGrey);
+    const [east, west] = outline;
+    const dx = west[0] - east[0], dz = west[1] - east[1], length = Math.hypot(dx,dz);
+    const atFront = (u,y,offset) => [east[0] + dx * u + dz / length * offset,y,east[1] + dz * u - dx / length * offset];
+    const panel = (u0,u1,h0,h1,offset,tint) => quad(
+      atFront(u0,h0,offset),atFront(u0,h1,offset),atFront(u1,h1,offset),atFront(u1,h0,offset),tint);
+    const garage = new THREE.Color(0xd9ccb0), door = new THREE.Color(0x524d43), glass = new THREE.Color(0x435158);
+    panel(0.035,0.476,0.06,2.25,0.010,trim);
+    panel(0.048,0.462,0.08,2.19,0.016,garage);
+    for (const y of [0.61,1.14,1.67]) panel(0.052,0.458,y,y + 0.022,0.020,trim);
+    panel(0.51,0.673,0.09,2.22,0.012,door);
+    for (const left of [0.72,0.853]) {
+      panel(left,left + 0.084,0.59,2.19,0.011,trim);
+      panel(left + 0.013,left + 0.072,0.68,2.11,0.017,glass);
+    }
+
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors), roughness: 0.88,
+      matrix: new THREE.Matrix4().makeTranslation(x0,floor,z0).elements }]);
+    const grid = town.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
+  }
+
   // how far left of a street's line a car keeps (the traffic's rule, below; the GPS draws its line down the same lane)
   const townLaneOf = r => { const w = r.wd || 0; if (!(w > 3)) return r.one ? 1.2 : 1.9;
     return r.one ? 1.7 * (Math.max(1, Math.min(w < 13 ? 2 : 3, Math.round((w - 2.4) / 3.4))) - 1) : Math.min(1.75, w / 4); };
