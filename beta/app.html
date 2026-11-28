@@ -7366,6 +7366,9 @@ const handle = async (m, post) => {
         for (let i = 0; i < pos.count; i++) { uv[i * 2] = pos.getX(i) / 3; uv[i * 2 + 1] = pos.getZ(i) / 3; }
         paving.geometry.setAttribute("uv", new THREE.BufferAttribute(uv, 2)); paving.material.map = tex;
         paving.material.name = "Inverloch bitumen";
+        if (ab) paving.material.userData.asphaltEnds = {
+          points: abJoins.map(x => [x, streetAt(x, 0).z]), distance: abTaperLength, halfWidth: ab.w / 2 + 4,
+        };
       }
       done(foot, { roughness: 1 }); done(mark, { roughness: 1 });
       if (ramps.p.length) W.invCrossingMesh = done(ramps, { roughness: 1 });
@@ -9746,7 +9749,7 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model-terrain-pass.js?v=5176654d", assets: TOWN3D, place: "inv", pre: ["town.json?v=1bef586b", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model-terrain-pass.js?v=a0560d51", assets: TOWN3D, place: "inv", pre: ["town.json?v=1bef586b", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
     moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=80", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
@@ -17318,8 +17321,12 @@ const handle = async (m, post) => {
 
     const parts = [], used = [];
     for (const b of buckets.values()) { if (!b.pos.length) continue;
+      const ends = b.mat.userData.asphaltEnds;
+      const asphaltEnds = ends && {
+        west: at(...ends.points[0]), east: at(...ends.points[1]), distance: ends.distance * kx, halfWidth: ends.halfWidth * kz,
+      };
       parts.push({ positions: new Float32Array(b.pos), normals: b.nor ? new Float32Array(b.nor) : undefined, colors: b.col ? new Float32Array(b.col) : undefined, uvs: b.uv ? new Float32Array(b.uv) : undefined,
-        ...look(b.mat), matrix: new THREE.Matrix4().elements, onGround: true }); used.push(b.mat); }
+        ...look(b.mat), asphaltEnds, matrix: new THREE.Matrix4().elements, onGround: true }); used.push(b.mat); }
     if (!parts.length) return null;
     glows(m.addParts(parts), used);
     const inPilot = (x,z) => townInBlock((x-o0[0])/kx, (z-o0[1])/kz);
