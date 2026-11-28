@@ -24612,7 +24612,14 @@ const handle = async (m, post) => {
       if (t - E.beat > 0.8) { E.beat = t; const NOTE = [220, 261.6, 329.6, 293.7, 246.9, 196, 220, 174.6]; const f0 = NOTE[Math.floor(t / 0.8) % NOTE.length]; snd.tone?.(f0, f0 * 0.995, 1.3, 0.035, "triangle"); }
       if (t - E.sob > 0.7 + Math.random() * 0.8) { E.sob = t; const nearOne = E.babies.some(b => b.near), f1 = 780 + Math.random() * 320; snd.tone?.(f1, f1 * 0.5, nearOne ? 0.7 : 0.45, nearOne ? 0.06 : 0.035, "sine"); if (nearOne && Math.random() < 0.5) setTimeout(() => snd.tone?.(f1 * 1.1, f1 * 0.6, 0.6, 0.05, "sine"), 260); }
       if (Math.random() < 0.25) gAdd(E.x + (Math.random() - 0.5) * 60, E.y + 1 + Math.random() * 10, E.z + (Math.random() - 0.5) * 60, 0, 0.6, 0, 1.4);
-      if (t > 4 && !E.walking && E.parts) { E.walking = true; T.standAt(E.x + 2, E.z + 16, Math.atan2(-(E.x - (E.x + 2)), -(E.z - (E.z + 16))), -0.12); }
+      // On your feet, a few steps from one of the little ones on the outside of the ring, looking at it, and it already turned to
+      // you (Ash, 28 November 2026: "When in the Dino sad land spawn a bit closer and look at a small Dino so they face me"). It was
+      // 16 m out from the middle, looking at the nest past them all
+      if (t > 4 && !E.walking && E.parts) { E.walking = true;
+        const b = E.babies.reduce((a, q) => (Math.hypot(q.x, q.z) - Math.abs(Math.atan2(q.x, q.z)) * 2 > Math.hypot(a.x, a.z) - Math.abs(Math.atan2(a.x, a.z)) * 2 ? q : a));
+        const r = Math.hypot(b.x, b.z) || 1, px = b.x + b.x / r * 4, pz = b.z + b.z / r * 4;
+        b.hh = Math.atan2(px - b.x, pz - b.z);  // (turned to you already, not turning as you arrive)
+        T.standAt(E.x + px, E.z + pz, Math.atan2(-(b.x - px), -(b.z - pz)), -0.36); }  // (looking down at it: it comes up to your chest)
       if (t > EPI_MS / 1000 - 1.6 && !E.out) { E.out = true; epiFlash(); setTimeout(() => epiEnd(true), 800); } };
     const epiEnd = back => { const E = epi; if (!E) return; epi = null; T.floorOver = null; try { E.parts?.remove(); } catch {} document.body.classList.remove("bsepi"); const el = $("bsFly")?.querySelector(".bs-epi");
       if (el) { el.querySelector(".bs-epi-sky").classList.remove("on"); el.querySelector(".bs-epi-line").classList.remove("on"); setTimeout(() => { if (!epi) el.hidden = true; }, 1200); }
