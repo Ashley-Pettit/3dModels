@@ -7173,15 +7173,97 @@ const handle = async (m, post) => {
         put(ground, g, [0x5f8f4a, 0x74a656, 0x56595f, 0xd8c7a0][k], mtx(0, G0 + 0.02 + k * 0.004, 0, 0)); });
       done(ground, { roughness: 1 });
       // ---- streets
-      const road = bag(), foot = bag(), mark = bag(), STREET = D.r.filter(r => r[1] !== 1).map(([w, k, f]) => ({ w, pts: pts2(f) }));
+      const road = bag(), foot = bag(), ramps = bag(), mark = bag(), STREET = D.r.filter(r => r[1] !== 1).map(([w, k, f]) => ({ w, pts: pts2(f) }));
       const nearOther = (x, z, self, pad) => STREET.some(o => o !== self && o.pts.some((p, i) => { if (i === o.pts.length - 1) return false;
         const [ax, az] = p, [bx, bz] = o.pts[i + 1], dx = bx - ax, dz = bz - az, L2 = dx * dx + dz * dz, t = L2 ? Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L2)) : 0;
         return Math.hypot(x - ax - dx * t, z - az - dz * t) < o.w / 2 + pad; }));
-      const ribbon = (A, pts, w, y, c, h = 0.1) => { for (let i = 0; i < pts.length - 1; i++) { const [ax, az] = pts[i], [bx, bz] = pts[i + 1], L = Math.hypot(bx - ax, bz - az); if (L < 0.05) continue;
-          put(A, new THREE.BoxGeometry(w, h, L), c, mtx((ax + bx) / 2, y, (az + bz) / 2, Math.atan2(bx - ax, bz - az))); }
-        pts.forEach(([x, z]) => put(A, new THREE.CylinderGeometry(w / 2, w / 2, h, 14), c, mtx(x, y, z, 0))); };
-      D.r.forEach(([w, k, f]) => { if (k === 1) ribbon(foot, pts2(f), w, G0 + 0.05, 0xcfc8ba); });  // paths through the parks
-      const ab = STREET.find(st => st.w === 20), crossingX = 40.3, inRetail = x => x >= -55 && x <= 95;
+      // Share the same cross-section at each bend. Round caps extend outwards only at the two ends.
+      const sections = points => {
+        const pts = [];
+        for (const p of points) {
+          const last = pts[pts.length - 1];
+          if (!last || Math.hypot(p[0] - last[0], p[1] - last[1]) >= .15) pts.push(p);
+        }
+        const dirs = pts.slice(1).map(([x, z], i) => { const dx = x - pts[i][0], dz = z - pts[i][1], l = Math.hypot(dx, dz); return [dx / l, dz / l]; });
+        if (!dirs.length) return [];
+        return pts.map(([x, z], i) => {
+          const [ax, az] = dirs[Math.max(0, i - 1)], [bx, bz] = dirs[Math.min(i, dirs.length - 1)];
+          const scale = 1 / Math.max(.48, 1 + ax * bx + az * bz);
+          const nx = -(az + bz) * scale, nz = (ax + bx) * scale;
+          return { x, z, nx, nz, dx: bx, dz: bz };
+        });
+      };
+      // Shift the kerb and sidewalk together while keeping the sidewalk's full width.
+      const lateralOffset = (out, shift) => out + Math.sign(out) * Math.min(1, Math.abs(out) / 10) * shift;
+      const strip = (frames, lo, hi, ly, hy, capped = false, trim) => {
+        const pos = [], tri = (a, b, c) => pos.push(...a, ...b, ...c), quad = (a, b, c, d) => { tri(a, b, c); tri(a, c, d); };
+        const p = (f, out, y) => {
+          const offset = lateralOffset(out, f.curbShift || 0);
+          return [f.x + f.nx * offset, G0 + y + (f.deckRaise || 0), f.z + f.nz * offset];
+        };
+        const down = ([x, , z]) => [x, G0, z];
+        for (let i = 1; i < frames.length; i++) {
+          const a = p(frames[i - 1], lo, ly), b = p(frames[i - 1], hi, hy), c = p(frames[i], hi, hy), d = p(frames[i], lo, ly);
+          quad(a, b, c, d); quad(a, d, down(d), down(a)); quad(c, b, down(b), down(c));
+          if (!capped && i === 1) quad(a, down(a), down(b), b);
+          if (!capped && i === frames.length - 1) quad(d, c, down(c), down(d));
+        }
+        if (capped) for (const end of [-1, 1]) {
+          const f = frames[end < 0 ? 0 : frames.length - 1], r = hi, centre = p(f, 0, ly);
+          const rim = a => [f.x + end * r * (f.nx * Math.cos(a) + f.dx * Math.sin(a)), G0 + ly, f.z + end * r * (f.nz * Math.cos(a) + f.dz * Math.sin(a))];
+          for (let i = 0; i < 7; i++) {
+            const a = rim(i * Math.PI / 7), b = rim((i + 1) * Math.PI / 7);
+            tri(centre, a, b); quad(a, down(a), down(b), b);
+          }
+        }
+        const g = new THREE.BufferGeometry();
+        g.setAttribute("position", new THREE.Float32BufferAttribute(trim ? trim(pos) : pos, 3)); g.computeVertexNormals();
+        return g;
+      };
+      const lay = (batch, frames, lo, hi, y, colour, capped = false, trim) => {
+        if (frames.length < 2) return;
+        const g = strip(frames, lo, hi, y, y, capped, trim); put(batch, g, colour); g.dispose();
+      };
+      D.r.forEach(([w, k, f]) => { if (k === 1) lay(foot, sections(pts2(f)), -w / 2, w / 2, .10, 0xcfc8ba, true); });  // paths through the parks
+      const ab = STREET.find(st => st.w === 20), crossingX = 40.3, crossingEnds = [crossingX - 2.2, crossingX + 2.2], inRetail = x => x >= -55 && x <= 95;
+      const crossing = [];
+      // Reilly ends at A'Beckett's north edge, flush with both sides of its slight bend.
+      const reilly = STREET.find(st => st.w === 10 && st.pts[0][0] === 31.7 && st.pts[0][1] === 37.4);
+      // The authored parking lanes taper to the native 10.7 m roadway at the two block edges.
+      const abJoins = [-57, 97], abTaperLength = 10, abNativeHalfWidth = 5.35;
+      const abTaper = x => Math.max(0, 1 - Math.min(...abJoins.map(edge => Math.abs(x - edge))) / abTaperLength);
+      const abCuts = abJoins.flatMap(x => [x - abTaperLength, x, x + abTaperLength]).sort((a, b) => b - a);
+      const abPoints = ab?.pts.flatMap(([x, z], i, pts) => {
+        if (i === pts.length - 1) return [[x, z]];
+        const [nx, nz] = pts[i + 1];
+        return [[x, z], ...abCuts.filter(cut => cut < x && cut > nx)
+          .map(cut => [cut, z + (nz - z) * (cut - x) / (nx - x)])];
+      });
+      const abFrames = abPoints ? sections(abPoints).map(f => ({ ...f, curbShift: (abNativeHalfWidth - ab.w / 2) * abTaper(f.x) })) : [];
+      const junction = abFrames.findIndex(f => reilly && f.x === reilly.pts[0][0] && f.z === reilly.pts[0][1]);
+      const trimReilly = pos => {
+        if (junction < 1 || junction >= abFrames.length - 1) return pos;
+        const edge = j => { const f = abFrames[j], h = ab.w / 2; return [f.x + f.nx * h, f.z + f.nz * h]; };
+        const clip = (poly, distance) => {
+          const out = [];
+          for (let k = 0; k < poly.length; k++) {
+            const a = poly[k], b = poly[(k + 1) % poly.length], da = distance(a), db = distance(b);
+            if (da >= 0) out.push(a);
+            if ((da < 0) !== (db < 0)) out.push(a.map((n, i) => n + (b[i] - n) * da / (da - db)));
+          }
+          return out;
+        };
+        const [x, z] = edge(junction), out = [];
+        for (const side of [-1, 1]) {
+          const [ex, ez] = edge(junction - side), rise = (ez - z) / (ex - x);
+          const domain = p => (p[0] - x) * side, north = p => z + (p[0] - x) * rise - p[2];
+          for (let i = 0; i < pos.length; i += 9) {
+            const poly = clip(clip([pos.slice(i, i + 3), pos.slice(i + 3, i + 6), pos.slice(i + 6, i + 9)], domain), north);
+            for (let k = 1; k + 1 < poly.length; k++) out.push(...poly[0], ...poly[k], ...poly[k + 1]);
+          }
+        }
+        return out;
+      };
       // Metres east along the surveyed centreline, with a signed offset south. The line bends at Reilly.
       const streetAt = (x, south) => {
         const i = ab.pts.findIndex(([ax], i, p) => i + 1 < p.length && (x - ax) * (x - p[i + 1][0]) <= 0);
@@ -7195,26 +7277,62 @@ const handle = async (m, post) => {
       };
       const paint = (x, south, l, w, colour = 0xe7e5db, turn = 0) => streetBox(mark, x, south, l, w, .115, .016, colour, turn);
       const bays = [];
-      STREET.forEach(st => { const { w, pts } = st; ribbon(road, pts, w, G0 + 0.05, w >= 10 ? 0x3a3d42 : 0x46484d);
+      STREET.forEach(st => { const { w } = st, frame = st === ab ? abFrames : sections(st.pts);
+        const deck = st === ab ? frame.map(f => ({ ...f, deckRaise: .04 * abTaper(f.x) })) : frame;
+        lay(road, deck, -w / 2, w / 2, .10, w >= 10 ? 0x3a3d42 : 0x46484d, true, st === reilly ? trimReilly : undefined);
         if (w < 10) return;
-        for (let i = 0; i < pts.length - 1; i++) { const [ax, az] = pts[i], [bx, bz] = pts[i + 1], L = Math.hypot(bx - ax, bz - az), ux = (bx - ax) / L, uz = (bz - az) / L, r = Math.atan2(ux, uz);
-          // raised footpaths with a kerb, either side, broken where side streets come in
-          for (let s = 0; s < L; s += 3) { const l = Math.min(3, L - s), m = s + l / 2;
-            [-1, 1].forEach(sd => { const x = ax + ux * m - uz * (w / 2 + 2) * sd, z = az + uz * m + ux * (w / 2 + 2) * sd;
-              if (nearOther(x, z, st, 2)) return;
-              put(foot, new THREE.BoxGeometry(4, 0.18, l + 0.02), 0xc9c1b2, mtx(x, G0 + 0.09, z, r));
-              put(foot, new THREE.BoxGeometry(0.25, 0.2, l + 0.02), 0xe3ded3, mtx(x + uz * 1.95 * sd, G0 + 0.1, z - ux * 1.95 * sd, r)); }); }
+        const sides = [-1, 1].map(sign => ({ sign, walk: [], kerb: [] }));
+        const flush = (run, sign, from, to, y, colour) => {
+          lay(foot, run, Math.min(sign * from, sign * to), Math.max(sign * from, sign * to), y, colour); run.length = 0;
+        };
+        const walk = side => flush(side.walk, side.sign, w / 2, w / 2 + 4, .18, 0xc9c1b2);
+        const kerb = side => flush(side.kerb, side.sign, w / 2 - .075, w / 2 + .175, .20, 0xe3ded3);
+        const append = (run, a, b) => { if (!run.length) run.push(a); run.push(b); };
+        for (let i = 1; i < frame.length; i++) {
+          const a = frame[i - 1], b = frame[i], { x: ax, z: az } = a, L = Math.hypot(b.x - ax, b.z - az);
+          const ux = (b.x - ax) / L, uz = (b.z - az) / L, r = Math.atan2(ux, uz);
+          const at = s => { if (s === 0) return a; if (s === L) return b; const t = s / L;
+            return { x: ax + ux * s, z: az + uz * s, nx: a.nx + (b.nx - a.nx) * t, nz: a.nz + (b.nz - a.nz) * t,
+              curbShift: (a.curbShift || 0) * (1 - t) + (b.curbShift || 0) * t }; };
+          // Continuous raised footpaths and kerbs, broken at street mouths and across the ramps.
+          const cuts = [0, L];
+          for (let s = 3; s < L; s += 3) cuts.push(s);
+          if (st === ab && ux) for (const x of crossingEnds) {
+            const s = (x - ax) / ux; if (s > 0 && s < L) cuts.push(s);
+          }
+          cuts.sort((x, z) => x - z);
+          for (let j = 1; j < cuts.length; j++) {
+            if (cuts[j] - cuts[j - 1] < 1e-6) continue;
+            const m = (cuts[j - 1] + cuts[j]) / 2, x = ax + ux * m, z = az + uz * m;
+            const p = at(cuts[j - 1]), q = at(cuts[j]), ramp = st === ab && x > crossingEnds[0] && x < crossingEnds[1];
+            if (ramp) append(crossing, p, q);
+            for (const side of sides) {
+              const out = lateralOffset((w / 2 + 2) * side.sign, (p.curbShift + q.curbShift) / 2 || 0);
+              if (ramp || !nearOther(x - uz * out, z + ux * out, st, 2)) {
+                append(side.walk, p, q);
+                if (ramp) kerb(side); else append(side.kerb, p, q);
+              } else { walk(side); kerb(side); }
+            }
+          }
           // a dashed centre line
-          for (let s = 2; s < L - 2; s += 7) { const x = ax + ux * s, z = az + uz * s; if (!(st === ab && Math.abs(x - crossingX) < 5) && !nearOther(x, z, st, 0)) put(mark, new THREE.BoxGeometry(0.15, 0.03, 3), 0xeeeadc, mtx(x, G0 + 0.115, z, r)); }
+          for (let s = 2; s < L - 2; s += 7) { const x = ax + ux * s, z = az + uz * s; if (!(st === ab && Math.abs(x - crossingX) < 5) && !nearOther(x, z, st, 0)) {
+            put(mark, new THREE.BoxGeometry(0.15, 0.03, 3), 0xeeeadc, mtx(x, G0 + .115 + (st === ab ? .04 * abTaper(x) : 0), z, r));
+          } }
           // angle parking bays along A'Beckett
           if (w === 20) for (let s = 1.5; s < L - 1; s += 2.9) [-1, 1].forEach(sd => { const x = ax + ux * s - uz * (w / 2 - 2.5) * sd, z = az + uz * s + ux * (w / 2 - 2.5) * sd;
-            if (!inRetail(x) && !nearOther(x, z, st, 3) && Math.hypot(x - D.c[0], z - D.c[1]) > 13) put(mark, new THREE.BoxGeometry(0.12, 0.03, 5.6), 0xeeeadc, mtx(x, G0 + 0.115, z, r - sd * 1.07)); });
-        } });
+            if (!inRetail(x) && abTaper(x) === 0 && !nearOther(x, z, st, 3) && Math.hypot(x - D.c[0], z - D.c[1]) > 13) put(mark, new THREE.BoxGeometry(0.12, 0.03, 5.6), 0xeeeadc, mtx(x, G0 + 0.115, z, r - sd * 1.07)); });
+        }
+        for (const side of sides) { walk(side); kerb(side); }
+      });
       // October 2025 Street View: zebra east of the T junction, kerb buildouts, north nose-in bays and south parallel bays.
       if (ab) {
         for (let k = -6; k <= 6; k++) paint(crossingX, k * .86, 3.45, .44);
+        if (crossing.length >= 2) {
+          const edge = ab.w / 2;
+          W.invCrossingPavers = [strip(crossing, -edge, -5.85, .18, .125), strip(crossing, 5.85, edge, .125, .18)];
+          W.invCrossingPavers.forEach(g => put(ramps, g, 0xbeb9ac));
+        }
         for (const side of [-1, 1]) {
-          streetBox(foot, crossingX, side * 8.1, 4.4, 4.5, .10, .05, 0xbeb9ac);
           for (const end of [-1, 1]) {
             if (side < 0 && end < 0) continue; // keep the Reilly mouth open
             const x = crossingX + end * 4.45;
@@ -7227,7 +7345,7 @@ const handle = async (m, post) => {
           let previousEnd;
           for (let x = first; x + step <= last; x += step) {
             const mid = x + step / 2, p = streetAt(mid, side < 0 ? -7.45 : 8.5);
-            if (nearOther(p.x, p.z, ab, .8)) continue;
+            if (abTaper(x) || abTaper(x + step) || nearOther(p.x, p.z, ab, .8)) continue;
             if (side < 0) {
               if (x !== previousEnd) paint(x, -7.45, .10, 4.8);
               paint(x + step, -7.45, .10, 4.8);
@@ -7271,8 +7389,12 @@ const handle = async (m, post) => {
         for (let i = 0; i < pos.count; i++) { uv[i * 2] = pos.getX(i) / 3; uv[i * 2 + 1] = pos.getZ(i) / 3; }
         paving.geometry.setAttribute("uv", new THREE.BufferAttribute(uv, 2)); paving.material.map = tex;
         paving.material.name = "Inverloch bitumen";
+        if (ab) paving.material.userData.asphaltEnds = {
+          points: abJoins.map(x => [x, streetAt(x, 0).z]), distance: abTaperLength, halfWidth: ab.w / 2 + 4,
+        };
       }
       done(foot, { roughness: 1 }); done(mark, { roughness: 1 });
+      if (ramps.p.length) W.invCrossingMesh = done(ramps, { roughness: 1 });
       // ---- buildings. The Hub, library and hall: timber battens over charcoal, with a deep roof edge. Everything else in one mesh.
       const WALL = [[0xe9dcc0, 0x9b5743, 0xf2efe6, 0xc9b79a, 0xd8cdb5, 0xa86a52], [0x8e9498], [0xece4d6, 0xe3dccd, 0xd9d2c0, 0xf2ece0], [0xc9b08a], [0xe8c35a], [0xd8d6cf], [0xeee2c2]];
       const bld = bag(), roofEdge = bag(), ROOFS = [0x7a8085, 0x8f969b, 0xa9adaf, 0x6c767d, 0x9c968b, 0x84908f, 0xb7b9b6, 0x737b86];  // sheeting colours, building by building
@@ -8074,7 +8196,7 @@ const handle = async (m, post) => {
         let n = 0; ab.pts.forEach((p, i) => { if (i === ab.pts.length - 1) return; const [ax, az] = p, [bx, bz] = ab.pts[i + 1], L = Math.hypot(bx - ax, bz - az), ux = (bx - ax) / L, uz = (bz - az) / L, r = Math.atan2(ux, uz);
         for (let s = 2.9; s < L - 1; s += 2.9) [-1, 1].forEach(sd => { n++; if ((n * 7919) % 10 < 3) return;
           const x = ax + ux * (s + 1.4) - uz * (ab.w / 2 - 2.6) * sd, z = az + uz * (s + 1.4) + ux * (ab.w / 2 - 2.6) * sd;
-          if (inRetail(x) || Math.hypot(x - D.c[0], z - D.c[1]) > 140 || Math.hypot(x - D.c[0], z - D.c[1]) < 16 || nearOther(x, z, ab, 3)) return;
+          if (inRetail(x) || abTaper(x) || Math.hypot(x - D.c[0], z - D.c[1]) > 140 || Math.hypot(x - D.c[0], z - D.c[1]) < 16 || nearOther(x, z, ab, 3)) return;
           carAt(x, z, r - sd * (Math.PI / 2 - 0.5), CARS[(n * 31) % CARS.length], n % 6 === 0); }); }); }
       W.invParkedMesh = done(cars, { roughness: .35, metalness: .3 });
       // ---- two cars driving along A'Beckett, one each way, on the left as in Australia; they loop back round when they reach the end
@@ -9882,6 +10004,7 @@ const handle = async (m, post) => {
         const fn = ck.split(":")[0];
         if (staged) replacements.get(H)[fn](...a); else try { H.real[fn](...a); } catch {}
       }
+      T.glade?.install(to);
       if (driven) {
         if (!staged) replaying = to;
         for (const pose of driven.values()) to.driveCar(...pose);
@@ -10165,8 +10288,12 @@ const handle = async (m, post) => {
             if (T.deckY != null ? T.deckY > y - 2.5 : y - m.groundAt(x, z) < 3) { if (best == null || y > best) best = y; } } }
         return best; };
       T.decks = L; }).catch(() => {});
-    townModelLoad(cfg).then(lib => {
+    const glade = inv ? import(new URL("glade-soundshell.mjs", new URL(cfg.assets, document.baseURI)))
+      .then(async mod => ({ ...mod, kit: await mod.loadGlade(new URL(cfg.assets, document.baseURI)) }))
+      .catch(error => { console.warn("Inverloch: Soundshell asset could not be loaded", error); return null; }) : null;
+    Promise.all([townModelLoad(cfg), glade]).then(([lib, gladeAsset]) => {
       if (T.dead) return;
+      if (gladeAsset) clearLatLon.push(...gladeAsset.clearings);
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
         ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cd69429f" } : cfg.assets;
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
@@ -10195,6 +10322,7 @@ const handle = async (m, post) => {
           if (LIFT && x > LIFT[0] && x < LIFT[2] && z > LIFT[1] && z < LIFT[3]) g += LIFT[4];
           if (T.pads) { const g0 = g; for (const P of T.pads) g = Math.max(g, padGround(P, x, z, g0)); }
           if (T.walk && T.screwCreek) g = Math.max(g, T.screwCreek.floorAt(x, z) ?? g);
+          if (T.glade) g = T.glade.heightAt(T.pair.cur, x, z, g);
           if (T.bal6) g = T.bal6.top(x, z, g);  // number 6's floor, decks and stairs, where you can step up onto them
           return g; };
         ground.bed = bed;
@@ -10210,6 +10338,13 @@ const handle = async (m, post) => {
 
         // the town centre round the Rotary clock and number 11 Norman Road, stood in the model where they really are
         let mine = []; if (inv) try { mine = townModelGuests(T, m); } catch (e) { console.warn("Town model: the town centre and Norman Road couldn't be added", e); }
+        if (gladeAsset && m.addParts) try {
+          const grid = T.invStatic ??= invCivicCollision((x, z) => [x, z], () => false);
+          const layout = gladeAsset.installGlade(BS.B.THREE, gladeAsset.kit, grid);
+          layout.install(T.pair.cur);
+          T.glade = layout;
+          mine.push(...layout.jumps);
+        } catch (error) { console.warn("Inverloch: Soundshell could not be placed", error); }
         if (inv) {
           if (m.addParts) townGlade(T, m, BS.B.THREE);
           invMotelFrontage(T, m, BS.B.THREE);
@@ -17353,6 +17488,9 @@ const handle = async (m, post) => {
     // Leave the timber seams inside the connector, clear of the taller shared path at the join.
     joints([-70.95,-199.37, -55.99,-184.5], 1.64, 0.15, 0.27, 0x79654e, 1.4);
 
+    // The Soundshell (T.glade, #426) stands on this same mapped roof. Where it is installed, the open picnic shelter that #391 drew
+    // in its place is left out (its gable and posts came through the shell); the path seams above stay.
+    if (T.glade) { m.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colours), matrix, roughness: 0.97, onGround: true }]); return; }
     const [[ax, az], [bx, bz], [cx, cz], [dx, dz]] = INV_GLADE_SHELTER.map(([lat, lon]) => m.fromLatLon(lat, lon));
     const x = (ax + bx + cx + dx) / 4, z = (az + bz + cz + dz) / 4;
     const width = Math.hypot(bx - ax, bz - az), depth = Math.hypot(dx - ax, dz - az);
@@ -17487,7 +17625,7 @@ const handle = async (m, post) => {
     // between them and everything on them. The things that move (the clock itself, the flags) follow the weather's own.
     let block = null;
     const ownCars = !!(m.addCars && W.invParkedMesh && W.invParked?.length);  // the town centre's parked cars become the model's own, so any of them can be driven
-    if (W.invClock && tower) { const still = new Set(); [W.invClock, ownCars ? W.invParkedMesh : null, ...flags, ...drive, ...moving, ...cars].filter(Boolean).forEach(r => r.traverse(o => still.add(o)));  // (the clock's plaza is built afresh for the model, below)
+    if (W.invClock && tower) { const still = new Set(); [W.invClock, W.invCrossingMesh, ownCars ? W.invParkedMesh : null, ...flags, ...drive, ...moving, ...cars].filter(Boolean).forEach(r => r.traverse(o => still.add(o)));  // (the plaza and crossing pavers are built for the model, below)
       const t0 = performance.now();
       try { block = townModelBlock(T, m, { THREE, TG, toTG, look, glows, plain, skip: still, drop: (x, z, flat, top) => { const d = Math.hypot(x - TOWN_OLD_MEMORIAL[0], z - TOWN_OLD_MEMORIAL[1]);  // the weather's memorial and its paving (not the park's paths beside it), whatever lies under the plaza, and the benches and bins round the weather's clock
         return (flat ? top > 0.102 && (d < 2.6 || (d < 14 && top < 0.1285)) : d < 7) || (flat && (townOnPlaza(x, z) || (top > 0.132 && Math.hypot(x - 15, z - 35.5) < 5.5))) || (!flat && Math.hypot(x - D.c[0], z - D.c[1]) < 9.5); } }); } catch (e) { console.warn("Town model: the town centre couldn't be added", e); }
@@ -17915,8 +18053,12 @@ const handle = async (m, post) => {
 
     const parts = [], used = [];
     for (const b of buckets.values()) { if (!b.pos.length) continue;
+      const ends = b.mat.userData.asphaltEnds;
+      const asphaltEnds = ends && {
+        west: at(...ends.points[0]), east: at(...ends.points[1]), distance: ends.distance * kx, halfWidth: ends.halfWidth * kz,
+      };
       parts.push({ positions: new Float32Array(b.pos), normals: b.nor ? new Float32Array(b.nor) : undefined, colors: b.col ? new Float32Array(b.col) : undefined, uvs: b.uv ? new Float32Array(b.uv) : undefined,
-        ...look(b.mat), matrix: new THREE.Matrix4().elements, onGround: true }); used.push(b.mat); }
+        ...look(b.mat), asphaltEnds, matrix: new THREE.Matrix4().elements, onGround: true }); used.push(b.mat); }
     if (!parts.length) return null;
     glows(m.addParts(parts), used);
     const inPilot = (x,z) => townInBlock((x-o0[0])/kx, (z-o0[1])/kz);
@@ -18480,8 +18622,13 @@ const handle = async (m, post) => {
       for (let i = 0; i < position.count; i++) if (normal.getY(i) > .9) uv.setXY(i, position.getX(i) / 1.6, position.getZ(i) / 1.6);
       add(pavement, g, 0, x, h / 2, z, yaw);
     };
-    // Red pavers mark the two pedestrian approaches in the October panorama.
-    brickPad(41.25, 30.35, 3.85, 4.35, .244, -.118); brickPad(39.35, 46.45, 3.85, 4.35, .244, -.118);
+    // Red pavers use the same sloping surface as the weather's crossing ramps.
+    for (const ramp of W.invCrossingPavers || []) {
+      const g = ramp.clone(), P = g.attributes.position, uv = new Float32Array(P.count * 2);
+      for (let i = 0; i < P.count; i++) { uv[i * 2] = P.getX(i) / 1.6; uv[i * 2 + 1] = P.getZ(i) / 1.6; }
+      g.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+      add(pavement, g, 0, 0, .08 - 2.2, 0); g.dispose();
+    }
     // Street trees seen above the parked cars. Keep the space beneath the crowns open to the shops and clock.
     const crown = new THREE.IcosahedronGeometry(1, 1), spray = new THREE.IcosahedronGeometry(1, 0);
     const greens = [0x586d52, 0x657654, 0x77845b, 0x6b805e, 0x4f6852];
@@ -18522,8 +18669,8 @@ const handle = async (m, post) => {
       // between them is the bed under the big tree)
       const brick = (a, b, w, d) => { const [x, z] = pl(a, b); brickPad(x, z, w, d, PL, -t); };
       brick(-0.35, -0.25, 10.3, 7.3); brick(-2.0, 7.6, 7.0, 8.4);
-      [[-0.35, -4.05, 10.9, 0.3], [-5.65, 3.9, 0.3, 16.2], [4.95, -0.25, 0.3, 7.3], [3.2, 3.55, 3.8, 0.3], [1.65, 5.7, 0.3, 4.6], [3.5, 7.85, 4.0, 0.3], [5.35, 9.85, 0.3, 4.3], [-0.15, 11.95, 11.3, 0.3],
-        [-2.0, 3.55, 7.0, 0.24], [-0.6, 1.3, 1.5, 4.4]].forEach(([a, b, w, d]) => slab(a, b, w, d, bits, 0xd6c8a8, PL + 0.015));
+      [[-0.35, -4.05, 10.9, 0.3], [-5.65, 3.95, 0.3, 15.7], [4.95, -0.25, 0.3, 7.3], [3.2, 3.55, 3.8, 0.3], [1.65, 5.7, 0.3, 4.0], [3.5, 7.85, 4.0, 0.3], [5.35, 9.9, 0.3, 3.8], [-0.15, 11.95, 11.3, 0.3],
+        [-2.1, 3.55, 6.8, 0.24], [-0.6, 1.265, 1.5, 4.33]].forEach(([a, b, w, d]) => slab(a, b, w, d, bits, 0xd6c8a8, PL + 0.015));
       const thing = (geo, colour, a, y, b, ry = 0, rx = 0, rz = 0, sx = 1, sy = 1, sz = 1) => { const [x, z] = pl(a, b); add(bits, geo, colour, x, y, z, -t + ry, rx, rz, sx, sy, sz); };
       // seats (one by the memorial, one on the kerb strip), a bin, and the kerb's row of bollards
       [[3.9, 1.6, -Math.PI / 2], [-3.6, 10.9, Math.PI]].forEach(([a, b, r]) => { const c = Math.cos(r), sn = Math.sin(r);
@@ -18534,7 +18681,7 @@ const handle = async (m, post) => {
       collision.post(...pl(.9,5.2),.3);
       thing(rod(0.27, 0.9, 12, 0.3), 0x2f5a3a, 0.9, PL + 0.45, 5.2); thing(rod(0.31, 0.06, 12), 0x24452d, 0.9, PL + 0.93, 5.2);
       slab(-2.0, 5.0, 7.0, 2.0, bits, 0xbfb8a8, PL + 0.02);  // the concrete walk across the brick
-      [[-0.15, 12.0, 11.5, 0.22], [-5.7, 9.55, 0.22, 5.1], [5.5, 9.9, 0.22, 4.4], [3.5, 7.8, 4.2, 0.22], [1.6, 9.9, 0.22, 4.2]].forEach(([a, b, w, d]) => slab(a, b, w, d, bits, 0xcfcac0, PL + 0.14));  // a raised kerb where the plaza and its garden meet the road
+      [[-0.15, 12.0, 11.5, 0.22], [-5.7, 9.445, 0.22, 4.89], [5.5, 9.9, 0.22, 3.98], [3.5, 7.8, 4.2, 0.22], [1.6, 9.9, 0.22, 3.98]].forEach(([a, b, w, d]) => slab(a, b, w, d, bits, 0xcfcac0, PL + 0.14));  // a raised kerb where the plaza and its garden meet the road
       [[-4.9, 11.3], [1.0, 11.3]].forEach(([a, b]) => { collision.box(...pl(a,b),-t,.16,.16);
         thing(box(0.16, 1.0, 0.16), 0x8a7a5e, a, PL + 0.5, b); });        // timber posts at the kerb
       // planting: the mulched bed under the big tree in the plaza's corner, and a strip along its west side
@@ -19432,7 +19579,7 @@ const handle = async (m, post) => {
         // the potato hotrod (Ash, 26 November 2026): beside the golden car. 20 seconds after you get in, the T-rex comes (townCar). Logan has one too
         { x: -237.2, z: -375.5, h: Math.PI, hotrod: true, name: "The hotrod", what: "A potato hot rod with a blower and flames, on the lawn by The Hub. Get in if you dare" }],
       more: { planes: [{ x: -1602.1, z: 422, h: 2.6, heli: true, name: "The helicopter", at: "behind 11 Norman Road", what: "On the grass behind 11 Norman Road" }], cars: [{ x: -206.731, z: -348.385, h: -1.683, bus: true, hide: [[-203.77, -345.76]], name: "The bus", what: "In A'Beckett Street, at the kerb across the road from The Hub" }] },
-      roam: [[-278, -562], [627, -1086], [-108, -190], [22, -143], [-1585, 1221], [575, 1066]] },
+      roam: [[-278, -562], [627, -1086], [-108, -190], [48, -175], [-1585, 1221], [575, 1066]] },
     logan: { planes: [{ x: 5732, z: -12989, h: 1.0, name: "The plane", at: "on the big lawn in Civic Centre Park", what: "On the big open lawn in Civic Centre Park, behind the council, with room to take off" }],
       cars: [{ x: 5816.2, z: -13302.9, h: 1.94, spare: true, name: "The red car", what: "On the lawn out the front of the council, by the plane" }, { x: 5788.7, z: -13204.6, h: 3.63, gold: true, name: "The golden car", what: "In the car park behind the council. A fifth faster than the red one" },
         // Logan's potato hotrod and its T-rex (Ash, 27 November 2026: "start working on adding the boss fight to Logan. Make sure multiplayer
@@ -20621,59 +20768,82 @@ const handle = async (m, post) => {
     choppa: [35, "Car hits on Mumma before Get to the choppa", "hits, everyone's added together", 1, 1000], packs: [3, "Health packs out at once", "packs", 0, 6], packSecs: [30, "A new health pack every", "seconds", 3, 600] };
   function rexClean(o) { const r = {}; for (const k in REX_DEF) { const [d, , , lo, hi] = REX_DEF[k], v = o?.[k] == null || o[k] === "" ? NaN : +o[k]; r[k] = Number.isFinite(v) ? bsClamp(v, lo, hi) : d; } return r; }
   function rexSettings() { let o = {}; try { o = JSON.parse(localStorage.getItem("an3d-rex") || "{}") || {}; } catch {} return rexClean(o); }
-  // T-rex fight music. Each cue loops for as long as its encounter is active. Inverloch's are Bangerz's placeholder score (#427);
-  // Moorooka's is Ash's own song, "Loose in Moorooka" (Ash, 28 November 2026: "When fighting the trex In moorooka play my trex
-  // moorooka song on loop"), mono at 24 kHz so it decodes to about 10 MB
+  // Inverloch's two bosses share a playlist. The final song in each town loops until the fight ends.
   function townMusicDirector() {
-    const tracks = {
-      rex: "music/deckbuilder-boss-escalation-1.mp3",
-      mumma: "music/deckbuilder-boss-escalation-2.mp3",
-      moo: "music/loose-in-moorooka.mp3",
+    const playlists = {
+      inv: ["inverloch-boss-fight.mp3", "deckbuilder-boss-escalation-1.mp3", "deckbuilder-boss-escalation-2.mp3"],
+      moo: ["loose-in-moorooka.mp3"],
     };
     let current = null;
 
-    async function play(track, audio, master) {
-      const { signal } = track.request;
-      const response = await fetch(TOWN3D + tracks[track.cue], { signal });
-      if (!response.ok) throw new Error("HTTP " + response.status);
-      const bytes = await response.arrayBuffer();
-      if (signal.aborted) return;
-      // Decode at the files' native rate. The longer stereo cue takes 33 MiB even on a 48 kHz device.
-      const decoder = new OfflineAudioContext(1, 1, 24000);
-      const buffer = await decoder.decodeAudioData(bytes);
-      if (signal.aborted) return;
+    function pause(song) {
+      const voice = song.voice;
+      if (!voice) return;
+      const { source, gain, startedAt } = voice;
+      const now = source.context.currentTime;
+      song.offset = now - startedAt;
+      if (source.loop) song.offset %= song.buffer.duration;
+      song.voice = null;
+      gain.gain.setTargetAtTime(0, now, 0.035);
+      source.stop(source.context.state === "running" ? now + 0.18 : now);
+    }
+
+    async function load(song) {
+      song.loading = true;
+      const { signal } = song.request;
+      try {
+        const file = song.files[song.index];
+        const response = await fetch(TOWN3D + "music/" + file, { signal });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        const bytes = await response.arrayBuffer();
+        if (signal.aborted) return;
+        // Only the current song is decoded. At 24 kHz the longest stereo buffer takes about 34 MiB.
+        const decoder = new OfflineAudioContext(1, 1, 24000);
+        const buffer = await decoder.decodeAudioData(bytes);
+        if (!signal.aborted) song.buffer = buffer;
+      } catch (error) {
+        if (!signal.aborted) {
+          console.warn("The T-rex music could not play", song.files[song.index], error);
+          song.retryAt = performance.now() + 15000;
+        }
+      } finally {
+        song.loading = false;
+      }
+    }
+
+    function play(song, audio, master) {
       const source = audio.createBufferSource(), gain = audio.createGain();
-      source.buffer = buffer;
-      source.loop = true;
+      source.buffer = song.buffer;
+      source.loop = song.index === song.files.length - 1;
       gain.gain.value = 0;
       gain.gain.setTargetAtTime(0.24, audio.currentTime, 0.08);
       source.connect(gain);
       gain.connect(master);
-      source.onended = () => { source.disconnect(); gain.disconnect(); };
-      source.start();
-      track.source = source;
-      track.gain = gain;
+      source.onended = () => {
+        source.disconnect();
+        gain.disconnect();
+        if (song.voice?.source !== source) return;
+        song.voice = null;
+        song.buffer = null;
+        song.offset = 0;
+        song.index++;
+      };
+      song.voice = { source, gain, startedAt: audio.currentTime - song.offset };
+      source.start(0, song.offset);
     }
 
-    return function setCue(cue, audio, master) {
-      if (cue === (current?.cue ?? null)) return;
-      if (current) {
-        const { request, source, gain } = current;
-        request.abort();
-        if (source) {
-          const t = source.context.currentTime;
-          gain.gain.setTargetAtTime(0, t, 0.035);
-          source.stop(source.context.state === "running" ? t + 0.18 : t);
-        }
+    return function setCue(cue, audio, master, interlude) {
+      if (current && current.cue !== cue) {
+        current.request.abort();
+        pause(current);
         current = null;
       }
-      // The existing town gestures unlock this context. A muted or locked game can pick up the cue later.
-      if (!cue || audio?.state !== "running") return;
-      const track = { cue, request: new AbortController() };
-      current = track;
-      play(track, audio, master).catch(error => {
-        if (!track.request.signal.aborted) console.warn("The T-rex music could not play", cue, error);
-      });
+      if (!cue) return;
+      if (!current) current = { cue, files: playlists[cue], index: 0, offset: 0, request: new AbortController(), retryAt: 0 };
+      if (interlude) { pause(current); return; }
+      if (current.voice || current.loading || audio?.state !== "running") return;
+      if (current.buffer) play(current, audio, master);
+      else if (performance.now() >= current.retryAt) load(current);
     };
   }
   function townSound(inverloch) {
@@ -20728,7 +20898,7 @@ const handle = async (m, post) => {
         to(eng.wf.frequency, (eng.heli ? 350 : 450) + 1500 * Math.min(1, speed / 70)); to(eng.wg.gain, eng.heli ? 0.03 + 0.045 * rev : Math.min(0.19, (speed / 45) ** 2 * 0.065) * (eng.plane ? 1.4 : 1) + (boost ? 0.055 : 0));
         to(eng.sg.gain, skid * 0.1, 0.03); },
       level(v) { vol = v; if (master) master.gain.value = 0.9 * v; },
-      music(cue) { setMusic?.(cue, vol > 0 && !hush ? ac : null, master); },
+      music(cue, interlude = false) { setMusic(cue, vol > 0 && !hush ? ac : null, master, interlude); },
       // Preload the compressed lines for this fight and decode one at a time for playback.
       voiceLoad(set, keys) { for (const k of keys) { const id = set + "/" + k; if (vbuf[id]) continue; vbuf[id] = fetch(TOWN3D + "voice/" + id + ".mp3").then(r => r.ok ? r.arrayBuffer() : null).catch(() => null); } },
       voice(set, key) { if (!vol) return; const a = ctx(), id = set + "/" + key; if (!a) return; this.voiceLoad(set, [key]);
@@ -25372,11 +25542,11 @@ const handle = async (m, post) => {
             else if (inIt && rexAway && rex.live) { rexAway = false; rexSend(["join", rexFid, String(playerName() || "").slice(0, 16)], rexHost); } }
           else if (rex.live && !rexTarget() && !(rexOut && !rexGhost)) { if (rexOut || [...rexGuests.values()].some(g => g.out)) rexLost(); else rexOver("🦖 The T-rex lost interest and stomped off. Get back in the hotrod to take it on again."); }
           if (rex) rexTick(dt); if (rex) rexSync(false); }
-        if (place === "inv") {
-          const playing = rex?.live && rex.st !== "dead" && stillIn();
-          snd.music(playing ? (rex.mum ? "mumma" : "rex") : null);
+        if (place === "inv" || place === "moo") {
+          const active = rex?.live && stillIn();
+          const interlude = rex?.st === "dead";
+          snd.music(active && (place === "inv" || !interlude) ? place : null, interlude);
         }
-        if (place === "moo") snd.music(rex?.live && rex.st !== "dead" && stillIn() ? "moo" : null);  // ("Loose in Moorooka", on loop)
         if (fb || fbP) fbTick(dt);
         const noSpud = !(rex && rex.live && fighting() && !rex.nuke); if (spudBtn.hidden !== noSpud) spudBtn.hidden = noSpud;
         // into the choppa against Mumma: the button's Rockets, the GPS is done with, and how to fight her from up there
