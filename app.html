@@ -9998,6 +9998,102 @@ const handle = async (m, post) => {
     return { length, half, point, local, nearby };
   })();
 
+  // 56 Tamara Crescent. The enclosed volumes share a batch with the two open covers.
+  function invTamaraCrescent56(T, model, THREE) {
+    const walls = [[-1909.53,45.44],[-1911.32,61.69],[-1919.72,60.76],[-1917.93,44.51]];
+    const garageWalls = [[-1903.11,39.78],[-1903.79,45.94],[-1909.70,45.29],[-1909.02,39.13]];
+    const deck = [[-1906.36,54.21],[-1907.03,60.29],[-1910.66,59.89],[-1909.98,53.81]];
+    const x0 = -1912, z0 = 50, positions = [], colors = [];
+    const point = ([x,z], y) => [x-x0,y,z-z0];
+    const mix = ([ax,az], [bx,bz], t) => [ax+(bx-ax)*t,az+(bz-az)*t];
+    const at = p => model.groundAt(...p);
+    const tint = c => new THREE.Color(c);
+    const brick = tint(0xcbbb99), sill = tint(0xaea289), fascia = tint(0xdad0b8);
+    const tile = tint(0x5a5e5a), glass = tint(0x3d4a4b), door = tint(0x81857f);
+    const seam = tint(0x686e66), solar = tint(0x32485a), awning = tint(0x88918a);
+    const triangle = (a,b,c,color) => {
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(color.r,color.g,color.b);
+    };
+    const quad = (a,b,c,d,color) => { triangle(a,b,c,color); triangle(a,c,d,color); };
+    const cap = (corners, y, rise, color, hips) => {
+      const p = (i) => point(corners[i],y);
+      const north = mix(corners[3],corners[0],.5), south = mix(corners[2],corners[1],.5);
+      const n = point(mix(north,south,hips),y+rise), s = point(mix(north,south,1-hips),y+rise);
+      quad(p(0),n,s,p(1),color);
+      triangle(p(1),s,p(2),color);
+      quad(p(2),s,n,p(3),color);
+      triangle(p(3),n,p(0),color);
+      return [n,s];
+    };
+    const enlarged = (corners, expansion) => {
+      const centre = mix(corners[0],corners[2],.5);
+      return corners.map(p => {
+        const length = Math.hypot(p[0]-centre[0],p[1]-centre[1]);
+        return mix(centre,p,1+expansion/length);
+      });
+    };
+    const face = (a,b,l,r,low,high,color,offset=.025) => {
+      const dx = b[0]-a[0], dz = b[1]-a[1], step = offset/Math.hypot(dx,dz);
+      const u = mix(a,b,l), v = mix(a,b,r);
+      const onFace = ([x,z],y) => point([x+dz*step,z-dx*step],y);
+      quad(onFace(u,low),onFace(u,high),onFace(v,high),onFace(v,low),color);
+    };
+    const shell = (corners, floor, eave, rise, hips) => {
+      const full = enlarged(corners,.40), top = floor+eave;
+      for (let i = 0; i < 4; i++) {
+        const j = (i+1)%4, a = corners[i], b = corners[j];
+        const floorEdge = Math.min(at(a),at(b),floor)-.14;
+        quad(point(a,floorEdge),point(a,top-.10),point(b,top-.10),point(b,floorEdge),brick);
+        quad(point(full[i],top-.13),point(full[i],top),point(full[j],top),point(full[j],top-.13),fascia);
+      }
+      return [full,cap(full,top,rise,tile,hips)];
+    };
+    // Measure thresholds at their own frontages because the lot slopes to the street.
+    const mainFloor = at(mix(walls[3],walls[0],.83))+.12;
+    const garageFloor = at(mix(garageWalls[2],garageWalls[3],.51))+.055;
+    const [mainEaves,[ridgeNorth,ridgeSouth]] = shell(walls,mainFloor,2.72,1.27,.225);
+    shell(garageWalls,garageFloor,2.64,.98,.28);
+    face(walls[3],walls[0],.75,.90,mainFloor,mainFloor+2.13,glass);
+    face(walls[3],walls[0],.17,.60,mainFloor+.85,mainFloor+2.10,sill);
+    face(walls[3],walls[0],.20,.57,mainFloor+.90,mainFloor+2.05,glass,.037);
+    face(walls[2],walls[3],.27,.45,mainFloor+.98,mainFloor+2.06,glass);
+    face(walls[0],walls[1],.51,.80,mainFloor+.86,mainFloor+2.07,glass);
+    face(garageWalls[2],garageWalls[3],.10,.91,garageFloor,garageFloor+2.13,door);
+    for (const y of [.42,.84,1.26,1.68]) {
+      face(garageWalls[2],garageWalls[3],.107,.903,garageFloor+y,garageFloor+y+.021,seam,.037);
+    }
+    const roofPlane = (u,v) => {
+      const a = point(mix(mainEaves[3],mainEaves[2],u),mainFloor+2.72);
+      const b = ridgeNorth.map((n,i) => n+(ridgeSouth[i]-n)*(u-.225)/.55);
+      return a.map((n,i) => n+(b[i]-n)*v+(i===1?.024:0));
+    };
+    for (let s = 0; s < 5; s++) {
+      const a = .29+s*.07, b = a+.063;
+      quad(roofPlane(a,.21),roofPlane(b,.21),roofPlane(b,.64),roofPlane(a,.64),solar);
+    }
+    const post = ([x,z], top) => {
+      const base = at([x,z])-.04, half = .062;
+      const corners = [[x+half,z-half],[x+half,z+half],[x-half,z+half],[x-half,z-half]];
+      for (let i = 0; i < 4; i++) {
+        const a = corners[i], b = corners[(i+1)%4];
+        quad(point(a,base),point(a,top),point(b,top),point(b,base),fascia);
+      }
+    };
+    const porch = [[-1908.72,43.42],[-1908.90,45.30],[-1912.38,44.92],[-1912.20,43.04]];
+    const porchY = mainFloor+2.46;
+    cap(porch,porchY,.24,tile,.20);
+    post(mix(porch[3],porch[0],.11),porchY);
+    const deckY = mainFloor+2.39;
+    cap(enlarged(deck,.20),deckY,.53,awning,0);
+    for (const t of [.02,.5,.98]) post(mix(deck[0],deck[1],t),deckY);
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().makeTranslation(x0,0,z0).elements, roughness: .87 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
+    grid.polygon(garageWalls);
+  }
+
   function invScrewCreekMask() {
     const { length, point } = INV_SCREW_CREEK;
     // Clear the shared endpoint by a few millimetres so the native bridge's solid rails disappear.
@@ -10145,6 +10241,7 @@ const handle = async (m, post) => {
     if (inv && home && BS.W.invHouse) { const [lat, lon] = townLL(home[0], home[1]); clearLatLon.push({ lat, lon, r: 24 }); detailLatLon.push({ lat, lon, r: 170 }); }
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
     if (inv) clearPolygons.push({ latLon: INV_GLADE_SHELTER });
+    if (inv) clearLatLon.push({ lat: -38.63749321, lon: 145.70811007, r: 0.16 }); // 56 Tamara Crescent: remove the generated block at the open deck.
     if (inv) clearPolygons.push({ latLon: invScrewCreekMask(), roads: true });
     // Moorooka's bridges (town.json's roads marked as one): their decks, so a car drives over them, not down through them into the creek.
     // The deck is as the model draws it (moorooka-model.js ?v=79): straight from one end's ground to the other's, a metre's hump in the
@@ -10213,6 +10310,7 @@ const handle = async (m, post) => {
         if (inv) {
           if (m.addParts) townGlade(T, m, BS.B.THREE);
           invMotelFrontage(T, m, BS.B.THREE);
+          if (m.addParts) invTamaraCrescent56(T, m, BS.B.THREE);
           const buildings = m.buildingBlockers?.();
           if (buildings) {
             const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
