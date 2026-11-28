@@ -1,6 +1,6 @@
 # Explore playtests
 
-Pick the run that answers the question. Each technical runner has its own README beside it in [this directory](./).
+Pick the run that answers the question. The two technical runners arrive in separate changes. If your checkout lacks a linked README, open the [performance runner change](https://github.com/Ashley-Pettit/3dModels/pull/383) or the [loading and touch runner change](https://github.com/Ashley-Pettit/3dModels/pull/384) and check out its head before running the command. The player briefs work on their own.
 
 | Question | Start here | Evidence to keep |
 |---|---|---|
