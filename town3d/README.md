@@ -299,6 +299,12 @@ range requests (one 600 MB file, 3.6 MB of it read). Street View still gives eac
 - For the whole town: Microsoft's outlines put about 4,700 buildings where the model has its 5,712 made-up houses (and 311
   OpenStreetMap ones). Each would get its colours from the satellite, and Street View detail only where it matters.
 
+### Norman Road beta delivery
+
+The original No. 13 exterior and full-street outlines reached production in v46 via [Explore #381](https://github.com/Ashley-Pettit/3dModels/pull/381). The free-source height, frontage and vacant-lot refinements are in the [combined v48 beta](https://github.com/Ashley-Pettit/3dModels/pull/389). The beta bundle comes from [ai-forge source 29f7d18](https://github.com/Ashley-Pettit/ai-forge/commit/29f7d18697fc381f8163f0f94ad73f0f71d0fef8), now in the [canonical renderer branch via #53](https://github.com/Ashley-Pettit/ai-forge/pull/53).
+
+[Explore #387](https://github.com/Ashley-Pettit/3dModels/pull/387) tracks production promotion of the existing v48 asset after Ash's beta sign-off. The individual model revisions below record how the street was built.
+
 ### 13 Norman Road exterior preview
 
 Number 13 uses a single-storey L-shaped shell based on [Microsoft Global ML Building Footprints](https://github.com/microsoft/GlobalMLBuildingFootprints)

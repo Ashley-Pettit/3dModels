@@ -9607,7 +9607,7 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=47", assets: TOWN3D, place: "inv", pre: ["town.json?v=1bef586b", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=46", assets: TOWN3D, place: "inv", pre: ["town.json?v=1bef586b", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
     moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=80", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
@@ -9896,6 +9896,16 @@ const handle = async (m, post) => {
           if (buildings) {
             const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
             grid.addTown(buildings, m.parkedCarBlockers());
+            // The odd parked car the model stood in a pole, a sign or a wall (8 of Inverloch's 1,593, round the town centre): moved
+            // to the nearest clear spot, along its bay first and then out a little sideways, so it can be driven away (Ash, 28 November
+            // 2026: "Some of the Inverloch parked cars are locked inside poles and can't move when I get in to drive")
+            try { for (const c of m.parkedCarBlockers() || []) { const B = grid.originalBay(c.id); if (!B) continue; grid.take(c.id);
+              let to = null; if (grid.depth(B.x, B.z, B.h, B.l, B.w) > 0) { const fx = Math.sin(B.h), fz = Math.cos(B.h);
+                for (let d = 0.25; d <= 3.5 && !to; d += 0.25) for (const [a, s] of [[d, 0], [-d, 0], [0, d], [0, -d], [d, d], [-d, d], [d, -d], [-d, -d]]) {
+                  if (Math.abs(s) > 2.5) continue; const x = B.x + fx * a + fz * s, z = B.z + fz * a - fx * s;
+                  if (!grid.depth(x, z, B.h, B.l + 0.15, B.w + 0.1)) { to = { x, z }; break; } } }
+              if (to && m.driveCar?.(c.id[0], c.id[1], to.x, ground(to.x, to.z) + 0.05, to.z, B.h, 0, 0)) grid.park(c.id, to.x, to.z, B.h, ground(to.x, to.z) + 0.05, 0, 0);
+              else grid.park(c.id, B.x, B.z, B.h); } } catch (e) { console.warn("Inverloch: couldn't move the parked cars stuck in poles", e); }
           } else invAddDesignedWalls(T, m.designedWallFootprints?.());
         }
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
