@@ -39,6 +39,12 @@ python tools/streetscapes/coverage_inventory.py baseline.json candidate.json cov
 
 The placement report records source identifiers, accepted slots and reasons for rejected proposals. The coverage GeoJSON preserves both sides of every original road and checks that the map projection, original road data, original mapped buildings and original packed style fields stayed intact.
 
+## 44 Ullathornes Road
+
+The [13 May 2025 Vantor scene](https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70902513,-38.63190665&level=20) and [historical Vicmap Basemaps](https://www.land.vic.gov.au/maps-and-spatial/spatial-data/vicmap-basemaps) agree on the continuous pale roof and three western solar arrays. Register the two [Microsoft Global ML Building Footprints](https://github.com/microsoft/GlobalMLBuildingFootprints) observations microsoft-311223133-fbee6d28ee532945 and microsoft-311223133-4da565aedc35d26c together under [CDLA-Permissive-2.0](https://cdla.dev/permissive-2-0/). The joined principal mass is inside [Vicmap Property](https://discover.data.vic.gov.au/en_AU/dataset/vicmap-property-parcel-polygon-with-parcel-detail) parcel 125000853, Lot 3 PS540490. Vicmap data is © State of Victoria, CC BY 4.0. The [property record](https://www.realestate.com.au/property/44-ullathornes-rd-inverloch-vic-3996/) reports one storey.
+
+A 2.5 m east and 1.1 m south registration and an inward eave allowance give the 310.73 m² solid wall. One untextured batch spans the main roof and replaces the old east-only shell in slot 5883. Trunk 35666 stood inside the confirmed roof and is masked. The separate western house, northern drive, adjacent trees and southern corridor are retained. Roof pitch, facade openings and driveway paving remain approximate.
+
 ## Optional tree relocation pass
 
 Reproduce the second pass from the same original baseline and the three source snapshots above by adding `--relocate-blocking-trees` to the placement command. The importer completes the first pass before reconsidering tree-blocked outlines. It moves only a single packed, procedurally seeded trunk per accepted outline, with a margin inside both the source outline and the fitted shell. The new trunk needs a clear position within six metres on the same unambiguous active Vicmap parcel. Building and road offsets, neighbouring trunks and the two protected corridors constrain the destination. The report records each original and revised position and the reason when a move is declined.
