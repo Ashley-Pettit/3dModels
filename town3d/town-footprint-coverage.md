@@ -26,6 +26,12 @@ Two one-storey volumes at Inverloch Primary School, 17 Bayview Avenue, fill the 
 
 Eleven seeded tree trunks inside the two new footprints are hidden by the existing Explore clearance controls. Tree slots, the gap between the roofs, nearby roads, and the two excluded streets are preserved. No reference image ships with the model.
 
+## Ullathornes Road access dwelling
+
+One existing detached home on lot 2 PS520456 is now represented off Ullathornes Road. The [existing-conditions survey](https://hdp-au-prod-app-bass-engage-files.s3.ap-southeast-2.amazonaws.com/8417/5938/5866/Appendix_A1_-_Existing_Conditions_-_With_Buildings.pdf) and the [2026 public planning report](https://hdp-au-prod-app-bass-engage-files.s3.ap-southeast-2.amazonaws.com/8617/5938/5807/Planning_Report.pdf) corroborate the dwelling on the lot. The outline comes from [Microsoft's November 2026 release](https://github.com/microsoft/GlobalMLBuildingFootprints), `microsoft-311223133-7812012c7a4750ae`. [Vicmap Features of Interest](https://services-ap1.arcgis.com/P744lA0wf4LlBZ84/arcgis/rest/services/Vicmap_Features_of_Interest/FeatureServer/6) building point PFI `1260790` lies inside the outline and Vicmap Parcel PFI `123366884` contains it. © State of Victoria, CC BY 4.0. The existing one-storey residential renderer supplies approximate materials and roof form.
+
+Two procedural trunks inside the house are hidden using the existing clearance control. This leaves the packed tree indices, the service access and the future subdivision layout outside the change.
+
 ## Inventory and reproduction
 
 The inventory assigns each footprint centre to its nearest suitable model road or path. The 881 original road/path records contain 1,762 sides, of which six are excluded. The eligible sides include 378 with a new or refitted outline, 90 with original mapped footprints, 289 with a source outline to review, 129 with generated buildings and no nearby source outline, and 870 with no assigned building or outline. Some latter records are paths or open land. These counts describe proximity to a model centreline. Street-level confirmation of building appearance, land use and every access remains separate.
