@@ -1,0 +1,269 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.706494,
+          -38.634891
+        ]
+      },
+      "properties": {
+        "role": "west north visible eave",
+        "roofWitness": true,
+        "date": "2022-03-26",
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.70658543,-38.63496965&level=20",
+        "laterView": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70658543,-38.63496965&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.706528,
+          -38.634908
+        ]
+      },
+      "properties": {
+        "role": "west shadow edge",
+        "roofWitness": true,
+        "date": "2022-03-26",
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.70658543,-38.63496965&level=20",
+        "laterView": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70658543,-38.63496965&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.706569,
+          -38.634955
+        ]
+      },
+      "properties": {
+        "role": "under canopy western boundary",
+        "roofWitness": true,
+        "date": "2022-03-26",
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.70658543,-38.63496965&level=20",
+        "laterView": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70658543,-38.63496965&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.706612,
+          -38.634948
+        ]
+      },
+      "properties": {
+        "role": "under canopy eastern boundary",
+        "roofWitness": true,
+        "date": "2022-03-26",
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.70658543,-38.63496965&level=20",
+        "laterView": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70658543,-38.63496965&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.706652,
+          -38.634935
+        ]
+      },
+      "properties": {
+        "role": "east roof junction",
+        "roofWitness": true,
+        "date": "2022-03-26",
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.70658543,-38.63496965&level=20",
+        "laterView": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70658543,-38.63496965&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.706726,
+          -38.634978
+        ]
+      },
+      "properties": {
+        "role": "east extension north",
+        "roofWitness": true,
+        "date": "2022-03-26",
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.70658543,-38.63496965&level=20",
+        "laterView": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70658543,-38.63496965&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.706746,
+          -38.635049
+        ]
+      },
+      "properties": {
+        "role": "east extension south",
+        "roofWitness": true,
+        "date": "2022-03-26",
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.70658543,-38.63496965&level=20",
+        "laterView": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70658543,-38.63496965&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.70664,
+          -38.635044
+        ]
+      },
+      "properties": {
+        "role": "south join",
+        "roofWitness": true,
+        "date": "2022-03-26",
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.70658543,-38.63496965&level=20",
+        "laterView": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70658543,-38.63496965&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.706481,
+          -38.635007
+        ]
+      },
+      "properties": {
+        "role": "southwest roof edge",
+        "roofWitness": true,
+        "date": "2022-03-26",
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.70658543,-38.63496965&level=20",
+        "laterView": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70658543,-38.63496965&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.70678,
+          -38.635022
+        ]
+      },
+      "properties": {
+        "role": "inner Hobson apron",
+        "roofWitness": false,
+        "date": "2022-03-26",
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.70658543,-38.63496965&level=20",
+        "laterView": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70658543,-38.63496965&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.706842,
+          -38.635035
+        ]
+      },
+      "properties": {
+        "role": "middle Hobson apron",
+        "roofWitness": false,
+        "date": "2022-03-26",
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.70658543,-38.63496965&level=20",
+        "laterView": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70658543,-38.63496965&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.706884,
+          -38.635037
+        ]
+      },
+      "properties": {
+        "role": "Hobson road edge approach",
+        "roofWitness": false,
+        "date": "2022-03-26",
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.70658543,-38.63496965&level=20",
+        "laterView": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70658543,-38.63496965&level=20",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5
+      }
+    }
+  ]
+}
