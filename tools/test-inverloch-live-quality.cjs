@@ -1,0 +1,62 @@
+const assert = require('node:assert/strict');
+const {readFileSync} = require('node:fs');
+const path = require('node:path');
+const {test} = require('node:test');
+const vm = require('node:vm');
+
+const host = readFileSync(path.join(__dirname, '../app.html'), 'utf8');
+const pairSource = host.slice(host.indexOf('  function townModelPair('), host.indexOf('  function townModelOn('));
+
+async function openAuto({live, slow = false, preset = 'auto'}) {
+  let now = 0, frames = 0, saved = {};
+  const T = {on: true}, spinner = {hidden: true}, box = {children: []};
+  const models = [], changes = [];
+  const environment = {
+    BS: {town: T}, navigator: {deviceMemory: 8}, matchMedia: () => ({matches: true}),
+    invGraphics: {preset, frameTarget: 60}, invGraphicsPresets: ['auto', 'low', 'medium', 'high'],
+    localStorage: {getItem: () => null, setItem: (_, text) => { saved = JSON.parse(text); }},
+    $: () => spinner, bsNote() {}, console, window: {}, performance: {now: () => now},
+    requestAnimationFrame(fn) {
+      queueMicrotask(() => { now += slow && frames > 105 ? 33 : 16; frames++; fn(now); });
+    },
+    setTimeout(fn) { queueMicrotask(fn); },
+  };
+  const lib = {create(node, options) {
+    const root = {dataset: {}, style: {}};
+    node.children.push(root); node.lastElementChild = root;
+    const model = {quality: options.quality, ready: Promise.resolve(), dispose() { this.disposed = true; }};
+    if (live) model.setQualityInPlace = async target => { changes.push(target); return true; };
+    models.push(model);
+    return model;
+  }};
+  const makePair = vm.runInNewContext(pairSource + ';townModelPair', environment);
+  const model = makePair(T, lib, box, {place: 'inv'}, {}, {});
+  await model.ready;
+  await new Promise(resolve => setImmediate(resolve));
+  return {pair: T.pair, spinner, models, changes, saved};
+}
+
+test('Auto promotes and rolls back on the same model when the native tiers are compatible', async () => {
+  const promoted = await openAuto({live: true});
+  assert.deepEqual(promoted.changes, ['medium']);
+  assert.equal(promoted.pair.cur, promoted.models[0]);
+  assert.equal(promoted.pair.quality, 'medium');
+  assert.equal(promoted.saved.q, 'medium');
+  assert.equal(promoted.pair.pendingQuality, null);
+  assert.equal(promoted.spinner.hidden, true);
+  const demoted = await openAuto({live: true, slow: true});
+  assert.deepEqual(demoted.changes, ['medium', 'low']);
+  assert.equal(demoted.models.length, 1);
+  assert.equal(demoted.pair.quality, 'low');
+  assert.equal(demoted.saved.slow, true);
+});
+
+test('older bundles still swap and a manual Low choice stays fixed', async () => {
+  const legacy = await openAuto({live: false});
+  assert.deepEqual(legacy.models.map(model => model.quality), ['low', 'medium']);
+  assert.equal(legacy.models[0].disposed, true);
+  assert.equal(legacy.pair.cur, legacy.models[1]);
+  const manual = await openAuto({live: true, preset: 'low'});
+  assert.deepEqual(manual.changes, []);
+  assert.equal(manual.models.length, 1);
+});

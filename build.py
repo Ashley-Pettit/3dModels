@@ -155,7 +155,7 @@ def inverloch_preloads(page_body):
 def direct_inverloch_body(page_body):
     # bsLite drops these weather/Listen scenes for every town on the direct Explore entry,
     # including a different town restored on reload. Keep them on full app and preview pages.
-    # (From Bangerz's #388; on the beta Inverloch page only for now.)
+    # (From Bangerz's #388.)
     start = "    // BEGIN LISTEN_AND_BOWLS_WEATHER_SCENES\n"
     end = "    // END LISTEN_AND_BOWLS_WEATHER_SCENES\n"
     if page_body.count(start) != 1 or page_body.count(end) != 1:
@@ -307,7 +307,8 @@ if os.path.exists(os.path.join(here, "local", "brands.json")):
             if slug == "inv":
                 ehead = ehead.replace('<base href="../../">', '<base href="../../">\n' + inverloch_preloads(lbody), 1)
             with open(os.path.join(ex, "index.html"), "w", encoding="utf-8") as f:
-                f.write(stamped(ehead, lbody, ex) + lbody.strip() + "\n</body>\n</html>\n")
+                route_body = direct_inverloch_body(lbody) if slug == "inv" else lbody
+                f.write(stamped(ehead, route_body, ex) + route_body.strip() + "\n</body>\n</html>\n")
             # the T-rex fight invite (/<dir>/rex/), in Inverloch and Logan: the same app, opening Explore, with its own link preview, so a
             # "Seek help" link in WhatsApp or Messages shows "HELP! A T-rex is loose in Inverloch" and its picture (Ash, 27 November 2026: "I
             # moreso meant the text and image when I invite a friend in WhatsApp or similar"). The link's ?rex=1&from=<name> puts them in the
