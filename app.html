@@ -10120,6 +10120,8 @@ const handle = async (m, post) => {
     // they'll stand (and round both, the model draws its small things: cars with proper shapes, letterboxes, bins, power lines)
     const cfg = T.cfg, inv = cfg.place === "inv", D = INV_TOWN, home = D.nr?.home, clearLatLon = [], clearPolygons = [], detailLatLon = [];
     // Keep the seeded tree indices stable. Clear only trunks enclosed by the two surveyed Bayview school roofs.
+    // 17 Queenscliff Drive. Clear the seeded trunk inside both the roof and main walls.
+    if (inv) clearLatLon.push({ lat: -38.63368269, lon: 145.70566669, r: 0.16 }); // Seeded trunk 37546.
     if (inv) for (const [lat, lon] of [
       [-38.63102523, 145.72813660], [-38.63101172, 145.72819115], [-38.63104325, 145.72849263],
       [-38.63108604, 145.72868213], [-38.63107027, 145.72877400], [-38.63114684, 145.72855292],
@@ -10232,6 +10234,7 @@ const handle = async (m, post) => {
             catch (e) { console.warn("Inverloch: Surf Parade beach access couldn't be added", e); }
         }
         if (inv && m.addParts) try { mine.push(invWestJetty(T, BS.B.THREE)); } catch (e) { console.warn("Inverloch: the west jetty could not be added", e); }
+        if (inv && m.addParts) invQueenscliffDrive17(T, m, BS.B.THREE);
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
@@ -18722,6 +18725,66 @@ const handle = async (m, post) => {
       ...b.spec, matrix: new THREE.Matrix4().elements, onGround: true }));
     if (out.length) m.addParts(out);
   }
+  // 17 Queenscliff Drive. The hip, eaves and documented street-front panels share one mesh.
+  function invQueenscliffDrive17(town, model, THREE) {
+    const x0 = -2125.69, z0 = -364.08, eave = 2.64;
+    const outline = [[-9.62,4.63], [-9.05,-5.74], [9.63,-5.06], [9.14,5.91]];
+    const roof = [[-9.831,4.816,0], [-9.239,-5.947,0], [9.839,-5.253,0], [9.331,6.123,0], [-3.99,-0.275,1.22], [3.849,0.135,1.22]];
+    const faces = [[4,1,0], [5,2,1], [4,5,1], [5,3,2], [4,0,3], [5,4,3]];
+    const walls = outline.map(([x,z]) => [x + x0, z + z0]);
+    const ground = walls.map(([x,z]) => model.groundAt(x,z));
+    const floor = Math.max(...ground) + 0.07;
+    const [wall, steel, trim, garage, door, stone, glass] =
+      [0x9c6653, 0x897a72, 0xb7a98f, 0xdbcfb4, 0x49392f, 0xe2d7be, 0x465356].map(hex => new THREE.Color(hex));
+    const positions = [], colors = [];
+    const triangle = (a,b,c,tint) => {
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,c,d,tint) => { triangle(a,b,c,tint); triangle(a,c,d,tint); };
+    const at = ([x,z],y) => [x,y,z];
+    const fascia = eave - 0.12;
+    for (let i = 0; i < outline.length; i++) {
+      const j = (i + 1) % outline.length;
+      const a = outline[i], b = outline[j], r = roof[i], s = roof[j];
+      const skirt = Math.min(ground[i],ground[j]) - floor - 0.3;
+      quad(at(a,skirt),at(a,fascia),at(b,fascia),at(b,skirt),wall);
+      quad(at(r,fascia),at(r,eave),at(s,eave),at(s,fascia),trim);
+      quad(at(a,fascia),at(r,fascia),at(s,fascia),at(b,fascia),trim);
+    }
+    const cap = roof.map(([x,z,rise]) => [x,eave + rise,z]);
+    for (const [a,b,c] of faces) triangle(cap[a],cap[b],cap[c],steel);
+
+    // On the east wall, work from the double garage at the north end towards the living windows.
+    const [nx,nz] = outline[2], [sx,sz] = outline[3];
+    const dx = sx - nx, dz = sz - nz, length = Math.hypot(dx,dz);
+    const facade = (u,y,offset) => [nx + dx * u + dz / length * offset, y, nz + dz * u - dx / length * offset];
+    const panel = (left,right,bottom,top,offset,tint) => quad(
+      facade(left,bottom,offset),facade(left,top,offset),facade(right,top,offset),facade(right,bottom,offset),tint);
+    panel(0.07,0.405,0.06,2.30,0.008,stone);
+    panel(0.08,0.397,0.10,2.22,0.014,garage);
+    for (const y of [0.66,1.18,1.71]) panel(0.082,0.395,y,y + 0.022,0.020,trim);
+    panel(0.443,0.661,0.08,2.37,0.010,door);
+    panel(0.474,0.625,0.12,2.18,0.015,garage);
+    panel(0.495,0.532,1.19,1.93,0.021,glass);
+    panel(0.56,0.597,1.19,1.93,0.021,glass);
+    panel(0.707,0.928,0.50,2.20,0.012,stone);
+    panel(0.716,0.919,0.57,2.12,0.018,glass);
+    panel(0.812,0.821,0.57,2.12,0.025,stone);
+
+    const gable = (u,y,offset = 0.19) => facade(u,y,offset);
+    triangle(gable(0.408,2.55),gable(0.533,3.35),gable(0.658,2.55),wall);
+    quad(gable(0.408,2.55),gable(0.533,3.35),gable(0.533,3.47),gable(0.399,2.62),stone);
+    quad(gable(0.533,3.35),gable(0.658,2.55),gable(0.666,2.62),gable(0.533,3.47),stone);
+    quad(gable(0.399,2.62),gable(0.533,3.47),gable(0.533,3.39,-0.88),gable(0.399,2.75,-0.88),steel);
+    quad(gable(0.533,3.47),gable(0.666,2.62),gable(0.666,2.75,-0.88),gable(0.533,3.39,-0.88),steel);
+
+    model.addParts([{positions:new Float32Array(positions),colors:new Float32Array(colors),roughness:0.86,
+      matrix:new THREE.Matrix4().makeTranslation(x0,floor,z0).elements}]);
+    const grid = town.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
+  }
+
   // ---- Street names, in every town model (Ash, 13 November 2026: "On each of the models I want to be able to turn street
   // names on or off. Follow best practices for this"). The app draws them over the model, so all three follow one set of rules:
   // - each street is joined up end to end and offered a name about every 120 m, in the middle of its straightest stretch;
