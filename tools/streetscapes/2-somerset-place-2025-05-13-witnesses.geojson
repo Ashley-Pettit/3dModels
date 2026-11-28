@@ -1,0 +1,115 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "site": "2 Somerset Place",
+        "parcelPfi": "124533411",
+        "addressPfi": "124533415",
+        "captureDate": "2025-05-13",
+        "sourceSceneObjectId": 6072283,
+        "sourceSceneResolutionM": 0.34,
+        "sourceReportedAccuracyM": 5,
+        "imagery": "Esri World Imagery / Vantor; roof controls checked against high-resolution historical Vicmap Basemaps",
+        "attribution": "Vicmap boundaries © State of Victoria, CC BY 4.0",
+        "method": "Original conservative eave and asphalt-area registration from visible features; no source pixels included",
+        "kind": "enclosed main roof"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.70693322,
+              -38.63247642
+            ],
+            [
+              145.7071776,
+              -38.63249934
+            ],
+            [
+              145.707162,
+              -38.63260166
+            ],
+            [
+              145.70709632,
+              -38.6325955
+            ],
+            [
+              145.7070988,
+              -38.63257922
+            ],
+            [
+              145.70692011,
+              -38.63256246
+            ],
+            [
+              145.70693322,
+              -38.63247642
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "site": "2 Somerset Place",
+        "parcelPfi": "124533411",
+        "addressPfi": "124533415",
+        "captureDate": "2025-05-13",
+        "sourceSceneObjectId": 6072283,
+        "sourceSceneResolutionM": 0.34,
+        "sourceReportedAccuracyM": 5,
+        "imagery": "Esri World Imagery / Vantor; roof controls checked against high-resolution historical Vicmap Basemaps",
+        "attribution": "Vicmap boundaries © State of Victoria, CC BY 4.0",
+        "method": "Original conservative eave and asphalt-area registration from visible features; no source pixels included",
+        "kind": "in-title part of apron"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.70716452,
+              -38.63255327
+            ],
+            [
+              145.7071854,
+              -38.63255287
+            ],
+            [
+              145.70720612,
+              -38.63255354
+            ],
+            [
+              145.70721906,
+              -38.63255367
+            ],
+            [
+              145.70721212,
+              -38.63259919
+            ],
+            [
+              145.70719917,
+              -38.63259916
+            ],
+            [
+              145.70717854,
+              -38.63259786
+            ],
+            [
+              145.70715787,
+              -38.63259692
+            ],
+            [
+              145.70716452,
+              -38.63255327
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
