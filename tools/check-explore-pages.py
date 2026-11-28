@@ -1,5 +1,6 @@
 """Check each built Explore entry and its service-worker update stamp."""
 import json
+import re
 import sys
 from html.parser import HTMLParser
 from pathlib import Path
@@ -29,6 +30,21 @@ def check(site, revision):
                 or head.meta.get("an-explore") != slug or head.meta.get("an-commit") != revision[:7]):
             raise SystemExit(f"Incorrect Explore entry or revision in {route}")
         print(f"{town}/explore verified at {revision[:7]}")
+
+        for channel_route in (route, site / "beta" / town):
+            page = (channel_route / "index.html").read_text(encoding="utf-8")
+            header, body = page.split("</head>", 1)
+            if town != "inverloch":
+                if "inv-model-preload" in header:
+                    raise SystemExit(f"Unexpected Inverloch preload in {channel_route}")
+                continue
+            # Match the URLs used by this channel's host, including versioned beta filenames.
+            config = next(line for line in body.splitlines() if 'lib: "InverlochModel"' in line)
+            script = re.search(r'src: TOWN3D \+ "([^"]+)"', config)[1]
+            town_map = re.search(r'pre: \["([^"]+)"', config)[1]
+            for asset, kind in ((script, "script"), (town_map, "fetch")):
+                if f'["{asset}", "{kind}"]' not in header or not (site / "town3d" / asset.split("?")[0]).is_file():
+                    raise SystemExit(f"Missing {kind} preload or file for {asset} in {channel_route}")
 
 
 if __name__ == "__main__":
