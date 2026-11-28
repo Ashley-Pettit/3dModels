@@ -10257,6 +10257,8 @@ const handle = async (m, post) => {
     // another street's width; the wires to each go with it
     if (inv) for (const [lat, lon] of [[-38.6337246, 145.7267682], [-38.6339579, 145.7292535], [-38.6348371, 145.7287447], [-38.6342723, 145.7293649],
       [-38.6338849, 145.7295854], [-38.6329661, 145.7297324], [-38.6348155, 145.7301642]]) clearLatLon.push({ lat, lon, r: 1.5 });
+    if (inv) clearLatLon.push({ lat: -38.630838310, lon: 145.719557493, r: 0.16 }); // 2 Goodenia Place stock 1898.
+    if (inv) clearLatLon.push({ lat: -38.630795520, lon: 145.719425418, r: 0.16 }); // 2 Goodenia Place stock 34532.
     // Building centres on the verified vacant parcels at 1, 12, 16 and 17 Mountain Ash Close.
     // Centre masks remove these legacy shells and their blockers without changing their packed slots.
     if (inv) for (const [lat, lon] of [
@@ -10367,6 +10369,7 @@ const handle = async (m, post) => {
             catch (e) { console.warn("Inverloch: Surf Parade beach access couldn't be added", e); }
         }
         if (inv && m.addParts) try { mine.push(invWestJetty(T, BS.B.THREE)); } catch (e) { console.warn("Inverloch: the west jetty could not be added", e); }
+        if (inv && m.addParts) invGoodeniaPlace2(T, m, BS.B.THREE);
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
@@ -18477,6 +18480,78 @@ const handle = async (m, post) => {
   // bed of tussock grasses and low shrubs round the two poles, their broad teal bases, and the four mosaic blocks in a row out
   // the front, towards the library (their pictures are the weather's own). Then tables and chairs outside the bakery and The
   // Larder, a sandwich board out the front of each named shop, and the signs either side of the zebra crossing.
+  function invGoodeniaPlace2(T, model, THREE) {
+    const [x0,z0,cos,sin] = [-918.746,-693.8733,0.85065342,0.525727];
+    const walls = [[10.84,-5.31],[10.84,0.54],[1.4,0.54],[1.4,9.26],[19.24,9.26],[19.24,8.77],[17.83,8.77],[17.83,6.38],[19.24,6.38],[19.24,0.54],[15.54,0.54],[15.54,-5.31]];
+    const eaves = [[15.98,-5.75],[10.4,-5.75],[10.4,0.1],[0.96,0.1],[0.96,9.7],[19.68,9.7],[19.68,0.1],[15.98,0.1]];
+    const hips = [[[0.96,9.7,0.0],[5.76,4.9,1.56],[0.96,0.1,0.0]],[[19.68,9.7,0.0],[19.68,0.1,0.0],[14.88,4.9,1.56]],[[10.4,0.1,0.0],[0.96,0.1,0.0],[5.76,4.9,1.56]],[[15.98,0.1,0.0],[14.88,4.9,1.56],[19.68,0.1,0.0]],[[12.795,2.385,0.743],[10.4,0.1,0.0],[5.76,4.9,1.56]],[[13.585,2.385,0.743],[14.88,4.9,1.56],[15.98,0.1,0.0]],[[14.88,4.9,1.56],[12.795,2.385,0.743],[5.76,4.9,1.56]],[[13.585,2.385,0.743],[12.795,2.385,0.743],[14.88,4.9,1.56]],[[5.76,4.9,1.56],[19.68,9.7,0.0],[14.88,4.9,1.56]],[[19.68,9.7,0.0],[5.76,4.9,1.56],[0.96,9.7,0.0]],[[10.4,0.1,0.0],[12.795,2.385,0.743],[13.19,1.99,0.865]],[[10.4,0.1,0.0],[13.19,-2.96,0.865],[10.4,-5.75,0.0]],[[13.19,-2.96,0.865],[10.4,0.1,0.0],[13.19,1.99,0.865]],[[15.98,-5.75,0.0],[13.19,-2.96,0.865],[15.98,0.1,0.0]],[[15.98,0.1,0.0],[13.19,1.99,0.865],[13.31,2.11,0.828]],[[15.98,0.1,0.0],[13.31,2.11,0.828],[13.585,2.385,0.743]],[[13.19,1.99,0.865],[15.98,0.1,0.0],[13.19,-2.96,0.865]],[[13.19,-2.96,0.865],[15.98,-5.75,0.0],[10.4,-5.75,0.0]],[[12.795,2.385,0.743],[13.585,2.385,0.743],[13.19,1.99,0.865]]];
+    const apron = [[10.87,-5.31],[15.5,-5.31],[16.28,-9.65],[12.03,-11.26]];
+    const offset = ([u,v]) => [u*cos-v*sin,u*sin+v*cos];
+    const world = p => { const [x,z] = offset(p); return [x+x0,z+z0]; };
+    const level = p => model.groundAt(...world(p));
+    const top = Math.max(...walls.map(level))+2.66;
+    const point = (p,y) => { const [x,z] = offset(p); return [x,y,z]; };
+    const positions = [], colours = [];
+    const clay = new THREE.Color(0xb49b7e), porch = new THREE.Color(0x913e30);
+    const brickBase = new THREE.Color(0x8d7964), trim = new THREE.Color(0xd4c5b0);
+    const roof = new THREE.Color(0x676764), window = new THREE.Color(0x45565b);
+    const garage = new THREE.Color(0xb5a995), panel = new THREE.Color(0x374653);
+    const tri = (a,b,c,tint) => {
+      positions.push(...a,...b,...c);
+      for (let i=0; i<3; i++) colours.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,c,d,tint) => { tri(a,b,c,tint); tri(a,c,d,tint); };
+    walls.forEach((a,i) => {
+      const b=walls[(i+1)%walls.length];
+      const sill=Math.max(level(a),level(b))+.11;
+      const redReturn=a[0] >= 17.8 && b[0] >= 17.8 &&
+        a[1] >= 6.37 && b[1] >= 6.37 && a[1] <= 8.78 && b[1] <= 8.78;
+      quad(point(a,level(a)-.10),point(b,level(b)-.10),point(b,sill),point(a,sill),brickBase);
+      quad(point(a,sill),point(b,sill),point(b,top),point(a,top),redReturn ? porch : clay);
+    });
+    eaves.forEach((a,i) => {
+      const b=eaves[(i+1)%eaves.length];
+      quad(point(a,top-.07),point(b,top-.07),point(b,top+.09),point(a,top+.09),trim);
+    });
+    for (const f of hips) {
+      const [a,b,c]=f.map(([u,v,h])=>point([u,v],top+.09+h));
+      tri(a,b,c,roof);
+    }
+    const frontPanel = (a,b,lo,hi,tint) =>
+      quad(point(a,lo),point(b,lo),point(b,hi),point(a,hi),tint);
+    for (const [u,a,b] of [[19.26,2.88,4.94],[17.85,6.84,8.35]]) {
+      frontPanel([u,b],[u,a],top-2.06,top-.41,trim);
+      const mid=(a+b)/2;
+      frontPanel([u+.009,b-.08],[u+.009,mid+.028],top-1.99,top-.48,window);
+      frontPanel([u+.009,mid-.028],[u+.009,a+.08],top-1.99,top-.48,window);
+    }
+    frontPanel([15.28,-5.335],[11.09,-5.335],top-2.39,top-.42,trim);
+    frontPanel([15.19,-5.348],[11.18,-5.348],top-2.33,top-.52,garage);
+    for (const u of [5.88,6.86,7.84,8.82,9.80]) {
+      const z1=1.35,z2=2.94,left=u+.033,right=u+.92;
+      const roofPoint = (x,z) => point([x,z],top+.118+.325*(z-.10));
+      quad(roofPoint(left,z1),roofPoint(left,z2),roofPoint(right,z2),roofPoint(right,z1),panel);
+    }
+    const concrete = new THREE.Color(0xaba695);
+    const pavement = [], paint = [];
+    const at = (a,b,t) => [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+    const groundPoint = p => { const [x,z]=world(p); return [x,.032,z]; };
+    for (let i=0; i<6; i++) {
+      const a=groundPoint(at(apron[0],apron[3],i/6)), b=groundPoint(at(apron[1],apron[2],i/6));
+      const c=groundPoint(at(apron[1],apron[2],(i+1)/6)), d=groundPoint(at(apron[0],apron[3],(i+1)/6));
+      pavement.push(...a,...b,...c,...a,...c,...d);
+      for (let j=0; j<6; j++) paint.push(concrete.r,concrete.g,concrete.b);
+    }
+    model.addParts([
+      { positions:new Float32Array(positions), colors:new Float32Array(colours), roughness:.89,
+        matrix:new THREE.Matrix4().makeTranslation(x0,0,z0).elements },
+      { positions:new Float32Array(pavement), colors:new Float32Array(paint), onGround:true, roughness:.92,
+        matrix:new THREE.Matrix4().elements },
+    ]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls.map(world));
+  }
+
   function townModelExtras(m, block, THREE, W, collision) {
     const D = INV_TOWN, FOOT = 0.26, v = new THREE.Vector3(), M = new THREE.Matrix4(), N = new THREE.Matrix3(), c = new THREE.Color(), parts = [];
     // a mesh to fill: plain colours for each shape, or one picture over all of it
