@@ -10269,6 +10269,8 @@ const handle = async (m, post) => {
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
     if (inv) clearPolygons.push({ latLon: INV_GLADE_SHELTER });
     if (inv) clearPolygons.push({ latLon: invScrewCreekMask(), roads: true });
+    if (inv) clearLatLon.push({ lat: -38.64532143, lon: 145.70003629, r: 0.16 }); // 48 Lohr Avenue: roof replaces seed 42500.
+    if (inv) clearLatLon.push({ lat: -38.64534396, lon: 145.70011669, r: 0.16 }); // 48 Lohr Avenue: roof replaces seed 42501.
     // Moorooka's bridges (town.json's roads marked as one): their decks, so a car drives over them, not down through them into the creek.
     // The deck is as the model draws it (moorooka-model.js ?v=79): straight from one end's ground to the other's, a metre's hump in the
     // middle, and 0.6 m up, coming up from the road over its first and last 8 m. Under a bridge (a road under an overpass) you stay down:
@@ -10363,6 +10365,7 @@ const handle = async (m, post) => {
               if (to && m.driveCar?.(c.id[0], c.id[1], to.x, ground(to.x, to.z) + 0.05, to.z, B.h, 0, 0)) grid.park(c.id, to.x, to.z, B.h, ground(to.x, to.z) + 0.05, 0, 0);
               else grid.park(c.id, B.x, B.z, B.h); } } catch (e) { console.warn("Inverloch: couldn't move the parked cars stuck in poles", e); }
           } else invAddDesignedWalls(T, m.designedWallFootprints?.());
+          if (m.addParts) invLohrAvenue48(T, m, BS.B.THREE);
           if (m.addParts) try { townSurfParadeBeachAccess(T, m); }
             catch (e) { console.warn("Inverloch: Surf Parade beach access couldn't be added", e); }
         }
@@ -18064,6 +18067,76 @@ const handle = async (m, post) => {
     const inPilot = (x,z) => townInBlock((x-o0[0])/kx, (z-o0[1])/kz);
     return { at, place, inPilot, parts: parts.length, corners: parts.reduce((n, p) => n + p.positions.length / 3, 0) };
   }
+  // 48 Lohr Avenue. The street deck is raised over a partly open undercroft.
+  function invLohrAvenue48(T, model, THREE) {
+    const origin = [-2604.30,929.78], angle = -2.25 * Math.PI / 180;
+    const walls = [[4.3,-5.04],[4.3,6.65],[-4.3,6.65],[-4.3,-5.04]];
+    const garageWalls = [[4.12,-5.04],[4.12,-1.22],[1.10,-1.22],[1.10,-5.04]];
+    const c = Math.cos(angle), s = Math.sin(angle);
+    const local = (u,v) => [u*c-v*s,u*s+v*c];
+    const world = ([u,v]) => local(u,v).map((p,i) => p+origin[i]);
+    const grade = (u,v) => model.groundAt(...world([u,v]));
+    const floor = grade(2.6,-5.27)+1.88;
+    const positions = [], colors = [];
+    const tint = n => new THREE.Color(n);
+    const cream = tint(0xd2ccbb), upper = tint(0xe2e3d7), steel = tint(0x9da7a0);
+    const rail = tint(0x646d69), shadow = tint(0x555c54), glass = tint(0x505c59), door = tint(0x53605d);
+    const point = (u,v,y) => { const [x,z] = local(u,v); return [x,y,z]; };
+    const tri = (a,b,c,color) => {
+      positions.push(...a,...b,...c);
+      for (let i=0; i<3; i++) colors.push(color.r,color.g,color.b);
+    };
+    const quad = (a,b,c,d,color) => { tri(a,b,c,color); tri(a,c,d,color); };
+    const vertical = (a,b,base,top,color) => {
+      quad(point(...a,base),point(...a,top),point(...b,top),point(...b,base),color);
+    };
+    const band = (l,r,z,base,top,color) => vertical([l,z],[r,z],base,top,color);
+    const plane = (left,right,front,back,frontY,backY,color) => {
+      quad(point(left,front,frontY),point(left,back,backY),point(right,back,backY),point(right,front,frontY),color);
+    };
+    const shell = (ring,base,top,color) => {
+      for (let i=0; i<ring.length; i++) vertical(ring[i],ring[(i+1)%ring.length],base,top,color);
+    };
+    shell(walls,floor-.13,floor+2.33,cream);
+    shell(garageWalls,Math.min(grade(1.1,-5.04),grade(4.12,-5.04),floor-1.9)-.11,floor,shadow);
+    band(1.25,3.95,-5.07,floor-1.80,floor-.13,door);
+    band(-3.35,-1.43,-5.08,floor+.82,floor+2.04,glass);
+    band(-.98,.17,-5.08,floor+.05,floor+2.08,shadow);
+    band(1.25,3.82,-5.08,floor+.83,floor+2.04,glass);
+    for (const u of [-2.39,2.54]) band(u-.028,u+.028,-5.10,floor+.82,floor+2.04,upper);
+    plane(-4.57,4.57,-7.50,7.05,floor+2.33,floor+2.52,steel);
+    band(-4.57,4.57,-7.50,floor+2.19,floor+2.33,rail);
+    const pop = [[2.02,-2.90],[2.02,1.36],[-2.02,1.36],[-2.02,-2.90]];
+    shell(pop,floor+2.38,floor+3.81,upper);
+    plane(-2.17,2.20,-3.04,1.54,floor+3.84,floor+3.96,steel);
+    band(-1.04,.05,-2.93,floor+2.65,floor+3.54,glass);
+    band(.53,1.54,-2.93,floor+2.65,floor+3.54,glass);
+    plane(-4.36,4.36,-7.30,-5.02,floor,floor,shadow);
+    band(-4.36,4.36,-7.30,floor-.16,floor,cream);
+    for (const u of [-4.28,-1.40,1.18,4.28]) {
+      const ground = grade(u,-7.25)-.04;
+      const ring = [[u+.05,-7.30],[u+.05,-7.20],[u-.05,-7.20],[u-.05,-7.30]];
+      shell(ring,ground,floor+2.31,rail);
+    }
+    const handrail = (lo,hi) => {
+      band(lo,hi,-7.38,floor+.73,floor+.81,rail);
+      for (let u=lo+.12; u<hi; u+=.23) band(u-.019,u+.019,-7.37,floor+.03,floor+.73,rail);
+    };
+    handrail(-4.30,-1.65);
+    handrail(-.44,4.30);
+    const landing = grade(-1.04,-10.11);
+    for (let i=0; i<7; i++) {
+      const front = -10.11+i*.402, y = landing+(floor-landing)*(i+1)/7;
+      const prev = landing+(floor-landing)*i/7;
+      plane(-1.65,-.44,front,front+.403,y,y,rail);
+      band(-1.65,-.44,front,prev-.025,y,rail);
+    }
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().makeTranslation(origin[0],0,origin[1]).elements, roughness: .86 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(garageWalls.map(world));
+  }
+
   // The westbound wayfinder in the south verge, before the Bear Street turn.
   // Estimated from maxim752 Mapillary frames 588735650795644 and 584548554484819 (18 January 2025).
   function invIndustrialEstateSign(T, model, THREE) {
