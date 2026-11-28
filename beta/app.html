@@ -9724,29 +9724,31 @@ const handle = async (m, post) => {
       for (const [key, n] of [["positions", 3], ["normals", 3], ["colors", 3], ["uvs", 2]]) { const src = q[key]; if (!src) continue; const dst = new Float32Array(I.length * n);
         for (let i = 0; i < I.length; i++) { const o = I[i] * n; for (let c = 0; c < n; c++) dst[i * n + c] = src[o + c]; } out[key] = dst; }
       return out; }); }
-  function townModelPair(T, lib, box, cfg, opts, cb) {
+  function townModelPair(T, library, box, cfg, opts, cb) {
     const key = "an3d-" + cfg.place, mem = navigator.deviceMemory || 8, touch = matchMedia("(pointer: coarse)").matches;
     let seen = {}; try { seen = JSON.parse(localStorage.getItem(key) || "{}") || {}; } catch {}
     const save = o => { seen = { ...seen, ...o }; try { localStorage.setItem(key, JSON.stringify(seen)); } catch {} };
     const best = navigator.connection?.saveData || mem < 4 ? "low" : touch || mem <= 4 ? "medium" : "high";
     const graphics = cfg.place === "inv" ? invGraphics : null;
-    const presets = lib.qualityPresets ? ["auto", ...lib.qualityPresets] : invGraphicsPresets;
+    const presets = library.qualityPresets ? ["auto", ...library.qualityPresets] : invGraphicsPresets;
     const initialPreset = presets.includes(graphics?.preset) ? graphics.preset : "auto";
     const manual = initialPreset !== "auto";
     const direct = manual || best === "low" || seen.slow || (seen.q === best && seen.ms < 5000);
     const first = manual ? initialPreset : direct && !seen.slow ? best : "low";
     const hiBox = $("bsHiRes");
     let cur = null, next = null, dead = false;
+    const lib = { create(node, options) {
+      return (cur && graphics && library.createStaged?.(node, options, cur)) || library.create(node, options);
+    } };
     // Ordinary native cars use their surveyed home position as a stable identity across presets.
     const driven = cfg.place === "inv" ? new Map() : null;
     let replaying = null;
     const log = [], last = {}, LAST = ["setLabelObstacles", "setTide", "setFlood", "setFloodLevel", "setMinutes", "setCamera", "setGroundEdits", "setRemoved", "setMore", "driveCar", "setControlledCar"];
     const make = (q, own) => { const t0 = performance.now(); let mm = null;
-      const options = { ...opts, quality: q, ...(graphics ? { frameTarget: graphics.frameTarget } : {}), onProgress: own ? cb.onProgress : undefined,
+      mm = lib.create(box, { ...opts, quality: q, ...(graphics ? { frameTarget: graphics.frameTarget } : {}), onProgress: own ? cb.onProgress : undefined,
         ...(graphics ? { onThunder: strength => { if (mm === cur && T.on && !T.dead && !document.hidden) T.snd?.thunder(strength); } } : {}),
         onFloodLevel: v => { if (mm === cur) cb.onFloodLevel(v); },
-        onError: msg => { if (mm === cur) cb.onError(msg); else if (mm === next) drop(); } };
-      mm = (!own && graphics && lib.createStaged?.(box, options, cur)) || lib.create(box, options);
+        onError: msg => { if (mm === cur) cb.onError(msg); else if (mm === next) drop(); } });
       mm.t0 = t0; return mm; };
     // a handle Inverloch's town centre moves things with: always the one in the model that's showing
     const handle = real => { const H = { real, calls: new Map() };
