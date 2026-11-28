@@ -9627,7 +9627,7 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=48", assets: TOWN3D, place: "inv", pre: ["town.json?v=bed37905", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=48", assets: TOWN3D, place: "inv", pre: ["town.json?v=4e6567b7", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
     moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=80", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
@@ -9886,6 +9886,17 @@ const handle = async (m, post) => {
     if (inv) for (const [lat, lon] of [
       [-38.63287419, 145.71543447],
       [-38.63270754, 145.71528517]
+    ]) clearLatLon.push({ lat, lon, r: 0.16 });
+    // Preserve seeded indices and hide the 22 procedural trunks inside both Coast Care roof outlines.
+    if (inv) for (const [lat, lon] of [
+      [-38.62763360, 145.71495785], [-38.62781377, 145.71492627], [-38.62783854, 145.71537992],
+      [-38.62788809, 145.71480855], [-38.62789484, 145.71503250], [-38.62789034, 145.71521339],
+      [-38.62795790, 145.71534259], [-38.62809978, 145.71496646], [-38.62812906, 145.71509854],
+      [-38.62803672, 145.71528517], [-38.62806375, 145.71559525], [-38.62811104, 145.71601158],
+      [-38.62827544, 145.71554357], [-38.62821689, 145.71573881], [-38.62823265, 145.71589099],
+      [-38.62826643, 145.71616949], [-38.62834976, 145.71537417], [-38.62840156, 145.71559238],
+      [-38.62833174, 145.71566991], [-38.62834526, 145.71591683], [-38.62839030, 145.71604316],
+      [-38.62846011, 145.71606039]
     ]) clearLatLon.push({ lat, lon, r: 0.16 });
     if (inv && BS.W.invClock) { const [lat, lon] = townLL(D.c[0], D.c[1]); clearLatLon.push({ lat, lon, r: 4.5 }); detailLatLon.push({ lat, lon, r: 260 }); }
     // the model's power poles that land in a road (each is set out beside its own street, so where another street runs past, one can stand
