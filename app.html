@@ -20621,82 +20621,59 @@ const handle = async (m, post) => {
     choppa: [35, "Car hits on Mumma before Get to the choppa", "hits, everyone's added together", 1, 1000], packs: [3, "Health packs out at once", "packs", 0, 6], packSecs: [30, "A new health pack every", "seconds", 3, 600] };
   function rexClean(o) { const r = {}; for (const k in REX_DEF) { const [d, , , lo, hi] = REX_DEF[k], v = o?.[k] == null || o[k] === "" ? NaN : +o[k]; r[k] = Number.isFinite(v) ? bsClamp(v, lo, hi) : d; } return r; }
   function rexSettings() { let o = {}; try { o = JSON.parse(localStorage.getItem("an3d-rex") || "{}") || {}; } catch {} return rexClean(o); }
-  // Inverloch's two bosses share a playlist. The final song in each town loops until the fight ends.
+  // T-rex fight music. Each cue loops for as long as its encounter is active. Inverloch's are Bangerz's placeholder score (#427);
+  // Moorooka's is Ash's own song, "Loose in Moorooka" (Ash, 28 November 2026: "When fighting the trex In moorooka play my trex
+  // moorooka song on loop"), mono at 24 kHz so it decodes to about 10 MB
   function townMusicDirector() {
-    const playlists = {
-      inv: ["inverloch-boss-fight.mp3", "deckbuilder-boss-escalation-1.mp3", "deckbuilder-boss-escalation-2.mp3"],
-      moo: ["loose-in-moorooka.mp3"],
+    const tracks = {
+      rex: "music/deckbuilder-boss-escalation-1.mp3",
+      mumma: "music/deckbuilder-boss-escalation-2.mp3",
+      moo: "music/loose-in-moorooka.mp3",
     };
     let current = null;
 
-    function pause(song) {
-      const voice = song.voice;
-      if (!voice) return;
-      const { source, gain, startedAt } = voice;
-      const now = source.context.currentTime;
-      song.offset = now - startedAt;
-      if (source.loop) song.offset %= song.buffer.duration;
-      song.voice = null;
-      gain.gain.setTargetAtTime(0, now, 0.035);
-      source.stop(source.context.state === "running" ? now + 0.18 : now);
-    }
-
-    async function load(song) {
-      song.loading = true;
-      const { signal } = song.request;
-      try {
-        const file = song.files[song.index];
-        const response = await fetch(TOWN3D + "music/" + file, { signal });
-        if (!response.ok) throw new Error("HTTP " + response.status);
-        const bytes = await response.arrayBuffer();
-        if (signal.aborted) return;
-        // Only the current song is decoded. At 24 kHz the longest stereo buffer takes about 34 MiB.
-        const decoder = new OfflineAudioContext(1, 1, 24000);
-        const buffer = await decoder.decodeAudioData(bytes);
-        if (!signal.aborted) song.buffer = buffer;
-      } catch (error) {
-        if (!signal.aborted) {
-          console.warn("The T-rex music could not play", song.files[song.index], error);
-          song.retryAt = performance.now() + 15000;
-        }
-      } finally {
-        song.loading = false;
-      }
-    }
-
-    function play(song, audio, master) {
+    async function play(track, audio, master) {
+      const { signal } = track.request;
+      const response = await fetch(TOWN3D + tracks[track.cue], { signal });
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      const bytes = await response.arrayBuffer();
+      if (signal.aborted) return;
+      // Decode at the files' native rate. The longer stereo cue takes 33 MiB even on a 48 kHz device.
+      const decoder = new OfflineAudioContext(1, 1, 24000);
+      const buffer = await decoder.decodeAudioData(bytes);
+      if (signal.aborted) return;
       const source = audio.createBufferSource(), gain = audio.createGain();
-      source.buffer = song.buffer;
-      source.loop = song.index === song.files.length - 1;
+      source.buffer = buffer;
+      source.loop = true;
       gain.gain.value = 0;
       gain.gain.setTargetAtTime(0.24, audio.currentTime, 0.08);
       source.connect(gain);
       gain.connect(master);
-      source.onended = () => {
-        source.disconnect();
-        gain.disconnect();
-        if (song.voice?.source !== source) return;
-        song.voice = null;
-        song.buffer = null;
-        song.offset = 0;
-        song.index++;
-      };
-      song.voice = { source, gain, startedAt: audio.currentTime - song.offset };
-      source.start(0, song.offset);
+      source.onended = () => { source.disconnect(); gain.disconnect(); };
+      source.start();
+      track.source = source;
+      track.gain = gain;
     }
 
-    return function setCue(cue, audio, master, interlude) {
-      if (current && current.cue !== cue) {
-        current.request.abort();
-        pause(current);
+    return function setCue(cue, audio, master) {
+      if (cue === (current?.cue ?? null)) return;
+      if (current) {
+        const { request, source, gain } = current;
+        request.abort();
+        if (source) {
+          const t = source.context.currentTime;
+          gain.gain.setTargetAtTime(0, t, 0.035);
+          source.stop(source.context.state === "running" ? t + 0.18 : t);
+        }
         current = null;
       }
-      if (!cue) return;
-      if (!current) current = { cue, files: playlists[cue], index: 0, offset: 0, request: new AbortController(), retryAt: 0 };
-      if (interlude) { pause(current); return; }
-      if (current.voice || current.loading || audio?.state !== "running") return;
-      if (current.buffer) play(current, audio, master);
-      else if (performance.now() >= current.retryAt) load(current);
+      // The existing town gestures unlock this context. A muted or locked game can pick up the cue later.
+      if (!cue || audio?.state !== "running") return;
+      const track = { cue, request: new AbortController() };
+      current = track;
+      play(track, audio, master).catch(error => {
+        if (!track.request.signal.aborted) console.warn("The T-rex music could not play", cue, error);
+      });
     };
   }
   function townSound(weather) {
@@ -20731,7 +20708,7 @@ const handle = async (m, post) => {
       if (note) { const o = a.createOscillator(), og = a.createGain(); o.type = "sine"; o.frequency.setValueAtTime(note, t); o.frequency.exponentialRampToValueAtTime(note * 0.55, t + len);
         og.gain.setValueAtTime(loud * 1.4, t); og.gain.exponentialRampToValueAtTime(0.001, t + len); o.connect(og); og.connect(master); o.start(t); o.stop(t + len + 0.02); } };
     return {
-      music(cue, interlude = false) { setMusic(cue, vol > 0 && !hush ? ac : null, master, interlude); },
+      music(cue) { setMusic?.(cue, vol > 0 && !hush ? ac : null, master); },
       // (the helicopter and the plane each have their own sound: Ash, 15 November 2026: "Add sounds to the heli and plane and animal".
       // A helicopter: a low turbine, a whine over it, and the rotor's whop-whop chopping the lot and the air it pushes, four to
       // seven times a second. A plane: a propeller's buzz on its engine, and its rush of air, louder than a car's)
@@ -25395,11 +25372,7 @@ const handle = async (m, post) => {
             else if (inIt && rexAway && rex.live) { rexAway = false; rexSend(["join", rexFid, String(playerName() || "").slice(0, 16)], rexHost); } }
           else if (rex.live && !rexTarget() && !(rexOut && !rexGhost)) { if (rexOut || [...rexGuests.values()].some(g => g.out)) rexLost(); else rexOver("🦖 The T-rex lost interest and stomped off. Get back in the hotrod to take it on again."); }
           if (rex) rexTick(dt); if (rex) rexSync(false); }
-        if (place === "inv" || place === "moo") {
-          const active = rex?.live && stillIn();
-          const interlude = rex?.st === "dead";
-          snd.music(active && (place === "inv" || !interlude) ? place : null, interlude);
-        }
+        if (place === "moo") snd.music(rex?.live && rex.st !== "dead" && stillIn() ? "moo" : null);  // ("Loose in Moorooka", on loop)
         if (fb || fbP) fbTick(dt);
         const noSpud = !(rex && rex.live && fighting() && !rex.nuke); if (spudBtn.hidden !== noSpud) spudBtn.hidden = noSpud;
         // into the choppa against Mumma: the button's Rockets, the GPS is done with, and how to fight her from up there
