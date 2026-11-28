@@ -10142,6 +10142,8 @@ const handle = async (m, post) => {
       [-38.627782237, 145.744849779],
       [-38.627680894, 145.744189406],
     ]) clearLatLon.push({ lat, lon, r: 0.25 });
+    if (inv) clearLatLon.push({ lat: -38.633369647, lon: 145.716046031, r: 0.16 }); // 47 Cashin Street: displaced shell 792.
+    if (inv) clearLatLon.push({ lat: -38.633333614, lon: 145.715882373, r: 0.16 }); // 47 Cashin Street: displaced shell 793.
     if (inv && home && BS.W.invHouse) { const [lat, lon] = townLL(home[0], home[1]); clearLatLon.push({ lat, lon, r: 24 }); detailLatLon.push({ lat, lon, r: 170 }); }
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
     if (inv) clearPolygons.push({ latLon: INV_GLADE_SHELTER });
@@ -10233,6 +10235,7 @@ const handle = async (m, post) => {
         }
         if (inv && m.addParts) try { mine.push(invWestJetty(T, BS.B.THREE)); } catch (e) { console.warn("Inverloch: the west jetty could not be added", e); }
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
+        if (inv && m.addParts) invCashinStreet47(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
@@ -17924,6 +17927,91 @@ const handle = async (m, post) => {
   }
   // The westbound wayfinder in the south verge, before the Bear Street turn.
   // Estimated from maxim752 Mapillary frames 588735650795644 and 584548554484819 (18 January 2025).
+  // 47 Cashin Street. A low cottage, open west deck and inner north access share one batch.
+  function invCashinStreet47(T, model, THREE) {
+    const origin = [-1229.30,-400.24], angle = 2.79 * Math.PI / 180;
+    const c = Math.cos(angle), s = Math.sin(angle);
+    const local = (u,v) => [u*c-v*s,u*s+v*c];
+    const world = ([u,v]) => local(u,v).map((p,i)=>p+origin[i]);
+    const walls = [[0.5,-0.54],[16.79,-0.54],[16.79,-4.41],[9.42,-4.41],[9.42,-9.1],[0.5,-9.1]];
+    const deck = [[0.28,-7.84],[0.28,-1.69],[-2.63,-1.69],[-2.63,-7.84]];
+    const apron = [[13.6,-11.08,-8.4],[16.7,-10.95,-8.33],[19.9,-10.79,-8.13],[22.9,-10.62,-7.95]];
+    const positions = [], colors = [];
+    const siding = new THREE.Color(0xbbb9a7), skirting = new THREE.Color(0x7f8178);
+    const metal = new THREE.Color(0xb1b8b4), frontRoof = new THREE.Color(0x7e8885);
+    const trim = new THREE.Color(0xc7c9ba), glass = new THREE.Color(0x4c5c55);
+    const cover = new THREE.Color(0xc4c6b0), timber = new THREE.Color(0x969079), paving = new THREE.Color(0xada89a);
+    const grade = p => model.groundAt(...world(p));
+    const floor = Math.max(grade([.5,-5]),grade([16.79,-2.5])) + .05;
+    const top = 2.42;
+    const at = ([u,v],y) => { const [x,z] = local(u,v); return [x,y,z]; };
+    const tri = (a,b,d,tint) => {
+      positions.push(...a,...b,...d);
+      for (let i=0; i<3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,d,e,tint) => { tri(a,b,d,tint); tri(a,d,e,tint); };
+    for (let i=0; i<walls.length; i++) {
+      const a=walls[i],b=walls[(i+1)%walls.length],m=[(a[0]+b[0])/2,(a[1]+b[1])/2];
+      const base=Math.min(grade(a),grade(b),grade(m))-floor-.13;
+      quad(at(a,base),at(b,base),at(b,.15),at(a,.15),skirting);
+      quad(at(a,.15),at(b,.15),at(b,top),at(a,top),siding);
+    }
+    const west=[[.13,-.17],[9.79,-.17],[9.79,-9.47],[.13,-9.47]];
+    const east=[[9.79,-.17],[17.16,-.17],[17.16,-4.78],[9.79,-4.78]];
+    const [a,b,d,e]=west.map(p=>at(p,top));
+    const westRidge=at([.13,-4.82],3.41),joinRidge=at([9.79,-4.82],3.41);
+    quad(a,b,joinRidge,westRidge,metal);
+    quad(e,westRidge,joinRidge,d,metal);
+    tri(a,westRidge,e,siding);
+    tri(b,d,joinRidge,siding);
+    const [f,g,h,j]=east.map(p=>at(p,top));
+    const r1=at([11.44,-2.47],3.12),r2=at([15.10,-2.47],3.12);
+    quad(f,g,r2,r1,frontRoof);
+    tri(g,h,r2,frontRoof);
+    quad(h,j,r1,r2,frontRoof);
+    tri(j,f,r1,frontRoof);
+    const boundary=[west[0],east[1],east[2],east[3],west[2],west[3]];
+    for (let i=0; i<boundary.length; i++) {
+      const p=boundary[i],q=boundary[(i+1)%boundary.length];
+      quad(at(p,top-.105),at(q,top-.105),at(q,top),at(p,top),trim);
+    }
+    const panel=(x,v0,v1,y0,y1,tint)=>
+      quad(at([x,v0],y0),at([x,v1],y0),at([x,v1],y1),at([x,v0],y1),tint);
+    panel(16.817,-3.93,-1.08,.98,1.99,trim);
+    panel(16.843,-3.85,-2.56,1.045,1.925,glass);
+    panel(16.843,-2.46,-1.16,1.045,1.925,glass);
+    const deckTop=.08;
+    const [p,q,r,t]=deck.map(([u,v])=>at([u,v],2.34+.10*u));
+    quad(p,q,r,t,cover);
+    const [pa,pb,pc,pd]=deck.map(p=>at(p,deckTop));
+    quad(pa,pb,pc,pd,timber);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    for (const v of [-7.68,-1.85]) {
+      const vertices=[[-2.53,v-.055],[-2.42,v-.055],[-2.42,v+.055],[-2.53,v+.055]];
+      for (let i=0;i<vertices.length;i++) {
+        const a=vertices[i],b=vertices[(i+1)%vertices.length];
+        quad(at(a,grade(a)-floor-.12),at(b,grade(b)-floor-.12),at(b,2.10),at(a,2.10),trim);
+      }
+      const [x,z]=world([-2.475,v]);
+      grid.worldBox(x,z,angle,.11,.11);
+    }
+    const pavingRow = ([u,lo,hi]) => [lo,(lo+hi)/2,hi].map(v => at([u,v],grade([u,v])-floor+.042));
+    let prev=pavingRow(apron[0]);
+    for (let i=1; i<apron.length; i++) {
+      const src=apron[i-1],dest=apron[i],steps=Math.ceil((dest[0]-src[0])/1.18);
+      for (let j=1;j<=steps;j++) {
+        const next=pavingRow(src.map((x,k)=>x+(dest[k]-x)*j/steps));
+        quad(prev[0],next[0],next[1],prev[1],paving);
+        quad(prev[1],next[1],next[2],prev[2],paving);
+        prev=next;
+      }
+    }
+    const matrix=new THREE.Matrix4().makeTranslation(origin[0],floor,origin[1]).elements;
+    model.addParts([{ positions:new Float32Array(positions),colors:new Float32Array(colors),matrix,roughness:.88,doubleSide:true }]);
+    grid.polygon(walls.map(world));
+  }
+
+
   function invIndustrialEstateSign(T, model, THREE) {
     const x = -867.06, z = -1067.02, angle = 104 * Math.PI / 180;
     const matrix = new THREE.Matrix4().makeRotationY(angle).setPosition(x, 0, z);
