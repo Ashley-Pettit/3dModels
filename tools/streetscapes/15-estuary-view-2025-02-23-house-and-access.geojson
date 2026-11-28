@@ -1,0 +1,293 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.759302,
+          -38.629008
+        ]
+      },
+      "properties": {
+        "role": "northwest corner",
+        "source": "Esri World Imagery / Vantor WV03",
+        "sourceDate": "2025-02-23",
+        "scene": 6072276,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.75922,-38.629277&level=19",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.759433,
+          -38.629062
+        ]
+      },
+      "properties": {
+        "role": "north bedroom east return",
+        "source": "Esri World Imagery / Vantor WV03",
+        "sourceDate": "2025-02-23",
+        "scene": 6072276,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.75922,-38.629277&level=19",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.759409,
+          -38.629079
+        ]
+      },
+      "properties": {
+        "role": "alfresco west return",
+        "source": "Esri World Imagery / Vantor WV03",
+        "sourceDate": "2025-02-23",
+        "scene": 6072276,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.75922,-38.629277&level=19",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.759468,
+          -38.629101
+        ]
+      },
+      "properties": {
+        "role": "alfresco east return",
+        "source": "Esri World Imagery / Vantor WV03",
+        "sourceDate": "2025-02-23",
+        "scene": 6072276,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.75922,-38.629277&level=19",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.759492,
+          -38.629089
+        ]
+      },
+      "properties": {
+        "role": "east bedroom north step",
+        "source": "Esri World Imagery / Vantor WV03",
+        "sourceDate": "2025-02-23",
+        "scene": 6072276,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.75922,-38.629277&level=19",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.759617,
+          -38.629148
+        ]
+      },
+      "properties": {
+        "role": "far east eave",
+        "source": "Esri World Imagery / Vantor WV03",
+        "sourceDate": "2025-02-23",
+        "scene": 6072276,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.75922,-38.629277&level=19",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.759534,
+          -38.629258
+        ]
+      },
+      "properties": {
+        "role": "garage east front eave",
+        "source": "Esri World Imagery / Vantor WV03",
+        "sourceDate": "2025-02-23",
+        "scene": 6072276,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.75922,-38.629277&level=19",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.759447,
+          -38.62923
+        ]
+      },
+      "properties": {
+        "role": "garage west front eave",
+        "source": "Esri World Imagery / Vantor WV03",
+        "sourceDate": "2025-02-23",
+        "scene": 6072276,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.75922,-38.629277&level=19",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.75942,
+          -38.629213
+        ]
+      },
+      "properties": {
+        "role": "front entry inside return",
+        "source": "Esri World Imagery / Vantor WV03",
+        "sourceDate": "2025-02-23",
+        "scene": 6072276,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.75922,-38.629277&level=19",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.759365,
+          -38.629218
+        ]
+      },
+      "properties": {
+        "role": "southern room eave",
+        "source": "Esri World Imagery / Vantor WV03",
+        "sourceDate": "2025-02-23",
+        "scene": 6072276,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.75922,-38.629277&level=19",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.759209,
+          -38.629129
+        ]
+      },
+      "properties": {
+        "role": "west front corner",
+        "source": "Esri World Imagery / Vantor WV03",
+        "sourceDate": "2025-02-23",
+        "scene": 6072276,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.75922,-38.629277&level=19",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.759365,
+          -38.629485
+        ]
+      },
+      "properties": {
+        "role": "street crossover",
+        "source": "Esri World Imagery / Vantor WV03",
+        "sourceDate": "2025-02-23",
+        "scene": 6072276,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.75922,-38.629277&level=19",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.759408,
+          -38.629421
+        ]
+      },
+      "properties": {
+        "role": "lower lane",
+        "source": "Esri World Imagery / Vantor WV03",
+        "sourceDate": "2025-02-23",
+        "scene": 6072276,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.75922,-38.629277&level=19",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.759448,
+          -38.629349
+        ]
+      },
+      "properties": {
+        "role": "middle lane",
+        "source": "Esri World Imagery / Vantor WV03",
+        "sourceDate": "2025-02-23",
+        "scene": 6072276,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.75922,-38.629277&level=19",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.759482,
+          -38.629292
+        ]
+      },
+      "properties": {
+        "role": "upper apron",
+        "source": "Esri World Imagery / Vantor WV03",
+        "sourceDate": "2025-02-23",
+        "scene": 6072276,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.75922,-38.629277&level=19",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.759503,
+          -38.629253
+        ]
+      },
+      "properties": {
+        "role": "at garage opening",
+        "source": "Esri World Imagery / Vantor WV03",
+        "sourceDate": "2025-02-23",
+        "scene": 6072276,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.75922,-38.629277&level=19",
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    }
+  ]
+}
