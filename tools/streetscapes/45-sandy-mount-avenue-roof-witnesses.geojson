@@ -1,0 +1,157 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "activeParcelPFI": "5286846",
+    "activeAddressPFI": "53200332",
+    "source": "Vicmap Basemaps \u00a9 State of Victoria, AERIAL_WM_256",
+    "provider": "Vicmap Basemaps",
+    "candidateImageryAcquisitions": [
+      "2021-12-13",
+      "2023-01-08"
+    ],
+    "imageryMetadata": "https://services-ap1.arcgis.com/P744lA0wf4LlBZ84/ArcGIS/rest/services/Aerial_Imagery_viewable/FeatureServer/0",
+    "licensedCrosscheck": "microsoft-311223133-6f4d04c8021e855f",
+    "esriReference": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.72492302,-38.63210074&level=20",
+    "esriScene": "6072228",
+    "esriCaptureDate": "2022-03-26",
+    "sellerPhotoAndListing": "https://www.realestate.com.au/sold/property-house-vic-inverloch-129107958",
+    "streetViewDate": "2025-10",
+    "streetViewReference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=fMoMJgAnbbVWREanVpid7A&heading=266&pitch=3",
+    "originalRoadSide": "inverloch-road-b50a4e7fe56ebad93fb9-right"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "enclosed principal hip roof eave witnesses"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.72480335831642,
+              -38.63213607514402
+            ],
+            [
+              145.7250863313675,
+              -38.63216226591878
+            ],
+            [
+              145.72510108351707,
+              -38.63208055066989
+            ],
+            [
+              145.7250863313675,
+              -38.63207740777384
+            ],
+            [
+              145.725087672472,
+              -38.632056455130005
+            ],
+            [
+              145.7250139117241,
+              -38.63205121696809
+            ],
+            [
+              145.72501257061958,
+              -38.6320700743492
+            ],
+            [
+              145.72496429085732,
+              -38.63206483618827
+            ],
+            [
+              145.72496697306633,
+              -38.6320407406431
+            ],
+            [
+              145.72489321231842,
+              -38.63203445484738
+            ],
+            [
+              145.7248905301094,
+              -38.632054359865286
+            ],
+            [
+              145.724818110466,
+              -38.63205121696809
+            ],
+            [
+              145.72480335831642,
+              -38.63213607514402
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "observed open carport roof bounds, omitted from this shell"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.724818110466,
+              -38.63197683502756
+            ],
+            [
+              145.7247979938984,
+              -38.632050169335656
+            ],
+            [
+              145.72488650679588,
+              -38.632050169335656
+            ],
+            [
+              145.72489723563194,
+              -38.63198312082834
+            ],
+            [
+              145.724818110466,
+              -38.63197683502756
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "existing paved north approach from Sandy Mount Avenue"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.7252472639084,
+            -38.63204178827567
+          ],
+          [
+            145.72521105408669,
+            -38.632038645377925
+          ],
+          [
+            145.7251600921154,
+            -38.63203655011267
+          ],
+          [
+            145.72511851787567,
+            -38.632033407214706
+          ],
+          [
+            145.72503939270973,
+            -38.63202083562141
+          ],
+          [
+            145.72492271661758,
+            -38.632012454558
+          ]
+        ]
+      }
+    }
+  ]
+}

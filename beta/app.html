@@ -10266,6 +10266,7 @@ const handle = async (m, post) => {
       [-38.627680894, 145.744189406],
     ]) clearLatLon.push({ lat, lon, r: 0.25 });
     if (inv && home && BS.W.invHouse) { const [lat, lon] = townLL(home[0], home[1]); clearLatLon.push({ lat, lon, r: 24 }); detailLatLon.push({ lat, lon, r: 170 }); }
+    if (inv) clearLatLon.push({ lat: -38.63206795, lon: 145.72494384, r: 0.16 }); // 45 Sandy Mount Avenue: packed house 958.
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
     if (inv) clearPolygons.push({ latLon: INV_GLADE_SHELTER });
     if (inv) clearPolygons.push({ latLon: invScrewCreekMask(), roads: true });
@@ -10367,6 +10368,7 @@ const handle = async (m, post) => {
             catch (e) { console.warn("Inverloch: Surf Parade beach access couldn't be added", e); }
         }
         if (inv && m.addParts) try { mine.push(invWestJetty(T, BS.B.THREE)); } catch (e) { console.warn("Inverloch: the west jetty could not be added", e); }
+        if (inv && m.addParts) invSandyMount45(T, m, BS.B.THREE);
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
@@ -18888,6 +18890,104 @@ const handle = async (m, post) => {
   const STREETS_KEY = "an3d-streets";
   const streetsPref = () => { try { return localStorage.getItem(STREETS_KEY) === "1"; } catch { return false; } };  // off to start with (Ash, 14 November 2026: "Names start off")
   const streetsSave = on => { try { localStorage.setItem(STREETS_KEY, on ? "1" : "0"); } catch {} };
+  // 45 Sandy Mount Avenue. Two north-facing bays overlook the open driveway.
+  function invSandyMount45(T, model, THREE) {
+    const [x0,z0,cos,sin] = [-454.6978784,-539.67845859,0.99703629,0.07693263];
+    const walls = [[14.82,-11.35],
+      [9.89,-11.35],
+      [9.89,-8.47],
+      [3.35,-8.47],
+      [3.35,-1.15],
+      [25.72,-1.15],
+      [25.72,-8.47],
+      [25.37,-8.47],
+      [25.37,-10.43],
+      [20.5,-10.43],
+      [20.5,-8.47],
+      [14.82,-8.47]];
+    const eaves = [[15.35,-11.88],
+      [9.36,-11.88],
+      [9.36,-9.0],
+      [2.82,-9.0],
+      [2.82,-0.62],
+      [26.25,-0.62],
+      [26.25,-9.0],
+      [25.9,-9.0],
+      [25.9,-10.96],
+      [19.97,-10.96],
+      [19.97,-9.0],
+      [15.35,-9.0]], hips = [[[2.82,-9.0,0.0],[2.82,-0.62,0.0],[7.01,-4.81,1.3827]],
+      [[26.25,-0.62,0.0],[26.25,-9.0,0.0],[22.06,-4.81,1.3827]],
+      [[24.3361,-7.2939,0.563],[26.25,-9.0,0.0],[25.9,-9.0,0.0]],
+      [[21.5339,-7.2939,0.563],[19.97,-9.0,0.0],[15.35,-9.0,0.0]],
+      [[9.36,-9.0,0.0],[2.82,-9.0,0.0],[7.01,-4.81,1.3827]],
+      [[26.25,-9.0,0.0],[24.3361,-7.2939,0.563],[22.06,-4.81,1.3827]],
+      [[21.5339,-7.2939,0.563],[15.35,-9.0,0.0],[13.6283,-7.1217,0.6198]],
+      [[21.5339,-7.2939,0.563],[22.06,-4.81,1.3827],[24.3361,-7.2939,0.563]],
+      [[22.06,-4.81,1.3827],[21.5339,-7.2939,0.563],[13.6283,-7.1217,0.6198]],
+      [[9.36,-9.0,0.0],[7.01,-4.81,1.3827],[11.0817,-7.1217,0.6198]],
+      [[22.06,-4.81,1.3827],[13.6283,-7.1217,0.6198],[7.01,-4.81,1.3827]],
+      [[13.6283,-7.1217,0.6198],[11.0817,-7.1217,0.6198],[7.01,-4.81,1.3827]],
+      [[22.06,-4.81,1.3827],[2.82,-0.62,0.0],[26.25,-0.62,0.0]],
+      [[7.01,-4.81,1.3827],[2.82,-0.62,0.0],[22.06,-4.81,1.3827]],
+      [[12.355,-8.395,1.0782],[9.36,-9.0,0.0],[11.0817,-7.1217,0.6198]],
+      [[9.36,-11.88,0.0],[9.36,-9.0,0.0],[12.355,-8.885,1.0782]],
+      [[12.355,-8.885,1.0782],[9.36,-9.0,0.0],[12.355,-8.395,1.0782]],
+      [[12.355,-8.395,1.0782],[13.6283,-7.1217,0.6198],[15.35,-9.0,0.0]],
+      [[12.355,-8.885,1.0782],[12.355,-8.395,1.0782],[15.35,-9.0,0.0]],
+      [[12.355,-8.885,1.0782],[15.35,-9.0,0.0],[15.35,-11.88,0.0]],
+      [[15.35,-11.88,0.0],[9.36,-11.88,0.0],[12.355,-8.885,1.0782]],
+      [[12.355,-8.395,1.0782],[11.0817,-7.1217,0.6198],[13.6283,-7.1217,0.6198]],
+      [[19.97,-9.0,0.0],[21.5339,-7.2939,0.563],[21.8353,-7.5953,0.6715]],
+      [[19.97,-9.0,0.0],[22.585,-8.345,0.9414],[19.97,-10.96,0.0]],
+      [[22.585,-8.345,0.9414],[19.97,-9.0,0.0],[21.8353,-7.5953,0.6715]],
+      [[25.9,-9.0,0.0],[23.285,-8.345,0.9414],[24.3361,-7.2939,0.563]],
+      [[23.285,-8.345,0.9414],[25.9,-9.0,0.0],[25.9,-10.96,0.0]],
+      [[22.585,-8.345,0.9414],[23.285,-8.345,0.9414],[25.9,-10.96,0.0]],
+      [[25.9,-10.96,0.0],[19.97,-10.96,0.0],[22.585,-8.345,0.9414]],
+      [[22.585,-8.345,0.9414],[23.9857,-7.6443,0.6891],[23.285,-8.345,0.9414]],
+      [[23.9857,-7.6443,0.6891],[21.5339,-7.2939,0.563],[24.3361,-7.2939,0.563]],
+      [[23.9857,-7.6443,0.6891],[22.585,-8.345,0.9414],[21.5339,-7.2939,0.563]]], panels = [[[6.6,-6.25,0.9345],[9.2,-6.25,0.9345],[9.2,-5.35,1.2315],[6.6,-5.35,1.2315]],
+      [[16.0,-6.75,0.7695],[19.28,-6.75,0.7695],[19.28,-5.2,1.281],[16.0,-5.2,1.281]]];
+    const positions = [], colours = [];
+    const render = new THREE.Color(0x9a7562), roof = new THREE.Color(0x8a8981);
+    const fascia = new THREE.Color(0xa9a18b);
+    const offset = ([u,v]) => [u*cos-v*sin,u*sin+v*cos];
+    const world = p => { const [x,z] = offset(p); return [x+x0,z+z0]; };
+    const point = (p,y) => { const [x,z] = offset(p); return [x,y,z]; };
+    const ground = p => model.groundAt(...world(p));
+    const tri = (a,b,c,paint) => {
+      positions.push(...a,...b,...c);
+      for (let i=0; i<3; i++) colours.push(paint.r,paint.g,paint.b);
+    };
+    const quad = (a,b,c,d,paint) => { tri(a,b,c,paint); tri(a,c,d,paint); };
+    const top = Math.max(...walls.map(ground))+2.67;
+    walls.forEach((a,i) => {
+      const b=walls[(i+1)%walls.length];
+      quad(point(a,ground(a)-.12),point(b,ground(b)-.12),point(b,top+.02),point(a,top+.02),render);
+    });
+    const glass = new THREE.Color(0x414d50), rails = new THREE.Color(0x5f5247);
+    for (const [left,right,v] of [[10.44,14.27,-11.371],[21.02,24.84,-10.451]]) {
+      const bottom = Math.min(top-1.55,(ground([left,v])+ground([right,v]))*.5+.71);
+      quad(point([left,v],bottom),point([right,v],bottom),point([right,v],top-.27),point([left,v],top-.27),rails);
+      const width=(right-left)/3;
+      for (let i=0; i<3; i++) {
+        const a=left+i*width+.055, b=a+width-.11, z=v-.009;
+        quad(point([a,z],bottom+.058),point([b,z],bottom+.058),point([b,z],top-.33),point([a,z],top-.33),glass);
+      }
+    }
+    hips.forEach(face => tri(...face.map(p => point(p,top+p[2])),roof));
+    const solar = new THREE.Color(0x424a52);
+    panels.forEach(panel => quad(...panel.map(p => point(p,top+p[2])),solar));
+    eaves.forEach((p,i) => {
+      const q=eaves[(i+1)%eaves.length];
+      quad(point(p,top-.115),point(q,top-.115),point(q,top),point(p,top),fascia);
+    });
+    model.addParts([{positions:new Float32Array(positions),colors:new Float32Array(colours),
+      matrix:new THREE.Matrix4().makeTranslation(x0,0,z0).elements,roughness:.9,doubleSide:true}]);
+    (T.invStatic??=invCivicCollision((x,z)=>[x,z],()=>false)).polygon(walls.map(world));
+  }
+
   // The late-2024 west boat-ramp jetty. The native pier across the slipway is the older east jetty.
   function invWestJetty(T, THREE) {
     const decks = new WeakMap();
