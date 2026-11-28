@@ -8,6 +8,13 @@ const identity = (x,z) => [x,z];
 const makeIndex = () => make(identity,(x,z) => Math.abs(x) <= 100 && Math.abs(z) <= 100);
 const radius = .35;
 
+// A display window's near-plane guard protects a walking camera without displacing a parked car.
+const display = makeIndex();
+const panel = display.box(0, 0, 0, 0.5, 5);
+panel.walkClearance = true;
+assert.ok(display.depth(0, 0, 0, 0, radius) > 0);
+assert.equal(display.depth(0, 0, 0, 2.1, .8), 0);
+
 // A narrow post between all five original car probes. A fast step crosses two grid cells.
 const fixtures = makeIndex();
 fixtures.post(-16,.8,.06);

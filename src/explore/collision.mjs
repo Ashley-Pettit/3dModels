@@ -48,7 +48,7 @@ function invCivicCollision(at, inPilot) {
       const bucket = cells.get(k);
       if (!bucket) return;
       for (const B of bucket) {
-        if (B.stamp === id || B.hidden || B === ignore || x+ex < B.x0 || x-ex > B.x1 || z+ez < B.z0 || z-ez > B.z1) continue;
+        if (B.stamp === id || B.hidden || (hl > 0 && B.walkClearance) || B === ignore || x+ex < B.x0 || x-ex > B.x1 || z+ez < B.z0 || z-ez > B.z1) continue;
         B.stamp = id;
         let inside = false, distance2 = Infinity, vx = 0, vz = 0, rim = 0;
         for (const e of B.edges) {
