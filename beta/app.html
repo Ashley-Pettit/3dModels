@@ -10242,6 +10242,8 @@ const handle = async (m, post) => {
     // Inverloch: the town centre and number 11 come across from the weather's Inverloch (below): keep the ground clear where
     // they'll stand (and round both, the model draws its small things: cars with proper shapes, letterboxes, bins, power lines)
     const cfg = T.cfg, inv = cfg.place === "inv", D = INV_TOWN, home = D.nr?.home, clearLatLon = [], clearPolygons = [], detailLatLon = [];
+    if (inv) clearLatLon.push({ lat: -38.63713738, lon: 145.71761944, r: 0.16 }); // 10 Toorak Road: old shell 4043.
+    if (inv) clearLatLon.push({ lat: -38.63701576, lon: 145.71761370, r: 0.16 }); // 10 Toorak Road: old shell 4044.
     // Keep the seeded tree indices stable. Clear only trunks enclosed by the two surveyed Bayview school roofs.
     if (inv) for (const [lat, lon] of [
       [-38.63102523, 145.72813660], [-38.63101172, 145.72819115], [-38.63104325, 145.72849263],
@@ -10363,6 +10365,7 @@ const handle = async (m, post) => {
               if (to && m.driveCar?.(c.id[0], c.id[1], to.x, ground(to.x, to.z) + 0.05, to.z, B.h, 0, 0)) grid.park(c.id, to.x, to.z, B.h, ground(to.x, to.z) + 0.05, 0, 0);
               else grid.park(c.id, B.x, B.z, B.h); } } catch (e) { console.warn("Inverloch: couldn't move the parked cars stuck in poles", e); }
           } else invAddDesignedWalls(T, m.designedWallFootprints?.());
+          if (m.addParts) invToorakRoad10(T, m, BS.B.THREE);
           if (m.addParts) try { townSurfParadeBeachAccess(T, m); }
             catch (e) { console.warn("Inverloch: Surf Parade beach access couldn't be added", e); }
         }
@@ -18350,6 +18353,63 @@ const handle = async (m, post) => {
   // Inverloch Motel at 39 Powlett Street. Follow the highway leg of mapped fence 988785313,
   // inset into Vicmap parcel 5287818 with the service driveway at the west end left open.
   // Mapillary views 1615864943147134 and 1669414413672530, maxim752, 18 January 2025.
+  function invToorakRoad10(T, model, THREE) {
+    const originX = -1077, originZ = 5;
+    const outline = [[5.44, 5.08], [7.06, -2.54], [-3.81, -4.84], [-5.44, 2.77]];
+    const eaves = [[5.77, 5.59], [7.58, -2.87], [-4.14, -5.35], [-5.95, 3.1]];
+    const ridge = [[2.92, 0.56], [-1.29, -0.33]];
+    const walls = outline.map(([x,z]) => [x+originX,z+originZ]);
+    const ground = walls.map(([x,z]) => model.groundAt(x,z));
+    const groundTop = Math.max(...ground);
+    const belt = groundTop + 2.39, top = groundTop + 4.42;
+    const positions = [], colors = [];
+    const upper = new THREE.Color(0x8e8171), lower = new THREE.Color(0x666f51);
+    const base = new THREE.Color(0x767b72), fascia = new THREE.Color(0xadb0a5);
+    const roofing = new THREE.Color(0x73828a), frames = new THREE.Color(0x51483f);
+    const glass = new THREE.Color(0x62706c);
+    const point = ([x,z],y) => [x,y,z];
+    const tri = (a,b,c,tint) => {
+      positions.push(...a,...b,...c);
+      for (let i=0; i<3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,c,d,tint) => { tri(a,b,c,tint); tri(a,c,d,tint); };
+    outline.forEach((a,i) => {
+      const j=(i+1)%outline.length, b=outline[j];
+      const baseTop=Math.max(ground[i],ground[j])+.15;
+      quad(point(a,ground[i]-.12),point(b,ground[j]-.12),point(b,baseTop),point(a,baseTop),base);
+      quad(point(a,baseTop),point(b,baseTop),point(b,belt),point(a,belt),lower);
+      quad(point(a,belt),point(b,belt),point(b,top),point(a,top),upper);
+    });
+    const edge = eaves.map(p => point(p,top+.09));
+    eaves.forEach((a,i) => {
+      const j=(i+1)%eaves.length;
+      quad(point(a,top-.06),point(eaves[j],top-.06),edge[j],edge[i],fascia);
+    });
+    const [east,west] = ridge.map(p => point(p,top+1.06));
+    tri(edge[0],edge[1],east,roofing);
+    quad(edge[1],edge[2],west,east,roofing);
+    tri(edge[2],edge[3],west,roofing);
+    quad(edge[3],edge[0],east,west,roofing);
+    // The October street view exposes the eastern upper window and the
+    // shallow flashing separating it from the olive lower bay.
+    const front = (u,offset) => [outline[0][0]+(outline[3][0]-outline[0][0])*u-offset*.209,
+      outline[0][1]+(outline[3][1]-outline[0][1])*u+offset*.978];
+    const frontPanel = (u,v,lo,hi,offset,tint) =>
+      quad(point(front(v,offset),lo),point(front(u,offset),lo),
+        point(front(u,offset),hi),point(front(v,offset),hi),tint);
+    frontPanel(.09,.28,belt+.49,belt+1.43,.018,frames);
+    for (const [u,v] of [[.105,.147],[.155,.204],[.212,.265]]) {
+      frontPanel(u,v,belt+.56,belt+1.35,.028,glass);
+    }
+    quad(point(front(.02,0),belt+.12),point(front(.46,0),belt+.12),
+      point(front(.46,.48),belt-.02),point(front(.02,.48),belt-.02),roofing);
+    frontPanel(.02,.46,belt-.083,belt-.02,.484,fascia);
+    const matrix = new THREE.Matrix4().makeTranslation(originX,0,originZ).elements;
+    model.addParts([{ positions:new Float32Array(positions), colors:new Float32Array(colors), roughness:.89, matrix }]);
+    const collision = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    collision.polygon(walls);
+  }
+
   function invMotelFrontage(T, model, THREE) {
     const points = [[-800.60,-1062.98], [-766.60,-1071.23], [-728.16,-1057.54], [-727.08,-1056.91]];
     const sections = [];
