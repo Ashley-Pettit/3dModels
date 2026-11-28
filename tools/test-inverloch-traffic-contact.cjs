@@ -24,7 +24,7 @@ async function world(place="inv", model={}, roads=[-100,0,100].map(x=>({cls:0,pt
   const {townTrafficBodies, townTrafficSweep} = await collision;
   const ctx=vm.createContext({BS, townTrafficBodies, townTrafficSweep, setTimeout: f=>{startup=f;}, performance:{now:()=>now}, matchMedia:()=>({matches:false}), townLaneOf:()=>0,
     bsClamp:(x,lo,hi)=>Math.max(lo,Math.min(x,hi)), bsBlock:()=>{}, bsUnstick:()=>{throw Error("unexpected sidestep into traffic");},
-    townPlaneParts:()=>[], townCarPart:()=>({}), townSpinner:()=>null, townStreetData:async()=>({names:[],roads})});
+    townPlaneParts:()=>[], townCarPart:()=>({}), townCarGlass:()=>({}), townSpinner:()=>null, townStreetData:async()=>({names:[],roads})});
   vm.runInContext("let seed=37; Math.random=()=>((seed=(Math.imul(1664525, seed)+1013904223)>>>0)/4294967296)",ctx);
   vm.runInContext(mechanics+walkCode,ctx);
   const parts=()=>({setMatrix(){},remove(){}});
