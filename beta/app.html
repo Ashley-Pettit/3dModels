@@ -10538,7 +10538,7 @@ const handle = async (m, post) => {
           // admin things (New to check, the golden rides) are in Settings, under Admin (Ash: "Seperate the admin stuff out of jump")
           const top = [...(T.gps ? [item({ townGps: "1" }, "GPS", "Type an address, or pick a place to go")] : []),
             ...(T.race ? [item({ townRace: "1" }, `Race around ${T.race.name}`, T.race.active() ? "In a race now" : T.race.host ? `Talk to ${T.race.host.name}: ${T.race.host.what}` : "Everyone here, standard cars, one lap")] : [])];
-          if (T.car?.bossGo && ["inv", "logan", "moo"].includes(T.cfg?.place)) top.push(item({ townBoss: "1" }, "Boss fight: T-rex", `Into the hotrod ${T.cfg?.place === "logan" ? "out the front of the council" : T.cfg?.place === "moo" ? "in the Woolworths car park" : "by The Hub"}. The T-rex comes in a few seconds`));  // (Ash, 26 November 2026: "Add a jump to boss fight")
+          if (T.car?.bossGo && ["inv", "logan", "moo"].includes(T.cfg?.place)) top.push(item({ townBoss: "1" }, "Boss fight: T-rex", `Into the hotrod ${T.cfg?.place === "logan" ? "in the car park behind the council" : T.cfg?.place === "moo" ? "in the Woolworths car park" : "by The Hub"}. The T-rex comes in a few seconds`));  // (Ash, 26 November 2026: "Add a jump to boss fight")
           if (clockDistance() <= 65) top.push(item({ townFaceClock: "1" }, "Face the Rotary clock", "Turn towards the clock from where you’re standing"));
           if (T.car?.canUnstickWalk?.()) top.push(item({ townUnstick: "1" }, "Unstick on foot", "Move to a clear spot nearby (U)"));
           const who = T.peers?.list?.() || []; if (!who.length) { list.prepend(...top); return; }
@@ -19583,8 +19583,9 @@ const handle = async (m, post) => {
     logan: { planes: [{ x: 5732, z: -12989, h: 1.0, name: "The plane", at: "on the big lawn in Civic Centre Park", what: "On the big open lawn in Civic Centre Park, behind the council, with room to take off" }],
       cars: [{ x: 5816.2, z: -13302.9, h: 1.94, spare: true, name: "The red car", what: "On the lawn out the front of the council, by the plane" }, { x: 5788.7, z: -13204.6, h: 3.63, gold: true, name: "The golden car", what: "In the car park behind the council. A fifth faster than the red one" },
         // Logan's potato hotrod and its T-rex (Ash, 27 November 2026: "start working on adding the boss fight to Logan. Make sure multiplayer
-        // works"): beside the red car, out the front of the council. 20 seconds after you get in, the T-rex comes (townCar)
-        { x: 5817.8, z: -13298.7, h: 1.94, hotrod: true, name: "The hotrod", what: "A potato hot rod with a blower and flames, on the lawn out the front of the council. Get in if you dare" }],
+        // works"): beside the golden car, in the car park behind the council (Ash, 29 November 2026: "move the hotrod to the back carpark in
+        // Logan"; it was on the lawn out the front). 20 seconds after you get in, the T-rex comes (townCar)
+        { x: 5785.9, z: -13203.1, h: 3.63, hotrod: true, name: "The hotrod", what: "A potato hot rod with a blower and flames, in the car park behind the council. Get in if you dare" }],
       more: { planes: [{ x: 5842.3, z: -12977.7, h: 1.0, heli: true, name: "The helicopter", at: "in Civic Centre Park, by the police station", what: "On the grass in Civic Centre Park, by Logan Central Police Station" }], cars: [{ x: 5752.7, z: -13341.2, h: -1.126, bus: true, name: "The bus", what: "At the bus stop on the street out the front of the council" }] },
       roam: [[5749, -13002], [6006, -13466], [5650, -13194], [7441, -11580], [5927, 564], [8554, -7453]] },
   };
@@ -24413,7 +24414,7 @@ const handle = async (m, post) => {
     // the towns with a fight: what it's called there, where its hotrod waits, and its page (/<dir>/rex/). Logan's has no water between
     // Mumma and the bunker (dry): the bunker comes up on open ground 650 m off instead
     const REX_TOWN = { inv: { name: "Inverloch", dir: "inverloch", at: "by The Hub", lawn: "on the lawn by The Hub" },
-      logan: { name: "Logan", dir: "logan", at: "out the front of the council", lawn: "on the lawn out the front of the council", dry: true },
+      logan: { name: "Logan", dir: "logan", at: "in the car park behind the council", lawn: "in the car park behind the council", dry: true },
       moo: { name: "Moorooka", dir: "moorooka", at: "in the Woolworths car park", lawn: "in the Woolworths car park", dry: true } }[place] || null;  // (Moorooka's since 27 November 2026: no water to cross either)
     const rexVoiceSet = place === "inv" ? "rex-inverloch" : "rex";
     const REX_S = 2.6, REX_SPUDS = 10, REX_NET = 150, PACK_MAX = 6, rexMs = () => performance.now();
