@@ -1,0 +1,165 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "activeParcelPFI": "103199711",
+    "activeAddressPFI": "103199715",
+    "source": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70509837,-38.63384528&level=20",
+    "provider": "Vantor / Esri World Imagery",
+    "scene": "6072283",
+    "captureDate": "2025-05-13",
+    "sourceSamplingM": 0.34,
+    "sourcePositionalAccuracyM": 5,
+    "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+    "licensedCrosscheck": "microsoft-311223133-61fb14924742b5fb",
+    "unregisteredLicensedSpillM2": 8.22,
+    "registrationEvidence": "Vicmap Jan 2023 snapshot seen in the adjacent 9 Dalmont authoring evidence, cited for shape and separate timber deck corroboration",
+    "uncertainty": "One two-storey dwelling and lower enclosed drive-through garage; east timber deck is open and upper behind facade. Current pitch, rail height, and stair contours are unresolved."
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "upper roof witnesses"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.7050869706117,
+              -38.633744185930006
+            ],
+            [
+              145.70508428840267,
+              -38.63388351761627
+            ],
+            [
+              145.70521035222637,
+              -38.63386885113572
+            ],
+            [
+              145.70519291786778,
+              -38.633744185930006
+            ],
+            [
+              145.7050869706117,
+              -38.633744185930006
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "lower garage roof witnesses"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.7050735595666,
+              -38.633880374799254
+            ],
+            [
+              145.70508428840267,
+              -38.63393170745976
+            ],
+            [
+              145.70522108106243,
+              -38.63391913619935
+            ],
+            [
+              145.70521035222637,
+              -38.63386780352987
+            ],
+            [
+              145.7050735595666,
+              -38.633880374799254
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "open timber deck witnesses, outside enclosed collision"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.70522376327145,
+              -38.63377247133184
+            ],
+            [
+              145.70522510437596,
+              -38.63386151789433
+            ],
+            [
+              145.70527740745175,
+              -38.63384999422777
+            ],
+            [
+              145.7052707019292,
+              -38.63378294740375
+            ],
+            [
+              145.70522376327145,
+              -38.63377247133184
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "court driveway toward enclosed garage"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.70495822457897,
+            -38.63397675445808
+          ],
+          [
+            145.7049984577142,
+            -38.63394637392744
+          ],
+          [
+            145.70504807858097,
+            -38.633909707752615
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "west entry walkway and separation toward No. 9"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.70504807858097,
+            -38.633909707752615
+          ],
+          [
+            145.705053442999,
+            -38.63385942268237
+          ],
+          [
+            145.7050373497449,
+            -38.63381856603682
+          ]
+        ]
+      }
+    }
+  ]
+}
