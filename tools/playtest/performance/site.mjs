@@ -16,7 +16,7 @@ export const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 
 function replaceOnce(source, anchor, replacement) {
   if (!anchor || source.split(anchor).length !== 2) {
-    throw Error(`Benchmark hook needs one matching build anchor (${anchor ?? 'missing model constructor'})`);
+    throw Error(`Benchmark hook needs one matching build anchor (${anchor ?? 'missing native camera'})`);
   }
   return source.replace(anchor, () => replacement);
 }
@@ -73,9 +73,10 @@ export async function serveSite({site, three, channel = "production", ...options
     if (!car || veh !== "car") return false;
     Object.assign(car, {x,z,h,dir:h,v,steer:0}); sit(0); return true; }; C.enterCar = c =>`);
   const rawModel = originals[1].toString('utf8');
-  const constructor = /return ([\w$]+)\.init\(\),\{ready:([\w$]+),setCamera:/.exec(rawModel);
-  const model = replaceOnce(rawModel, constructor?.[0],
-    `return window.__playtestConstructed=${constructor?.[1]},${constructor?.[1]}.init(),{ready:${constructor?.[2]},setCamera:`);
+  // Both the immediate and staged renderers expose the native scene through this public method.
+  const camera = /\{ready:([\w$]+),setCamera:\([\w$,]+\)=>([\w$]+)\.setExternalCamera\(/.exec(rawModel);
+  const model = replaceOnce(rawModel, camera?.[0],
+    camera?.[0].replace(`ready:${camera[1]},`, `ready:(window.__playtestConstructed=${camera[2]},${camera[1]}),`));
 
   const requests = [], cache = new Map();
   const server = http.createServer(async (request, response) => {
