@@ -9725,21 +9725,21 @@ const handle = async (m, post) => {
         for (let i = 0; i < I.length; i++) { const o = I[i] * n; for (let c = 0; c < n; c++) dst[i * n + c] = src[o + c]; } out[key] = dst; }
       return out; }); }
   function townModelPair(T, library, box, cfg, opts, cb) {
+    const lib = { ...library, create(node, options) {
+      return (cur && graphics && library.createStaged?.(node, options, cur)) || library.create(node, options);
+    } };
     const key = "an3d-" + cfg.place, mem = navigator.deviceMemory || 8, touch = matchMedia("(pointer: coarse)").matches;
     let seen = {}; try { seen = JSON.parse(localStorage.getItem(key) || "{}") || {}; } catch {}
     const save = o => { seen = { ...seen, ...o }; try { localStorage.setItem(key, JSON.stringify(seen)); } catch {} };
     const best = navigator.connection?.saveData || mem < 4 ? "low" : touch || mem <= 4 ? "medium" : "high";
     const graphics = cfg.place === "inv" ? invGraphics : null;
-    const presets = library.qualityPresets ? ["auto", ...library.qualityPresets] : invGraphicsPresets;
+    const presets = lib.qualityPresets ? ["auto", ...lib.qualityPresets] : invGraphicsPresets;
     const initialPreset = presets.includes(graphics?.preset) ? graphics.preset : "auto";
     const manual = initialPreset !== "auto";
     const direct = manual || best === "low" || seen.slow || (seen.q === best && seen.ms < 5000);
     const first = manual ? initialPreset : direct && !seen.slow ? best : "low";
     const hiBox = $("bsHiRes");
     let cur = null, next = null, dead = false;
-    const lib = { create(node, options) {
-      return (cur && graphics && library.createStaged?.(node, options, cur)) || library.create(node, options);
-    } };
     // Ordinary native cars use their surveyed home position as a stable identity across presets.
     const driven = cfg.place === "inv" ? new Map() : null;
     let replaying = null;
