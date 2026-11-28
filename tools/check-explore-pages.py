@@ -31,5 +31,18 @@ def check(site, revision):
         print(f"{town}/explore verified at {revision[:7]}")
 
 
+def check_weather_scene_routes(site):
+    direct = ("inverloch/explore", "beta/inverloch")
+    full = ("", "beta", "inverloch", "inverloch/rex", "moorooka/explore", "logan/explore",
+            "beta/moorooka", "beta/logan")
+    for route in direct + full:
+        body = (site / route / "index.html").read_text(encoding="utf-8")
+        for constructor in ("W.drive = drv;", "W.driveInv = iv;", "W.mooBowls = bowls;"):
+            if (constructor in body) != (route in full):
+                raise SystemExit(f"Unexpected weather scene packaging in /{route}/: {constructor}")
+
+
 if __name__ == "__main__":
-    check(Path(sys.argv[1]), sys.argv[2])
+    site = Path(sys.argv[1])
+    check(site, sys.argv[2])
+    check_weather_scene_routes(site)

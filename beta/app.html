@@ -8208,6 +8208,7 @@ const handle = async (m, post) => {
     const llg = new THREE.BufferGeometry(); llg.setAttribute("position", new THREE.Float32BufferAttribute(lgLights, 3));
     W.loganLights = new THREE.PointsMaterial({ color: 0xffd9a0, size: 0.7, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: true });
     lgn.add(new THREE.Points(llg, W.loganLights));
+    // BEGIN LISTEN_AND_BOWLS_WEATHER_SCENES
     // ---- Your drive (shown during the traffic part of Listen): the motorway from just above it, cars as busy
     // as the traffic is, the overhead sign with your time, and any crash or roadworks on the way. Same sky, time and weather. ----
     {
@@ -8614,6 +8615,7 @@ const handle = async (m, post) => {
           r.roll.position.set(r.x0 + Math.sin(e * Math.PI) * r.sway, .52, r.z0 + (r.z1 - r.z0) * e); r.roll.rotation.x -= dt * (1 - t) * 6; });
       };
     }
+    // END LISTEN_AND_BOWLS_WEATHER_SCENES
     // ---- Moorooka, its landmarks in one view (seen from a little higher up): the Beaudesert Road roundabout with cars going
     // round, "Little Africa" shops and Ethiopian restaurants up Beaudesert Road, the Magic Mile of Motors car yards with
     // bunting and pylon signs, Queenslanders and jacarandas, Toohey Forest on the ridge, the city far off ----
