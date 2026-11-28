@@ -10131,6 +10131,62 @@ const handle = async (m, post) => {
     });
   }
 
+  // 1 Tea Tree Court. The main single-storey roof and integral garage share one mesh.
+  function invTeaTreeCourt1(T, model, THREE) {
+    const walls = [[-2781,688.66],[-2779.56,692.04],[-2773.22,703.59],[-2769.35,701.63],
+      [-2769.88,700.58],[-2768.77,700.01],[-2768.23,701.06],[-2764.62,699.23],
+      [-2770.18,687.02],[-2772.13,684.70]];
+    const roof = [walls[0],walls[1],walls[2],walls[7],walls[8],walls[9]];
+    const start = walls[2], end = walls[7], dx = end[0]-start[0], dz = end[1]-start[1];
+    const wide = Math.hypot(dx,dz), x0 = -2773, z0 = 693;
+    const ground = walls.map(p => model.groundAt(...p)), floor = Math.max(...ground) + .08;
+    const positions = [], colors = [];
+    const point = ([x,z],y) => [x-x0,y,z-z0];
+    const top = ([x,z]) => 2.88+.18*((x-start[0])*dx+(z-start[1])*dz)/(wide*wide);
+    const tri = (a,b,c,color) => {
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(color.r,color.g,color.b);
+    };
+    const quad = (a,b,c,d,hex) => {
+      const color = new THREE.Color(hex);
+      tri(a,b,c,color); tri(a,c,d,color);
+    };
+    for (let i = 0; i < walls.length; i++) {
+      const j = (i+1)%walls.length, a = walls[i], b = walls[j];
+      const base = Math.min(ground[i],ground[j])-floor-.12;
+      quad(point(a,base),point(b,base),point(b,top(b)-.18),point(a,top(a)-.18),i===4 ? 0x393836 : 0x494c4e);
+      quad(point(a,top(a)-.18),point(b,top(b)-.18),point(b,top(b)),point(a,top(a)),0x343b41);
+    }
+    const tint = new THREE.Color(0x55565a);
+    const roofShape = roof.map(([x,z]) => new THREE.Vector2(x-x0,z-z0));
+    for (const [i,j,k] of THREE.ShapeUtils.triangulateShape(roofShape, [])) {
+      const [a,b,c] = [roof[i],roof[j],roof[k]].map(p => point(p,top(p)));
+      if ((b[2]-a[2])*(c[0]-a[0]) > (b[0]-a[0])*(c[2]-a[2])) tri(a,b,c,tint);
+      else tri(a,c,b,tint);
+    }
+    const [left,insideLeft,insideRight,right] = walls.slice(3,7);
+    quad(point(left,2.63),point(insideLeft,2.63),point(insideRight,2.63),point(right,2.63),0xd1c7af);
+    quad(point(left,2.63),point(right,2.63),point(right,top(right)),point(left,top(left)),0x343b41);
+    const panel = (a,b,lo,hi,y0,y1,hex,lift=.035) => {
+      const p = (u,y) => point([a[0]+(b[0]-a[0])*u-dz*lift/wide,a[1]+(b[1]-a[1])*u+dx*lift/wide],y);
+      quad(p(lo,y0),p(hi,y0),p(hi,y1),p(lo,y1),hex);
+    };
+    panel(start,end,.065,.253,.37,2.39,0x33383c);
+    panel(start,end,.073,.245,.43,2.33,0x516672,.049);
+    panel(start,end,.156,.163,.43,2.33,0x30373b,.055);
+    panel(start,end,.353,.415,.42,2.36,0x33383c);
+    panel(start,end,.359,.409,.48,2.30,0x516672,.048);
+    panel(insideLeft,insideRight,.16,.84,.1,2.36,0x3a3b3b);
+    panel(insideLeft,insideRight,.29,.73,.14,2.24,0x765a4b,.051);
+    panel(start,end,.611,.960,.075,2.37,0x272c2f);
+    panel(start,end,.624,.947,.105,2.29,0x44494e,.045);
+    for (let y = .38; y < 2.22; y += .32) panel(start,end,.624,.947,y,y+.015,0x363a3d,.052);
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().makeTranslation(x0,floor,z0).elements, roughness: .88 }]);
+    const collision = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    collision.polygon(walls);
+  }
+
   function invScrewCreekBridge(model, THREE) {
     const { length, half, point, local, nearby } = INV_SCREW_CREEK;
     const start = -0.006, end = length + 0.006, westJoin = 6, eastJoin = length - 9;
@@ -10249,6 +10305,7 @@ const handle = async (m, post) => {
       [-38.63116937, 145.72886301], [-38.63110856, 145.72815383], [-38.63106352, 145.72848114],
       [-38.63104775, 145.72879123], [-38.63113333, 145.72894915]
     ]) clearLatLon.push({ lat, lon, r: 0.16 });
+    if (inv) clearLatLon.push({ lat: -38.64309188, lon: 145.69809824, r: 0.16 }); // 1 Tea Tree Court: superseded generated house slot 2696.
     if (inv && BS.W.invClock) { const [lat, lon] = townLL(D.c[0], D.c[1]); clearLatLon.push({ lat, lon, r: 4.5 }); detailLatLon.push({ lat, lon, r: 260 }); }
     // the model's power poles that land in a road (each is set out beside its own street, so where another street runs past, one can stand
     // in it): taken out, so none stands in the road. Seven in the detail round the town centre, one right in the middle of A'Beckett
@@ -10346,6 +10403,7 @@ const handle = async (m, post) => {
           mine.push(...layout.jumps);
         } catch (error) { console.warn("Inverloch: Soundshell could not be placed", error); }
         if (inv) {
+          if (m.addParts) invTeaTreeCourt1(T, m, BS.B.THREE);
           if (m.addParts) townGlade(T, m, BS.B.THREE);
           invMotelFrontage(T, m, BS.B.THREE);
           const buildings = m.buildingBlockers?.();
