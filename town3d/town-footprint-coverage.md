@@ -20,6 +20,12 @@ All added or revised shells use the existing packed geometry and renderer. The i
 
 Source datasets, the placement report and the map inventory are offline authoring inputs or outputs. The Explore download only changes the existing `town.json` request. At the measured gzip setting this file grows from 366,678 to 374,250 bytes (+7,572).
 
+## Bayview Avenue school frontage
+
+Two one-storey volumes at Inverloch Primary School, 17 Bayview Avenue, fill the missing street-facing frontage. The two [Microsoft outlines](https://github.com/microsoft/GlobalMLBuildingFootprints) are `microsoft-311223133-27ebed64238c5e58` and `microsoft-311223133-2f5bf9bdd90a9947` from the November 2026 data release. Their edges are supported by the [Vicmap Features of Interest building polygon](https://discover.data.vic.gov.au/en_AU/dataset/vicmap-features-building-polygon) PFI `964962`, © State of Victoria, CC BY 4.0. The feature version in that layer was recorded in November 2025. The [school's 2024 event map](https://inverlochps.vic.edu.au/wp-content/uploads/2024/03/2024-03-12-Fete-Site-Map-PUBLIC-VERSION.pdf) and [VicRoads photograph from January 2014](https://www.mapillary.com/app/?pKey=183516683641439) identify the low frontage. The roof heights and materials use the existing renderer's one-storey approximation.
+
+Eleven seeded tree trunks inside the two new footprints are hidden by the existing Explore clearance controls. Tree slots, the gap between the roofs, nearby roads, and the two excluded streets are preserved. No reference image ships with the model.
+
 ## Inventory and reproduction
 
 The inventory assigns each footprint centre to its nearest suitable model road or path. The 881 original road/path records contain 1,762 sides, of which six are excluded. The eligible sides include 378 with a new or refitted outline, 90 with original mapped footprints, 289 with a source outline to review, 129 with generated buildings and no nearby source outline, and 870 with no assigned building or outline. Some latter records are paths or open land. These counts describe proximity to a model centreline. Street-level confirmation of building appearance, land use and every access remains separate.
