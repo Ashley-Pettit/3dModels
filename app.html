@@ -10127,6 +10127,7 @@ const handle = async (m, post) => {
       [-38.63104775, 145.72879123], [-38.63113333, 145.72894915]
     ]) clearLatLon.push({ lat, lon, r: 0.16 });
     if (inv && BS.W.invClock) { const [lat, lon] = townLL(D.c[0], D.c[1]); clearLatLon.push({ lat, lon, r: 4.5 }); detailLatLon.push({ lat, lon, r: 260 }); }
+    if (inv) clearLatLon.push({ lat: -38.64234644, lon: 145.70272659, r: 0.16 }); // 6 Ceres Place: seed 41515 was inside the principal house.
     // the model's power poles that land in a road (each is set out beside its own street, so where another street runs past, one can stand
     // in it): taken out, so none stands in the road. Seven in the detail round the town centre, one right in the middle of A'Beckett
     // Street by Alma Street (Ash, 27 November 2026: "In Inverloch there is a power pole in the middle of the road near city centre. Move or
@@ -10234,6 +10235,7 @@ const handle = async (m, post) => {
         if (inv && m.addParts) try { mine.push(invWestJetty(T, BS.B.THREE)); } catch (e) { console.warn("Inverloch: the west jetty could not be added", e); }
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
+        if (inv && m.addParts) invCeresPlace6(T, m, BS.B.THREE);
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
         if (cfg.place === "moo") try { T.room6 = townRoom6(T, m); } catch (e) { console.warn("Town model: number 6's room couldn't be drawn", e); }  // (where the drone waited till 24 November 2026)
@@ -17968,6 +17970,70 @@ const handle = async (m, post) => {
       const foot = new THREE.Vector3(localX, 0, 0).applyMatrix4(matrix);
       grid.worldBox(foot.x, foot.z, angle, postWidth, postWidth);
     }
+  }
+
+  // 6 Ceres Place. The upper level opens onto the covered street-side balcony.
+  function invCeresPlace6(T, model, THREE) {
+    const origin = [-2367,592.60], angle = 3.59 * Math.PI / 180;
+    const walls = [[-1.76,-3.02],[-1.76,-3.83],[-9.16,-3.83],[-9.16,3.62],[7.2,3.62],[7.2,-3.02]];
+    const eaves = [[9.3,-3.48],[9.3,4.08],[-9.62,4.08],[-9.62,-4.29],[-1.3,-4.29],[-1.3,-3.48]];
+    const c = Math.cos(angle), s = Math.sin(angle);
+    const local = (u,v) => [u*c-v*s,u*s+v*c];
+    const world = ([u,v]) => local(u,v).map((p,i) => p + origin[i]);
+    const grade = p => model.groundAt(...world(p));
+    const floor = grade([7.26,.32])+.13, balconyY = floor+2.68;
+    const height = ([u,v]) => floor+5.16+.019*(u+9)+.018*(v+4);
+    const positions = [], colors = [];
+    const siding = new THREE.Color(0x8d8e82), up = new THREE.Color(0x666e67);
+    const sheet = new THREE.Color(0xc9cec9), rail = new THREE.Color(0x9a9d91);
+    const window = new THREE.Color(0x364744), decking = new THREE.Color(0x817769);
+    const point = ([u,v],y) => { const [x,z] = local(u,v); return [x,y,z]; };
+    const triangle = (a,b,c,colour) => {
+      positions.push(...a,...b,...c);
+      for (let i=0; i<3; i++) colors.push(colour.r,colour.g,colour.b);
+    };
+    const quad = (a,b,c,d,colour) => { triangle(a,b,c,colour); triangle(a,c,d,colour); };
+    for (let i=0; i<walls.length; i++) {
+      const j=(i+1)%walls.length, a=walls[i], b=walls[j];
+      const base=Math.min(grade(a),grade(b),floor)-.11;
+      quad(point(b,base),point(b,balconyY),point(a,balconyY),point(a,base),siding);
+      quad(point(b,balconyY),point(b,height(b)),point(a,height(a)),point(a,balconyY),up);
+    }
+    for (let i=0; i<eaves.length; i++) {
+      const j=(i+1)%eaves.length, a=eaves[i], b=eaves[j];
+      quad(point(a,height(a)-.13),point(a,height(a)),point(b,height(b)),point(b,height(b)-.13),sheet);
+    }
+    const edge = eaves.map(([u,v]) => new THREE.Vector2(u,v));
+    for (const indices of THREE.ShapeUtils.triangulateShape(edge,[])) {
+      const [a,b,c]=indices.map(i => point(eaves[i],height(eaves[i])));
+      const facing=(b[2]-a[2])*(c[0]-a[0])-(b[0]-a[0])*(c[2]-a[2]);
+      if (facing>0) triangle(a,b,c,sheet); else triangle(a,c,b,sheet);
+    }
+    const soffit = [[9.30,-3.48],[9.30,4.08],[7.18,4.08],[7.18,-3.48]];
+    const [frontNorth,frontSouth,backSouth,backNorth] = soffit.map(p => point(p,height(p)-.12));
+    quad(frontNorth,frontSouth,backSouth,backNorth,sheet);
+    const windowBand = (x,north,south,bottom,top,colour) => {
+      quad(point([x,north],bottom),point([x,north],top),point([x,south],top),point([x,south],bottom),colour);
+    };
+    windowBand(7.224,-2.36,-.17,balconyY+.14,balconyY+2.17,window);
+    windowBand(7.224,.15,2.88,balconyY+.14,balconyY+2.17,window);
+    windowBand(7.223,-1.26,.15,floor+.03,floor+2.12,window);
+    windowBand(7.224,.62,2.83,floor+.86,floor+1.98,window);
+    const dn=[9.06,-3.02], ds=[9.06,3.62], wn=[7.16,-3.02], ws=[7.16,3.62];
+    quad(point(dn,balconyY),point(wn,balconyY),point(ws,balconyY),point(ds,balconyY),decking);
+    windowBand(dn[0],dn[1],ds[1],balconyY-.16,balconyY,rail);
+    windowBand(9.06,-3.02,3.62,balconyY+.91,balconyY+.97,rail);
+    for (let v=-2.91; v<3.62; v+=.25) windowBand(9.06,v,v+.021,balconyY+.085,balconyY+.91,rail);
+    for (const v of [-2.94,.20,3.54]) {
+      const z=[v-.047,v+.047], x=8.91, bottom=grade([x,v])-.03;
+      windowBand(x+.047,z[0],z[1],bottom,height([x,v])-.14,rail);
+      quad(point([x-.047,z[1]],bottom),point([x-.047,z[1]],height([x,v])-.14),
+        point([x+.047,z[1]],height([x,v])-.14),point([x+.047,z[1]],bottom),rail);
+    }
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().makeTranslation(origin[0],0,origin[1]).elements, roughness: .86 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls.map(world));
   }
 
   // BEGIN GENERATED src/explore/collision.mjs
