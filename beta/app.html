@@ -9744,13 +9744,14 @@ const handle = async (m, post) => {
     const driven = cfg.place === "inv" ? new Map() : null;
     let replaying = null;
     const log = [], last = {}, LAST = ["setLabelObstacles", "setTide", "setFlood", "setFloodLevel", "setMinutes", "setCamera", "setGroundEdits", "setRemoved", "setMore", "driveCar", "setControlledCar"];
+    const movementKeys = ["KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space", "KeyC"];
     const waitForControls = async signal => {
       const start = performance.now();
       let lastHeld = -Infinity;
       while (!dead && BS.town === T && !signal?.aborted) {
         const fly = BS.fly, now = performance.now();
-        if (fly?.joys?.some(joy => joy.held()) || fly?.touches?.size || fly?.keys?.size ||
-            fly?.drag || fly?.vert || fly?.mw) lastHeld = now;
+        if (fly?.joys?.some(joy => joy.held()) || fly?.touches?.size || movementKeys.some(key => fly?.keys?.has(key)) ||
+            fly?.drag || fly?.rmb || fly?.vert || fly?.mw) lastHeld = now;
         if (now - lastHeld >= 350) break;
         await new Promise(resolve => setTimeout(resolve, 100));
       }
