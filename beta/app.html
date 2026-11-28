@@ -10274,6 +10274,9 @@ const handle = async (m, post) => {
     // middle, and 0.6 m up, coming up from the road over its first and last 8 m. Under a bridge (a road under an overpass) you stay down:
     // the deck only counts for something no more than 2.5 m under it (T.deckY: the car's height now), or, on foot, for a deck within 3 m
     // of the ground. Ash, 28 November 2026: "in moorooka fix the bridges so my car will drive over them"
+    if (inv) clearLatLon.push({ lat: -38.63374800, lon: 145.70467326, r: 0.16 }); // 7 Dalmont Bay Court: duplicate packed house 3769.
+    if (inv) clearLatLon.push({ lat: -38.63359035, lon: 145.70469910, r: 0.16 }); // 7 Dalmont Bay Court: synthetic rear shell 3770.
+    if (inv) clearLatLon.push({ lat: -38.63363764, lon: 145.70479672, r: 0.16 }); // 7 Dalmont Bay Court: seeded trunk under the dated main roof 37398.
     if (cfg.place === "moo") townStreetData(cfg).then(d => { const L = [];
       for (const r of d.town?.roads || []) { if (!(r[2] & 1) || !Array.isArray(r[5]) || r[5].length < 4) continue; const P = r[5].map(v => v / 10), n = P.length / 2, cum = [0];
         for (let i = 1; i < n; i++) cum.push(cum[i - 1] + Math.hypot(P[i * 2] - P[i * 2 - 2], P[i * 2 + 1] - P[i * 2 - 1]));
@@ -10371,6 +10374,7 @@ const handle = async (m, post) => {
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
+        if (inv && m.addParts) invDalmontBayCourt7(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { T.room6 = townRoom6(T, m); } catch (e) { console.warn("Town model: number 6's room couldn't be drawn", e); }  // (where the drone waited till 24 November 2026)
         if (cfg.place === "moo" && m.addParts && m.getCamera && !OFF.has("bal6")) try { T.bal6 = townBalcony6(T, m); } catch (e) { T.bal6 = null; console.warn("Town model: number 6's house and balcony couldn't be added", e); }  // number 6 as it is, or with the balcony concept
         if (cfg.place === "moo" && m.addParts) try { townHouse24(T, m); } catch (e) { console.warn("Town model: 24 Beaudesert Road couldn't be added", e); }  // Pandy's house as it really is (a demo)
@@ -19024,6 +19028,111 @@ const handle = async (m, post) => {
   // how far left of a street's line a car keeps (the traffic's rule, below; the GPS draws its line down the same lane)
   const townLaneOf = r => { const w = r.wd || 0; if (!(w > 3)) return r.one ? 1.2 : 1.9;
     return r.one ? 1.7 * (Math.max(1, Math.min(w < 13 ? 2 : 3, Math.round((w - 2.4) / 3.4))) - 1) : Math.min(1.75, w / 4); };
+  // 7 Dalmont Bay Court. Hipped roof and two-tone court facade in one untextured guest.
+  function invDalmontBayCourt7(T, model, THREE) {
+    const [x0,z0,cos,sin] = [-2207.68368606,-354.9718796,0.99381588,0.1110405];
+    const walls = [[0.48,0.42],
+      [6.72,0.42],
+      [6.72,1.64],
+      [8.44,1.64],
+      [8.44,0.4],
+      [12.01,0.4],
+      [12.01,5.55],
+      [11.39,5.55],
+      [11.39,20.58],
+      [1.76,20.58],
+      [1.76,5.98],
+      [0.48,5.98]];
+    const roof = [[[6.575,5.375,1.6662],[4.647,3.447,1.0686],[1.2,6.5,0.0]],
+      [[6.575,5.375,1.6663],[1.2,6.5,0.0],[6.575,15.785,1.6663]],
+      [[1.2,21.16,0.0],[6.575,15.785,1.6663],[1.2,6.5,0.0]],
+      [[11.95,6.05,-0.0],[6.575,15.785,1.6662],[11.95,21.16,0.0]],
+      [[6.575,5.375,1.6662],[11.95,6.05,-0.0],[9.85,4.5,0.651]],
+      [[9.85,4.5,0.651],[9.85,2.1,0.651],[6.575,5.375,1.6662]],
+      [[11.95,6.05,-0.0],[6.575,5.375,1.6662],[6.575,15.785,1.6662]],
+      [[5.597,3.447,1.0686],[9.85,2.1,0.651],[8.4591,0.2155,0.0668]],
+      [[5.597,3.447,1.0686],[4.647,3.447,1.0686],[6.575,5.375,1.6663]],
+      [[9.85,2.1,0.651],[5.597,3.447,1.0686],[6.575,5.375,1.6663]],
+      [[1.2,21.16,0.0],[11.95,21.16,0.0],[6.575,15.785,1.6662]],
+      [[0.0,0.0,0.0],[0.0,6.5,0.0],[3.25,3.25,1.1375]],
+      [[5.4,3.25,1.1375],[8.4591,0.2155,0.0668],[8.4591,0.1909,0.0668]],
+      [[8.4591,0.2155,0.0668],[5.4,3.25,1.1375],[5.597,3.447,1.0686]],
+      [[8.3,0.0,0.0],[5.4,3.25,1.1375],[8.4591,0.1909,0.0668]],
+      [[5.4,3.25,1.1375],[8.3,0.0,0.0],[1.2,0.0,0.0]],
+      [[1.2,0.0,0.0],[0.0,0.0,0.0],[3.25,3.25,1.1375]],
+      [[5.4,3.25,1.1375],[1.2,0.0,0.0],[3.25,3.25,1.1375]],
+      [[4.647,3.447,1.0686],[5.597,3.447,1.0686],[5.4,3.25,1.1375]],
+      [[4.647,3.447,1.0686],[5.4,3.25,1.1375],[3.25,3.25,1.1375]],
+      [[3.25,3.25,1.1375],[0.0,6.5,0.0],[1.2,6.5,0.0]],
+      [[4.647,3.447,1.0686],[3.25,3.25,1.1375],[1.2,6.5,0.0]],
+      [[9.85,2.1,0.651],[10.425,3.925,0.8925],[10.425,2.125,0.8925]],
+      [[9.85,2.1,0.651],[9.85,4.5,0.651],[10.425,3.925,0.8925]],
+      [[8.3,0.0,0.0],[8.4591,0.1909,0.0668],[10.425,2.125,0.8925]],
+      [[8.4591,0.2155,0.0668],[10.425,2.125,0.8925],[8.4591,0.1909,0.0668]],
+      [[9.85,2.1,0.651],[10.425,2.125,0.8925],[8.4591,0.2155,0.0668]],
+      [[10.425,2.125,0.8925],[12.55,6.05,0.0],[12.55,0.0,0.0]],
+      [[12.55,6.05,0.0],[10.425,2.125,0.8925],[10.425,3.925,0.8925]],
+      [[11.95,0.0,0.0],[10.425,2.125,0.8925],[12.55,0.0,0.0]],
+      [[8.65,0.0,0.0],[8.3,0.0,0.0],[10.425,2.125,0.8925]],
+      [[11.95,0.0,0.0],[8.65,0.0,0.0],[10.425,2.125,0.8925]],
+      [[11.95,6.05,0.0],[10.425,3.925,0.8925],[9.85,4.5,0.651]],
+      [[10.425,3.925,0.8925],[11.95,6.05,0.0],[12.55,6.05,0.0]]];
+    const eaves = [[0,0],
+      [12.55,0],
+      [12.55,6.05],
+      [11.95,6.05],
+      [11.95,21.16],
+      [1.2,21.16],
+      [1.2,6.5],
+      [0,6.5]];
+    const positions = [], colours = [];
+    const render = new THREE.Color(0xd7d5cc), charcoal = new THREE.Color(0x504d48);
+    const tile = new THREE.Color(0x707477), trim = new THREE.Color(0xadaeaa);
+    const door = new THREE.Color(0x4f5151), seam = new THREE.Color(0x44484a);
+    const glass = new THREE.Color(0x556b78), frame = new THREE.Color(0x484744);
+    const offset = ([u,v]) => [u*cos+v*sin,u*sin-v*cos];
+    const world = p => { const [x,z] = offset(p); return [x+x0,z+z0]; };
+    const point = (p,y) => { const [x,z] = offset(p); return [x,y,z]; };
+    const ground = p => model.groundAt(...world(p));
+    const tri = (a,b,c,paint) => {
+      positions.push(...a,...b,...c);
+      for (let i=0; i<3; i++) colours.push(paint.r,paint.g,paint.b);
+    };
+    const quad = (a,b,c,d,paint) => { tri(a,b,c,paint); tri(a,c,d,paint); };
+    const face = (u0,u1,v,y0,y1,paint) =>
+      quad(point([u0,v],y0),point([u1,v],y0),point([u1,v],y1),point([u0,v],y1),paint);
+    const floor = Math.max(...walls.slice(0,6).map(ground))+.045;
+    const top = floor+2.69;
+    walls.forEach((a,i) => {
+      const b=walls[(i+1)%walls.length];
+      quad(point(a,ground(a)-.11),point(b,ground(b)-.11),point(b,top+.02),point(a,top+.02),
+        (i>=2 && i<=5) ? charcoal : render);
+    });
+    eaves.forEach((a,i) => {
+      const b=eaves[(i+1)%eaves.length];
+      quad(point(a,top-.12),point(b,top-.12),point(b,top),point(a,top),trim);
+    });
+    for (const face of roof) {
+      const [a,b,c]=face.map(p=>point(p,top+p[2]));
+      if ((b[2]-a[2])*(c[0]-a[0])>(b[0]-a[0])*(c[2]-a[2])) tri(a,b,c,tile);
+      else tri(a,c,b,tile);
+    }
+    const sill = Math.max(ground([3.55,.40]),floor-.10);
+    face(.96,6.15,.395,sill,sill+2.23,frame);
+    face(1.03,6.08,.378,sill+.036,sill+2.16,door);
+    for (let i=1; i<=5; i++) face(1.03,6.08,.365,sill+i*.34,sill+i*.34+.022,seam);
+    face(7.15,8.05,1.61,floor+.003,floor+2.22,frame);
+    face(7.22,7.98,1.599,floor+.032,floor+2.11,door);
+    for (const u of [9.04,10.53]) {
+      face(u,u+.86,.371,floor+.46,floor+2.24,frame);
+      face(u+.06,u+.80,.359,floor+.52,floor+2.18,glass);
+    }
+
+    model.addParts([{positions:new Float32Array(positions),colors:new Float32Array(colours),
+      matrix:new THREE.Matrix4().makeTranslation(x0,0,z0).elements,roughness:.86,doubleSide:true}]);
+    (T.invStatic??=invCivicCollision((x,z)=>[x,z],()=>false)).polygon(walls.map(world));
+  }
+
   async function townStreetData(cfg) {
     if (cfg.place === "logan") {
       const [buf, map] = await Promise.all([fetch(townAsset(cfg, "roads.bin")).then(r => { if (!r.ok) throw new Error("roads"); return r.arrayBuffer(); }),

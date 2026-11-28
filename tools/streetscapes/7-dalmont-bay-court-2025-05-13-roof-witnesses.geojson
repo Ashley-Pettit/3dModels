@@ -1,0 +1,151 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "activeParcelPFI": "103199727",
+    "activeAddressPFI": "103199731",
+    "source": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70470767,-38.63371692&level=20",
+    "provider": "Vantor / Esri World Imagery",
+    "scene": "6072283",
+    "captureDate": "2025-05-13",
+    "sourceSamplingM": 0.34,
+    "sourcePositionalAccuracyM": 5,
+    "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+    "licensedCrosscheck": "microsoft-311223133-87bcaf86986e9bd9",
+    "uncertainty": "North-west pad segment is lawn and lower covered deck, with no matching freestanding house. Rear lower cover, small north-east shed and side access are kept out of main roof fit. Latest aerial confirms main massing, not exact wall finishes."
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "principal roof eave witnesses"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.7046453086404,
+              -38.63380230000768
+            ],
+            [
+              145.70474186816494,
+              -38.63381172846855
+            ],
+            [
+              145.7047888068227,
+              -38.63381906171504
+            ],
+            [
+              145.7048075822858,
+              -38.63362211140605
+            ],
+            [
+              145.70468554177563,
+              -38.63361373052984
+            ],
+            [
+              145.70466810741704,
+              -38.63374468160874
+            ],
+            [
+              145.70465335526745,
+              -38.63374468160874
+            ],
+            [
+              145.7046453086404,
+              -38.63380230000768
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "concrete driveway from the south toward the closed garage"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.70464664974492,
+            -38.63389448934965
+          ],
+          [
+            145.7046614018945,
+            -38.63386725160186
+          ],
+          [
+            145.70467481293957,
+            -38.63383477581212
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "rear lawn and deck fringe"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.70468688288014,
+          -38.63357706418488
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "separate lower deck cover"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.70474052706044,
+          -38.63360220682344
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "small detached rear shed"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.7048049000768,
+          -38.6335791594051
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "side access from the court"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.70462116875927,
+          -38.63375201486209
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "east boundary vegetation"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.70481697001736,
+          -38.63372791988399
+        ]
+      }
+    }
+  ]
+}
