@@ -10127,6 +10127,11 @@ const handle = async (m, post) => {
       [-38.63104775, 145.72879123], [-38.63113333, 145.72894915]
     ]) clearLatLon.push({ lat, lon, r: 0.16 });
     if (inv && BS.W.invClock) { const [lat, lon] = townLL(D.c[0], D.c[1]); clearLatLon.push({ lat, lon, r: 4.5 }); detailLatLon.push({ lat, lon, r: 260 }); }
+    // These two seeded trunks are fully inside the main house at 27 Glendale Court.
+    if (inv) for (const [lat, lon] of [
+      [-38.63074823, 145.71169905],
+      [-38.63076174, 145.71187132],
+    ]) clearLatLon.push({ lat, lon, r: 0.16 });
     // the model's power poles that land in a road (each is set out beside its own street, so where another street runs past, one can stand
     // in it): taken out, so none stands in the road. Seven in the detail round the town centre, one right in the middle of A'Beckett
     // Street by Alma Street (Ash, 27 November 2026: "In Inverloch there is a power pole in the middle of the road near city centre. Move or
@@ -10240,6 +10245,7 @@ const handle = async (m, post) => {
         if (cfg.place === "moo" && m.addParts && m.getCamera && !OFF.has("bal6")) try { T.bal6 = townBalcony6(T, m); } catch (e) { T.bal6 = null; console.warn("Town model: number 6's house and balcony couldn't be added", e); }  // number 6 as it is, or with the balcony concept
         if (cfg.place === "moo" && m.addParts) try { townHouse24(T, m); } catch (e) { console.warn("Town model: 24 Beaudesert Road couldn't be added", e); }  // Pandy's house as it really is (a demo)
         if (cfg.place === "moo" && m.addParts) try { townHousesLite(T, m); } catch (e) { console.warn("Town model: the houses drawn the light way couldn't be added", e); }
+        if (inv && m.addParts) invGlendaleCourt27(T, m, BS.B.THREE);
         // the planes (townCar), each with somewhere to stand beside it
         const rides = m.addParts ? TOWN_RIDES[cfg.place] : null;
         // golden ones only for Ash (Ash, 15 November 2026: "Only show the teleport to the golden objects if user name is ash or Ashley")
@@ -10595,6 +10601,89 @@ const handle = async (m, post) => {
   }
   // The town's own metres (x east, z south, from the library: tools/inverloch_town.py) as latitude and longitude
   const townLL = (x, z) => [-38.63351 - z / 110540, 145.72774 + x / (111320 * Math.cos(38.63351 * Math.PI / 180))];
+  // 27 Glendale Court. The frontage stands behind the existing public path.
+  function invGlendaleCourt27(T, model, THREE) {
+    const origin = [-1595.78,-703.70], angle = 2.37 * Math.PI / 180;
+    const walls = [[.44,.51],[18.82,.49],[18.82,13.85],[.43,13.86],[.43,7.82],[2.39,7.82],[2.39,5.29],[.43,5.29]];
+    const eaves = [[0,0],[19.65,0],[19.65,14.30],[0,14.30]];
+    const c = Math.cos(angle), s = Math.sin(angle);
+    const local = (u,v) => [u*c-v*s,u*s+v*c];
+    const world = ([u,v]) => local(u,v).map((p,i) => p + origin[i]);
+    const point = (u,v,y) => { const [x,z] = local(u,v); return [x,y,z]; };
+    const ground = p => model.groundAt(...world(p));
+    const heights = walls.map(ground), garageGrade = ground([.44,2.9]), entryGrade = ground([2.36,6.56]);
+    const floor = Math.max(garageGrade,entryGrade) + .055, wallTop = 2.73;
+    const positions = [], colors = [];
+    const tri = (a,b,c,hex) => {
+      const tint = new THREE.Color(hex);
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,c,d,hex) => { tri(a,b,c,hex); tri(a,c,d,hex); };
+    const top = (a,b,c,hex) => {
+      const up = (b[2]-a[2])*(c[0]-a[0]) - (b[0]-a[0])*(c[2]-a[2]);
+      if (up > 0) tri(a,b,c,hex); else tri(a,c,b,hex);
+    };
+    for (let i = 0; i < walls.length; i++) {
+      const j = (i+1) % walls.length, a = walls[i], b = walls[j];
+      const mid = [(a[0]+b[0])/2,(a[1]+b[1])/2];
+      const base = Math.min(heights[i],heights[j],ground(mid)) - floor - .10;
+      quad(point(...a,base),point(...a,.13),point(...b,.13),point(...b,base),0xb1a184);
+      quad(point(...a,.13),point(...a,wallTop),point(...b,wallTop),point(...b,.13),0xd4c4a5);
+    }
+
+    const ridge = [[5.9,7.15],[13.6,7.15]];
+    const roof = [...eaves.map(p => point(...p,wallTop)),...ridge.map(p => point(...p,wallTop+1.67))];
+    for (const [a,b,c] of [[0,1,5],[0,5,4],[1,2,5],[2,3,4],[2,4,5],[3,0,4]]) {
+      top(roof[a],roof[b],roof[c],0x626e76);
+    }
+    for (let i = 0; i < eaves.length; i++) {
+      const a = eaves[i], b = eaves[(i+1)%eaves.length];
+      quad(point(...a,wallTop-.12),point(...a,wallTop),point(...b,wallTop),point(...b,wallTop-.12),0x455158);
+    }
+    for (const [u0,v0,u1,v1] of [[0,0,19.65,.52],[0,13.82,19.65,14.30],[18.8,.52,19.65,13.82],[0,.52,.45,13.82],[.45,5.29,2.38,7.82]]) {
+      const y = wallTop-.12;
+      quad(point(u0,v0,y),point(u1,v0,y),point(u1,v1,y),point(u0,v1,y),0xcdc2af);
+    }
+
+    // Two small recessed gables rise behind the low porch eave.
+    const hip = (u,v) => wallTop + 1.67*Math.min(u/5.9,v/7.15,(14.30-v)/7.15);
+    for (const [u,v0,v1,crest,back,height] of [[1.27,1.05,5.85,3.38,4.85,1.37],[.88,6.76,13.2,9.98,6.25,1.73]]) {
+      const a = point(u,v0,hip(u,v0)+.035), b = point(u,v1,hip(u,v1)+.035);
+      const peak = point(u,crest,wallTop+height), tail = point(back,crest,hip(back,crest)+.025);
+      tri(a,b,peak,0xccbea1);
+      top(a,peak,tail,0x5c6870);
+      top(peak,b,tail,0x5c6870);
+      quad(a,peak,point(u-.025,crest,wallTop+height-.095),point(u-.025,v0,hip(u,v0)-.04),0x46545b);
+      quad(peak,b,point(u-.025,v1,hip(u,v1)-.04),point(u-.025,crest,wallTop+height-.095),0x46545b);
+    }
+
+    const front = (u,v0,v1,low,high,hex) => quad(point(u,v0,low),point(u,v1,low),point(u,v1,high),point(u,v0,high),hex);
+    const garageBase = garageGrade - floor + .06;
+    front(.411,.82,4.98,garageBase,garageBase+2.12,0x433e32);
+    front(.396,.91,4.89,garageBase+.025,garageBase+2.03,0x33424d);
+    for (const rise of [.29,.58,.87,1.16,1.45,1.74]) {
+      front(.386,.93,4.86,garageBase+rise,garageBase+rise+.018,0x46515a);
+    }
+    front(.414,7.87,12.62,.14,2.62,0xd0bd96);
+    for (const y of [.43,.79,1.15,1.51,1.87,2.23]) front(.404,7.89,12.60,y,y+.022,0xb5a17b);
+    for (const [lo,hi] of [[8.5,9.41],[10.12,11.0],[11.75,12.45],[13.00,13.56]]) {
+      front(.391,lo,hi,.55,2.28,0x756e5c);
+      front(.382,lo+.07,hi-.07,.63,2.21,0x435052);
+    }
+    const entryBase = entryGrade - floor + .07;
+    front(2.37,5.93,7.21,entryBase,entryBase+2.13,0x3d3934);
+    front(2.35,6.19,6.94,entryBase+.02,entryBase+2.05,0x854139);
+    const sill = [[.45,5.36],[2.36,5.36],[2.36,7.75],[.45,7.75]].map(p => point(...p,ground(p)-floor+.045));
+    top(sill[0],sill[1],sill[2],0x8e8c84);
+    top(sill[0],sill[2],sill[3],0x8e8c84);
+
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().makeTranslation(origin[0],floor,origin[1]).elements, roughness: .85 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls.map(world));
+  }
+
   // The Glade's open picnic shelter. Replace its mapped roof alone (OSM way 1117561260).
   const INV_GLADE_SHELTER = [[-38.6353608, 145.7301261], [-38.6353350, 145.7302765],
     [-38.6354224, 145.7303011], [-38.6354483, 145.7301507]];

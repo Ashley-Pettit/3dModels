@@ -26,6 +26,12 @@ Two one-storey volumes at Inverloch Primary School, 17 Bayview Avenue, fill the 
 
 Eleven seeded tree trunks inside the two new footprints are hidden by the existing Explore clearance controls. Tree slots, the gap between the roofs, nearby roads, and the two excluded streets are preserved. No reference image ships with the model.
 
+## 27 Glendale Court
+
+A 240.62 m² house envelope and 281.00 m² roof fill the missing street-facing volume in active parcel 130240326. The fit uses Microsoft outline microsoft-311223133-a0e045c7d4697f53 and checks its main eave edges against the 13 May 2025 Vantor scene. The selling agent's 2025 listing and front photograph show a dark double garage, pale stone, recessed red entrance and two small gables. Their dimensions and heights are model estimates. [Microsoft footprints](https://github.com/microsoft/GlobalMLBuildingFootprints) · [CDLA-Permissive-2.0](https://cdla.dev/permissive-2-0/) · [Esri World Imagery](https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.71177676,-38.63072321&level=20) · [Esri collection terms](https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data) · [Vicmap Property, © State of Victoria, CC BY 4.0](https://discover.data.vic.gov.au/en_AU/dataset/vicmap-property-parcel-polygon-with-parcel-detail) · [Stockdale & Leggo listing and frontage](https://www.realestate.com.au/sold/property-house-vic-inverloch-147396948)
+
+The porch sits within the roofline and stays open to player movement. The garage and door meet the rendered grade at the west landing. The rear alfresco areas and shed are outside this pass because their wall positions could not be checked. The two seeded trunks inside the house are hidden. Existing neighbouring buildings, driveway ground and public path are untouched.
+
 ## Inventory and reproduction
 
 The inventory assigns each footprint centre to its nearest suitable model road or path. The 881 original road/path records contain 1,762 sides, of which six are excluded. The eligible sides include 378 with a new or refitted outline, 90 with original mapped footprints, 289 with a source outline to review, 129 with generated buildings and no nearby source outline, and 870 with no assigned building or outline. Some latter records are paths or open land. These counts describe proximity to a model centreline. Street-level confirmation of building appearance, land use and every access remains separate.
