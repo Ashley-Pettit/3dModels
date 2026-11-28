@@ -10268,6 +10268,7 @@ const handle = async (m, post) => {
     if (inv && home && BS.W.invHouse) { const [lat, lon] = townLL(home[0], home[1]); clearLatLon.push({ lat, lon, r: 24 }); detailLatLon.push({ lat, lon, r: 170 }); }
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
     if (inv) clearPolygons.push({ latLon: INV_GLADE_SHELTER });
+    if (inv) clearLatLon.push({ lat: -38.63820036, lon: 145.72088111, r: 0.16 }); // 4 Western Street: the verified garage contains seed 40164.
     if (inv) clearPolygons.push({ latLon: invScrewCreekMask(), roads: true });
     // Moorooka's bridges (town.json's roads marked as one): their decks, so a car drives over them, not down through them into the creek.
     // The deck is as the model draws it (moorooka-model.js ?v=79): straight from one end's ground to the other's, a metre's hump in the
@@ -10403,6 +10404,7 @@ const handle = async (m, post) => {
         // ---- Walk or Fly ----
         const tideBox = $("bsTownTide"), tideIn = $("bsTownTideIn"), tideOut = $("bsTownTideOut"), tidal = m.tide.max > m.tide.min, tideBtn = $("bsTideBtn");
         tideBtn.setAttribute("aria-expanded", "false"); tideBtn.onclick = () => { tideBox.hidden = !tideBox.hidden; tideBtn.setAttribute("aria-expanded", String(!tideBox.hidden)); };  // Moorooka has no tide to move
+        if (inv && m.addParts) invWesternStreet4(T, m, BS.B.THREE);
         const ptrs = new Map(); let pinch = null;
         T.mapGestureHeld = () => !T.walk && ptrs.size > 0;
         const clearMapGesture = () => { ptrs.clear(); pinch = null; };
@@ -18477,6 +18479,97 @@ const handle = async (m, post) => {
   // bed of tussock grasses and low shrubs round the two poles, their broad teal bases, and the four mosaic blocks in a row out
   // the front, towards the library (their pictures are the weather's own). Then tables and chairs outside the bakery and The
   // Larder, a sandwich board out the front of each named shop, and the signs either side of the zebra crossing.
+  // 4 Western Street. The lower garage roof meets the pale raked living wing.
+  function invWesternStreet4(T, model, THREE) {
+    const origin = [-785,135], angle = 4.57462 * Math.PI / 180;
+    const walls = [[16.13,-5.56],[-3.79,-5.56],[-3.79,-2.09],
+      [-16.22,-2.09],[-16.22,4.17],[16.13,4.17]];
+    const c=Math.cos(angle), s=Math.sin(angle);
+    const local = (u,v) => [u*c-v*s,u*s+v*c];
+    const world = ([u,v]) => local(u,v).map((p,i) => p+origin[i]);
+    const grade = (u,v) => model.groundAt(...world([u,v]));
+    const floor=grade(-10.4,-2.17)+.10;
+    const garage=u=>floor+3.26-(u+16.63)*.045;
+    const living=v=>floor+3.68-(v+5.97)*.068;
+    const positions=[], colors=[];
+    const plaster=new THREE.Color(0xc8c6b8), steel=new THREE.Color(0xb6c2c5);
+    const garageSteel=new THREE.Color(0x899da6), fascia=new THREE.Color(0x6a797d);
+    const door=new THREE.Color(0x85888a), glazing=new THREE.Color(0x465450);
+    const asphalt=new THREE.Color(0x717a7f), panel=new THREE.Color(0x37454e);
+    const point = ([u,v],y) => { const [x,z]=local(u,v); return [x,y,z]; };
+    const triangle = (a,b,c,colour) => {
+      positions.push(...a,...b,...c);
+      for (let i=0;i<3;i++) colors.push(colour.r,colour.g,colour.b);
+    };
+    const quad = (a,b,c,d,colour) => { triangle(a,b,c,colour); triangle(a,c,d,colour); };
+    const upper = (a,b,c,colour) => {
+      const cross=(b[2]-a[2])*(c[0]-a[0])-(b[0]-a[0])*(c[2]-a[2]);
+      if (cross>0) triangle(a,b,c,colour); else triangle(a,c,b,colour);
+    };
+    const wallBand = (a,b,bottom,top,colour) => quad(point(b,bottom(b)),point(b,top(b)),
+      point(a,top(a)),point(a,bottom(a)),colour);
+    const footing = p=>Math.min(floor,grade(...p))-.12;
+    const seam=[-3.79,4.17];
+    for (const [a,b] of [[walls[2],walls[3]],[walls[3],walls[4]],[walls[4],seam]]) {
+      wallBand(a,b,footing,([u])=>garage(u),plaster);
+    }
+    for (const [a,b] of [[walls[0],walls[1]],[walls[1],walls[2]],[seam,walls[5]],[walls[5],walls[0]]]) {
+      wallBand(a,b,footing,([,v])=>living(v),plaster);
+    }
+    // Expose the raised side of the main roof above the garage, keeping the join weather-tight.
+    wallBand(walls[2],seam,()=>garage(seam[0])-.10,([,v])=>living(v),plaster);
+    const roof = (u1,u2,v1,v2,height,colour) => {
+      const ring=[[u1,v1],[u1,v2],[u2,v2],[u2,v1]];
+      const [a,b,c,d]=ring.map(p=>point(p,height(p)));
+      upper(a,b,c,colour);
+      upper(a,c,d,colour);
+      for (let i=0;i<4;i++) wallBand(ring[i],ring[(i+1)%4],p=>height(p)-.115,height,fascia);
+    };
+    roof(-16.63,-4.20,-2.50,4.58,([u])=>garage(u),garageSteel);
+    roof(-4.20,16.54,-5.97,4.58,([,v])=>living(v),steel);
+    const northPanel=(u1,u2,v,y1,y2,colour)=>wallBand([u2,v],[u1,v],()=>floor+y1,()=>floor+y2,colour);
+    northPanel(-15.54,-12.61,-2.112,.02,2.39,door);
+    northPanel(-11.86,-6.08,-2.112,.02,2.37,door);
+    for (const v of [0.68,1.29,1.90]) {
+      northPanel(-15.49,-12.66,-2.118,v,v+.035,fascia);
+      northPanel(-11.81,-6.13,-2.118,v,v+.035,fascia);
+    }
+    northPanel(-3.07,-.87,-5.582,.03,2.39,glazing);
+    northPanel(-1.96,-1.90,-5.588,.045,2.37,fascia);
+    northPanel(.50,3.28,-5.581,.86,2.24,glazing);
+    northPanel(1.87,1.93,-5.587,.87,2.23,fascia);
+    for (let i=0;i<5;i++) {
+      const u=.65+i*.83;
+      const a=point([u,-.99],living(-.99)+.031), b=point([u+.76,-.99],living(-.99)+.031);
+      const g=point([u+.76,1.21],living(1.21)+.031), d=point([u,1.21],living(1.21)+.031);
+      upper(a,b,g,panel);
+      upper(a,g,d,panel);
+    }
+    const pave = rows => {
+      const crossSection = ([u,left,right]) => Array.from({length:5},(_,j) => {
+        const v=left+(right-left)*j/4;
+        return point([u,v],grade(u,v)+.043);
+      });
+      const samples=[crossSection(rows[0])];
+      for (let i=1;i<rows.length;i++) {
+        const prev=rows[i-1], next=rows[i];
+        samples.push(crossSection(prev.map((value,j)=>(value+next[j])/2)),crossSection(next));
+      }
+      for (let i=1;i<samples.length;i++) for (let j=0;j<4;j++) {
+        const a=samples[i-1], b=samples[i];
+        upper(a[j],b[j],b[j+1],asphalt);
+        upper(a[j],b[j+1],a[j+1],asphalt);
+      }
+    };
+    pave([[-18.07,-7.05,-3.58],[-16.55,-8.15,-2.97],[-13.65,-8.97,-2.1],
+      [-10.64,-9.1,-2.1],[-7.41,-8.75,-2.1],[-4.24,-8.48,-2.1]]);
+    pave([[-4.24,-8.48,-5.58],[-2.61,-8.76,-5.58],[-0.46,-8.37,-5.58]]);
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().makeTranslation(origin[0],0,origin[1]).elements, roughness: .88 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls.map(world));
+  }
+
   function townModelExtras(m, block, THREE, W, collision) {
     const D = INV_TOWN, FOOT = 0.26, v = new THREE.Vector3(), M = new THREE.Matrix4(), N = new THREE.Matrix3(), c = new THREE.Color(), parts = [];
     // a mesh to fill: plain colours for each shape, or one picture over all of it
