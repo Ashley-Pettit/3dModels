@@ -50,12 +50,12 @@ function cadence(report, begin, end) {
 export function summarize(report) {
   const {startUtcMs} = report.timing;
   const skin = report.thermal.map(sample => sample.sensors['VIRTUAL-SKIN']?.[0]).filter(Number.isFinite);
-  const clockDelta = percentile(report.thermal.map(sample => sample.hostEpochMs - sample.deviceEpochMs).filter(Number.isFinite), 0.5);
   const compositorWindows = [];
   for (const {deviceEpochMs, periodNs, presentNs} of report.presentation) {
-    if (clockDelta === null || !Number.isFinite(deviceEpochMs)) continue;
+    if (!Number.isFinite(deviceEpochMs) || !Number.isFinite(startUtcMs)) continue;
     const seconds = (presentNs.at(-1) - presentNs[0]) / 1e9;
-    const elapsed = (deviceEpochMs + clockDelta - startUtcMs) / 1000 - seconds / 2;
+    // Both the browser replay start and the SurfaceFlinger snapshot use the phone's epoch.
+    const elapsed = (deviceEpochMs - startUtcMs) / 1000 - seconds / 2;
     if (elapsed < 1 || elapsed > report.end / 1000 - 0.5) continue;
     compositorWindows.push({approximateElapsedSeconds: round(elapsed), seconds: round(seconds),
       fps: round((presentNs.length - 1) / seconds), displayHz: round(1e9 / periodNs)});
