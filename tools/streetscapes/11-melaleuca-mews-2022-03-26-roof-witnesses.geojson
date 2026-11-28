@@ -1,0 +1,31 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "manual-aerial-11-melaleuca-mews-main-residence",
+      "properties": {
+        "address": "11 Melaleuca Mews, Inverloch VIC 3996",
+        "vicmapAddressPfi": "100080748",
+        "vicmapParcelPfi": "100080744",
+        "lot": "136 PS506543",
+        "observation": "Approximate principal single-storey roof including the integrated garage. The southeast edge under canopy is generalized between visible witnesses. Fitted walls use a 0.65 m inset and a 0.95 m in-parcel bound before decimetre rounding.",
+        "imagery": {
+          "credit": "Esri World Imagery, Esri Community Maps Contributors and Vantor",
+          "objectId": 6072228,
+          "captureDate": "2022-03-26",
+          "nominalResolutionM": 0.5,
+          "reportedAccuracyM": 5,
+          "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.72099113,-38.63052942&level=20",
+          "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+        },
+        "agentListing": "https://www.realestate.com.au/sold/property-house-vic-inverloch-136945450",
+        "parcelSource": "Vicmap Address and Vicmap Property, © State of Victoria, CC BY 4.0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[145.720905, -38.630409], [145.721060, -38.630424], [145.721078, -38.630469], [145.721009, -38.630612], [145.720878, -38.630590], [145.720905, -38.630409]]]
+      }
+    }
+  ]
+}
