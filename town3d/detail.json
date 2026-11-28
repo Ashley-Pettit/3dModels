@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-paperbark-place-29-v1",
+      "x": -2737,
+      "z": 800,
+      "size": 79,
+      "file": "detail-paperbark-place-29-v1.webp",
+      "lo": "detail-paperbark-place-29-v1-lo.webp"
     }
   ]
 }
