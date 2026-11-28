@@ -10294,6 +10294,8 @@ const handle = async (m, post) => {
     Promise.all([townModelLoad(cfg), glade]).then(([lib, gladeAsset]) => {
       if (T.dead) return;
       if (gladeAsset) clearLatLon.push(...gladeAsset.clearings);
+      if (inv) clearLatLon.push({ lat: -38.63172563, lon: 145.74116605, r: 0.16 }); // 5 Scott Place: seeded trunk 35582 in the confirmed main roof.
+      if (inv) clearLatLon.push({ lat: -38.63180445, lon: 145.74134980, r: 0.16 }); // 5 Scott Place: seeded trunk 35583 in the confirmed main roof.
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
         ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cd69429f" } : cfg.assets;
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
@@ -10376,6 +10378,7 @@ const handle = async (m, post) => {
         if (cfg.place === "moo" && m.addParts) try { townHouse24(T, m); } catch (e) { console.warn("Town model: 24 Beaudesert Road couldn't be added", e); }  // Pandy's house as it really is (a demo)
         if (cfg.place === "moo" && m.addParts) try { townHousesLite(T, m); } catch (e) { console.warn("Town model: the houses drawn the light way couldn't be added", e); }
         // the planes (townCar), each with somewhere to stand beside it
+        if (inv && m.addParts) invScottPlace5(T, m, BS.B.THREE);
         const rides = m.addParts ? TOWN_RIDES[cfg.place] : null;
         // golden ones only for Ash (Ash, 15 November 2026: "Only show the teleport to the golden objects if user name is ash or Ashley")
         // (the golden ones are under "Just for you" at the top of the list instead, made each time it opens: players(), below)
@@ -19128,6 +19131,76 @@ const handle = async (m, post) => {
   //   they are dropped, and if it still does not 20 minutes on they are put back as waiting, to save again.
   // - Copy puts the edits on the clipboard to paste to Claude instead, who adds them the same way (no key needed).
   // Painted ground shows where the model draws the ground by kind (near the view), on devices that draw it.
+  // 5 Scott Place. The two roof wings enclose the house and leave the planted courtyard open.
+  function invScottPlace5(town, model, THREE) {
+    const x0 = 972.93348, z0 = -568.53153, cosine = .94920145, sine = -.31466906;
+    const eave = 2.66, peak = 1.31;
+    const walls = [[2.76,0.21],[20.39,0.21],[20.39,5.72],[7.67,5.72],[7.67,16.59],[2.76,16.59]];
+    const eaves = [[2.3,-0.25],[20.85,-0.25],[20.85,6.18],[8.13,6.18],[8.13,17.05],[2.3,17.05]];
+    const ridges = [[17.62,2.965],[5.215,2.965],[5.215,14.02]];
+    const world = ([u,v]) => [x0+u*cosine+v*sine,z0+u*sine-v*cosine];
+    const position = ([u,v],y) => [u*cosine+v*sine,y,u*sine-v*cosine];
+    const ground = walls.map(p=>model.groundAt(...world(p)));
+    const floor = Math.max(...ground)+.07;
+    const brick = new THREE.Color(0xa38a74), shelteredBrick = new THREE.Color(0x8d7664);
+    const metal = new THREE.Color(0xb6ae91), fascia = new THREE.Color(0xa7a493);
+    const door = new THREE.Color(0x777b70), glass = new THREE.Color(0x577479);
+    const solar = new THREE.Color(0x516a73);
+    const positions = [], colors = [];
+    const triangle = (a,b,c,color) => {
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(color.r,color.g,color.b);
+    };
+    const quad = (a,b,c,d,color) => { triangle(a,b,c,color); triangle(a,c,d,color); };
+    const upward = (a,b,c,color) => {
+      if ((b[2]-a[2])*(c[0]-a[0])>(b[0]-a[0])*(c[2]-a[2])) triangle(a,b,c,color);
+      else triangle(a,c,b,color);
+    };
+    walls.forEach((a,i) => {
+      const j = (i+1)%walls.length, b = walls[j];
+      const skirt = Math.min(ground[i],ground[j])-floor-.10;
+      quad(position(a,skirt),position(b,skirt),position(b,eave),position(a,eave),i===2 || i===3 ? shelteredBrick : brick);
+    });
+    eaves.forEach((a,i) => {
+      const b = eaves[(i+1)%eaves.length];
+      quad(position(a,eave-.085),position(b,eave-.085),position(b,eave+.06),position(a,eave+.06),fascia);
+    });
+    const roof = [...eaves.map(p=>position(p,eave+.06)),...ridges.map(p=>position(p,eave+.06+peak))];
+    for (const [a,b,c] of [[0,1,6],[0,6,7],[1,2,6],[2,3,7],[2,7,6],[3,4,8],[3,8,7],[4,5,8],[5,0,7],[5,7,8]]) {
+      upward(roof[a],roof[b],roof[c],metal);
+    }
+    const garagePanel = (v0,v1,y0,y1,u,color) => {
+      quad(position([u,v0],y0),position([u,v1],y0),position([u,v1],y1),position([u,v0],y1),color);
+    };
+    garagePanel(.83,5.14,.06,2.30,20.428,fascia);
+    garagePanel(.96,5.01,.095,2.228,20.439,door);
+    for (let y=.38; y<2.20; y+=.36) garagePanel(1.0,4.97,y,y+.017,20.445,shelteredBrick);
+    for (const [u0,u1] of [[9.25,11.10],[12.18,14.20],[15.16,16.42]]) {
+      quad(position([u0,5.754],.77),position([u1,5.754],.77),
+        position([u1,5.754],2.07),position([u0,5.754],2.07),glass);
+    }
+    for (const [v0,v1] of [[8.38,10.51],[11.1,13.25]]) {
+      quad(position([7.706,v0],.82),position([7.706,v1],.82),position([7.706,v1],2.07),position([7.706,v0],2.07),glass);
+    }
+    const panelStrip = (u0,u1,v0,v1,height) => {
+      const at = (u,v) => position([u,v],height(v)+.028);
+      const a=at(u0,v0), b=at(u1,v0), c=at(u1,v1), d=at(u0,v1);
+      upward(a,b,c,solar); upward(a,c,d,solar);
+    };
+    for (let i=0; i<6; i++) {
+      const u=11.0+i*.91;
+      panelStrip(u,u+.86,3.67,4.79,v=>eave+.06+peak*(6.18-v)/(6.18-2.965));
+    }
+    for (let i=0; i<2; i++) {
+      const u=4.31+i*.83;
+      panelStrip(u,u+.77,15.05,15.91,v=>eave+.06+peak*(17.05-v)/(17.05-14.02));
+    }
+    model.addParts([{positions:new Float32Array(positions),colors:new Float32Array(colors),
+      matrix:new THREE.Matrix4().makeTranslation(x0,floor,z0).elements,roughness:.87,doubleSide:true}]);
+    const grid = town.invStatic ??= invCivicCollision((x,z)=>[x,z],()=>false);
+    grid.polygon(walls.map(world));
+  }
+
   function townAdmin(T, cfg, box, m, nav) {
     const A = { tool: null, down: () => false, move: () => false, up: () => false, dispose() {} };
     if (!m.setGroundEdits) return A;

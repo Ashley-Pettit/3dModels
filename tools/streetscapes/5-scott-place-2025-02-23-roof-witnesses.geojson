@@ -1,0 +1,120 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "activeParcelPFI": "5285049",
+    "activeAddressPFI": "53200123",
+    "source": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.74123446,-38.6317981&level=20",
+    "provider": "Vantor / Esri World Imagery",
+    "scene": "6072276",
+    "captureDate": "2025-02-23",
+    "sourceSamplingM": 0.31,
+    "sourcePositionalAccuracyM": 5,
+    "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+    "licensedCrosscheck": "microsoft-311223133-c6bf4ee997ea03f8"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "principal roof eaves"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.7413981,
+              -38.6318183
+            ],
+            [
+              145.7413813,
+              -38.6317659
+            ],
+            [
+              145.7412398,
+              -38.6318057
+            ],
+            [
+              145.7412036,
+              -38.6317093
+            ],
+            [
+              145.7411413,
+              -38.6317276
+            ],
+            [
+              145.7412009,
+              -38.6318796
+            ],
+            [
+              145.7413981,
+              -38.6318183
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "east approach witnesses"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.7414987,
+            -38.6317345
+          ],
+          [
+            145.7414504,
+            -38.6317528
+          ],
+          [
+            145.7414128,
+            -38.6317748
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "open planted courtyard"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.7412821,
+          -38.6317659
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "north wing solar"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.7411701,
+          -38.6317308
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "east wing solar"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.7413089,
+          -38.6318031
+        ]
+      }
+    }
+  ]
+}
