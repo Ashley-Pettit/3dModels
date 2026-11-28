@@ -45,7 +45,7 @@ for (const page of ['app.html', 'beta/app.html']) {
   test(page + ' rechecks legacy controls after the FPS probe', async () => {
     const html = readFileSync(path.join(__dirname, '..', page), 'utf8');
     const source = html.slice(html.indexOf('  function townModelPair('), html.indexOf('  function townModelOn('));
-    for (const hold of [false, true]) {
+    for (const scenario of ['idle', 'held', 'leave']) {
       const T = {on: true}, fly = {keys: new Set()}, builds = [];
       let now = 0, frames = 0, releaseAfter = Infinity, releasedAt;
       const step = (ms, callback) => queueMicrotask(() => {
@@ -60,7 +60,10 @@ for (const page of ['app.html', 'beta/app.html']) {
         performance: {now: () => now}, setTimeout: (fn, ms) => step(ms, fn),
         requestAnimationFrame(fn) {
           step(16, () => {
-            if (++frames === 30 && hold) { fly.keys.add('KeyW'); releaseAfter = now + 2400; }
+            if (++frames === 30) {
+              if (scenario === 'held') { fly.keys.add('KeyW'); releaseAfter = now + 2400; }
+              if (scenario === 'leave') env.BS.town = null;
+            }
             fn(now);
           });
         },
@@ -72,9 +75,13 @@ for (const page of ['app.html', 'beta/app.html']) {
       }}, {children: []}, {place: 'inv'}, {}, {});
       await model.ready;
       await new Promise(resolve => setImmediate(resolve));
+      if (scenario === 'leave') {
+        assert.deepEqual(builds.map(b => b.quality), ['low']);
+        continue;
+      }
       assert.deepEqual(builds.map(b => b.quality), ['low', 'medium']);
       assert.equal(builds[1].busy, false);
-      if (hold) assert.ok(builds[1].at - releasedAt >= 300, 'release grace expired before creating the fallback renderer');
+      if (scenario === 'held') assert.ok(builds[1].at - releasedAt >= 300, 'release grace expired before creating the fallback renderer');
     }
   });
 }
