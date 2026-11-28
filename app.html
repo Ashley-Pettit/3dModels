@@ -9376,6 +9376,7 @@ const handle = async (m, post) => {
   function bsBlock(F, ox, oz) { const T = BS.town;
     T?.invStatic?.slide(F.pos, ox, oz);
     if (F.noBlockTil > performance.now()) return;  // (just unstuck: let through)
+    T?.screwCreek?.slideRail(F.pos, ox, oz, F.pos.y - F.eye);
     if (T?.bal6?.block(F, ox, oz)) return;  // (up on number 6's balcony: no stepping off it)
     if (!T?.solidWalk || !T.solid || !T.solid(F.pos.x, F.pos.z) || T.solid(ox, oz)) return;
     if (!T.solid(F.pos.x, oz)) F.pos.z = oz; else if (!T.solid(ox, F.pos.z)) F.pos.x = ox; else { F.pos.x = ox; F.pos.z = oz; } if (F.wv) F.wv = [0, 0]; }
@@ -9784,6 +9785,7 @@ const handle = async (m, post) => {
     // frames a second over a short while
     const fps = ms => new Promise(ok => { let n = 0, t0 = 0; const f = t => { if (dead) return ok(0); if (!t0) t0 = t; n++; if (t - t0 < ms) requestAnimationFrame(f); else ok(n * 1000 / (t - t0)); }; requestAnimationFrame(f); });
     const swapTo = async (to, q) => { bsNote("sharper model swapped in");
+      const screwCreek = T.screwCreek && invScrewCreekBridge(to, BS.B.THREE);
       for (const [name, a, H] of log) { if (H) H.real = to[name](...a); else to[name]?.(...a); }
       for (const H of handles) for (const [ck, a] of H.calls) { const fn = ck.split(":")[0]; try { H.real[fn](...a); } catch {} }
       if (driven) {
@@ -9796,6 +9798,7 @@ const handle = async (m, post) => {
       const old = cur, oldEl = rootOf(old), el = rootOf(to);
       cur = to; next = null; replaying = null; if (el) el.style.visibility = ""; if (oldEl) oldEl.style.visibility = "hidden";
       try { old.dispose(); } catch {}
+      if (screwCreek) T.screwCreek = screwCreek;
       hiBox.hidden = true;
       try { T.bowls?.swapped?.(); } catch {}  // what was shaped to the old model's ground is made again on this one's (Moorooka's road medians)
       try { T.gps?.swapped?.(); } catch {}  // older models need the line re-laid over their new ground
@@ -9861,6 +9864,125 @@ const handle = async (m, post) => {
       else if (!manual && first === best) save({ q: best, ms: loadMs }); });
     return m;
   }
+  // Screw Creek footbridge, OSM way 596679699, as encoded in town.json. The low timber deck and
+  // paired open metal rails are documented in Bass Coast Council's walk film (2020) and in the
+  // For Our Future field report (2023, p. 45). The render and walking surface share one profile.
+  const INV_SCREW_CREEK = (() => {
+    const x = 2062.9, z = -407, dx = 2102.2 - x, dz = -394.8 - z;
+    const length = Math.hypot(dx, dz), ux = dx / length, uz = dz / length, half = 0.9;
+    const point = (along, across = 0) => [x + ux * along - uz * across, z + uz * along + ux * across];
+    const local = (X, Z) => [(X - x) * ux + (Z - z) * uz, (Z - z) * ux - (X - x) * uz];
+    const nearby = (X, Z) => X >= x - 2 && X <= x + dx + 2 && Z >= z - 2 && Z <= z + dz + 2;
+    return { length, half, point, local, nearby };
+  })();
+
+  function invScrewCreekMask() {
+    const { length, point } = INV_SCREW_CREEK;
+    // Clear the shared endpoint by a few millimetres so the native bridge's solid rails disappear.
+    // The timber end strips span the same seam against the original terrain-following tracks.
+    return [[-0.004, -1], [length + 0.004, -1], [length + 0.004, 1], [-0.004, 1]].map(([s, v]) => {
+      const [x, z] = point(s, v);
+      return [-38.637 - z / 111008.5, 145.73000000000002 + x / 87072];
+    });
+  }
+
+  function invScrewCreekBridge(model, THREE) {
+    const { length, half, point, local, nearby } = INV_SCREW_CREEK;
+    const start = -0.006, end = length + 0.006, westJoin = 6, eastJoin = length - 9;
+    const approachLift = 0.11, level = 2.65, railEdge = half - 0.09, railStart = 0.24, railEnd = length - 0.24;
+    const railRadius = 0.035, walkerRadius = 0.35;
+    const west = model.groundAt(...point(0)) + approachLift, east = model.groundAt(...point(length)) + approachLift;
+    const deckY = s => s < westJoin ? bsLerp(west, level, bsClamp(s / westJoin, 0, 1))
+      : s > eastJoin ? bsLerp(level, east, bsClamp((s - eastJoin) / (length - eastJoin), 0, 1)) : level;
+    const positions = [], colors = [];
+    const at = (s, v, h) => { const [x, z] = point(s, v); return [x, h, z]; };
+    const quad = (a, b, c, d, color) => {
+      positions.push(...a, ...b, ...c, ...a, ...c, ...d);
+      for (let i = 0; i < 6; i++) colors.push(color.r, color.g, color.b);
+    };
+    const material = hex => new THREE.Color(hex);
+    const boards = [0x9b8f7d, 0x928779, 0x897d70, 0xa19684, 0xa99b88].map(material);
+    const beam = material(0x62564b), edge = material(0x857969), rail = material(0xb9c7c8), post = material(0x91a0a3);
+    const prism = (a, b, l, r, lowA, lowB, topA, topB, tint) => {
+      const p = [at(a, l, lowA), at(a, r, lowA), at(b, r, lowB), at(b, l, lowB),
+        at(a, l, topA), at(a, r, topA), at(b, r, topB), at(b, l, topB)];
+      for (const [i, j, k, n] of [[3,2,1,0], [4,5,6,7], [0,1,5,4], [2,3,7,6], [1,2,6,5], [3,0,4,7]]) {
+        quad(p[i], p[j], p[k], p[n], tint);
+      }
+    };
+    const profile = [start, westJoin, eastJoin, end];
+    for (let i = 1; i < profile.length; i++) {
+      const a = profile[i - 1], b = profile[i], y0 = deckY(a), y1 = deckY(b);
+      prism(a, b, -half, half, y0 - 0.20, y1 - 0.20, y0 - 0.003, y1 - 0.003, beam);
+      for (const side of [-1, 1]) {
+        const v = side * (half - 0.046);
+        prism(a, b, v - 0.046, v + 0.046, y0 - 0.02, y1 - 0.02, y0 + 0.04, y1 + 0.04, edge);
+      }
+      const count = Math.ceil((b - a) / 0.21);
+      for (let j = 0; j < count; j++) {
+        const s = bsLerp(a, b, j / count), e = bsLerp(a, b, (j + 1) / count) - 0.004;
+        const y = deckY(s), h = deckY(e);
+        quad(at(s, -half, y), at(s, half, y), at(e, half, h), at(e, -half, h), boards[(j * 7 + i) % boards.length]);
+      }
+    }
+    // A light open railing with two continuous round-grey bars and a narrow timber toe board.
+    const railSegments = [railStart, westJoin, eastJoin, railEnd];
+    const railPoint = (s, v, h, i) => {
+      const a = i * Math.PI / 3;
+      return at(s, v + railRadius * Math.cos(a), deckY(s) + h + railRadius * Math.sin(a));
+    };
+    for (const side of [-1, 1]) {
+      const v = side * railEdge;
+      for (const h of [0.54, 1.04]) for (let i = 1; i < railSegments.length; i++) {
+        const a = railSegments[i - 1], b = railSegments[i];
+        for (let face = 0; face < 6; face++) {
+          quad(railPoint(a, v, h, face), railPoint(b, v, h, face),
+            railPoint(b, v, h, face + 1), railPoint(a, v, h, face + 1), rail);
+        }
+      }
+      const bays = Math.ceil((railEnd - railStart) / 2.0);
+      for (let i = 0; i <= bays; i++) {
+        const s = bsLerp(railStart, railEnd, i / bays), y = deckY(s);
+        prism(s - 0.021, s + 0.021, v - 0.022, v + 0.022, y + 0.025, y + 0.025, y + 1.07, y + 1.07, post);
+      }
+    }
+    // The covered beams and underside supports are estimated from the visible side profile.
+    for (const s of [11, 20.5, 30]) {
+      const y = deckY(s), pier = [Math.min(y - 0.28, model.groundAt(...point(s, -0.59)) - 0.12),
+        Math.min(y - 0.28, model.groundAt(...point(s, 0.59)) - 0.12)];
+      prism(s - 0.12, s + 0.12, -0.77, 0.77, y - 0.38, y - 0.38, y - 0.18, y - 0.18, beam);
+      for (const [i, v] of [-0.59, 0.59].entries()) {
+        prism(s - 0.13, s + 0.13, v - 0.10, v + 0.10, pier[i], pier[i], y - 0.36, y - 0.36, beam);
+      }
+    }
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().elements, roughness: 0.88, doubleSide: true }]);
+
+    function floorAt(x, z) {
+      if (!nearby(x, z)) return null;
+      const [s, v] = local(x, z);
+      return s >= start && s <= end && Math.abs(v) <= half ? deckY(s) : null;
+    }
+
+    function slideRail(pos, ox, oz, feetY) {
+      if (!nearby(pos.x, pos.z) && !nearby(ox, oz)) return;
+      const [oldS, oldV] = local(ox, oz), [s, v] = local(pos.x, pos.z);
+      for (const side of [-1, 1]) {
+        const before = side * oldV - railEdge, after = side * v - railEdge;
+        const direction = before <= 0 ? 1 : -1;
+        const edge = -direction * (walkerRadius + railRadius);
+        if (direction * (after - edge) <= 0 || direction * (after - before) <= 0) continue;
+        const hitS = bsLerp(oldS, s, bsClamp((edge - before) / (after - before), 0, 1));
+        if (hitS < railStart || hitS > railEnd) continue;
+        const y = deckY(hitS);
+        if (feetY < y - 0.46 || feetY > y + 1.12) continue;
+        [pos.x, pos.z] = point(s, side * (railEdge + edge));
+        return;
+      }
+    }
+    return { floorAt, slideRail };
+  }
+
   function townModelOn(T) {
     const F = BS.fly, box = $("bsTown"), tip = $("bsFlyTip"), jump = $("bsFlyJump"), list = $("bsTownList"), modeBox = $("bsTownMode");
     const fb = $("bsTownFlood"), fl = $("bsTownFloods"), riseBox = $("bsTownRise"), riseIn = $("bsTownRiseIn"), riseOut = $("bsTownRiseOut");
@@ -9885,6 +10007,7 @@ const handle = async (m, post) => {
       [-38.6338849, 145.7295854], [-38.6329661, 145.7297324], [-38.6348155, 145.7301642]]) clearLatLon.push({ lat, lon, r: 1.5 });
     if (inv && home && BS.W.invHouse) { const [lat, lon] = townLL(home[0], home[1]); clearLatLon.push({ lat, lon, r: 24 }); detailLatLon.push({ lat, lon, r: 170 }); }
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
+    if (inv) clearPolygons.push({ latLon: invScrewCreekMask(), roads: true });
     // Moorooka's bridges (town.json's roads marked as one): their decks, so a car drives over them, not down through them into the creek.
     // The deck is as the model draws it (moorooka-model.js ?v=79): straight from one end's ground to the other's, a metre's hump in the
     // middle, and 0.6 m up, coming up from the road over its first and last 8 m. Under a bridge (a road under an overpass) you stay down:
@@ -9926,11 +10049,13 @@ const handle = async (m, post) => {
         // model's ground, so the helicopter behind it, you and anything else there stand on the lawn rather than sink into it)
         // (Logan's council precinct lays its ground 25 cm over the terrain (precinct.ts GROUND): cars and people stand on that, not in it.
         // Ash, 16 November 2026: "The golden car is still too low in Logan, sitting inside the road")
+        if (inv) T.screwCreek = invScrewCreekBridge(T.pair.cur, BS.B.THREE);
         const bed = (x, z) => (inv ? T.pair.cur.roadSurfaceAt?.(x, z) : null) ?? m.groundAt(x, z);
         const LIFT = cfg.lift, b = m.bounds(), ground = (x = F.pos.x, z = F.pos.z) => { const fo = T.floorOver?.(x, z); if (fo != null) return fo;  /* (Dino Land's island, up in the sky) */ let g = Math.max(bed(x, z), m.waterAt ? m.waterAt(x, z) : m.waterLevel());
           if (T.decks) { const dy = T.deckAt(x, z); if (dy != null && dy > g) g = dy; }  // (on a bridge: its deck)
           if (LIFT && x > LIFT[0] && x < LIFT[2] && z > LIFT[1] && z < LIFT[3]) g += LIFT[4];
           if (T.pads) { const g0 = g; for (const P of T.pads) g = Math.max(g, padGround(P, x, z, g0)); }
+          if (T.walk && T.screwCreek) g = Math.max(g, T.screwCreek.floorAt(x, z) ?? g);
           if (T.bal6) g = T.bal6.top(x, z, g);  // number 6's floor, decks and stairs, where you can step up onto them
           return g; };
         ground.bed = bed;
