@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-queenscliff-drive-19-v1",
+      "x": -2168.89101074,
+      "z": -423.59247559,
+      "size": 105.60875977,
+      "file": "detail-queenscliff-drive-19-v1.webp",
+      "lo": "detail-queenscliff-drive-19-v1-lo.webp"
     }
   ]
 }
