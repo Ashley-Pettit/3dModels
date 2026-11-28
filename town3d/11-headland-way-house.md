@@ -1,0 +1,7 @@
+# 11 Headland Way
+
+The [13 May 2025 Vantor aerial in Esri World Imagery](https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70670,-38.63251&level=20), scene 6072283, shows a connected low hipped roof with a shorter west return on Vicmap parcel PFI 131939399 and address PFI 131939403. The [manual roof and crossover witnesses](../tools/streetscapes/11-headland-way-2025-05-13-roof-witnesses.geojson) use 0.34 m imagery with 5 m reported positional accuracy. Vicmap is © State of Victoria, CC BY 4.0. Earlier higher-resolution Vicmap imagery corroborates the roof shape and west crossover. The west return is modelled as a garage. Wall height, exterior finishes and door dimensions are estimates.
+
+A single vertex-coloured mesh supplies the joined house and its 228 m² wall ring. Two 0.16 m centre masks retire generated records 1666 and 1669. Both were misplaced portions of the same addressed house and extended into adjacent lots. The title, neighboring walls and public paths remain clear of the new walls.
+
+The original painter restores the in-lot ends of the two false north approaches and adjusts the old pad against the joined house. The public reserve, old off-parcel texels and real west crossover remain unchanged, so faint traces along the north verge may remain. The existing detail stream can load one 3,304-byte standard or 990-byte low-resolution correction close to the house.

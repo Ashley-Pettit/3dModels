@@ -10295,7 +10295,9 @@ const handle = async (m, post) => {
       if (T.dead) return;
       if (gladeAsset) clearLatLon.push(...gladeAsset.clearings);
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
-        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cd69429f" } : cfg.assets;
+        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=c8de0f92" } : cfg.assets;
+      if (inv) clearLatLon.push({ lat: -38.63251836, lon: 145.70661418, r: 0.16 }); // 11 Headland Way: superseded house slot 1666.
+      if (inv) clearLatLon.push({ lat: -38.63254313, lon: 145.70680942, r: 0.16 }); // 11 Headland Way: superseded house slot 1669.
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
         { onProgress: (f, label) => { if (!T.on && !T.dead) tip.textContent = `Loading the town model: ${String(label).toLowerCase()}…`; },
           onFloodLevel: v => T.onFlood?.(v),
@@ -10369,6 +10371,7 @@ const handle = async (m, post) => {
         if (inv && m.addParts) try { mine.push(invWestJetty(T, BS.B.THREE)); } catch (e) { console.warn("Inverloch: the west jetty could not be added", e); }
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
+        if (inv && m.addParts) invHeadlandWay11(T, m, BS.B.THREE);
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
         if (cfg.place === "moo") try { T.room6 = townRoom6(T, m); } catch (e) { console.warn("Town model: number 6's room couldn't be drawn", e); }  // (where the drone waited till 24 November 2026)
@@ -18066,6 +18069,58 @@ const handle = async (m, post) => {
   }
   // The westbound wayfinder in the south verge, before the Bear Street turn.
   // Estimated from maxim752 Mapillary frames 588735650795644 and 584548554484819 (18 January 2025).
+  // 11 Headland Way. One hipped house and the shorter west roof over the garage.
+  function invHeadlandWay11(town, model, THREE) {
+    const x0 = -2032, z0 = -499, eaveHeight = 2.62;
+    const walls = [[-10.15,-5.67],[-10.56,-2.15],[-11.25,-1.07],[-11.56,3.71],[-9.62,4.31],[11.83,6.34],[12.4,-3.45]];
+    const eaves = [[-10.67,-6.32,0],[13.04,-3.99,0],[12.39,7.0,0],[-9.74,4.9,0],[-12.19,4.15,0],[-11.84,-1.26,0],[-11.14,-2.36,0],[-10.0,1.88,0.88],[-4.61,-0.97,1.72],[5.79,0.02,1.72]];
+    const faces = [
+      [0,1,9], [0,9,8], [1,2,9], [2,3,8], [2,8,9],
+      [0,8,7], [0,7,6], [6,7,5], [5,7,4], [4,7,3], [3,7,8]
+    ];
+    const ground = ([x,z]) => model.groundAt(x+x0,z+z0);
+    const base = walls.map(ground);
+    const floor = Math.max(...base) + .07;
+    const grey = new THREE.Color(0x62696d), fascia = new THREE.Color(0x717676);
+    const masonry = new THREE.Color(0xa99f92), side = new THREE.Color(0xb5aea2);
+    const garage = new THREE.Color(0x777d79), trim = new THREE.Color(0x888b83);
+    const positions = [], colors = [];
+    const point = ([x,z], y) => [x,y,z];
+    const tri = (a,b,c,colour) => {
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(colour.r,colour.g,colour.b);
+    };
+    const quad = (a,b,c,d,colour) => { tri(a,b,c,colour); tri(a,c,d,colour); };
+    walls.forEach((a,i) => {
+      const j = (i+1)%walls.length;
+      const b = walls[j], skirt = Math.min(base[i],base[j])-floor-.10;
+      quad(point(a,skirt),point(b,skirt),point(b,eaveHeight),point(a,eaveHeight),i<3 ? masonry : side);
+    });
+    eaves.slice(0,7).forEach((a,i) => {
+      const b=eaves[(i+1)%7];
+      quad(point(a,eaveHeight-.02),point(b,eaveHeight-.02),
+        point(b,eaveHeight+.115),point(a,eaveHeight+.115),fascia);
+    });
+    for (const [i,j,k] of faces) {
+      const [a,b,c] = [eaves[i],eaves[j],eaves[k]].map(([x,z,h])=>[x,eaveHeight+.115+h,z]);
+      if ((b[2]-a[2])*(c[0]-a[0]) > (b[0]-a[0])*(c[2]-a[2])) tri(a,b,c,grey);
+      else tri(a,c,b,grey);
+    }
+    // The measured west crossover terminates at the garage return.
+    const a=walls[2], b=walls[3], dx=b[0]-a[0], dz=b[1]-a[1], length=Math.hypot(dx,dz);
+    const panel = (lo,hi,bottom,top,depth,colour) => {
+      const p=(u,y)=>[a[0]+u*dx-depth*dz/length,y,a[1]+u*dz+depth*dx/length];
+      quad(p(lo,bottom),p(hi,bottom),p(hi,top),p(lo,top),colour);
+    };
+    panel(.075,.924,.085,2.29,.034,fascia);
+    panel(.098,.900,.105,2.237,.043,garage);
+    for (let h=.45; h<2.2; h+=.39) panel(.104,.894,h,h+.018,.049,trim);
+    model.addParts([{positions:new Float32Array(positions),colors:new Float32Array(colors),
+      matrix:new THREE.Matrix4().makeTranslation(x0,floor,z0).elements,roughness:.88,doubleSide:true}]);
+    const collision = town.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    collision.polygon(walls.map(([x,z])=>[x+x0,z+z0]));
+  }
+
   function invIndustrialEstateSign(T, model, THREE) {
     const x = -867.06, z = -1067.02, angle = 104 * Math.PI / 180;
     const matrix = new THREE.Matrix4().makeRotationY(angle).setPosition(x, 0, z);
