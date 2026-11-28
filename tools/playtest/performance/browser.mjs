@@ -124,7 +124,6 @@ export async function emulate(page, version) {
   });
   await page.send('Emulation.setTouchEmulationEnabled', {enabled: true, maxTouchPoints: 5});
   await page.send('Emulation.setTimezoneOverride', {timezoneId: 'Australia/Melbourne'});
-  await page.send('Emulation.setEmulatedMedia', {features: [{name: 'prefers-reduced-motion', value: 'no-preference'}]});
   await page.send('Network.setUserAgentOverride', {userAgent:
     `Mozilla/5.0 (Linux; Android 17; Pixel 11 Pro) AppleWebKit/537.36 Chrome/${version} Mobile Safari/537.36`});
 }

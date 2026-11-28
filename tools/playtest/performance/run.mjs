@@ -105,6 +105,7 @@ try {
   await page.send('Network.enable');
   await page.send('Network.setBypassServiceWorker', {bypass: true});
   if (!phone) await emulate(page, version.Browser.split('/').at(-1));
+  await page.send('Emulation.setEmulatedMedia', {features: [{name: 'prefers-reduced-motion', value: 'no-preference'}]});
   await page.send('Page.bringToFront');
   const navigation = await page.send('Page.navigate', {url: hosted.url});
   if (navigation.errorText) throw Error(navigation.errorText);
@@ -121,6 +122,7 @@ try {
     `Expected versioned native model was never requested: ${hosted.expectedModelRequest}`);
   if (phone) await sample('presentation', presentationSample);
   report.state = await page.evaluate(occupyUte, {first: segments[0].trace[0], physical});
+  assert.equal(report.state.reducedMotion, false, 'Replay requires full motion');
   await delay(1800, undefined, {signal: signal.signal});
   report.timing = await page.evaluate(beginReplay, {segments, clock: weatherEpoch, key: report.state.key});
   report.status = 'running';

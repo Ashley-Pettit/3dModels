@@ -55,6 +55,7 @@ export async function occupyUte({first, physical}) {
     buffer: [renderer.domElement.width, renderer.domElement.height], dpr: devicePixelRatio,
     viewport: [innerWidth, innerHeight], screen: [screen.width, screen.height], orientation: screen.orientation?.type,
     stamp: document.querySelector('[name=an-commit]')?.content,
+    reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
     wakeLock: window.__playtestWake?.released === false, wakeError};
 }
 
