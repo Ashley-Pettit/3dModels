@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-ullathornes-road-27-v1",
+      "x": -1979.18638672,
+      "z": -384.47812012,
+      "size": 105.60875977,
+      "file": "detail-ullathornes-road-27-v1.webp",
+      "lo": "detail-ullathornes-road-27-v1-lo.webp"
     }
   ]
 }

@@ -1,0 +1,119 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "27 ULLATHORNES ROAD INVERLOCH 3996",
+        "addressPFI": "100162914",
+        "parcelPFI": "100162910",
+        "captureDate": "2025-05-13",
+        "imagery": {
+          "OBJECTID": 6072283,
+          "SRC_DATE": 20250513,
+          "SRC_RES": 0.34,
+          "SRC_ACC": 5,
+          "SRC_DESC": "LG04",
+          "NICE_DESC": "Vantor",
+          "DrawOrder": 80,
+          "ReleaseName": "Raster Basemaps 2026.R05"
+        },
+        "sourceAttribution": "Esri, Vantor, Earthstar Geographics, and the GIS User Community",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70790047317163,-38.633939423557656&level=20",
+        "imageryMetadataQuery": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/0/query?f=json&inSR=4326&outSR=4326&geometryType=esriGeometryPoint&geometry=145.70790047317163%2C-38.633939423557656&where=MinMapLevel%3D12+AND+SRC_DATE+%3E+0&outFields=OBJECTID%2CSRC_DATE%2CSRC_RES%2CSRC_ACC%2CSRC_DESC%2CNICE_DESC%2CDrawOrder%2CReleaseName&returnGeometry=false",
+        "sourceItem": "https://www.arcgis.com/sharing/rest/content/items/10df2279f9684e4a9f6a7f08febac2a9?f=pjson",
+        "license": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "addressQuery": "https://opendata.maps.vic.gov.au/geoserver/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=open-data-platform%3Aaddress&outputFormat=application%2Fjson&srsName=urn%3Aogc%3Adef%3Acrs%3AOGC%3A1.3%3ACRS84&CQL_FILTER=ezi_address%3D%2727+ULLATHORNES+ROAD+INVERLOCH+3996%27&propertyName=pfi%2Cproperty_pfi%2Cezi_address%2Cproperty_status%2Cgeom&count=5",
+        "captureMethod": "Manual XY readouts in ArcGIS Online Map Viewer Location Capture at level 21.",
+        "geometryStatus": "Manually observed eaves. Specific wall faces and garage door remain approximate."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.7076547,
+              -38.633852
+            ],
+            [
+              145.7077218,
+              -38.6338567
+            ],
+            [
+              145.7077144,
+              -38.6339269
+            ],
+            [
+              145.7078136,
+              -38.6339347
+            ],
+            [
+              145.7078237,
+              -38.6338949
+            ],
+            [
+              145.7079464,
+              -38.6339028
+            ],
+            [
+              145.707929,
+              -38.634018
+            ],
+            [
+              145.7078519,
+              -38.6340112
+            ],
+            [
+              145.7078545,
+              -38.6339923
+            ],
+            [
+              145.7076386,
+              -38.6339714
+            ],
+            [
+              145.7076547,
+              -38.633852
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.707942,
+            -38.633995
+          ],
+          [
+            145.707983,
+            -38.633994
+          ],
+          [
+            145.708014,
+            -38.633997
+          ],
+          [
+            145.708053,
+            -38.634002
+          ],
+          [
+            145.708099,
+            -38.634004
+          ]
+        ]
+      },
+      "properties": {
+        "role": "27 Ullathornes Road garage-apron and crossover axis",
+        "imageryDate": "2025-05-13",
+        "sourceScene": 6072283,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70797,-38.63397&level=20",
+        "license": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "witness": "The historical Vicmap aerial corroborates the existing verge crossing."
+      }
+    }
+  ]
+}
