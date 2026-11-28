@@ -9808,6 +9808,7 @@ const handle = async (m, post) => {
       if (dead || BS.town !== T) return;
       const old = cur, oldEl = rootOf(old), el = rootOf(to);
       cur = to; next = null; replaying = null; if (el) el.style.visibility = ""; if (oldEl) oldEl.style.visibility = "hidden";
+      if (to.normanGrade) T.normanGrade.apply(to.normanGrade);
       try { old.dispose(); } catch {}
       hiBox.hidden = true;
       try { T.bowls?.swapped?.(); } catch {}  // what was shaped to the old model's ground is made again on this one's (Moorooka's road medians)
@@ -9835,7 +9836,10 @@ const handle = async (m, post) => {
         if (!currentTown()) return false;
         const n = next = make(target, false); tag(n);
         const el = rootOf(n); if (el) el.style.visibility = "hidden";
-        try { await n.ready; } catch { if (next === n) drop(); return false; }
+        try {
+          await n.ready;
+          if (next === n && currentTown() && T.normanGrade) n.normanGrade = T.normanGrade.fit(n);
+        } catch { if (next === n) drop(); return false; }
         if (next !== n || !currentTown()) return false;
         const loadMs = Math.round(performance.now() - n.t0);
         await swapTo(n, target);
@@ -17005,7 +17009,10 @@ const handle = async (m, post) => {
             if (C) col.push(C.getX(i), C.getY(i), C.getZ(i));
             if (U) uv.push(U.getX(i), U.getY(i)); } }
         if (pos.length) { parts.push({ positions: pos, normals: Nn ? nor : undefined, colors: C ? col : undefined, uvs: U ? uv : undefined, ...look(mat), matrix: place.elements }); mats.push(mat); } });
-      if (parts.length) glows(m.addParts(parts), mats); };
+      if (!parts.length) return;
+      const h = m.addParts(parts); glows(h, mats);
+      const count = parts.length;
+      return matrix => { for (let i = 0; i < count; i++) h.setMatrix(i, matrix.elements); }; };
     // a Jump stop from one of Explore's own spots (kept in the weather scene's coordinates): to the town's metres, then the model's
     const stop = (name, sp, place, target) => { const p = v.set(...sp.pos).applyMatrix4(toTG).applyMatrix4(place);
       jumps.push({ name, target, walk: { x: p.x, z: p.z, yaw: sp.yaw - TG.rotation.y, pitch: sp.pitch } }); };
@@ -17072,22 +17079,31 @@ const handle = async (m, post) => {
     if (home && W.invHouse) { const [hx, hz, nx, nz] = home, ry = Math.atan2(nx, nz), half = 16.5, zBack = -17, zFront = 15.4, zc = (zBack + zFront) / 2;
       const [x, z] = m.fromLatLon(...townLL(hx, hz));
       // The fitted slope still anchors the house and paving. The rendered lawn grades down around them.
-      const L = normanLawn(m, { x: x + Math.sin(ry) * zc, z: z + Math.cos(ry) * zc,
-        hw: half + 0.4, hd: (zFront - zBack) / 2 + 0.4, heading: ry, zc }, W.invNormanPaving), top = L.top;
+      const bounds = { x: x + Math.sin(ry) * zc, z: z + Math.cos(ry) * zc,
+        hw: half + 0.4, hd: (zFront - zBack) / 2 + 0.4, heading: ry, zc };
+      const houseParts = [[-4,-.5,11,11],[5,1,7,8],[5,-5.5,7,5]];
+      // Each native world owns these terrain-fitted vertices. Prepare them off screen on a swap.
+      const fit = native => {
+        const lawn = normanLawn(native, bounds, W.invNormanPaving);
+        for (const { mesh, u, v } of W.invNormanBins) normanGroundBin(native, lawn, mesh.geometry, u, v - zc, THREE);
+        normanFoundations(native, lawn, houseParts, zc, THREE);
+        return lawn;
+      };
+      const L = fit(T.pair.cur), place = new THREE.Matrix4(), vanPlace = new THREE.Matrix4(), vanU = 6.4, vanV = 8.6 - zc;
       (T.pads ||= []).push(L);
-      const place = L.lean.clone().multiply(new THREE.Matrix4().makeTranslation(x - hx, top - G0, z - hz));
+      const align = () => {
+        place.makeTranslation(x - hx, L.top - G0, z - hz).premultiply(L.lean);
+        vanPlace.copy(place);
+        const vanPlane = L.top + L.gu * vanU + L.gv * vanV;
+        vanPlace.elements[13] += L.surfaceAt(vanU, vanV, vanPlane) - vanPlane;
+      };
+      align();
       skip.add(W.invNormanGround);  // the full-town terrain and road supply these surfaces
       skip.add(W.invNormanPaving.mesh);
       W.invNormanBins.forEach(({ mesh }) => skip.add(mesh));
       W.invNormanVan.traverse(o => skip.add(o));
-      lot(W.invHouse, half, zBack, zFront, place, skip);
-      W.invNormanBins.forEach(({ mesh, u, v }) => normanGroundBin(m, L, mesh.geometry, u, v - zc, THREE));
-      const vanPlace = place.clone(), vanU = 6.4, vanV = 8.6 - zc;
-      const vanPlane = L.top + L.gu * vanU + L.gv * vanV;
-      vanPlace.elements[13] += L.surfaceAt(vanU, vanV, vanPlane) - vanPlane;
+      const moveHouse = lot(W.invHouse, half, zBack, zFront, place, skip);
       whole(W.invNormanVan, vanPlace);
-      const houseParts = [[-4,-.5,11,11],[5,1,7,8],[5,-5.5,7,5]];
-      normanFoundations(m, L, houseParts, zc, THREE);
       if (m.buildingBlockers) {
         const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
         // House, garage, rear wing and rescue van use the same bearing as the lot.
@@ -17102,6 +17118,14 @@ const handle = async (m, post) => {
         whole(r, anchored);
       });
       cars.forEach(c => { const cp = place.clone(); T.cars.push({ o: c, cp }); whole(c, cp); });  // each car kept on the model's road as it goes
+      T.normanGrade = { fit, apply(grade) {
+        // Walking, wheels and grounded guests all retain this one pad reference.
+        Object.assign(L, grade);
+        align();
+        moveHouse?.(place);
+        for (const guest of T.groundGuests) guest.anchored.copy(place);
+        for (const car of T.cars) car.cp.copy(place);
+      } };
       if (W.invNormanSpot) stop("Norman Rd", W.invNormanSpot, place, [x, z]); }
     return jumps;
   }
