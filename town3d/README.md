@@ -299,17 +299,6 @@ range requests (one 600 MB file, 3.6 MB of it read). Street View still gives eac
 - For the whole town: Microsoft's outlines put about 4,700 buildings where the model has its 5,712 made-up houses (and 311
   OpenStreetMap ones). Each would get its colours from the satellite, and Street View detail only where it matters.
 
-## Inverloch Rotary clock photo pass
-
-The Explore clock in `app.html` uses separate front gold and rear navy cogs, a smaller ketch
-silhouette, and tapered hands with counterweights. The two dated or historical reference views
-support these proportions. The dimensions are visual estimates. The scene uses authored meshes and
-dial artwork.
-
-Reference photos are [Inverloch by Dalysporter, 17 December 2013, CC BY-SA 3.0](https://commons.wikimedia.org/wiki/File:Inverloch_Victoria.jpg)
-and [the Inverloch Rotary clocktower, supplied by Travel Victoria, capture date unknown](https://www.travelvictoria.com.au/images/inverloch/photos/inverloch-004.jpg),
-under [Travel Victoria's CC BY 4.0 photo terms](https://www.travelvictoria.com.au/about/photos/).
-
 ## Inverloch's power poles cast no shadows
 
 Ash, 13 November 2026: "remove power pole shadows from Inverloch". The timber power poles and their wires along the
@@ -1075,6 +1064,19 @@ the drive in front of the stairs is taken out (`edits.json`). The first round's 
   drawing. Each object the app adds (cars, planes, the helicopter, the bus, players, the animal) is its own mesh with a
   `MeshStandardMaterial` that casts a shadow (`modelScene.addParts`), so the next real gain is in the model: cheaper materials
   and no shadows for small added objects, or merging them.
+## Inverloch Rotary clock photo pass
+
+The clock patch is in [beta v48 via Explore #389](https://github.com/Ashley-Pettit/3dModels/pull/389). This host change can carry those same meshes to production after Ash's beta sign-off.
+
+The Explore clock in `app.html` uses separate front gold and rear navy cogs, a smaller ketch
+silhouette, and tapered hands with counterweights. The two dated or historical reference views
+support these proportions. The dimensions are visual estimates. The scene uses authored meshes and
+dial artwork.
+
+Reference photos are [Inverloch by Dalysporter, 17 December 2013, CC BY-SA 3.0](https://commons.wikimedia.org/wiki/File:Inverloch_Victoria.jpg)
+and [the Inverloch Rotary clocktower, supplied by Travel Victoria, capture date unknown](https://www.travelvictoria.com.au/images/inverloch/photos/inverloch-004.jpg),
+under [Travel Victoria's CC BY 4.0 photo terms](https://www.travelvictoria.com.au/about/photos/).
+
 ## Inverloch put back together: the town centre and the drivable cars in one model (15 November 2026)
 
 Ash: "When we introduced multiplayer or cars into Inverloch explore we've lost tonnes of great work in design. I want

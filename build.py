@@ -125,11 +125,14 @@ img{{max-width:100%}}
 <body>
 """
 
-def inverloch_preloads():
+def inverloch_preloads(page_body):
     # Use the version that townModelLib will request, including on a renderer-only update.
-    model = re.search(r'lib: "InverlochModel", src: TOWN3D \+ "(inverloch-model\.js\?v=\d+)"', body)
+    model = re.search(r'lib: "InverlochModel", src: TOWN3D \+ "([^"]+)"', page_body)
     if not model:
         raise ValueError("Cannot find the Inverloch renderer URL for the Explore head")
+    town_map = re.search(r'place: "inv", pre: \["([^"]+)"', page_body)
+    if not town_map:
+        raise ValueError("Cannot find the Inverloch road map URL for the Explore head")
     return """<script>
 (() => {
   // A reload after switching towns restores the other town even on the Inverloch URL.
@@ -138,7 +141,7 @@ def inverloch_preloads():
         ["moo", "logan"].includes(sessionStorage.getItem("an-ex-town"))) return;
   } catch {}
   const ground = matchMedia("(pointer: coarse)").matches ? "ground-2k.webp" : "ground.webp";
-  for (const [file, type] of [[MODEL, "script"], ["town.json", "fetch"], ["height.png", "fetch"], [ground, "image"]]) {
+  for (const [file, type] of [[MODEL, "script"], [TOWN_MAP, "fetch"], ["height.png", "fetch"], [ground, "image"]]) {
     const hint = document.createElement("link");
     hint.rel = "preload"; hint.as = type; hint.href = "town3d/" + file;
     if (type !== "script") hint.crossOrigin = "anonymous";
@@ -146,7 +149,20 @@ def inverloch_preloads():
     document.head.appendChild(hint);
   }
 })();
-</script>""".replace("MODEL", json.dumps(model[1]))
+</script>""".replace("MODEL", json.dumps(model[1])).replace("TOWN_MAP", json.dumps(town_map[1]))
+
+
+def direct_inverloch_body(page_body):
+    # bsLite drops these weather/Listen scenes for every town on the direct Explore entry,
+    # including a different town restored on reload. Keep them on full app and preview pages.
+    # (From Bangerz's #388; on the beta Inverloch page only for now.)
+    start = "    // BEGIN LISTEN_AND_BOWLS_WEATHER_SCENES\n"
+    end = "    // END LISTEN_AND_BOWLS_WEATHER_SCENES\n"
+    if page_body.count(start) != 1 or page_body.count(end) != 1:
+        raise ValueError("Expected one marked group of weather-only scenes")
+    before, scenes = page_body.split(start)
+    _, after = scenes.split(end)
+    return before + after
 
 
 # A build stamp: the app checks version.json against it and reloads itself when the site has a newer app
@@ -189,9 +205,12 @@ if os.path.exists(beta_src):
     for bdir, bplace in (("moorooka", "moo"), ("inverloch", "inv"), ("logan", "logan")):
         xh = (bhead.replace('<base href="../">', '<base href="../../">', 1)
                    .replace("<head>\n", f'<head>\n<meta name="an-explore" content="{bplace}">\n', 1))
+        if bplace == "inv":
+            xh = xh.replace('<base href="../../">', '<base href="../../">\n' + inverloch_preloads(bbody), 1)
         os.makedirs(os.path.join(site, "beta", bdir), exist_ok=True)
+        route_body = direct_inverloch_body(bbody) if bplace == "inv" else bbody
         with open(os.path.join(site, "beta", bdir, "index.html"), "w", encoding="utf-8") as f:
-            f.write(bstamp(xh, bbody, os.path.join(site, "beta", bdir)) + bbody.strip() + "\n</body>\n</html>\n")
+            f.write(bstamp(xh, route_body, os.path.join(site, "beta", bdir)) + route_body.strip() + "\n</body>\n</html>\n")
 shutil.copytree(os.path.join(here, "icons"), os.path.join(site, "icons"), dirs_exist_ok=True)
 shutil.copy(os.path.join(here, "manifest.webmanifest"), site)
 shutil.copy(os.path.join(here, "sw.js"), site)
@@ -286,7 +305,7 @@ if os.path.exists(os.path.join(here, "local", "brands.json")):
                           .replace("<head>\n", f'<head>\n<meta name="an-explore" content="{slug}">\n', 1))
             assert "explore-share.jpg" in ehead and "an-explore" in ehead and '<base href="../../">' in ehead, "explore page head"
             if slug == "inv":
-                ehead = ehead.replace('<base href="../../">', '<base href="../../">\n' + inverloch_preloads(), 1)
+                ehead = ehead.replace('<base href="../../">', '<base href="../../">\n' + inverloch_preloads(lbody), 1)
             with open(os.path.join(ex, "index.html"), "w", encoding="utf-8") as f:
                 f.write(stamped(ehead, lbody, ex) + lbody.strip() + "\n</body>\n</html>\n")
             # the T-rex fight invite (/<dir>/rex/), in Inverloch and Logan: the same app, opening Explore, with its own link preview, so a

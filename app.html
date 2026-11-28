@@ -9013,6 +9013,17 @@ const handle = async (m, post) => {
     // reduced but not gone. Lag related"). They stay for a Mac's trackpad pinch
     F.noGesture = e => e.preventDefault();
     if (!BS_PASSIVE) ["gesturestart", "gesturechange"].forEach(k => document.addEventListener(k, F.noGesture, { passive: false }));
+    // And if an iPhone zooms the page in anyway (it can let a pinch through whatever the page asks: Ash, 28 November 2026, "When I was
+    // playing my iOS zoomed in which ruined the game experience"), put it back to normal size once every finger is off the glass, by
+    // setting the viewport again. Passive listeners only, and nothing runs while a finger is down, so the sticks are never held up
+    if (BS_PASSIVE && window.visualViewport) { const vv = window.visualViewport, m = document.querySelector('meta[name="viewport"]');
+      let down = 0, t = 0; const was = m?.content || "width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover";
+      const fix = () => { clearTimeout(t); if (down || vv.scale < 1.01 || !m) return;
+        m.content = "width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,viewport-fit=cover"; t = setTimeout(() => { m.content = was; }, 400); };
+      const fingers = e => { down = e.touches.length; if (!down) { clearTimeout(t); t = setTimeout(fix, 250); } };
+      const vr = () => { if (!down) { clearTimeout(t); t = setTimeout(fix, 250); } };
+      F.unzoom = { vv, vr, fingers, stop: () => { clearTimeout(t); if (m) m.content = was; } };
+      ["touchstart", "touchend", "touchcancel"].forEach(k => document.addEventListener(k, fingers, { passive: true })); vv.addEventListener("resize", vr, { passive: true }); }
     clearTimeout(F.tipT); F.tipT = setTimeout(() => tip.classList.add("dim"), 6000);
     const look = (dx, dy, k) => { F.yaw -= dx * k; F.pitch = bsClamp(F.pitch - dy * k, -1.45, 1.45); };
     const typing = e => /^(INPUT|TEXTAREA|SELECT)$/.test(e.target?.tagName || "");
@@ -9325,6 +9336,7 @@ const handle = async (m, post) => {
     if (document.pointerLockElement === canvas) document.exitPointerLock?.();
     for (const j of [...(F.joys || []), ...(F.uds || [])]) { j.end(); Object.entries(j.h).forEach(([k, f]) => j.el.removeEventListener(k, f)); }
     if (F.noGesture) ["gesturestart", "gesturechange"].forEach(k => document.removeEventListener(k, F.noGesture));
+    if (F.unzoom) { const U = F.unzoom; ["touchstart", "touchend", "touchcancel"].forEach(k => document.removeEventListener(k, U.fingers)); U.vv.removeEventListener("resize", U.vr); U.stop(); }
     clearTimeout(F.tipT); BS.fly = null;
     document.body.classList.remove("bsfly"); $("bsFly").hidden = true; $("bsShareBox").hidden = true; $("bsShareBtn").setAttribute("aria-expanded", "false");
     if (L.exploreHold) { L.exploreHold = false; wxListenOff(); if (L.on && L.paused) resumeListen(); }  // the news waited while you explored
@@ -9613,7 +9625,7 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=42", assets: TOWN3D, place: "inv", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=46", assets: TOWN3D, place: "inv", pre: ["town.json?v=1bef586b", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
     moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=80", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
@@ -9723,7 +9735,10 @@ const handle = async (m, post) => {
     const first = manual ? initialPreset : direct && !seen.slow ? best : "low";
     const hiBox = $("bsHiRes");
     let cur = null, next = null, dead = false;
-    const log = [], last = {}, LAST = ["setLabelObstacles", "setTide", "setFlood", "setFloodLevel", "setMinutes", "setCamera", "setGroundEdits", "setRemoved", "setMore", "driveCar"];
+    // Ordinary native cars use their surveyed home position as a stable identity across presets.
+    const driven = cfg.place === "inv" ? new Map() : null;
+    let replaying = null;
+    const log = [], last = {}, LAST = ["setLabelObstacles", "setTide", "setFlood", "setFloodLevel", "setMinutes", "setCamera", "setGroundEdits", "setRemoved", "setMore", "driveCar", "setControlledCar"];
     const make = (q, own) => { const t0 = performance.now(); let mm = null;
       mm = lib.create(box, { ...opts, quality: q, ...(graphics ? { frameTarget: graphics.frameTarget } : {}), onProgress: own ? cb.onProgress : undefined,
         ...(graphics ? { onThunder: strength => { if (mm === cur && T.on && !T.dead && !document.hidden) T.snd?.thunder(strength); } } : {}),
@@ -9733,7 +9748,7 @@ const handle = async (m, post) => {
     // a handle Inverloch's town centre moves things with: always the one in the model that's showing
     const handle = real => { const H = { real, calls: new Map() };
       H.proxy = new Proxy(H, { get: (h, k) => { const v = h.real[k]; if (typeof v !== "function") return v;
-        return (...a) => { h.calls.set(k + ":" + (k === "setSignal" ? "" : a[0]), a); return h.real[k](...a); }; } });
+        return (...a) => { h.calls.set(k + ":" + (k === "setSignal" || k === "setCabin" ? "" : a[0]), a); return h.real[k](...a); }; } });
       return H; };
     const handles = [];
     let ids = 0; const tag = mm => { mm.id = ++ids; const el = box.lastElementChild; if (el) el.dataset.anModel = String(mm.id); };
@@ -9747,6 +9762,15 @@ const handle = async (m, post) => {
       if (k === "dispose") return () => { dead = true; hiBox.hidden = true; try { cur.dispose(); } catch {} try { next?.dispose(); } catch {} };
       const v = cur[k]; if (typeof v !== "function") return v;
       return (...a) => { if (flat && k === "addParts" && Array.isArray(a[0])) a = [townFlatParts(a[0]), ...a.slice(1)]; const r = v.apply(cur, a);
+        if (driven && (k === "driveCar" || k === "resetCar")) {
+          if (r) {
+            const id = a[0]+","+a[1];
+            if (k === "driveCar") driven.set(id,a); else driven.delete(id);
+            replaying?.[k]?.(...a);
+          }
+          return r;
+        }
+        if (k === "setControlledCar" && replaying) replaying.setControlledCar?.(...a);
         if (k === "setRemoved" && T.invStatic) T.invStatic.hideCars(a[0]?.cars || []);
         if (k === "addParts" || k === "addTrafficCar") { const H = handle(r); handles.push(H); log.push([k, a, H]); return H.proxy; }
         if (k === "addPad" || k === "addCars") log.push([k, a]); else if (LAST.includes(k)) last[k] = a;
@@ -9760,15 +9784,19 @@ const handle = async (m, post) => {
     const swapTo = async (to, q) => { bsNote("sharper model swapped in");
       for (const [name, a, H] of log) { if (H) H.real = to[name](...a); else to[name]?.(...a); }
       for (const H of handles) for (const [ck, a] of H.calls) { const fn = ck.split(":")[0]; try { H.real[fn](...a); } catch {} }
-      T.invStatic?.restoreCars(to);
+      if (driven) {
+        replaying = to;
+        for (const pose of driven.values()) to.driveCar(...pose);
+      } else T.invStatic?.restoreCars(to);
       for (const k of LAST) if (last[k]) { try { const r = to[k](...last[k]); if (r?.then) await r; } catch {} }
       await new Promise(ok => requestAnimationFrame(() => requestAnimationFrame(ok)));
       if (dead || BS.town !== T) return;
       const old = cur, oldEl = rootOf(old), el = rootOf(to);
-      cur = to; next = null; if (el) el.style.visibility = ""; if (oldEl) oldEl.style.visibility = "hidden";
+      cur = to; next = null; replaying = null; if (el) el.style.visibility = ""; if (oldEl) oldEl.style.visibility = "hidden";
       try { old.dispose(); } catch {}
       hiBox.hidden = true;
       try { T.bowls?.swapped?.(); } catch {}  // what was shaped to the old model's ground is made again on this one's (Moorooka's road medians)
+      try { T.gps?.swapped?.(); } catch {}  // older models need the line re-laid over their new ground
     };
     const upgrade = async () => {
       // wait for the view to be on screen, then see how smoothly the light one runs
@@ -9841,7 +9869,9 @@ const handle = async (m, post) => {
       T.decks = L; }).catch(() => {});
     townModelLoad(cfg).then(lib => {
       if (T.dead) return;
-      const m = T.model = townModelPair(T, lib, box, cfg, { assets: cfg.assets, clearLatLon, clearPolygons, detailLatLon },
+      const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
+        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json" } : cfg.assets;
+      const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
         { onProgress: (f, label) => { if (!T.on && !T.dead) tip.textContent = `Loading the town model: ${String(label).toLowerCase()}…`; },
           onFloodLevel: v => T.onFlood?.(v),
           onError: msg => fail(msg) });
@@ -9859,12 +9889,14 @@ const handle = async (m, post) => {
         // model's ground, so the helicopter behind it, you and anything else there stand on the lawn rather than sink into it)
         // (Logan's council precinct lays its ground 25 cm over the terrain (precinct.ts GROUND): cars and people stand on that, not in it.
         // Ash, 16 November 2026: "The golden car is still too low in Logan, sitting inside the road")
-        const LIFT = cfg.lift, b = m.bounds(), ground = (x = F.pos.x, z = F.pos.z) => { const fo = T.floorOver?.(x, z); if (fo != null) return fo;  /* (Dino Land's island, up in the sky) */ let g = Math.max(m.groundAt(x, z), m.waterAt ? m.waterAt(x, z) : m.waterLevel());
+        const bed = (x, z) => (inv ? T.pair.cur.roadSurfaceAt?.(x, z) : null) ?? m.groundAt(x, z);
+        const LIFT = cfg.lift, b = m.bounds(), ground = (x = F.pos.x, z = F.pos.z) => { const fo = T.floorOver?.(x, z); if (fo != null) return fo;  /* (Dino Land's island, up in the sky) */ let g = Math.max(bed(x, z), m.waterAt ? m.waterAt(x, z) : m.waterLevel());
           if (T.decks) { const dy = T.deckAt(x, z); if (dy != null && dy > g) g = dy; }  // (on a bridge: its deck)
           if (LIFT && x > LIFT[0] && x < LIFT[2] && z > LIFT[1] && z < LIFT[3]) g += LIFT[4];
           if (T.pads) { const g0 = g; for (const P of T.pads) g = Math.max(g, padGround(P, x, z, g0)); }
           if (T.bal6) g = T.bal6.top(x, z, g);  // number 6's floor, decks and stairs, where you can step up onto them
           return g; };
+        ground.bed = bed;
         const { ceil = 4000, fast = 30, far = 7000, out = 9000, stride = 0, pad = 0, stand = [1, 30] } = cfg;  // a town's limits, unless the model is bigger (Logan)
         // where you can go: inside the model (flying over Logan, far enough outside it to see the whole city); flying, above the ground and the water, and faster the higher you are
         const inner = [b[0] + 30, b[1] - 30, b[2] + 30, b[3] - 30], outer = pad ? [b[0] - pad, b[1] + pad, b[2] - pad, b[3] + pad] : inner;
@@ -9877,7 +9909,23 @@ const handle = async (m, post) => {
 
         // the town centre round the Rotary clock and number 11 Norman Road, stood in the model where they really are
         let mine = []; if (inv) try { mine = townModelGuests(T, m); } catch (e) { console.warn("Town model: the town centre and Norman Road couldn't be added", e); }
-        if (inv) invAddDesignedWalls(T, m.designedWallFootprints?.());
+        if (inv) {
+          const buildings = m.buildingBlockers?.();
+          if (buildings) {
+            const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+            grid.addTown(buildings, m.parkedCarBlockers());
+            // The odd parked car the model stood in a pole, a sign or a wall (8 of Inverloch's 1,593, round the town centre): moved
+            // to the nearest clear spot, along its bay first and then out a little sideways, so it can be driven away (Ash, 28 November
+            // 2026: "Some of the Inverloch parked cars are locked inside poles and can't move when I get in to drive")
+            try { for (const c of m.parkedCarBlockers() || []) { const B = grid.originalBay(c.id); if (!B) continue; grid.take(c.id);
+              let to = null; if (grid.depth(B.x, B.z, B.h, B.l, B.w) > 0) { const fx = Math.sin(B.h), fz = Math.cos(B.h);
+                for (let d = 0.25; d <= 3.5 && !to; d += 0.25) for (const [a, s] of [[d, 0], [-d, 0], [0, d], [0, -d], [d, d], [-d, d], [d, -d], [-d, -d]]) {
+                  if (Math.abs(s) > 2.5) continue; const x = B.x + fx * a + fz * s, z = B.z + fz * a - fx * s;
+                  if (!grid.depth(x, z, B.h, B.l + 0.15, B.w + 0.1)) { to = { x, z }; break; } } }
+              if (to && m.driveCar?.(c.id[0], c.id[1], to.x, ground(to.x, to.z) + 0.05, to.z, B.h, 0, 0)) grid.park(c.id, to.x, to.z, B.h, ground(to.x, to.z) + 0.05, 0, 0);
+              else grid.park(c.id, B.x, B.z, B.h); } } catch (e) { console.warn("Inverloch: couldn't move the parked cars stuck in poles", e); }
+          } else invAddDesignedWalls(T, m.designedWallFootprints?.());
+        }
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
@@ -16937,7 +16985,7 @@ const handle = async (m, post) => {
       const standAt = (name, fx, fz, tx, tz, pitch) => { const [x, z] = block.at(fx, fz), [ax, az] = block.at(tx, tz); jumps.push({ name, target: [ax, az], walk: { x, z, yaw: Math.atan2(x - ax, z - az), pitch } }); };
       if (ownCars) try { const cars = W.invParked.filter(([x, z]) => townInBlock(x, z) && !townOnPlaza(x, z) && Math.hypot(x - TOWN_CLOCK[0], z - TOWN_CLOCK[1]) > 5.5)
         .map(([x, z, yaw, colour, kind]) => { const [X, Z] = block.at(x, z); return { x: X, z: Z, heading: yaw, colour, kind }; });
-        m.addCars(cars); collision.addCars(cars); } catch (e) { console.warn("Town model: the town centre's parked cars couldn't be added", e); }
+        m.addCars(cars); if (!m.parkedCarBlockers) collision.addCars(cars); } catch (e) { console.warn("Town model: the town centre's parked cars couldn't be added", e); }
       standAt("the clock", 11.5, 33.5, TOWN_CLOCK[0], TOWN_CLOCK[1], 0.16);  // from beside the car park, as in Street View: the clock in front, the memorial to the left
       // (where to stand from the whole bakery frontage, as the town's map has it: since the bakery and Alex Scott's were split, the
       // middle of the bakery's own front put the spot 5.5 m east, inside the chemist's corner. Looking at the bakery's own front)
@@ -16978,6 +17026,13 @@ const handle = async (m, post) => {
       (T.pads ||= []).push(L);
       const place = L.lean.clone().multiply(new THREE.Matrix4().makeTranslation(x - hx, top - G0, z - hz));
       lot(W.invHouse, half, zBack, zFront, place, skip);
+      if (m.buildingBlockers) {
+        const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+        // House, garage, rear wing and rescue van use the same bearing as the lot.
+        for (const [u,v,w,l] of [[-4,-.5,11,11],[5,1,7,8],[5,-5.5,7,5],[6.4,8.6,1.98,5.1]]) {
+          grid.worldBox(x + Math.cos(ry)*u + Math.sin(ry)*v, z - Math.sin(ry)*u + Math.cos(ry)*v, ry, w, l);
+        }
+      }
       moving.forEach(r => whole(r, place));
       cars.forEach(c => { const cp = place.clone(); T.cars.push({ o: c, cp }); whole(c, cp); });  // each car kept on the model's road as it goes
       if (W.invNormanSpot) stop("Norman Rd", W.invNormanSpot, place, [x, z]); }
@@ -17114,8 +17169,11 @@ const handle = async (m, post) => {
     const inPilot = (x,z) => townInBlock((x-o0[0])/kx, (z-o0[1])/kz);
     return { at, place, inPilot, parts: parts.length, corners: parts.reduce((n, p) => n + p.positions.length / 3, 0) };
   }
-  // Ground-level collision for the A'Beckett guest block. Actor poses and shapes use model metres.
+  // Ground-level collision in model metres. Authored guest shapes use their local transform.
   function invCivicCollision(at, inPilot) {
+    const dimensions = new Map(), owned = new WeakMap(), identity = (x,z) => [x,z];
+    let hiddenCars = new Set();
+    let wholeTown = false;
     const cells = new Map(), parked = new Map(), moved = new Map(), cell = v => Math.floor(v / 16), key = (a, b) => a * 65536 + b;
     let stamp = 0, minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
     const nearby = (x,z,r) => x+r >= minX && x-r <= maxX && z+r >= minZ && z-r <= maxZ
@@ -17146,12 +17204,13 @@ const handle = async (m, post) => {
         transform(x + i * width / 2 * c + j * length / 2 * s, z - i * width / 2 * s + j * length / 2 * c)));
     }
     const box = (x,z,h,w,l) => rectangle(x,z,h,w,l,at);
-    function post(x,z,r) {
-      polygon(Array.from({ length: 12 }, (_,i) => { const a = i * Math.PI / 6; return at(x + r * Math.cos(a), z + r * Math.sin(a)); }));
+    const worldBox = (x,z,h,w,l) => rectangle(x,z,h,w,l,identity);
+    function post(x,z,r,transform = at) {
+      polygon(Array.from({ length: 12 }, (_,i) => { const a = i * Math.PI / 6; return transform(x + r * Math.cos(a), z + r * Math.sin(a)); }));
     }
     // For circles use signed distance to the real boundary (including concave recesses). For a
     // rectangle, test every boundary segment against both body axes and the segment normal.
-    function contact(x,z,h,hl,hw,normal) {
+    function contact(x,z,h,hl,hw,normal,ignore) {
       if (!nearby(x,z,hl+hw)) return 0;
       const c = Math.cos(h), s = Math.sin(h), ex = hl ? Math.abs(c)*hw + Math.abs(s)*hl : hw, ez = hl ? Math.abs(s)*hw + Math.abs(c)*hl : hw;
       let deepest = 0;
@@ -17160,7 +17219,7 @@ const handle = async (m, post) => {
         const bucket = cells.get(k);
         if (!bucket) return;
         for (const B of bucket) {
-          if (B.stamp === id || B.hidden || x+ex < B.x0 || x-ex > B.x1 || z+ez < B.z0 || z-ez > B.z1) continue;
+          if (B.stamp === id || B.hidden || B === ignore || x+ex < B.x0 || x-ex > B.x1 || z+ez < B.z0 || z-ez > B.z1) continue;
           B.stamp = id;
           let inside = false, distance2 = Infinity, vx = 0, vz = 0, rim = 0;
           for (const e of B.edges) {
@@ -17220,30 +17279,66 @@ const handle = async (m, post) => {
       pos.x=x; pos.z=z;
     }
     const carKey = (x,z) => Math.round(x*4) + ',' + Math.round(z*4);
+    function removeShape(B) {
+      if (B) eachCell(B.x0,B.z0,B.x1,B.z1,k => {
+        const bucket = cells.get(k); bucket.delete(B); if (!bucket.size) cells.delete(k);
+      });
+    }
     function take(id) {
-      const k = carKey(...id), B = parked.get(k);
+      const k = carKey(...id);
       moved.delete(k);
-      if (!B) return;
-      eachCell(B.x0,B.z0,B.x1,B.z1,k => { const bucket = cells.get(k); bucket.delete(B); if (!bucket.size) cells.delete(k); });
-      parked.set(k, null);
+      if (parked.has(k)) { removeShape(parked.get(k)); parked.set(k,null); }
     }
     function park(id,x,z,h,y,pitch,roll) {
       const k = carKey(...id);
       if (!parked.has(k)) return;
+      take(id);
       if (y != null) moved.set(k,[...id,x,y,z,h,pitch,roll]);
-      if (!inPilot(x,z)) return;
-      parked.set(k, rectangle(x,z,h,1.85,4.55,(px,pz) => [px,pz]));
+      if (!wholeTown && !inPilot(x,z)) return;
+      const [w,l] = dimensions.get(k) || [1.85,4.55];
+      const shape = worldBox(x,z,h,w,l); shape.hidden = hiddenCars.has(k); parked.set(k,shape);
     }
     function addCars(cars) {
       for (const {x,z,heading} of cars) { const id=[x,z]; take(id); parked.set(carKey(x,z),null); park(id,x,z,heading); }
     }
+    function addTown(buildings, cars) {
+      wholeTown = true;
+      for (const ring of buildings.polygons) {
+        const points = [];
+        for (let i=0; i<ring.length; i+=2) points.push([ring[i],ring[i+1]]);
+        polygon(points);
+      }
+      for (const [x,z,r] of buildings.circles) post(x,z,r,identity);
+      for (const {id,x,z,heading,halfWidth,halfLength} of cars) {
+        const k = carKey(...id);
+        dimensions.set(k,[halfWidth*2,halfLength*2,heading]); parked.set(k,null); park(id,x,z,heading);
+      }
+    }
+    function own(actor, occupied) {
+      if (!wholeTown) return;
+      const prev = owned.get(actor);
+      if (prev && !occupied && prev.x === actor.x && prev.z === actor.z && prev.h === actor.h) return;
+      if (prev) { removeShape(prev.shape); owned.delete(actor); }
+      if (!occupied) {
+        const {x,z,h} = actor;
+        owned.set(actor,{x,z,h,shape:worldBox(x,z,h,actor.bus ? 2.54 : 1.96,actor.bus ? 11.1 : 4.44)});
+      }
+    }
     function hideCars(ids) {
-      const hidden = new Set(ids.map(([x,z]) => carKey(x,z)));
-      for (const [key,B] of parked) if (B) B.hidden = hidden.has(key);
+      hiddenCars = new Set(ids.map(([x,z]) => carKey(x,z)));
+      for (const [key,B] of parked) if (B) B.hidden = hiddenCars.has(key);
+    }
+    function originalBay(id) {
+      const d = dimensions.get(carKey(...id));
+      return d && {x:id[0],z:id[1],h:d[2],w:d[0]/2,l:d[1]/2};
+    }
+    function bayFree(bay, id, actor) {
+      const self = id ? parked.get(carKey(...id)) : owned.get(actor)?.shape;
+      return !contact(bay.x,bay.z,bay.h,bay.l,bay.w,null,self);
     }
     // A quality swap reconstructs the renderer (including the cars in their original bays).
     const restoreCars = model => { for (const pose of moved.values()) model.driveCar?.(...pose); };
-    return { polygon, box, post, depth, slide, canDrive, take, park, addCars, hideCars, restoreCars };
+    return { polygon, box, worldBox, post, depth, slide, canDrive, take, park, addCars, addTown, own, originalBay, bayFree, hideCars, restoreCars, get wholeTown() { return wholeTown; } };
   }
 
   // Native wall rings are already in model metres. Register individual masses so open
@@ -17682,7 +17777,7 @@ const handle = async (m, post) => {
       }
       return { names: map.roadNames, roads };
     }
-    const t = await fetch(townAsset(cfg, "town.json")).then(r => { if (!r.ok) throw new Error("town"); return r.json(); });
+    const t = await fetch(cfg.place === "inv" ? cfg.assets + cfg.pre[0] : townAsset(cfg, "town.json")).then(r => { if (!r.ok) throw new Error("town"); return r.json(); });
     return { names: t.names, roads: t.roads.map(r => ({ cls: r[0], name: r[4], one: !!(r[2] & 4), ring: !!(r[2] & 2), pts: Float32Array.from(r[5], v => v / 10) })), town: t };  // one: a one-way carriageway, its points in the direction of travel
   }
   // What can stand between you and a street when you're down near the ground: each building's outline (Moorooka; Inverloch's
@@ -18222,7 +18317,7 @@ const handle = async (m, post) => {
       cars: [{ x: -228.5, z: -375.5, h: Math.PI, spare: true, name: "The red car", what: "On the lawn by The Hub, beside the plane" }, { x: -232.5, z: -375.5, h: Math.PI, gold: true, name: "The golden car", what: "On the lawn by The Hub. A fifth faster than the red one" },
         // the potato hotrod (Ash, 26 November 2026): beside the golden car. 20 seconds after you get in, the T-rex comes (townCar). Logan has one too
         { x: -237.2, z: -375.5, h: Math.PI, hotrod: true, name: "The hotrod", what: "A potato hot rod with a blower and flames, on the lawn by The Hub. Get in if you dare" }],
-      more: { planes: [{ x: -1602.1, z: 422, h: 2.6, heli: true, name: "The helicopter", at: "behind 11 Norman Road", what: "On the grass behind 11 Norman Road" }], cars: [{ x: -207, z: -346, h: -1.683, bus: true, hide: [[-203.77, -345.76]], name: "The bus", what: "In A'Beckett Street, at the kerb across the road from The Hub" }] },
+      more: { planes: [{ x: -1602.1, z: 422, h: 2.6, heli: true, name: "The helicopter", at: "behind 11 Norman Road", what: "On the grass behind 11 Norman Road" }], cars: [{ x: -206.731, z: -348.385, h: -1.683, bus: true, hide: [[-203.77, -345.76]], name: "The bus", what: "In A'Beckett Street, at the kerb across the road from The Hub" }] },
       roam: [[-278, -562], [627, -1086], [-108, -190], [17, -179], [-1585, 1221], [575, 1066]] },
     logan: { planes: [{ x: 5732, z: -12989, h: 1.0, name: "The plane", at: "on the big lawn in Civic Centre Park", what: "On the big open lawn in Civic Centre Park, behind the council, with room to take off" }],
       cars: [{ x: 5816.2, z: -13302.9, h: 1.94, spare: true, name: "The red car", what: "On the lawn out the front of the council, by the plane" }, { x: 5788.7, z: -13204.6, h: 3.63, gold: true, name: "The golden car", what: "In the car park behind the council. A fifth faster than the red one" },
@@ -18643,7 +18738,7 @@ const handle = async (m, post) => {
     if (!N) return P;  // nothing to load or draw
     let roads = null, nodes = null, dead = false, last = 0, reroad = null, moveAt = 0;
     const contact = cfg.place === "inv";
-    let playerStart = null;
+    let playerStart = null, cabinCheck = 0, closeCabin = null;
     if (contact) {
       // Only live traffic owns these footprints. take() removes its car before the player can drive it.
       const limit = (kind, from, to) => {
@@ -18667,14 +18762,28 @@ const handle = async (m, post) => {
       };
     }
     const key = (x, z) => Math.round(x / 2) + "," + Math.round(z / 2);
-    const start = C => { // a random point on a street, mostly near the start
+    const unobserved = (x,z) => {
+      const dx = x-F.pos.x, dz = z-F.pos.z, d = Math.hypot(dx,dz);
+      return d > 450 || (d > 100 && F.pos.y-ground(F.pos.x,F.pos.z) < 35 && dx*Math.sin(F.yaw)+dz*Math.cos(F.yaw) > .6*d);
+    };
+    const start = (C, hiddenOnly = false) => { // a random point on a street, mostly near the start
       const R = Math.random() < 0.7 ? NEAR : FAR * 0.85;
       const player = contact && T.car?.in ? T.car.pose?.() || F.pos : F.pos;
       for (let t = 0; t < 40; t++) { const r = roads[Math.floor(Math.random() * roads.length)], i = Math.floor(Math.random() * (r.n - 1)), x = r.p[i * 2], z = r.p[i * 2 + 1];
         if (Math.hypot(x - home[0], z - home[1]) > R) continue;
         if (contact && Math.hypot(x - player.x, z - player.z) < 14) continue;  // leave room for the player and the lane offset on spawn
         if (P.cars.some(D => D !== C && D.x != null && Math.hypot(D.x - x, D.z - z) < 40)) continue;  // not on top of another
-        Object.assign(C, { r, i, d: r.one || Math.random() < 0.5 ? 1 : -1, s: 0, v: 0, y: null, p: null, rl: null, ln: null, still: 0, x, z }); if (C.d < 0) C.i = i + 1; C.h = null;
+        const d = r.one || Math.random() < 0.5 ? 1 : -1, a = d < 0 ? i+1 : i, b = a+d;
+        let sx = x, sz = z;
+        if (T.invStatic?.wholeTown) {
+          const h = Math.atan2(r.p[b*2]-r.p[a*2],r.p[b*2+1]-r.p[a*2+1]);
+          sx = r.p[a*2]+Math.cos(h)*r.lane; sz = r.p[a*2+1]-Math.sin(h)*r.lane;
+          const [w,l] = townTrafficBodies[C.bus ? "bus" : "car"];
+          if (T.invStatic.depth(sx,sz,h,l,w) || Math.hypot(sx-player.x,sz-player.z) < 14 ||
+              P.cars.some(D => D !== C && D.x != null && Math.hypot(D.x-sx,D.z-sz) < 12) ||
+              (hiddenOnly && (!unobserved(sx,sz) || T.peers?.list?.().some(p => Math.hypot(sx-p.x,sz-p.z) < 100)))) continue;
+        }
+        Object.assign(C, { r, i:a, d, s:0, v:0, y:null, p:null, rl:null, ln:null, still:0, blocked:0, x:sx, z:sz, h:null });
         C.turnPlan = null; C.turnUntil = 0; showSignal(C, 0); return true; }
       return false; };
     const seg = C => { const r = C.r, a = C.i, b = C.i + C.d; return [r.p[a * 2], r.p[a * 2 + 1], r.p[b * 2], r.p[b * 2 + 1]]; };
@@ -18690,7 +18799,14 @@ const handle = async (m, post) => {
       const hIn = Math.atan2(x - r.p[C.i * 2], z - r.p[C.i * 2 + 1]), ways = [];
       for (const [r2, j] of here) { if (r2 === r && j === at) continue; for (const d of r2.one ? [1] : [1, -1]) { const k = j + d; if (k < 0 || k >= r2.n) continue;
         const angle = wrap(Math.atan2(r2.p[k * 2] - x, r2.p[k * 2 + 1] - z) - hIn);
-        if (Math.abs(angle) < 2.4) ways.push({ road: r2, at: j, dir: d, angle }); } }
+        if (Math.abs(angle) >= 2.4) continue;
+        if (T.invStatic?.wholeTown) {
+          const h = hIn+angle, ahead = Math.min(5,Math.hypot(r2.p[k*2]-x,r2.p[k*2+1]-z));
+          const sx = x+Math.cos(h)*r2.lane, sz = z-Math.sin(h)*r2.lane;
+          const [width,length] = townTrafficBodies[C.bus ? "bus" : "car"];
+          if (!T.invStatic.canDrive(sx,sz,h,sx+Math.sin(h)*ahead,sz+Math.cos(h)*ahead,h,length,width)) continue;
+        }
+        ways.push({ road: r2, at: j, dir: d, angle }); } }
       if (!ways.length || (!end && Math.random() >= 0.3)) return null;
       ways.sort((a, b) => Math.abs(a.angle) - Math.abs(b.angle));
       return end && Math.random() < 0.6 ? ways[0] : ways[Math.floor(Math.random() * ways.length)];
@@ -18736,8 +18852,21 @@ const handle = async (m, post) => {
     P.frame = () => { if (!P.cars.length) return; const now = performance.now(), dt = Math.min(0.1, (now - last) / 1000); last = now; if (!dt) return;
       // you: on foot, or in whatever you are driving
       const me = T.car?.in ? T.car.pose?.() : T.walk ? { x: F.pos.x, z: F.pos.z } : null;
-      const kind = contact && me && (T.car?.in ? (me.k === "gold" || me.k === "hotrod" ? "car" : me.k) : "walk");
+      const kind = contact && me && (T.car?.in ? (me.k === "gold" || me.k === "hotrod" || me.k?.startsWith("car~") ? "car" : me.k) : "walk");
       const player = townTrafficBodies[kind] ? { x: me.x, z: me.z, h: me.h || 0, y: me.y ?? ground(me.x, me.z) + (F.jumpH || 0) } : null;
+      if (contact && now >= cabinCheck) {
+        cabinCheck = now+350;
+        let closest = null, d2 = 12*12;
+        const eye = me || F.pos;
+        for (const npc of P.cars) {
+          if (npc.away || npc.y == null || !npc.parts.setCabin) continue;
+          const d = (eye.x-npc.x)**2 + ((eye.y ?? F.pos.y)-npc.y)**2 + (eye.z-npc.z)**2;
+          if (d < d2) { d2 = d; closest = npc; }
+        }
+        if (closest !== closeCabin) {
+          closeCabin?.parts.setCabin(false); closest?.parts.setCabin(true); closeCabin = closest;
+        }
+      }
       const previous = playerStart?.kind === kind ? playerStart : player;
       playerStart = null;
       // gone 450 m from where the traffic is centred: centre it on you, and bring the cars that are now out of sight round to you
@@ -18774,13 +18903,24 @@ const handle = async (m, post) => {
         const oldRoad = C.r, oldI = C.i, oldD = C.d, oldS = C.s, oldH = C.h, oldLane = C.ln;
         C.v += Math.max(-8 * dt, Math.min(3 * dt, want - C.v)); C.s += C.v * dt;
         C.still = C.v < 0.2 && !(C.stopT > 0) && !waitingForPlayer ? (C.still || 0) + dt : 0;
-        if (C.still > 10 && !C.rider) { start(C); return; }
+        if (C.still > 10 && !C.rider && (!T.invStatic?.wholeTown || unobserved(cx,cz))) { start(C,!!T.invStatic?.wholeTown); return; }
         let takenTurn = 0;
         for (let k = 0; k < 6 && C.s >= L; k++) { C.s -= L; takenTurn = next(C) || takenTurn; [ax, az, bx, bz] = seg(C); L = Math.hypot(bx - ax, bz - az) || 0.01; }
         const h = Math.atan2(bx - ax, bz - az); C.h = C.h == null ? h : C.h + wrap(h - C.h) * Math.min(1, dt * 5);
         C.ln = C.ln == null ? C.r.lane : C.ln + bsClamp(C.r.lane - C.ln, -1.5 * dt, 1.5 * dt);  // (its place across the road: over to the next street's lane a bit at a time, not in one jump at the corner)
         const t = Math.min(1, C.s / L), lx = Math.cos(C.h), lz = -Math.sin(C.h)  /* (on the left of the road, as in Australia: Ash, 16 November 2026, "The cars should drive on the left side of the road"; then "the traffic is often on the wrong side of the roads ... all cars should drive on the left, and buses etc.": heading h runs (sin h, cos h) with z to the south, so the left is (cos h, -sin h); it had the right) */, x = ax + (bx - ax) * t + lx * C.ln, z = az + (bz - az) * t + lz * C.ln;
         if (Math.hypot(x - home[0], z - home[1]) > FAR && !C.rider) { start(C); return; }
+        if (T.invStatic?.wholeTown) {
+          const [w,l] = townTrafficBodies[C.bus ? "bus" : "car"];
+          const clear = oldH == null || C.y == null ? !T.invStatic.depth(x,z,C.h,l,w) : T.invStatic.canDrive(cx,cz,oldH,x,z,C.h,l,w);
+          if (!clear) {
+            C.r = oldRoad; C.i = oldI; C.d = oldD; C.s = oldS; C.h = oldH; C.ln = oldLane; C.v = C.still = 0;
+            C.blocked = (C.blocked || 0) + dt;
+            if (C.blocked > 10 && !C.rider && unobserved(cx,cz)) { C.blocked = 8; start(C,true); }
+            return;
+          }
+          C.blocked = 0;
+        }
         if (player && oldH != null && C.y != null) {
           const from = { x: cx, z: cz, h: oldH, y: C.y }, to = { x, z, h: C.h, y: C.y };
           if (townTrafficSweep(from, to, townTrafficBodies[C.bus ? "bus" : "car"], previous, player, townTrafficBodies[kind]) < 1) {
@@ -18797,10 +18937,17 @@ const handle = async (m, post) => {
         const y = (yf + yb + yr + yl) / 4 + 0.05, pt = Math.atan2(yf - yb, 2.6), rl = Math.atan2(yl - yr, 1.6), e = C.y == null ? 1 : Math.min(1, dt * 10);
         C.y = C.y == null ? y : C.y + (y - C.y) * e; C.p = C.p == null ? pt : C.p + (pt - C.p) * e; C.rl = C.rl == null ? rl : C.rl + (rl - C.rl) * e;
         M.compose(V.set(x, C.y, z), Q.setFromEuler(E.set(-C.p, C.h, C.rl, "YXZ")), ONE); C.parts.setMatrix(0, M.elements.slice());
-        if (!C.bus) { if (C.spin === undefined) C.spin = townSpinner(m, "new", contact && m.addTrafficCar ? 0.25 : 0); C.spin?.at(M.elements.slice(), rolled); } }); };  // (its hubcaps turning)
+        if (!C.bus) { if (C.spin === undefined) C.spin = townSpinner(m, "new", contact && m.addTrafficCar && !m.roadSurfaceAt ? 0.25 : 0); C.spin?.at(M.elements.slice(), rolled); } }); };  // (its hubcaps turning)
     // hand a car over to be driven: it leaves the traffic, and the driving code (townCar) keeps it as one of its own
-    P.take = C => { const i = P.cars.indexOf(C); if (i < 0) return null; P.cars.splice(i, 1); showSignal(C, 0);
-      return { x: C.x, z: C.z, h: C.h ?? 0, y: C.y ?? ground(C.x, C.z), p: C.p || 0, r: C.rl || 0, gold: false, bus: false, parts: C.parts }; };
+    P.take = C => { const i = P.cars.indexOf(C); if (i < 0) return null; P.cars.splice(i, 1); showSignal(C, 0); C.spin?.hide();
+      if (closeCabin === C) closeCabin = null;
+      return { x: C.x, z: C.z, h: C.h ?? 0, y: C.y ?? ground(C.x, C.z), p: C.p || 0, r: C.rl || 0, gold: false, bus: false, parts: C.parts, trafficCar: contact ? C : null }; };
+    if (contact) P.rejoin = actor => {
+      const npc = actor.trafficCar;
+      if (!npc || !roads || P.cars.includes(npc) || !start(npc,true)) return false;
+      npc.parts.setMatrix(0,NONE.slice()); npc.away = false; P.cars.push(npc);
+      return true;
+    };
     P.dispose = () => { dead = true; for (const C of P.cars) try { C.parts.remove(); } catch {} P.cars = []; };
     return P;
   }
@@ -20573,6 +20720,28 @@ const handle = async (m, post) => {
     for (const side of [1, -1]) for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2, b = (i + 1) / 24 * Math.PI * 2, r = 0.62, z = side * 1.53;
       dot.push(0, 0.1, z, r * Math.cos(a), 0.1 + r * Math.sin(a), z, r * Math.cos(b), 0.1 + r * Math.sin(b), z); }
     return gpsPinMade = { ring: new Float32Array(ring), beam: new Float32Array(beam), pin: new Float32Array(pin), pinN: new Float32Array(pinN), dot: new Float32Array(dot) }; }
+  function townGpsRibbon(pts, heightAt) {
+    const pos = [], halfWidth = 0.8;
+    let ax = pts[0], az = pts[1], prev;
+    const point = (x, z) => [x, heightAt(x, z), z];
+    for (let i = 2; i + 1 < pts.length; i += 2) {
+      const bx = pts[i], bz = pts[i + 1], length = Math.hypot(bx - ax, bz - az);
+      if (length < 0.05) continue;
+      const dx = (bx - ax) / length, dz = (bz - az) / length, nx = -dz * halfWidth, nz = dx * halfWidth;
+      const cross = prev ? prev.dx * dz - prev.dz * dx : 0;
+      const straight = prev && Math.abs(cross) < 1e-5 && prev.dx * dx + prev.dz * dz > 0;
+      const left = straight ? prev.left : point(ax - nx, az - nz);
+      const right = straight ? prev.right : point(ax + nx, az + nz);
+      const nextLeft = point(bx - nx, bz - nz), nextRight = point(bx + nx, bz + nz);
+      pos.push(...left, ...right, ...nextRight, ...left, ...nextRight, ...nextLeft);
+      // The inside edges overlap. Fill the outside wedge so a turn stays joined at road level.
+      if (cross < -1e-5) pos.push(...prev.right, ...right, ...point(ax, az));
+      if (cross > 1e-5) pos.push(...left, ...prev.left, ...point(ax, az));
+      prev = { dx, dz, left: nextLeft, right: nextRight };
+      ax = bx; az = bz;
+    }
+    return new Float32Array(pos);
+  }
   function townGps(T, m, F, ground, cfg, box) {
     const G = { places: [] }; let dead = false, net = null, netP = null, route = null, parts = null, hudT = 0, offT = 0, rerouteT = 0, ctl = null, sugT = 0, lastPick = null;
     const lin = hex => { const v = parseInt(hex.slice(1), 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255].map(c => Math.pow(c / 255, 2.2)); };
@@ -20796,17 +20965,16 @@ const handle = async (m, post) => {
     // where you are: your car, or you
     const here = () => { const w = T.car?.in ? T.car.where?.() : null; return w && w.x != null ? [w.x, w.z] : [F.pos.x, F.pos.z]; };
     const clearParts = () => { try { parts?.remove(); } catch {} parts = null; pinAt = null; };
-    const draw = (pts, pin) => { clearParts(); const pos = [], nor = [], col = [], c = lin("#3d8bff"), pc = lin("#ff4d6d"), W = 0.8;
-      const quad = (a, b, cc, d, k) => { for (const q of [a, b, cc, a, cc, d]) { pos.push(q[0], q[1], q[2]); nor.push(0, 1, 0); col.push(k[0], k[1], k[2]); } };
-      for (let i = 0; i + 3 < pts.length; i += 2) { const ax = pts[i], az = pts[i + 1], bx = pts[i + 2], bz = pts[i + 3], L = Math.hypot(bx - ax, bz - az); if (L < 0.05) continue;
-        const nx = -(bz - az) / L * W, nz = (bx - ax) / L * W, ya = ground(ax, az) + 0.18, yb = ground(bx, bz) + 0.18;
-        quad([ax - nx, ya, az - nz], [ax + nx, ya, az + nz], [bx + nx, yb, bz + nz], [bx - nx, yb, bz - nz], c); }
+    const draw = (pts, pin) => { clearParts();
+      // Older models only expose terrain height. Logan lifts its road shader higher than Moorooka.
+      const lift = cfg.place === "logan" ? 0.65 : 0.45;
+      const positions = townGpsRibbon(pts, (x, z) => ground(x, z) + lift);
       const ex = pin ? pin.x : pts[pts.length - 2], ez = pin ? pin.z : pts[pts.length - 1], g = ground(ex, ez);
       // the place itself: a map pin hovering over a glowing ring, turning slowly and bobbing, with a soft beam up through it you can see
       // from streets away (Ash, 26 November 2026: "Change the brown stick that the gps uses to mark its destination. Make it a pretty your
       // destination marker"; the stick was two flat red strips lit as if they lay on the ground, so they looked brown)
       const I = new BS.B.THREE.Matrix4().elements, mk = gpsPinShapes();
-      parts = m.addParts([{ positions: new Float32Array(pos), normals: new Float32Array(nor), colors: new Float32Array(col), color: [1, 1, 1], roughness: 0.6, doubleSide: true, matrix: I },
+      parts = m.addParts([{ positions, color: lin("#3d8bff"), unlit: true, opacity: cfg.place === "logan" ? 1 : 0.98, roadOverlay: cfg.place === "inv", matrix: I },
         { positions: mk.ring, color: [1, 0.34, 0.5], unlit: true, opacity: 0.85, doubleSide: true, matrix: new BS.B.THREE.Matrix4().makeTranslation(ex, g + 0.22, ez).elements },
         { positions: mk.beam, color: [1, 0.45, 0.6], unlit: true, opacity: 0.28, doubleSide: true, matrix: new BS.B.THREE.Matrix4().makeTranslation(ex, g, ez).elements },
         { positions: mk.pin, normals: mk.pinN, color: [1, 0.3, 0.45], emissive: [1, 0.3, 0.45], emissiveIntensity: 0.55, roughness: 0.35, doubleSide: true, matrix: I },
@@ -20863,6 +21031,7 @@ const handle = async (m, post) => {
       say(route ? `Going to ${route.dest.label}. Pick somewhere else, or Cancel.` : net ? "" : "GPS warming up. Type an address now: the way shows as soon as it's ready."); load().catch(() => {}); mark(); setTimeout(() => inp.focus(), 30); };
     G.close = () => { boxEl.hidden = true; ctl?.abort(); inp.blur(); };
     G.routePts = () => route && { pts: Array.from(route.pts), dest: route.dest };  // (for tests)
+    G.swapped = () => { if (route && cfg.place !== "inv") draw(route.pts, route.dest); };
     G.netInfo = () => net && { nodes: net.X.length, pieces: net.SA.length, ms: net.ms };  // (for tests: how big, and how long it took to build)
     G.stop = () => { if (route?.dest?.auto) T.car?.autoStop?.(); route = null; clearParts(); card.hidden = true; document.getElementById("bsGpsBtn")?.setAttribute("aria-pressed", "false"); };
     G.active = () => !!route;
@@ -22296,6 +22465,33 @@ const handle = async (m, post) => {
     { const segs = 48, D0 = townLin("#f6e2bf"), D1 = townLin("#ffffff"), inner = [], outer = []; for (let j = 0; j < segs; j++) { const q = j / segs * Math.PI * 2; inner.push(ring.v([Math.cos(q) * 0.9, 0.02, Math.sin(q) * 0.9], D0)); outer.push(ring.v([Math.cos(q), 0.08, Math.sin(q)], D1)); }
       for (let j = 0; j < segs; j++) { const k = (j + 1) % segs; ring.t(inner[j], outer[k], outer[j]); ring.t(inner[j], inner[k], outer[k]); } }
     return [m.part({ roughness: 0.5 }), f.part({ unlit: true }), b.part({ unlit: true }), st.part({ unlit: true, opacity: 0.92 }), cap.part({ unlit: true, opacity: 0.94 }), ring.part({ unlit: true, opacity: 0.6 })]; }
+  // Deadlines use wall time so a long visit in another tab counts. Only exited vehicles enter this queue.
+  function invVehicleReturns(restore, now = Date.now) {
+    const waiting = new Map(), timeout = 30*60*1000;
+    let next = Infinity;
+    const key = car => car.own || car.id?.join(",");
+    return {
+      leave(car) {
+        const id = key(car);
+        if (id == null || car.own?.rescue) return;
+        const due = now()+timeout;
+        waiting.set(id,{car,due}); next = Math.min(next,due);
+      },
+      take(car) { waiting.delete(key(car)); },
+      tick() {
+        if (!waiting.size) return;
+        const time = now(); if (time < next) return;
+        next = Infinity;
+        for (const [id,entry] of waiting) {
+          if (time >= entry.due) {
+            if (restore(entry.car)) { waiting.delete(id); continue; }
+            entry.due = time+15000;
+          }
+          next = Math.min(next,entry.due);
+        }
+      }
+    };
+  }
   function townCar(T, m, F, ground, place) {
     const C = { in: false, enter() {}, frame() {}, dispose() {} };
     const RIDES = TOWN_RIDES[place]; if (!RIDES || !m.addParts) return C;
@@ -22325,9 +22521,13 @@ const handle = async (m, post) => {
     // whether something fits there: points along and across it (metres from its middle) clear of buildings, and out of deep water
     const CAR = [[2.1, 0.8], [2.1, -0.8], [-2.1, 0.8], [-2.1, -0.8], [0, 0]], PLANE = [[2.7, 0], [0, 0], [-4.2, 0], [0.2, 5.2], [0.2, -5.2]], BUS = [[5.4, 1.2], [5.4, -1.2], [-5.4, 1.2], [-5.4, -1.2], [2.7, 1.2], [2.7, -1.2], [0, 0], [-2.7, 1.2], [-2.7, -1.2]];
     const fits = (pts, x, z, h) => { const s = Math.sin(h), c = Math.cos(h);
-      if (T.invStatic && (pts === CAR || pts === BUS) && T.invStatic.depth(x,z,h,pts[0][0],pts[0][1])) return false;
-      for (const [a, b] of pts) if (solid(x + s * a - c * b, z + c * a + s * b)) return false;
-      return ground(x, z) - m.groundAt(x, z) < 0.35 || pts === CAR; };  // (out of deep water, except a car: it goes in and becomes a boat. Ash, 26 November 2026: "Car to boat doesn't work": this stopped it at the water's edge)
+      const roadActor = pts === CAR || pts === BUS;
+      if (T.invStatic && roadActor) {
+        const [w,l] = townTrafficBodies[pts === BUS ? "bus" : "car"];
+        if (T.invStatic.depth(x,z,h,l,w)) return false;
+      }
+      if (!(roadActor && T.invStatic?.wholeTown)) for (const [a, b] of pts) if (solid(x + s * a - c * b, z + c * a + s * b)) return false;
+      return ground(x, z) - ground.bed(x, z) < 0.35 || pts === CAR; };  // (out of deep water, except a car: it goes in and becomes a boat. Ash, 26 November 2026: "Car to boat doesn't work": this stopped it at the water's edge)
     const inside = (x, z) => x >= F.lim[0] && x <= F.lim[1] && z >= F.lim[2] && z <= F.lim[3];  // the edge of the model: nothing goes past it
     // how the ground lies under something: its height, and how far the nose is up and the right side down
     const lie = (o, half, wide) => { const s = Math.sin(o.h), c = Math.cos(o.h), g = (a, b) => ground(o.x + s * a - c * b, o.z + c * a + s * b), yf = g(half, 0), yb = g(-half, 0), yr = g(0, wide), yl = g(0, -wide);
@@ -22364,7 +22564,7 @@ const handle = async (m, post) => {
       const t = performance.now() / 1000, bob = Math.sin(t * 2.1) * 0.06 - 0.32, rl = (car.r || 0) + Math.sin(t * 1.6) * 0.03 + bsClamp((car.yr || 0) * 0.08, -0.12, 0.12);
       M.compose(V.set(car.x, car.y + bob, car.z), Q.setFromEuler(E.set(-(car.p || 0) - bsClamp(car.v / 60, -0.05, 0.12), car.h + (car.spinY || 0), rl, "YXZ")), ONE); boatP.setMatrix(0, M.elements); };
     const boatCheck = () => { if (car.bus || !m.groundAt) return false; const w = m.waterAt ? m.waterAt(car.x, car.z) : m.waterLevel?.(); if (!(w > -1e4)) return car.boat = false;
-      const dk = T.decks ? T.deckAt(car.x, car.z) : null, d = w - m.groundAt(car.x, car.z), on = dk != null && dk > w ? false : car.boat ? d > 0.15 : d > 0.5;  // (on a bridge's deck over the creek: still a car)
+      const dk = T.decks ? T.deckAt(car.x, car.z) : null, d = w - ground.bed(car.x, car.z), on = dk != null && dk > w ? false : car.boat ? d > 0.15 : d > 0.5;  // (on a bridge's deck over the creek: still a car)
       if (on !== !!car.boat) { car.boat = on; fxBurst(car, false); snd.whoosh?.(); if (!rexRole) toast(on ? "\ud83d\udea4 Boat mode! Drive back onto land to be a car again." : "\ud83d\ude97 Back on the road.", 2200); if (!on) boatDraw(false); }
       return on; };
     const sit = (dt, signal = 0) => { T.deckY = car.y; const [y, p, r] = car.bus ? lie(car, 3.6, 1.1) : lie(car, 1.3, 0.8), e = dt ? Math.min(1, dt * 12) : 1; car.y += (y + 0.05 + (car.hop || 0) - car.y) * (car.flip || car.trick ? 1 : e); car.p += (p - car.p) * e; car.r += (r - car.r) * e; const rd = car.r + (car.roll || 0), hd = car.h + (car.spinY || 0);
@@ -22379,7 +22579,7 @@ const handle = async (m, post) => {
       if (!car.bus && T.cfg?.place !== "inv" && (signal || mySig)) { if (!mySig) mySig = townSignals(m, car.own ? (car.own.carKind ?? "own") : T.cfg?.place === "moo" ? 0 : -1);
         M.compose(V.set(car.x, cy, car.z), Q.setFromEuler(E.set(-car.p, hd, rd, "YXZ")), ONE); mySig.at(M.elements.slice()); mySig.set(signal); }
       // its hubcaps, turning (not a bus's): your own car is the older shape; a parked car you've taken is the new one (Inverloch's sit 0.25 m up)
-      if (!car.bus && !car.hotrod && !car.own?.boatLook) { const lay = car.own && car.own.carKind == null ? "old" : "new", lift = !car.own && T.cfg?.place === "inv" ? 0.25 : 0; if (mySpin && (mySpin.lay !== lay || mySpin.lift !== lift)) { mySpin.remove(); mySpin = null; }
+      if (!car.bus && !car.hotrod && !car.own?.boatLook) { const lay = car.own && car.own.carKind == null ? "old" : "new", lift = !car.own && T.cfg?.place === "inv" && !m.roadSurfaceAt ? 0.25 : 0; if (mySpin && (mySpin.lay !== lay || mySpin.lift !== lift)) { mySpin.remove(); mySpin = null; }
         if (!mySpin) mySpin = townSpinner(m, lay, lift); if (mySpin) { M.compose(V.set(car.x, cy, car.z), Q.setFromEuler(E.set(-car.p, hd, rd, "YXZ")), ONE); mySpin.at(M.elements.slice(), (car.v || 0) * (dt || 0)); } } };
     let mySpin = null, mySig = null;
     // the hotrod's wheels: their tread is in stripes 24 degrees apart, so a turn of more than half that in a frame reads as rolling
@@ -22397,7 +22597,7 @@ const handle = async (m, post) => {
       P.parts.setMatrix(1, fast ? M2.clone().scale(V.set(0, 0, 0)).elements : M2.clone().multiply(P.heli ? new THREE.Matrix4().makeRotationY(P.ang || 0) : new THREE.Matrix4().makeRotationZ(P.ang || 0)).elements);  // the blades, or the blur they make
       P.parts.setMatrix(2, fast ? M2.elements.slice() : M2.clone().scale(V.set(0, 0, 0)).elements); };
     // the golden plane with no place of its own stands on open ground picked for this visit (dry, if any of it is)
-    const roam = (RIDES.roam || []).filter(([x, z]) => ground(x, z) - m.groundAt(x, z) < 0.35), spot = roam.length ? roam[Math.floor(Math.random() * roam.length)] : null;
+    const roam = (RIDES.roam || []).filter(([x, z]) => ground(x, z) - ground.bed(x, z) < 0.35), spot = roam.length ? roam[Math.floor(Math.random() * roam.length)] : null;
     const homes = RIDES.planes.some(q => q.gold) || !spot ? RIDES.planes : [...RIDES.planes, { x: spot[0], z: spot[1], h: Math.random() * Math.PI * 2, gold: true, name: "The golden plane", at: "" }];
     // the golden helicopter (Ash, 15 November 2026: "Add a golden helicopter. Random location no go to btn unless name is ash. 40%
     // faster"): on open ground picked at random each visit, from the town's open spots,
@@ -22406,7 +22606,7 @@ const handle = async (m, post) => {
     // 2026, "Look through Inverloch for buses or cars placed inappropriately")
     // where a town has no open spots of its own (Moorooka), the grass beside its planes, which all stand in parks
     { const near = roam.length > 1 ? [] : homes.flatMap(q => [18, -18].map(d => [q.x + Math.cos(q.h) * d, q.z - Math.sin(q.h) * d])), all = [...roam, ...near]
-        .filter(([x, z]) => (!spot || Math.hypot(x - spot[0], z - spot[1]) > 40) && ground(x, z) - m.groundAt(x, z) < 0.35 && inside(x, z) && fits(CAR, x, z, 0) && fits(CAR, x, z, Math.PI / 2));
+        .filter(([x, z]) => (!spot || Math.hypot(x - spot[0], z - spot[1]) > 40) && ground(x, z) - ground.bed(x, z) < 0.35 && inside(x, z) && fits(CAR, x, z, 0) && fits(CAR, x, z, Math.PI / 2));
       if (all.length) { const [x, z] = all[Math.floor(Math.random() * all.length)]; homes.push({ x, z, h: Math.random() * Math.PI * 2, heli: true, gold: true, name: "The golden helicopter", at: "" }); } }
     const planes = homes.map(home => { const P = { home, x: home.x, z: home.z, h: home.h, y: 0, p: 0, r: 0, v: 0, air: false, spin: 0, turn: 0, ang: 0 };
       const [y, p, r] = lie(P, 2, 1.2); P.y = y; P.p = p; P.r = r;
@@ -22414,7 +22614,7 @@ const handle = async (m, post) => {
       P.heli = !!home.heli;
       P.parts = m.addParts((P.heli ? townPlaneParts(P.gold ? "#e2ad1c" : "#c8322b", "heli") : townPlaneParts(P.gold ? "#e2ad1c" : undefined)).map(q => ({ ...q, matrix: M.identity().elements.slice() }))); showPlane(P); return P; });
     // ---- the golden car, the app's own mesh too: twice the top speed and the acceleration of a parked car
-    const showOwn = G => { if (G.takenBy) return hideAll(G.parts, G.np || 1); M.compose(V.set(G.x, G.y, G.z), Q.setFromEuler(E.set(-G.p, G.h, G.r, "YXZ")), ONE); G.parts.setMatrix(0, M.elements.slice());
+    const showOwn = G => { T.invStatic?.own(G, !!G.takenBy || car?.own === G || !!G.rescue); if (G.takenBy) return hideAll(G.parts, G.np || 1); M.compose(V.set(G.x, G.y, G.z), Q.setFromEuler(E.set(-G.p, G.h, G.r, "YXZ")), ONE); G.parts.setMatrix(0, M.elements.slice());
       // the hotrod: its chrome, glass and lamps with it, and its four wheels each where it goes, turning as it rolls (the front two steering)
       if (G.hotrod) { for (let i = 1; i < 4; i++) G.parts.setMatrix(i, M.elements.slice());
         G.wheels.forEach((w, i) => { M2.copy(M).multiply(WT.makeTranslation(w[0], w[1], w[2])); if (i >= 2) M2.multiply(WT.makeRotationY(-G.steer)); G.parts.setMatrix(4 + i, M2.multiply(WT.makeRotationX(G.spin[i >= 2 ? 1 : 0])).elements.slice()); }); } };
@@ -22776,13 +22976,13 @@ const handle = async (m, post) => {
       if (k === "possum") obj = veh === "possum" ? null : pos; else if (k === "pigeon" || k === "goldpigeon") obj = veh === "pigeon" ? null : pg; else if (k === "drone") obj = veh === "drone" ? null : dr;
       else { const L = /plane|heli/.test(k) ? planes.filter(P => !!P.heli === /heli/.test(k) && !!P.gold === /^gold/.test(k) && P !== plane) : owns.filter(G => !!G.bus === (k === "bus") && !!G.gold === (k === "gold") && !!G.hotrod === (k === "hotrod") && G !== car?.own);
         let far = 25; for (const o of L) { if (o.takenBy) continue; const d = Math.hypot(o.x - x, o.z - z); if (d < far) { far = d; obj = o; } } }
-      if (!obj || obj.takenBy) return; obj.takenBy = id; taken.set(id, obj); redraw(obj); };
+      if (!obj || obj.takenBy) return; if (owns.includes(obj)) returns?.take({own:obj}); obj.takenBy = id; taken.set(id, obj); redraw(obj); };
     C.peerLeft = (id, at) => { const obj = taken.get(id); if (!obj) return; taken.delete(id); obj.takenBy = null;
       if (at && at.x != null && Math.hypot(at.x - obj.x, at.z - obj.z) < 3000) { obj.x = at.x; obj.z = at.z; if (at.h != null) obj.h = at.h;
         if (obj === pos || obj === pg || obj === dr) { obj.y = surf(obj.x, obj.z); if (obj.mode) obj.mode = "ground"; obj.air = false; obj.p = obj.r = 0; obj.v = 0; }
         else if (planes.includes(obj)) { obj.air = false; obj.v = 0; const [y, p, r] = lie(obj, 2, 1.2); obj.y = y; obj.p = p; obj.r = r; }
         else { obj.v = 0; obj.y = ground(obj.x, obj.z) + 0.05; obj.p = obj.r = 0; } }
-      redraw(obj); };
+      if (owns.includes(obj)) returns?.leave({own:obj}); redraw(obj); };
     const redraw = obj => { if (obj === pos) showPossum(); else if (obj === pg) showPigeon(); else if (obj === dr) showDrone(); else if (planes.includes(obj)) showPlane(obj); else if (obj.parts) showOwn(obj); };
     C.probe = () => ({ pos, pg, dr, remote: () => remoteAt, game: () => game, surf, roofAt, solid, loadRoofs, treeAt, loadTrees, mission: () => mission, auto: () => auto, net: () => net });  // (for checking the possum's footing in tests)
     C.walkKeys = on => { if (!veh) showKeys(on ? "walk" : null); }; if (T.walk) showKeys("walk");
@@ -23011,7 +23211,7 @@ const handle = async (m, post) => {
     // Always on dry ground inside the map (it came up behind The Hub, out of sight, the first time)
     const rexSpot = () => { const view = F.yaw + Math.PI, free = (x, z) => ![[0, 0], [6, 0], [-6, 0], [0, 6], [0, -6]].some(([a, b]) => solid(x + a, z + b)),
         clear = (x, z) => { const n = Math.ceil(Math.hypot(x - car.x, z - car.z) / 3); for (let i = 2; i <= n; i++) if (solid(car.x + (x - car.x) * i / n, car.z + (z - car.z) * i / n)) return false; return true; },
-        at = (a, d) => { const h = view + a, x = car.x + Math.sin(h) * d, z = car.z + Math.cos(h) * d; return inside(x, z) && ground(x, z) - m.groundAt(x, z) < 0.5 && free(x, z) ? [x, z] : null; };
+        at = (a, d) => { const h = view + a, x = car.x + Math.sin(h) * d, z = car.z + Math.cos(h) * d; return inside(x, z) && ground(x, z) - ground.bed(x, z) < 0.5 && free(x, z) ? [x, z] : null; };
       const ahead = [[0, 60], [0.25, 60], [-0.25, 60], [0, 45], [0.25, 45], [-0.25, 45], [0, 80], [0.2, 80], [-0.2, 80]], wide = [[0.7, 55], [-0.7, 55], [1.2, 50], [-1.2, 50], [Math.PI / 2, 45], [-Math.PI / 2, 45], [Math.PI, 50], [0, 35]];
       for (const [a, d] of ahead) { const q = at(a, d); if (q && clear(...q)) return q; }
       for (const [a, d] of ahead) { const q = at(a, d); if (q) return q; }
@@ -23022,7 +23222,7 @@ const handle = async (m, post) => {
     // Failing that (Logan has no water), dry ground about 650 m off. Its door faces back the way you came. (Further from where she knocks you
     // out of the sky: it was 40 m past the far shore, and Logan's 400 m off. Ash, 27 November 2026: "Move the bunker further away from where
     // I get hit out of the sky")
-    const bunkerSpot = () => { const R = rex, wet = (x, z) => ground(x, z) - m.groundAt(x, z) > 0.5, ok = (x, z) => ![[0, 0], [9, 0], [-9, 0], [0, 9], [0, -9]].some(([a, b]) => solid(x + a, z + b) || wet(x + a, z + b) || !inside(x + a, z + b));
+    const bunkerSpot = () => { const R = rex, wet = (x, z) => ground(x, z) - ground.bed(x, z) > 0.5, ok = (x, z) => ![[0, 0], [9, 0], [-9, 0], [0, 9], [0, -9]].some(([a, b]) => solid(x + a, z + b) || wet(x + a, z + b) || !inside(x + a, z + b));
       let best = null;
       for (let i = 0; i < 36; i++) { const a = i / 36 * Math.PI * 2, sx = Math.sin(a), sz = Math.cos(a); let water = 0, land = 0;
         for (let d = 10; d < 3000; d += 10) { const x = R.x + sx * d, z = R.z + sz * d; if (!inside(x, z)) break; if (wet(x, z)) { water += 10; land = 0; continue; }
@@ -23138,7 +23338,7 @@ const handle = async (m, post) => {
     const mumUp = (x, z, h, host) => { if (!mumMake()) return false; const B = rex; rexCorpse = { x: B.x, z: B.z, h: B.h, s: B.s, pose: { ...B.pose }, t: 0, glow: 0, st: "dead", corpse: true };
       const n = rexRole === "host" ? rexGuests.size : 0, keep = { n: B.n, hostName: B.hostName };
       Object.assign(B, rexNew(x, z, h, host, true), keep); B.maxHp = B.hp = B.base * (1 + n); /* (her full health times how many are in the fight: Ash, 27 November 2026, "Increase both Dino's hps by a factor of the number of players in the lobby") */ B.me = rexOut ? 0 : 100; enrage();
-      gloom(false); snd.voiceLoad?.(rexVoiceSet, ["choppa", "back"]); rexSay("MUMMA T-REX!", 2800, true); snd.roar?.(1); rexCam.shake = Math.max(rexCam.shake, 1.4); hudK = "";
+      gloom(false); snd.voiceLoad?.(rexVoiceSet, ["choppa", "back", "roll"]); rexSay("MUMMA T-REX!", 2800, true); snd.roar?.(1); rexCam.shake = Math.max(rexCam.shake, 1.4); hudK = "";
        return true; };
     // her wings, at 30% health: out with a roar, and she's angry again (Ash, 27 November 2026: "At 30% hp give her wings and start flying
     // after the chopper")
@@ -23163,9 +23363,9 @@ const handle = async (m, post) => {
     const rescueClear = () => { for (const G of rescue) { if (car?.own === G) continue; try { G.parts.remove(); } catch {} const i = owns.indexOf(G); if (i >= 0) owns.splice(i, 1); } rescue.length = 0; };
     // the hotrod back where it started, once the fight's over (if you're in it, when you get out): Ash, 27 November 2026, "At the end of
     // the fight move the hotrod back to its starting location"
-    const ownHome = G => { if (!G?.home0) return; if (car?.own === G) { G.goHome = true; return; } G.goHome = false; [G.x, G.z, G.h] = G.home0; const [y, p, r] = lie(G, 1.3, 0.8); G.y = y; G.p = p; G.r = r; if (G.spin) G.steer = 0; showOwn(G); };
+    const ownHome = G => { if (!G?.home0) return; if (car?.own === G) { G.goHome = true; return; } G.goHome = false; [G.x, G.z, G.h] = G.home0; const [y, p, r] = G.bus ? lie(G,3.6,1.1) : lie(G,1.3,.8); G.y = y; G.p = p; G.r = r; if (G.spin) G.steer = 0; showOwn(G); };
     const rexMumma = () => { const B = rex, tg = rexTarget(), from = tg ? Math.atan2(B.x - tg.x, B.z - tg.z) : B.h + Math.PI; let spot = null;
-      for (const da of [0, 0.5, -0.5, 1, -1, Math.PI]) for (const d of [45, 35, 60]) { if (spot) break; const x = B.x + Math.sin(from + da) * d, z = B.z + Math.cos(from + da) * d; if (inside(x, z) && ground(x, z) - m.groundAt(x, z) < 0.5) spot = [x, z]; }
+      for (const da of [0, 0.5, -0.5, 1, -1, Math.PI]) for (const d of [45, 35, 60]) { if (spot) break; const x = B.x + Math.sin(from + da) * d, z = B.z + Math.cos(from + da) * d; if (inside(x, z) && ground(x, z) - ground.bed(x, z) < 0.5) spot = [x, z]; }
       spot ||= [B.x, B.z]; if (!mumUp(spot[0], spot[1], tg ? Math.atan2(tg.x - spot[0], tg.z - spot[1]) : B.h, true)) { rex.live = false; rexEnter("dead"); rexWon(); return; } rexEnter("rise"); };
     // Mumma at no health: the bunker comes up across the water
     // health packs: dropped round the town during a fight, 220 to 480 m from where you are when each is dropped, at least 150 m apart: the
@@ -23476,7 +23676,7 @@ const handle = async (m, post) => {
       const rr = t < 2.6 ? 10 + 500 * up(t / 2.6) : 0; nukeP.setMatrix(5, rr > 0 ? RT.compose(RV.set(x, y + 0.3, z), Q.identity(), V.set(rr, 1 + rr * 0.05, rr)).elements.slice() : NONE.slice());
       if (t > 14) { hideAllOf(nukeP, 6); R.nuke = "done"; } };
     const rexWrap = a => Math.atan2(Math.sin(a), Math.cos(a));
-    const wetAt = (x, z) => ground(x, z) - m.groundAt(x, z) > 0.5, up0 = q => q.y != null ? q.y - m.groundAt(q.x, q.z) : 0;
+    const wetAt = (x, z) => ground(x, z) - ground.bed(x, z) > 0.5, up0 = q => q.y != null ? q.y - m.groundAt(q.x, q.z) : 0;
     // water within 90 m ahead of a flier, or under it
     const waterAhead = (q, far = 90) => { const h = q.dir ?? q.h ?? 0; for (let k = 0; k <= far; k += 15) if (wetAt(q.x + Math.sin(h) * k, q.z + Math.cos(h) * k)) return true; return false; };
     // (knocked out of the sky: flying to the bunker with the water close ahead (or under you), and not once you're at the bunker)
@@ -23507,7 +23707,7 @@ const handle = async (m, post) => {
     // front of where you are by then and turns to chase you. Ash, 27 November 2026: "She needs to jump further forward predicting where
     // I'll be and go way infront then chase me")
     const leapSpot = (tg, far = 1) => { const dir = tg.dir ?? tg.h, ahead = (rex?.mum ? 48 + Math.max(12, tg.v || 22) * 3 : 40 + Math.max(12, tg.v || 22) * 2.6) * far;
-      for (const k of [1, 0.75, 1.3, 0.5]) { const x = tg.x + Math.sin(dir) * ahead * k, z = tg.z + Math.cos(dir) * ahead * k; if (inside(x, z) && ground(x, z) - m.groundAt(x, z) < 0.5) return [x, z]; } return null; };
+      for (const k of [1, 0.75, 1.3, 0.5]) { const x = tg.x + Math.sin(dir) * ahead * k, z = tg.z + Math.cos(dir) * ahead * k; if (inside(x, z) && ground(x, z) - ground.bed(x, z) < 0.5) return [x, z]; } return null; };
     // a leap to a spot, taking secs in the air (a long one, from far off, higher)
     const leapTo = (L, secs, far = 0) => { const R = rex; R.from = [R.x, R.z]; R.land = L; R.leapT = secs; R.leapFar = far; rexEnter("leap"); };
     // where you'll be in t seconds, going the way you are
@@ -23785,7 +23985,7 @@ const handle = async (m, post) => {
         // the fireball: she rears back, glowing and roaring, for 1.6 s ("FIREBALL! ROLL!"), then spits it at your helicopter (fbTick flies it)
         case "fireball": { const W = 1.6; stand(); look(); if (host && tg) turn(Math.atan2(dx, dz), 2.2);
           if (R.t < W) { to({ pitch: -0.3, neck: -0.75, jaw: 0.35 + 0.5 * R.t / W }, 6); R.glow = Math.max(R.glow, 0.5 + 0.5 * Math.sin(R.t * 18));
-            if (!R.roared) { R.roared = true; snd.roar?.(0.9); if (rexRole && !rexGhost && heliFight()) rexSay("FIREBALL! ROLL!", 1700, true); } }
+            if (!R.roared) { R.roared = true; snd.roar?.(0.9); if (rexRole && !rexGhost && heliFight()) { rexSay("FIREBALL! ROLL!", 1700, true); setTimeout(() => { if (rex === R && R.st === "fireball") snd.voice?.(rexVoiceSet, "roll"); }, 450); } } }  // ("Do a barrel roll!" over the radio, in an original voice: Ash, 28 November 2026, "I want a voice line as she fireballs ... that says do a barrel role")
           else { to({ pitch: 0.1, neck: -0.25, jaw: R.t < W + 0.35 ? 1.2 : 0.3 }, 10); if (!R.slam) { R.slam = true; fbGo(R); } }
           if (R.t > W + 0.9) { R.cd.fireball = 10 + Math.random() * 5; go("walk"); } break; }
         // flying (her wings out): up to a helicopter's height and after it, snapping and swiping when she's near; down again when it lands
@@ -23903,7 +24103,7 @@ const handle = async (m, post) => {
         if (veh === "ride") { if (!already) { rex = rexNew(x, z, H.raw[5], false, mum); rexNet(H.raw); rexHudMake(); hudK = ""; } rexSend(["join", fid, me0], H.id); rexAway = false; rexSay(`RIDING WITH ${String(hn || "THEM").toUpperCase().slice(0, 16)}!`, 2000); rexLoop(); return; }
         if (!already) { rexRole = ""; rexFid = ""; rexHost = null; } }
       let spot = null; for (const da of [0.5, -0.5, 1, -1, 0, 1.6, -1.6, Math.PI]) for (const r of mum ? [80, 100, 60] : [40, 55, 30]) { const a = base + da, sx = x + Math.sin(a) * r, sz = z + Math.cos(a) * r, h = Math.atan2(x - sx, z - sz);
-        if (!spot && inside(sx, sz) && ground(sx, sz) - m.groundAt(sx, sz) < 0.35 && fits(CAR, sx, sz, h)) spot = [sx, sz, h]; }
+        if (!spot && inside(sx, sz) && ground(sx, sz) - ground.bed(sx, sz) < 0.35 && fits(CAR, sx, sz, h)) spot = [sx, sz, h]; }
       if (!spot || !rexMake() || (mum && !mumMake())) { toast("Couldn't find a car near the T-rex. Try again in a moment.", 3000, true); return; }
       rexRole = "guest"; rexFid = fid; rexHost = H.id; rexOut = false; rexHeard = rexMs();
       if (!T.toStart?.(spot[0], spot[1], spot[2]) || veh !== "car") { if (!already) { rexRole = ""; rexFid = ""; rexHost = null; } toast("Couldn't find a car near the T-rex. Try again in a moment.", 3000, true); return; }
@@ -23940,7 +24140,7 @@ const handle = async (m, post) => {
     // a car of your own, beside or behind theirs and facing the same way
     const lobCar = id => { const q = (T.peers?.list?.() || []).find(v => v.id === id); if (!q || q.x == null) return false; const h = q.h || 0, rx = Math.cos(h), rz = -Math.sin(h), fx = Math.sin(h), fz = Math.cos(h);
       for (const [a, b] of [[-4.5, -1], [4.5, -1], [-4.5, -8], [4.5, -8], [0, -10], [-9, 2], [9, 2], [0, -17], [-9, -12], [9, -12]]) { const x = q.x + rx * a + fx * b, z = q.z + rz * a + fz * b;
-        if (inside(x, z) && ground(x, z) - m.groundAt(x, z) < 0.35 && fits(CAR, x, z, h)) { if (T.toStart?.(x, z, h) && veh === "car") return true; } } return false; };
+        if (inside(x, z) && ground(x, z) - ground.bed(x, z) < 0.35 && fits(CAR, x, z, h)) { if (T.toStart?.(x, z, h) && veh === "car") return true; } } return false; };
     // a friend's copy, told what the host's is doing
     const rexNet = raw => { const [, , hn, x, z, h, st, t, hp, mx, ph, v, lock, spin, n, mum, bx, bz, bh, nt, live, lost, all, jh, rg, wg, lt, lx, lz, ha, chp, cn] = raw; rexHeard = rexMs(); const R = rex; if (!R) return;
       if (mum && !R.mum) { if (!mumUp(+x || 0, +z || 0, +h || 0, false)) return; }  // (the T-rex is down, and here's Mumma)
@@ -24056,6 +24256,43 @@ const handle = async (m, post) => {
       if (on && car) M.compose(V.set(car.x, car.y, car.z), Q.setFromEuler(E.set(-car.p, car.h, car.r, "YXZ")), BEAT.set(beat * (car.bus ? 2.1 : 1), 1, beat * (car.bus ? 2.1 : 1)));
       for (let i = 0; i <= RING; i++) { const show = !!on && !!car && (i === 0 || i <= full); if (show || lit[i]) { ring.setMatrix(i, show ? M.elements.slice() : NONE); lit[i] = show; } }
       const pc = Math.round(charge * 100) + "%"; if (boostBtn.style.getPropertyValue("--charge") !== pc) boostBtn.style.setProperty("--charge", pc); };
+    const returns = place === "inv" && m.resetCar ? invVehicleReturns(restoreAbandoned) : null;
+    function restoreAbandoned(previous) {
+      const {own,id} = previous, grid = T.invStatic;
+      if (!grid?.wholeTown || own?.takenBy || (own ? car?.own === own : car?.id?.[0] === id[0] && car.id[1] === id[1])) return false;
+      const source = own || m.parkedCarBlocker(...id);
+      if (!source) {
+        // A car masked after it was parked still owns a driven slot. Its hidden home can safely reclaim it.
+        if (id && m.resetCar(...id)) {
+          const bay = grid.originalBay(id); if (bay) grid.park(id,bay.x,bay.z,bay.h);
+        }
+        return true;
+      }
+      const camera = m.getCamera(), peers = T.peers?.list?.() || [];
+      const watched = (x,z) => {
+        const dx = x-camera.x, dz = z-camera.z, dist = Math.hypot(dx,dz);
+        if (dist < 100 || dist < 450 && dx*Math.sin(camera.yaw)+dz*Math.cos(camera.yaw) < .25*dist) return true;
+        return peers.some(p => Math.hypot(p.x-x,p.z-z) < 150);
+      };
+      if (watched(source.x,source.z)) return false;
+      if (own?.trafficCar) {
+        if (!T.traffic?.rejoin(own)) return false;
+        grid.own(own,true);
+        const i = owns.indexOf(own); if (i >= 0) owns.splice(i,1);
+        return true;
+      }
+      const bay = own?.home0 ? {x:own.home0[0], z:own.home0[1], h:own.home0[2], w:own.bus ? 1.27 : .98, l:own.bus ? 5.55 : 2.22}
+        : id ? grid.originalBay(id) : null;
+      if (!bay) return true;
+      if (watched(bay.x,bay.z) || !grid.bayFree(bay,id,own) || T.traffic?.occupied(own?.bus ? "bus" : "car",bay.x,bay.z,bay.h,ground(bay.x,bay.z))) return false;
+      if (car && Math.hypot(car.x-bay.x,car.z-bay.z) < bay.l+(car.bus ? 5.55 : 2.22)) return false;
+      if (own) ownHome(own);
+      else {
+        if (!m.resetCar(...id)) return false;
+        grid.park(id,bay.x,bay.z,bay.h);
+      }
+      return true;
+    }
     const leave = (step, door) => { if (!veh) return; if (auto) autoEnd(); if (car?.boat) { car.boat = false; boatDraw(false); } mySpin?.hide(); mySig?.remove(); mySig = null; skyNavShow(null); const was = veh; if (was === "possum" && pos?.cling) { try { T.peers?.ride?.(pos.cling.id, false); } catch {} pos.cling = null; }  // (it stayed stuck to the driver: Ash, 18 November 2026)
       // (the comment above once ran on over the rest of this line, so leaving never stopped the engine, the rockets or the sparks: Ash, 19 November
       // 2026, "when i use jump to often the sound of the car or something is still playing")
@@ -24083,7 +24320,10 @@ const handle = async (m, post) => {
         P.v = 0; P.spin = 0; const [y, p, r] = lie(P, 2, 1.2); P.y = y; P.p = p; P.r = r;
         if (step) { F.pos.x = P.x + Math.cos(P.h) * 1.9; F.pos.z = P.z - Math.sin(P.h) * 1.9; F.yaw = P.h + Math.PI; F.pitch = -0.04; }  // out of the left door
         plane = null; showPlane(P); }
+      if (was === "car") selectCabin(null);
       if (was === "car" && car.id) T.invStatic?.park(car.id,car.x,car.z,car.h,car.y,car.p,car.r);
+      if (was === "car" && car.own) T.invStatic?.own(car.own, !!car.own.takenBy || !!car.own.rescue);
+      if (was === "car" && !car.own?.goHome) returns?.leave(car);
       if (was === "car" && car.own?.goHome) { const G = car.own; car = null; ownHome(G); }
       veh = null; car = null; plane = null; T.deckY = null; window.anFast = false; upShow(null); upLook = 0; showKeys(T.walk ? "walk" : null); C.in = false; F.drive = null; F.boost = false; F.hText = ""; F.vert = 0; F.stick.x = F.stick.y = F.lookStick.x = F.lookStick.y = 0; F.keys.clear();
       document.body.classList.remove("bsdrive", "bsplane", "bsheli", "bsdrone", "bspossum", "bsride", "bspowers", "bspow"); powShown = null; pwBtn.hidden = tkBtn.hidden = true; cooBtn.hidden = true; boostBtn.hidden = true; boostBtn.textContent = "Boost"; boostBtn.classList.remove("bsmega"); handBtn.hidden = true; flipBtn.hidden = true; F.flip = false; plantBtn.hidden = plantMenu.hidden = true; gripBtn.hidden = true; unReset(); handBtn.classList.remove("on"); F.hand = false; at = 0; C.frame(); };
@@ -24177,7 +24417,8 @@ const handle = async (m, post) => {
         car.steer += (str * 0.55 / (1 + (Math.abs(v) / (8 * K)) ** 2 * (R.lockFade ?? 1.2)) - car.steer) * Math.min(1, dt * (R.steerSnap ?? 7));  // less lock the faster it goes
         car.v = v; let bump = 0;
         const trafficTravel = (x, z, h) => T.traffic?.travel?.(car.bus ? "bus" : "car", car.x, car.z, car.h, x, z, h, car.y) ?? 1;
-        const civicStep = (x, z, h) => !T.invStatic || T.invStatic.canDrive(car.x, car.z, car.h, x, z, h, car.bus ? 5.4 : 2.1, car.bus ? 1.2 : 0.8);
+        const [width,length] = townTrafficBodies[car.bus ? "bus" : "car"];
+        const civicStep = (x,z,h) => !T.invStatic || T.invStatic.canDrive(car.x,car.z,car.h,x,z,h,length,width);
         // the end of Autodrive: once it has stopped, round on the spot to face the place (Ash, 23 November 2026: "At the end of autodrive,
         // face my destination even if it means rotating the car in an abnormal way"). A driving key or the stick calls it off
         if (car.face) { if (mine) car.face = null; else if (Math.abs(v) < 0.8) {
@@ -24540,7 +24781,23 @@ const handle = async (m, post) => {
     const nearOwn = () => { let best = null, far = Infinity; for (const G of [...owns.filter(G => !G.takenBy), ...(T.traffic?.cars || []).filter(D => D.x != null && !D.away && !D.bus)]) { const d = Math.hypot(G.x - F.pos.x, G.z - F.pos.z); if (d < far) { far = d; best = G; } } return [best, far]; };
     // (cars from 5.6 m, 30% closer than the 8 they were: Ash, 17 November 2026, "Make get in the car only work from a closer radius. Not too
     // close but about 30% less")
-    const reach = () => { const c0 = parked(F.pos.x, F.pos.z, 5.6), [G, dg] = nearOwn(), c = G && dg < (G.bus ? 15 : 5.6) && (!c0 || dg < c0.distance) ? { own: G, gold: G.gold, distance: dg } : c0, [P, d] = nearPlane(), r = d < 11 && (!c || d - 2 < c.distance) ? { plane: P } : c;
+    let cabinId = null, cabinHandle = null;
+    const selectCabin = (id, handle = null) => {
+      if (cabinHandle !== handle) {
+        cabinHandle?.setCabin?.(false); handle?.setCabin?.(true); cabinHandle = handle;
+      }
+      if (cabinId?.[0] !== id?.[0] || cabinId?.[1] !== id?.[1]) {
+        m.setControlledCar?.(id?.[0] ?? null,id?.[1]); cabinId = id;
+      }
+    };
+    const reach = (inspect = false) => {
+      const native = parked(F.pos.x,F.pos.z,inspect && m.setControlledCar ? 10 : 5.6), c0 = native?.distance <= 5.6 ? native : null;
+      const [G, dg] = nearOwn();
+      if (inspect && m.setControlledCar) {
+        const other = G?.trafficCar && dg <= 10 && dg < (native?.distance ?? Infinity) ? G : null;
+        selectCabin(other ? null : native?.id,other?.parts);
+      }
+      const c = G && dg < (G.bus ? 15 : 5.6) && (!c0 || dg < c0.distance) ? { own: G, gold: G.gold, distance: dg } : c0, [P, d] = nearPlane(), r = d < 11 && (!c || d - 2 < c.distance) ? { plane: P } : c;
       const dp0 = possumMesh && !pos.takenBy ? Math.hypot(pos.x - F.pos.x, pos.z - F.pos.z) : Infinity, r1 = dp0 < 6 && (!r || r.plane || dp0 < r.distance) ? { possum: pos, distance: dp0 } : r;  // the possum, within 6 m
       const dd0 = remoteMesh && !dr.takenBy ? Math.hypot(remoteAt.x - F.pos.x, remoteAt.z - F.pos.z) : Infinity, r0 = dd0 < 3.5 && (!r1 || r1.plane || dd0 < r1.distance) ? { remote: true, distance: dd0 } : null;
       const dq = pigeonMesh && !pg.takenBy ? Math.hypot(pg.x - F.pos.x, pg.z - F.pos.z) : Infinity, r2 = dq < 4.5 && pg.y - ground(pg.x, pg.z) < 8 && (!r1 || r1.plane || dq < r1.distance) ? { pigeon: pg, distance: dq } : r0 || r1;  // the pigeon, within 4.5 m (or the drone's remote, within 3.5 m)
@@ -24916,7 +25173,9 @@ const handle = async (m, post) => {
       else { if (c.own && !owns.includes(c.own)) { const G = T.traffic?.take?.(c.own); if (!G) return true; owns.push(G); c.own = G; }
         car = c.own ? { own: c.own, gold: c.own.gold, bus: c.own.bus, hotrod: !!c.own.hotrod, x: c.own.x, z: c.own.z, h: c.own.h, dir: c.own.h, y: c.own.y, p: c.own.p, r: c.own.r, v: 0, steer: 0 } : { id: c.id, bus: !!c.bus, x: c.x, z: c.z, h: c.heading, dir: c.heading, y: ground(c.x, c.z) + 0.05, p: 0, r: 0, v: 0, steer: 0 };
         if (!car.own && !m.driveCar(c.id[0], c.id[1], car.x, car.y, car.z, car.h, 0, 0)) { car = null; toast("That car won't start. Try another one."); return true; }
-        if (car.id) T.invStatic?.take(car.id);
+        selectCabin(car.id,car.own?.trafficCar ? car.own.parts : null);
+        returns?.take(car);
+        if (car.id) T.invStatic?.take(car.id); else if (car.own) T.invStatic?.own(car.own,true);
         if (pos?.grip) { const r = pos.grip.ref; if (r === c.own || (r && Math.hypot(r.x - car.x, r.z - car.z) < 1.5)) { pos.grip.ref = car; toast("You're holding on to the roof. Off you go!", 2600); } }
         veh = "car"; camYaw = car.h + Math.PI; document.body.classList.add("bsdrive"); showRing(charge < 0.999); if (car.hotrod) rexArm();
         // the GPS button flashes green three times, to say you can use it now (Ash, 25 November 2026: "If I get into a car flash gps green twice
@@ -24937,7 +25196,8 @@ const handle = async (m, post) => {
       if (touch && veh !== "ride" && veh !== "possum" && veh !== "pigeon" && veh !== "drone" && !T.race?.active?.() && !rexRole) toast(veh === "plane" && plane.heli ? "Hold Up to lift off. Left stick: forward to go, sideways to turn. Down lands it." : veh === "plane" ? "Left stick: push up to go, and it lifts off once it's fast. In the air, up climbs, down dives, sideways turns. Faster and Slower set the power." : "Left stick to drive, right stick to look around. Hold Boost for the mega boost.", 5500);
       return true; };
     // the Get in button: there while something is in reach of where you are walking (looked for a few times a second)
-    C.frame = () => { followGrip(); if (veh) return; const now = performance.now(); if (now - at < 300) return; at = now;
+    C.frame = () => { returns?.tick(); followGrip();
+      if (veh) { if (veh !== "car" && (cabinId || cabinHandle)) selectCabin(null); return; } const now = performance.now(); if (now - at < 300) return; at = now;
       if (place === "inv") rememberWalk(now);
       if (pos) { const d = Math.hypot(pos.x - F.pos.x, pos.z - F.pos.z), dh = Math.hypot(PS.x - F.pos.x, PS.z - F.pos.z);
         if (!possumMesh && Math.min(d, dh) < 400) wake(); if (d < 80) { loadRoofs(); loadTrees(); }
@@ -24946,7 +25206,7 @@ const handle = async (m, post) => {
       if (pg) { const d = Math.hypot(pg.x - F.pos.x, pg.z - F.pos.z), dh = Math.hypot(PG.x - F.pos.x, PG.z - F.pos.z); if (!pigeonMesh && Math.min(d, dh) < 400) wakePigeon();
         if (pigeonMesh && pg.x === PG.x && pg.z === PG.z) { const pk = T.flickFeed ? (Math.floor(now / 300) % 2 ? -0.5 : 0) : 0; if (pk !== pg.p) { pg.p = pk; showPigeon(); } }  // pecking at Flick's crumbs
         if ((pg.x !== PG.x || pg.z !== PG.z) && d > 150) pigeonHome(); }  // and the pigeon back to the shops
-      const near = T.walk && !T.tween ? reach() : null; shownRide = near?.ride ? { id: near.ride.id, t: now } : null; const say = near?.ride ? `Ride with ${near.ride.name}` : near?.possum ? "Be the possum" : near?.pigeon ? "Be the pigeon" : near?.remote ? "Fly the drone" : near?.plane ? (near.plane.heli ? (near.plane.gold ? "Get in the golden helicopter" : "Get in the helicopter") : "Get in the plane") : near?.bus?.x != null ? (near.bus.v > 1.5 ? "Bus coming: wait for it to stop" : "Get on the bus") : near?.own?.bus || near?.bus ? "Get in the bus" : near?.gold ? "Get in the golden car" : "Get in the car";
+      const near = T.walk && !T.tween ? reach(true) : null; if ((!T.walk || T.tween) && (cabinId || cabinHandle)) selectCabin(null); shownRide = near?.ride ? { id: near.ride.id, t: now } : null; const say = near?.ride ? `Ride with ${near.ride.name}` : near?.possum ? "Be the possum" : near?.pigeon ? "Be the pigeon" : near?.remote ? "Fly the drone" : near?.plane ? (near.plane.heli ? (near.plane.gold ? "Get in the golden helicopter" : "Get in the helicopter") : "Get in the plane") : near?.bus?.x != null ? (near.bus.v > 1.5 ? "Bus coming: wait for it to stop" : "Get on the bus") : near?.own?.bus || near?.bus ? "Get in the bus" : near?.gold ? "Get in the golden car" : "Get in the car";
       if (btn.hidden !== !near) btn.hidden = !near; if (near && btn.textContent !== say) btn.textContent = say; };
     btn.onclick = () => { C.enter(); btn.blur(); };
     const hold = on => e => { F.boost = on && !!veh; boostBtn.classList.toggle("on", F.boost); e.preventDefault(); };
@@ -24996,6 +25256,7 @@ const handle = async (m, post) => {
       if (T.traffic?.occupied) {
         if (T.traffic.occupied(length ? (car?.bus ? "bus" : "car") : "walk", x, z, h, ground(x, z))) return false;
       } else if (T.traffic?.cars?.some(overlapsCar)) return false;
+      if (T.invStatic?.wholeTown) return !(car?.id && !length && overlapsCar(car));  // the index excludes the active native car
       const reach = radius + 2.6;  // covers the longest native ute, in any orientation
       const near = parked(x, z, reach);
       if (!near) return true;
@@ -25013,18 +25274,19 @@ const handle = async (m, post) => {
     const dryInside = (x, z) => {
       if (!inside(x, z)) return false;
       const surface = ground(x, z), water = m.waterAt ? m.waterAt(x, z) : m.waterLevel();
-      return Number.isFinite(surface) && !(water >= surface && water - m.groundAt(x, z) >= 0.35);
+      return Number.isFinite(surface) && !(water >= surface && water - (ground.bed?.(x, z) ?? m.groundAt(x, z)) >= 0.35);
     };
     const walkRadius = 0.35;
+    const groundSolid = (x,z) => T.invStatic?.wholeTown ? T.invStatic.depth(x,z,0,0,walkRadius) > 0 : solid(x,z) || T.invStatic?.depth(x,z,0,0,walkRadius) > 0;
     const walkClear = (x, z) => {
       for (const [dx, dz] of [[0, 0], [walkRadius, 0], [-walkRadius, 0], [0, walkRadius], [0, -walkRadius]]) {
         const px = x + dx, pz = z + dz;
-        if (!dryInside(px, pz) || solid(px, pz)) return false;
+        if (!dryInside(px, pz) || (!T.invStatic?.wholeTown && solid(px, pz))) return false;
       }
       return vacant(x, z, 0, 0, walkRadius);
     };
     const trail = [];
-    let walkPromptUntil = 0;
+    let walkPromptUntil = 0, walkStall = null, walkPromptAt = null;
     const hideWalkPrompt = () => {
       walkPromptUntil = 0;
       if (unBtn.classList.contains("walk")) { unBtn.hidden = true; unBtn.classList.remove("walk"); }
@@ -25032,6 +25294,7 @@ const handle = async (m, post) => {
     const rememberWalk = now => {
       if (!C.canUnstickWalk()) { trail.length = 0; hideWalkPrompt(); return; }
       if (now > walkPromptUntil && walkPromptUntil) hideWalkPrompt();
+      if (walkPromptUntil && walkPromptAt && Math.hypot(F.pos.x - walkPromptAt.x, F.pos.z - walkPromptAt.z) > 3) hideWalkPrompt();  // (walked off: not stuck any more)
       const { x, z } = F.pos, previous = trail[trail.length - 1];
       if (previous) {
         const d = Math.hypot(x - previous.x, z - previous.z);
@@ -25063,16 +25326,27 @@ const handle = async (m, post) => {
       if (spot) { standClear(spot); toast("You're back on clear ground.", 2000); }
       else toast("Couldn't find clear ground nearby.", 2500);
     };
-    C.walkStuck = () => {
-      if (!C.canUnstickWalk()) return false;
-      const { x, z } = F.pos;
-      if (!inside(x, z) || solid(x, z) || T.invStatic?.depth(x, z, 0, 0, walkRadius) > 0) {
-        const p = findWalkSpot(x, z, F.yaw, false, true);
-        if (p) { standClear(p); return true; }
-      }
+    const showWalkPrompt = (x, z) => {
+      walkStall = null; walkPromptAt = { x, z };
       walkPromptUntil = performance.now() + 10000;
       unBtn.classList.add("walk"); unBtn.hidden = false;
       return true;
+    };
+    C.walkStuck = () => {
+      if (!C.canUnstickWalk()) return false;
+      const { x, z } = F.pos;
+      if (!inside(x, z) || groundSolid(x, z)) {
+        const p = findWalkSpot(x, z, F.yaw, false, true);
+        if (p) { standClear(p); return true; }
+        return showWalkPrompt(x, z);  // (inside something with no way out: the button straight away)
+      }
+      // Not the button the moment you stall: bsUnstick calls this every 0.8 s you're pushing and getting nowhere, so let its own
+      // little side-step have a go first, and only offer Unstick after 4 s stuck in the one spot (Ash, 28 November 2026: "unstick
+      // seems to be showing too much")
+      const now = performance.now(), S = walkStall;
+      if (!S || now - S.last > 2000 || Math.hypot(x - S.x, z - S.z) > 1.5) { walkStall = { t: now, last: now, x, z }; return false; }
+      S.last = now; if (now - S.t < 4000) return false;
+      return showWalkPrompt(x, z);
     };
     // (above Spuds in a T-rex fight: Spuds is the one above Boost then, and Unstick sat right over it. Ash, 27 November 2026, "Move
     // things around to fit")
@@ -25181,7 +25455,7 @@ const handle = async (m, post) => {
       peerGold = null;
       peerRk = null; };
     let peerShown = false;
-    C.pose = () => veh === "ride" ? null : veh === "possum" ? { k: "possum", x: pos.x, y: pos.y, z: pos.z, h: pos.h, p: pos.p, r: 0 } : veh === "drone" ? { k: "drone", x: dr.x, y: dr.y, z: dr.z, h: dr.h, p: dr.p, r: dr.r } : veh === "pigeon" ? { k: pg.gold ? "goldpigeon" : "pigeon", x: pg.x, y: pg.y, z: pg.z, h: pg.h, p: pg.p, r: pg.r } : veh === "car" ? { k: car.bus ? "bus" : car.gold ? "gold" : car.hotrod ? "hotrod" : car.own?.carHex ? "car~" + (car.own.carKind | 0) + car.own.carHex.slice(1) : car.own ? "car~o" : "car~m" + (T.cfg?.place === "inv" ? "u" : ""), x: car.x, y: car.y, z: car.z, h: car.h + (car.spinY || 0), p: car.p, r: car.r + (car.roll || 0) }
+    C.pose = () => veh === "ride" ? null : veh === "possum" ? { k: "possum", x: pos.x, y: pos.y, z: pos.z, h: pos.h, p: pos.p, r: 0 } : veh === "drone" ? { k: "drone", x: dr.x, y: dr.y, z: dr.z, h: dr.h, p: dr.p, r: dr.r } : veh === "pigeon" ? { k: pg.gold ? "goldpigeon" : "pigeon", x: pg.x, y: pg.y, z: pg.z, h: pg.h, p: pg.p, r: pg.r } : veh === "car" ? { k: car.bus ? "bus" : car.gold ? "gold" : car.hotrod ? "hotrod" : car.own?.carHex ? "car~" + (car.own.carKind | 0) + car.own.carHex.slice(1) : car.own ? "car~o" : "car~m" + (T.cfg?.place === "inv" && !m.roadSurfaceAt ? "u" : ""), x: car.x, y: car.y, z: car.z, h: car.h + (car.spinY || 0), p: car.p, r: car.r + (car.roll || 0) }
       : veh ? { k: plane.heli ? (plane.gold ? "goldheli" : "heli") : plane.gold ? "goldplane" : "plane", x: plane.x, y: plane.y, z: plane.z, h: plane.h, p: plane.p, r: plane.r + (plane.roll || 0) } : null;
     C.where = () => veh === "ride" ? { kind: "ride", with: ride.name } : veh === "pigeon" ? { kind: "pigeon", x: pg.x, y: pg.y, z: pg.z, heading: pg.h, speed: pg.v } /* (it fell through to the plane's, and threw) */ : veh === "drone" ? { kind: "drone", x: dr.x, y: dr.y, z: dr.z, heading: dr.h, speed: dr.v } /* (so did the drone) */ : veh === "possum" ? { kind: "possum", x: pos.x, y: pos.y, z: pos.z, heading: pos.h, speed: pos.v, mode: pos.mode, up: pos.y - ground(pos.x, pos.z) } : veh === "car" ? { kind: "car", gold: !!car.gold, bus: !!car.bus, hotrod: !!car.hotrod, x: car.x, z: car.z, heading: car.h, dir: car.dir, speed: car.v, charge } : veh ? { kind: "plane", heli: !!plane.heli, x: plane.x, y: plane.y, z: plane.z, heading: plane.h, pitch: plane.p, speed: plane.v, air: plane.air } : null;  // for checking
     C.reread = () => { Object.assign(R, townPerkRide(rideSettings())); if (BS.raceRide && C.spdK) R.carAccel /= C.spdK; };
