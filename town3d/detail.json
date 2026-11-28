@@ -63,6 +63,14 @@
       "size": 105.60875977,
       "file": "detail-bennison-way-vacant-lot-v1.webp",
       "lo": "detail-bennison-way-vacant-lot-v1-lo.webp"
+    },
+    {
+      "name": "detail-mangrove-drive-vacant-lot-v1",
+      "x": -2252.986875,
+      "z": -555.29503409,
+      "size": 105.60875977,
+      "file": "detail-mangrove-drive-vacant-lot-v1.webp",
+      "lo": "detail-mangrove-drive-vacant-lot-v1-lo.webp"
     }
   ]
 }
