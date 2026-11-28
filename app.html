@@ -9642,7 +9642,7 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=48", assets: TOWN3D, place: "inv", pre: ["town.json?v=56b7c1bf", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=50", assets: TOWN3D, place: "inv", pre: ["town.json?v=56b7c1bf", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
     moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=80", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
@@ -10134,7 +10134,7 @@ const handle = async (m, post) => {
     townModelLoad(cfg).then(lib => {
       if (T.dead) return;
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
-        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cbc57199" } : cfg.assets;
+        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cd69429f" } : cfg.assets;
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
         { onProgress: (f, label) => { if (!T.on && !T.dead) tip.textContent = `Loading the town model: ${String(label).toLowerCase()}…`; },
           onFloodLevel: v => T.onFlood?.(v),
@@ -17775,7 +17775,8 @@ const handle = async (m, post) => {
     m.addParts([{ positions, color: new THREE.Color(0x807364).toArray(), roughness: 1, matrix: new THREE.Matrix4().elements }]);
   }
   function padGround(P, x, z, g) { const dx = x - P.x, dz = z - P.z, u = dx * P.c - dz * P.s, v = dx * P.s + dz * P.c;
-    return P.surfaceAt(u, v, g); }
+    if (P.surfaceAt) return P.surfaceAt(u, v, g);  // (Norman Road's lawn: #390)
+    return Math.abs(u) <= P.hw && Math.abs(v) <= P.hd ? Math.max(g, P.top + (P.gu || 0) * u + (P.gv || 0) * v) : g; }  // (a flat pad: Surf Parade's beach access, #407)
   // The weather's town centre, cut out of its merged shapes and laid over the whole-town model's ground, which slopes where
   // the weather's is flat: every shape goes across with its heights measured from the ground, and the model lays it down so
   // that it follows the ground beneath it. A building comes whole or not at all (by its outline on the map); so does each
@@ -17887,7 +17888,6 @@ const handle = async (m, post) => {
     const inPilot = (x,z) => townInBlock((x-o0[0])/kx, (z-o0[1])/kz);
     return { at, place, inPilot, parts: parts.length, corners: parts.reduce((n, p) => n + p.positions.length / 3, 0) };
   }
-  // BEGIN GENERATED src/explore/collision.mjs
   // The westbound wayfinder in the south verge, before the Bear Street turn.
   // Estimated from maxim752 Mapillary frames 588735650795644 and 584548554484819 (18 January 2025).
   function invIndustrialEstateSign(T, model, THREE) {
@@ -17936,6 +17936,7 @@ const handle = async (m, post) => {
     }
   }
 
+  // BEGIN GENERATED src/explore/collision.mjs
   // Ground-level collision in model metres. Authored guest shapes use their local transform.
   function invCivicCollision(at, inPilot) {
     const dimensions = new Map(), owned = new WeakMap(), identity = (x,z) => [x,z];
@@ -19817,7 +19818,7 @@ const handle = async (m, post) => {
               P.cars.some(D => D !== C && D.x != null && Math.hypot(D.x-sx,D.z-sz) < 12) ||
               (hiddenOnly && (!unobserved(sx,sz) || T.peers?.list?.().some(p => Math.hypot(sx-p.x,sz-p.z) < 100)))) continue;
         }
-        Object.assign(C, { r, i:a, d, s:0, v:0, y:null, p:null, rl:null, ln:null, still:0, blocked:0, x:sx, z:sz, h:null, dodge:0, dodgeT:0 });
+        Object.assign(C, { r, i:a, d, s:0, v:0, y:null, p:null, rl:null, ln:null, still:0, blocked:0, x:sx, z:sz, h:null, dodge:0, dodgeT:0, loop:null });
         C.turnPlan = null; C.turnUntil = 0; showSignal(C, 0); return true; }
       return false; };
     const seg = C => { const r = C.r, a = C.i, b = C.i + C.d; return [r.p[a * 2], r.p[a * 2 + 1], r.p[b * 2], r.p[b * 2 + 1]]; };
@@ -19950,6 +19951,11 @@ const handle = async (m, post) => {
           const free = o => [2.5, 5, 7.5].every(a => !G.depth(cx0 + hx * a + sx * (o - now0), cz0 + hz * a + sz * (o - now0), C.h, l, w));  // (a lane offset o, a few metres on)
           if (!free(C.r.lane + (C.dodge || 0))) { for (const k of [0, -0.5, -0.75, -1, -1.25, -1.5, -1.75, -2, -2.25, -2.5, 0.35, 0.7]) if (free(C.r.lane + k)) { C.dodge = k; C.dodgeT = 1.5; break; } }
           else if (C.dodge && (C.dodgeT = (C.dodgeT || 0) - 0.2) <= 0 && free(C.r.lane)) C.dodge = 0; }
+        // Going round in a little circle (a few short pieces of street in the town centre that only lead back to each other, or every
+        // way out blocked): when it has got less than 25 m in 30 s, it starts again somewhere else, once it's out of sight (behind you, or a long way off)
+        if (C.x != null && !C.rider) { const K = C.loop || (C.loop = { t: 0, x: C.x, z: C.z }); K.t += dt;
+          if (K.t > 30) { const moved = Math.hypot(C.x - K.x, C.z - K.z); C.loop = { t: 0, x: C.x, z: C.z }; const dx = C.x - F.pos.x, dz = C.z - F.pos.z, d = Math.hypot(dx, dz), behind = dx * Math.sin(F.yaw) + dz * Math.cos(F.yaw) > 0.2 * d;
+            if (moved < 25 && (d > 150 || (d > 30 && behind) || unobserved(C.x, C.z))) { start(C, true); return; } } }
         const laneTo = C.r.lane + (C.dodge || 0); if (C.dodge) C.v = Math.min(C.v, 7);
         C.ln = C.ln == null ? C.r.lane : C.ln + bsClamp(laneTo - C.ln, -1.5 * dt, 1.5 * dt);  // (its place across the road: over to the next street's lane a bit at a time, not in one jump at the corner)
         const t = Math.min(1, C.s / L), lx = Math.cos(C.h), lz = -Math.sin(C.h)  /* (on the left of the road, as in Australia: Ash, 16 November 2026, "The cars should drive on the left side of the road"; then "the traffic is often on the wrong side of the roads ... all cars should drive on the left, and buses etc.": heading h runs (sin h, cos h) with z to the south, so the left is (cos h, -sin h); it had the right) */, x = ax + (bx - ax) * t + lx * C.ln, z = az + (bz - az) * t + lz * C.ln;
@@ -25879,7 +25885,22 @@ const handle = async (m, post) => {
         if (d < RIDE_REACH[q.k] && q.y - ground(q.x, q.z) < 3 && (!best || d < best.distance)) best = { ride: q, distance: d }; }
       const pick = best && (!r2 || best.distance < (r2.distance ?? 11) + 4) ? best : r2;
       const B = T.traffic?.bus, db = B && B.x != null && !B.away ? Math.hypot(B.x - F.pos.x, B.z - F.pos.z) : Infinity;  // the bus that drives itself, within 9 m
-      return db < 9 && (!pick || db < (pick.distance ?? 11) + 3) ? { bus: B, distance: db } : pick; };  // (someone in it wins over an empty one beside it, such as your own copy of the golden car they drove off in)
+      const res = db < 9 && (!pick || db < (pick.distance ?? 11) + 3) ? { bus: B, distance: db } : pick;  // (someone in it wins over an empty one beside it, such as your own copy of the golden car they drove off in)
+      if (inspect) return res;
+      // Of the vehicles in reach, the one you're looking at, not just the nearest (Ash, 28 November 2026: "When getting into a vehicle
+      // try to prefer the one I am looking at"): anything within 40 degrees of straight ahead, the most nearly straight ahead first.
+      // A parked car is found by looking a few metres along your view, as the nearest one may be the car beside you.
+      const fx = -Math.sin(F.yaw), fz = -Math.cos(F.yaw), off = (x, z) => { const dx = x - F.pos.x, dz = z - F.pos.z, L = Math.hypot(dx, dz) || 1; return Math.acos(bsClamp((dx * fx + dz * fz) / L, -1, 1)); };
+      const seen = [];
+      for (const k of [2, 3.5, 5]) { const q = parked(F.pos.x + fx * k, F.pos.z + fz * k, 2.4); const d = q ? Math.hypot(q.x - F.pos.x, q.z - F.pos.z) : Infinity;
+        if (d <= 5.6) { seen.push({ r: { ...q, distance: d }, x: q.x, z: q.z }); break; } }
+      if (G && dg < (G.bus ? 15 : 5.6)) seen.push({ r: { own: G, gold: G.gold, distance: dg }, x: G.x, z: G.z });
+      if (P && d < 11) seen.push({ r: { plane: P }, x: P.x, z: P.z });
+      for (const q of T.peers?.list?.() || []) { if (!RIDE_REACH[q.k]) continue; const dq2 = Math.hypot(q.x - F.pos.x, q.z - F.pos.z);
+        if (dq2 < RIDE_REACH[q.k] && q.y - ground(q.x, q.z) < 3) seen.push({ r: { ride: q, distance: dq2 }, x: q.x, z: q.z }); }
+      if (db < 9) seen.push({ r: { bus: B, distance: db }, x: B.x, z: B.z });
+      let look = null, la = 0.7; for (const e of seen) { const a = off(e.x, e.z); if (a < la) { la = a; look = e.r; } }
+      return look || res; };
     const RIDE_REACH = { car: 5.6, gold: 5.6, hotrod: 5.6, bus: 15, plane: 11, goldplane: 11, heli: 11, goldheli: 11, possum: 6 }, RIDE_BACK = { car: 7, gold: 7, hotrod: 7.5, bus: 13, plane: 15, goldplane: 15, heli: 14, goldheli: 14, possum: 3.6 },
       RIDE_UP = { car: 1.5, gold: 1.5, hotrod: 1.8, bus: 3.4, plane: 2.4, goldplane: 2.4, heli: 2.4, goldheli: 2.4, possum: 0.9 };
     let ride = null, shownRide = null;  // the player you're riding with: { id, name, k, at: [x, y, z, t] }; who the button last offered
