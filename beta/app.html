@@ -18853,7 +18853,7 @@ const handle = async (m, post) => {
               P.cars.some(D => D !== C && D.x != null && Math.hypot(D.x-sx,D.z-sz) < 12) ||
               (hiddenOnly && (!unobserved(sx,sz) || T.peers?.list?.().some(p => Math.hypot(sx-p.x,sz-p.z) < 100)))) continue;
         }
-        Object.assign(C, { r, i:a, d, s:0, v:0, y:null, p:null, rl:null, ln:null, still:0, blocked:0, x:sx, z:sz, h:null });
+        Object.assign(C, { r, i:a, d, s:0, v:0, y:null, p:null, rl:null, ln:null, still:0, blocked:0, x:sx, z:sz, h:null, dodge:0, dodgeT:0 });
         C.turnPlan = null; C.turnUntil = 0; showSignal(C, 0); return true; }
       return false; };
     const seg = C => { const r = C.r, a = C.i, b = C.i + C.d; return [r.p[a * 2], r.p[a * 2 + 1], r.p[b * 2], r.p[b * 2 + 1]]; };
@@ -18977,7 +18977,17 @@ const handle = async (m, post) => {
         let takenTurn = 0;
         for (let k = 0; k < 6 && C.s >= L; k++) { C.s -= L; takenTurn = next(C) || takenTurn; [ax, az, bx, bz] = seg(C); L = Math.hypot(bx - ax, bz - az) || 0.01; }
         const h = Math.atan2(bx - ax, bz - az); C.h = C.h == null ? h : C.h + wrap(h - C.h) * Math.min(1, dt * 5);
-        C.ln = C.ln == null ? C.r.lane : C.ln + bsClamp(C.r.lane - C.ln, -1.5 * dt, 1.5 * dt);  // (its place across the road: over to the next street's lane a bit at a time, not in one jump at the corner)
+        // Round what's poking into its lane (a parked car's nose, a post, a corner), as a driver would: it looks a few metres ahead
+        // five times a second and, if its lane is blocked there, eases over towards the middle of the road (or a little the other way)
+        // till it's past, then back. Before this it stopped dead behind it and sat there while you watched (Ash, 28 November 2026:
+        // "Check Inverloch for dumb car driving": cars stopped for good behind parked cars, a row of posts and a corner)
+        if (T.invStatic?.wholeTown && C.h != null && (C.lookT = (C.lookT || 0) - dt) <= 0) { C.lookT = 0.2;
+          const G = T.invStatic, [w, l] = townTrafficBodies[C.bus ? "bus" : "car"], hx = Math.sin(C.h), hz = Math.cos(C.h), sx = Math.cos(C.h), sz = -Math.sin(C.h), cx0 = C.x ?? 0, cz0 = C.z ?? 0, now0 = C.ln ?? C.r.lane;
+          const free = o => [2.5, 5, 7.5].every(a => !G.depth(cx0 + hx * a + sx * (o - now0), cz0 + hz * a + sz * (o - now0), C.h, l, w));  // (a lane offset o, a few metres on)
+          if (!free(C.r.lane + (C.dodge || 0))) { for (const k of [0, -0.5, -0.75, -1, -1.25, -1.5, -1.75, -2, -2.25, -2.5, 0.35, 0.7]) if (free(C.r.lane + k)) { C.dodge = k; C.dodgeT = 1.5; break; } }
+          else if (C.dodge && (C.dodgeT = (C.dodgeT || 0) - 0.2) <= 0 && free(C.r.lane)) C.dodge = 0; }
+        const laneTo = C.r.lane + (C.dodge || 0); if (C.dodge) C.v = Math.min(C.v, 7);
+        C.ln = C.ln == null ? C.r.lane : C.ln + bsClamp(laneTo - C.ln, -1.5 * dt, 1.5 * dt);  // (its place across the road: over to the next street's lane a bit at a time, not in one jump at the corner)
         const t = Math.min(1, C.s / L), lx = Math.cos(C.h), lz = -Math.sin(C.h)  /* (on the left of the road, as in Australia: Ash, 16 November 2026, "The cars should drive on the left side of the road"; then "the traffic is often on the wrong side of the roads ... all cars should drive on the left, and buses etc.": heading h runs (sin h, cos h) with z to the south, so the left is (cos h, -sin h); it had the right) */, x = ax + (bx - ax) * t + lx * C.ln, z = az + (bz - az) * t + lz * C.ln;
         if (Math.hypot(x - home[0], z - home[1]) > FAR && !C.rider) { start(C); return; }
         if (T.invStatic?.wholeTown) {
@@ -18985,6 +18995,9 @@ const handle = async (m, post) => {
           const clear = oldH == null || C.y == null ? !T.invStatic.depth(x,z,C.h,l,w) : T.invStatic.canDrive(cx,cz,oldH,x,z,C.h,l,w);
           if (!clear) {
             C.r = oldRoad; C.i = oldI; C.d = oldD; C.s = oldS; C.h = oldH; C.ln = oldLane; C.v = C.still = 0;
+            // stopped, but still edging over to the side it's going round on (a sideways step, if that's clear)
+            if (C.dodge && oldH != null && oldLane != null && C.x != null) { const dl = bsClamp(laneTo - oldLane, -1.5 * dt, 1.5 * dt), qx = cx + Math.cos(oldH) * dl, qz = cz - Math.sin(oldH) * dl;
+              if (dl && T.invStatic.canDrive(cx, cz, oldH, qx, qz, oldH, l, w)) { C.ln = oldLane + dl; C.x = qx; C.z = qz; } }
             C.blocked = (C.blocked || 0) + dt;
             if (C.blocked > 10 && !C.rider && unobserved(cx,cz)) { C.blocked = 8; start(C,true); }
             return;
