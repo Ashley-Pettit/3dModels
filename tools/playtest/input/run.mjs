@@ -125,6 +125,13 @@ function assess(data) {
       }
       failed(hasPair(marks[`${pass}/look-move`]), `${pass}: Look did not deflect independently`);
     }
+    if (town === 'moorooka') {
+      for (const name of ['before-entry', 'driving', 'back-on-foot']) {
+        failed(hasPair(marks['vehicle/' + name]), 'Move or Look lost its held input at ' + name);
+      }
+      failed(hasMove(marks['vehicle/look-up']), 'Releasing Look after driving interrupted Move');
+      failed(reset(marks['vehicle/released']), 'The sticks did not reset after driving');
+    }
     return { reasons };
   }
   const heldTouches = touches.filter(row => row.at >= start && row.at <= end);
@@ -308,6 +315,20 @@ try {
       await deflect([move, { ...viewPoint, x: viewPoint.x - 20 }]);
       await mark(pass + '/simultaneous-view');
       await release(pass + '/released');
+    }
+    if (town === 'moorooka') {
+      await begin('vehicle/before-entry');
+      const available = await page.evaluate(() => window.anTownNow()?.car?.bossGo?.());
+      requireFixture(available, 'Moorooka hotrod unavailable');
+      requireFixture(await waitFor(() => page.evaluate(() => window.anTownNow().car.in), 8000),
+        'Did not enter the hotrod');
+      await mark('vehicle/driving');
+      await page.evaluate(() => document.getElementById('bsCarBtn').click());
+      requireFixture(await page.evaluate(() => !window.anTownNow().car.in), 'Did not exit the hotrod');
+      await mark('vehicle/back-on-foot');
+      await liftSecond(right);
+      await mark('vehicle/look-up');
+      await release('vehicle/released');
     }
   } else {
     if (mode === 'auto') {

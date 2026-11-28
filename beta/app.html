@@ -25633,6 +25633,12 @@ const handle = async (m, post) => {
       }
       return true;
     }
+    // A stationary thumb sends no new touchmove when the controls switch between walking and driving.
+    // Keep the live pad's axes and clear residual input from the other steering sources.
+    const resetReleasedSticks = () => {
+      if (!F.joys?.some(joy => joy.move && joy.held())) F.stick.x = F.stick.y = 0;
+      if (!F.joys?.some(joy => !joy.move && joy.held())) F.lookStick.x = F.lookStick.y = 0;
+    };
     const leave = (step, door) => { if (!veh) return; if (auto) autoEnd(); if (car?.boat) { car.boat = false; boatDraw(false); } mySpin?.hide(); mySig?.remove(); mySig = null; skyNavShow(null); const was = veh; if (was === "possum" && pos?.cling) { try { T.peers?.ride?.(pos.cling.id, false); } catch {} pos.cling = null; }  // (it stayed stuck to the driver: Ash, 18 November 2026)
       // (the comment above once ran on over the rest of this line, so leaving never stopped the engine, the rockets or the sparks: Ash, 19 November
       // 2026, "when i use jump to often the sound of the car or something is still playing")
@@ -25665,7 +25671,7 @@ const handle = async (m, post) => {
       if (was === "car" && car.own) T.invStatic?.own(car.own, !!car.own.takenBy || !!car.own.rescue);
       if (was === "car" && !car.own?.goHome) returns?.leave(car);
       if (was === "car" && car.own?.goHome) { const G = car.own; car = null; ownHome(G); }
-      veh = null; car = null; plane = null; T.deckY = null; window.anFast = false; upShow(null); upLook = 0; showKeys(T.walk ? "walk" : null); C.in = false; F.drive = null; F.boost = false; F.hText = ""; F.vert = 0; F.stick.x = F.stick.y = F.lookStick.x = F.lookStick.y = 0; F.keys.clear();
+      veh = null; car = null; plane = null; T.deckY = null; window.anFast = false; upShow(null); upLook = 0; showKeys(T.walk ? "walk" : null); C.in = false; F.drive = null; F.boost = false; F.hText = ""; F.vert = 0; resetReleasedSticks(); F.keys.clear();
       document.body.classList.remove("bsdrive", "bsplane", "bsheli", "bsdrone", "bspossum", "bsride", "bspowers", "bspow"); powShown = null; pwBtn.hidden = tkBtn.hidden = true; cooBtn.hidden = true; boostBtn.hidden = true; boostBtn.textContent = "Boost"; boostBtn.classList.remove("bsmega"); handBtn.hidden = true; flipBtn.hidden = true; F.flip = false; plantBtn.hidden = plantMenu.hidden = true; gripBtn.hidden = true; unReset(); handBtn.classList.remove("on"); F.hand = false; at = 0; C.frame(); };
     // Explore mode from a car, plane, helicopter or the possum: you're kept in it, held still where it is (others see it there), and
     // back in it, the view where it was, when Explore mode goes off (Ash, 17 November 2026: "If I'm in a helicopter and I go to explore
@@ -26810,7 +26816,7 @@ const handle = async (m, post) => {
       if (place === "inv") { trail.length = 0; unReset(); }
       C.in = true; camOff = null; camBack = 0; off = [wrap(F.yaw - camYaw), bsClamp(F.pitch + 0.2, -1, 0.55)]; idle = 0; camSet = 0; last = [F.pos.x, F.pos.y, F.pos.z, F.yaw, F.pitch];
       if (veh === "drone" && R6()?.floorAt(dr.x, dr.z, dr.y) != null) off = [0, 0.12];  // the drone indoors: seen from behind it, the front door ahead (not the way you were looking out on the path)
-      F.stick.x = F.stick.y = F.lookStick.x = F.lookStick.y = 0; F.vert = 0; F.boost = false; F.keys.clear(); F.drive = tick;
+      resetReleasedSticks(); F.vert = 0; F.boost = false; F.keys.clear(); F.drive = tick;
       btn.textContent = veh === "drone" ? "Put the remote down" : veh === "possum" || veh === "pigeon" ? "Human" /* (Ash, 16 November 2026: "Make hop out say human") */ : veh === "ride" && ride?.local ? "Get off" : "Get out"; btn.hidden = false; handBtn.hidden = veh !== "car" && (veh !== "possum" || !pos?.gold) && veh !== "pigeon"; /* (no Boost for the plain possum: Ash, 23 November 2026, "Remove boost from the non golden possum") */ handBtn.textContent = veh === "possum" ? "Boost" : veh === "pigeon" ? "Dive" : "Handbrake"; handBtn.dataset.key = veh === "possum" ? "Shift" : veh === "pigeon" ? "C" : "Space"; flipBtn.hidden = !(veh === "car" && car?.gold); plantBtn.hidden = !(veh === "possum" && T.admin?.plant); gripBtn.hidden = true; cooBtn.hidden = veh !== "pigeon"; boostBtn.hidden = veh === "ride" || (veh === "plane" && !canBoost(plane));
       boostBtn.textContent = veh === "possum" ? "Jump" : veh === "pigeon" ? "Flap" : "Boost"; boostBtn.dataset.key = veh === "possum" || veh === "pigeon" ? "Space" : "Shift";
       if (veh === "ride") { if (RIDE_UP[ride.k] > 1) snd.door(); } else if (veh !== "possum" && veh !== "pigeon" && veh !== "drone") { snd.door(); snd.start(veh === "plane" && plane.heli ? "heli" : veh); } showKeys(veh === "plane" && plane.heli ? "heli" : veh === "ride" ? null : veh === "car" && car.gold ? "gold" : veh);
