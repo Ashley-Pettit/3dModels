@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-bayview-avenue-113-115-v1",
+      "x": 774.46423828,
+      "z": -613.29709961,
+      "size": 97.78588867,
+      "file": "detail-bayview-avenue-113-115-v1.webp",
+      "lo": "detail-bayview-avenue-113-115-v1-lo.webp"
     }
   ]
 }
