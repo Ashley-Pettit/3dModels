@@ -8995,6 +8995,17 @@ const handle = async (m, post) => {
     // reduced but not gone. Lag related"). They stay for a Mac's trackpad pinch
     F.noGesture = e => e.preventDefault();
     if (!BS_PASSIVE) ["gesturestart", "gesturechange"].forEach(k => document.addEventListener(k, F.noGesture, { passive: false }));
+    // And if an iPhone zooms the page in anyway (it can let a pinch through whatever the page asks: Ash, 28 November 2026, "When I was
+    // playing my iOS zoomed in which ruined the game experience"), put it back to normal size once every finger is off the glass, by
+    // setting the viewport again. Passive listeners only, and nothing runs while a finger is down, so the sticks are never held up
+    if (BS_PASSIVE && window.visualViewport) { const vv = window.visualViewport, m = document.querySelector('meta[name="viewport"]');
+      let down = 0, t = 0; const was = m?.content || "width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover";
+      const fix = () => { clearTimeout(t); if (down || vv.scale < 1.01 || !m) return;
+        m.content = "width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,viewport-fit=cover"; t = setTimeout(() => { m.content = was; }, 400); };
+      const fingers = e => { down = e.touches.length; if (!down) { clearTimeout(t); t = setTimeout(fix, 250); } };
+      const vr = () => { if (!down) { clearTimeout(t); t = setTimeout(fix, 250); } };
+      F.unzoom = { vv, vr, fingers, stop: () => { clearTimeout(t); if (m) m.content = was; } };
+      ["touchstart", "touchend", "touchcancel"].forEach(k => document.addEventListener(k, fingers, { passive: true })); vv.addEventListener("resize", vr, { passive: true }); }
     clearTimeout(F.tipT); F.tipT = setTimeout(() => tip.classList.add("dim"), 6000);
     const look = (dx, dy, k) => { F.yaw -= dx * k; F.pitch = bsClamp(F.pitch - dy * k, -1.45, 1.45); };
     const typing = e => /^(INPUT|TEXTAREA|SELECT)$/.test(e.target?.tagName || "");
@@ -9307,6 +9318,7 @@ const handle = async (m, post) => {
     if (document.pointerLockElement === canvas) document.exitPointerLock?.();
     for (const j of [...(F.joys || []), ...(F.uds || [])]) { j.end(); Object.entries(j.h).forEach(([k, f]) => j.el.removeEventListener(k, f)); }
     if (F.noGesture) ["gesturestart", "gesturechange"].forEach(k => document.removeEventListener(k, F.noGesture));
+    if (F.unzoom) { const U = F.unzoom; ["touchstart", "touchend", "touchcancel"].forEach(k => document.removeEventListener(k, U.fingers)); U.vv.removeEventListener("resize", U.vr); U.stop(); }
     clearTimeout(F.tipT); BS.fly = null;
     document.body.classList.remove("bsfly"); $("bsFly").hidden = true; $("bsShareBox").hidden = true; $("bsShareBtn").setAttribute("aria-expanded", "false");
     if (L.exploreHold) { L.exploreHold = false; wxListenOff(); if (L.on && L.paused) resumeListen(); }  // the news waited while you explored
@@ -25246,7 +25258,7 @@ const handle = async (m, post) => {
       return vacant(x, z, 0, 0, walkRadius);
     };
     const trail = [];
-    let walkPromptUntil = 0;
+    let walkPromptUntil = 0, walkStall = null, walkPromptAt = null;
     const hideWalkPrompt = () => {
       walkPromptUntil = 0;
       if (unBtn.classList.contains("walk")) { unBtn.hidden = true; unBtn.classList.remove("walk"); }
@@ -25254,6 +25266,7 @@ const handle = async (m, post) => {
     const rememberWalk = now => {
       if (!C.canUnstickWalk()) { trail.length = 0; hideWalkPrompt(); return; }
       if (now > walkPromptUntil && walkPromptUntil) hideWalkPrompt();
+      if (walkPromptUntil && walkPromptAt && Math.hypot(F.pos.x - walkPromptAt.x, F.pos.z - walkPromptAt.z) > 3) hideWalkPrompt();  // (walked off: not stuck any more)
       const { x, z } = F.pos, previous = trail[trail.length - 1];
       if (previous) {
         const d = Math.hypot(x - previous.x, z - previous.z);
@@ -25285,16 +25298,27 @@ const handle = async (m, post) => {
       if (spot) { standClear(spot); toast("You're back on clear ground.", 2000); }
       else toast("Couldn't find clear ground nearby.", 2500);
     };
+    const showWalkPrompt = (x, z) => {
+      walkStall = null; walkPromptAt = { x, z };
+      walkPromptUntil = performance.now() + 10000;
+      unBtn.classList.add("walk"); unBtn.hidden = false;
+      return true;
+    };
     C.walkStuck = () => {
       if (!C.canUnstickWalk()) return false;
       const { x, z } = F.pos;
       if (!inside(x, z) || groundSolid(x, z)) {
         const p = findWalkSpot(x, z, F.yaw, false, true);
         if (p) { standClear(p); return true; }
+        return showWalkPrompt(x, z);  // (inside something with no way out: the button straight away)
       }
-      walkPromptUntil = performance.now() + 10000;
-      unBtn.classList.add("walk"); unBtn.hidden = false;
-      return true;
+      // Not the button the moment you stall: bsUnstick calls this every 0.8 s you're pushing and getting nowhere, so let its own
+      // little side-step have a go first, and only offer Unstick after 4 s stuck in the one spot (Ash, 28 November 2026: "unstick
+      // seems to be showing too much")
+      const now = performance.now(), S = walkStall;
+      if (!S || now - S.last > 2000 || Math.hypot(x - S.x, z - S.z) > 1.5) { walkStall = { t: now, last: now, x, z }; return false; }
+      S.last = now; if (now - S.t < 4000) return false;
+      return showWalkPrompt(x, z);
     };
     // (above Spuds in a T-rex fight: Spuds is the one above Boost then, and Unstick sat right over it. Ash, 27 November 2026, "Move
     // things around to fit")
