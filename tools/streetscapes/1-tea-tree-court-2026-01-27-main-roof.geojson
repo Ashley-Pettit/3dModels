@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "1-tea-tree-court-main-roof-20260127",
+      "properties": {
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.698145,-38.643205&level=20",
+        "scene": 6072300,
+        "date": "2026-01-27",
+        "provider": "Vantor LG03 via Esri World Imagery",
+        "samplingM": 0.34,
+        "positionalAccuracyM": 5,
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "attribution": "Esri, Vantor, Earthstar Geographics and the GIS User Community",
+        "scope": "Manually sampled visible charcoal main roof. Enclosed garage and open street entry corroborated by operator imagery. The pale northern area remains outside the authored shell.",
+        "operator": "https://inverlochaccommodation.com.au/accommodation/sandy-feet-retreat/",
+        "exterior": "https://www.stayz.com.au/holiday-rental/p9913492"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.698046,
+              -38.643199
+            ],
+            [
+              145.698166,
+              -38.643157
+            ],
+            [
+              145.698195,
+              -38.643184
+            ],
+            [
+              145.698264,
+              -38.643303
+            ],
+            [
+              145.698146,
+              -38.64335
+            ],
+            [
+              145.698115,
+              -38.64331
+            ],
+            [
+              145.698067,
+              -38.643238
+            ],
+            [
+              145.698046,
+              -38.643199
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
