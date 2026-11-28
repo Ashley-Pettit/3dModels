@@ -42,4 +42,7 @@ if __name__ == "__main__":
     parser.add_argument("--write", action="store_true", help="refresh the inline copies in app.html and beta/app.html")
     options = parser.parse_args()
     for host in (ROOT / "app.html", ROOT / "beta/app.html"):
+        # (production's app.html went back to before #428 on 29 November 2026, without the generated block: only the beta has it)
+        if host == ROOT / "app.html" and "explore/collision.mjs" not in host.read_text(encoding="utf-8"):
+            continue
         sync_preview(host.read_text(encoding="utf-8"), host, write=options.write)

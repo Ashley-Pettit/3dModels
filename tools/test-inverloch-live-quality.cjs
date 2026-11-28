@@ -4,7 +4,7 @@ const path = require('node:path');
 const {test} = require('node:test');
 const vm = require('node:vm');
 
-const host = readFileSync(path.join(__dirname, '../app.html'), 'utf8');
+const host = readFileSync(path.join(__dirname, '../beta/app.html'), 'utf8');
 const pairSource = host.slice(host.indexOf('  function townModelPair('), host.indexOf('  function townModelOn('));
 
 async function openAuto({live, slow = false, preset = 'auto', staging, addGuests}) {

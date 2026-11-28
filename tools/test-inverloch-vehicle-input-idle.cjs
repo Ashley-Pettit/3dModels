@@ -4,7 +4,8 @@ const path = require('node:path');
 const {test} = require('node:test');
 const vm = require('node:vm');
 
-for (const page of ['app.html', 'beta/app.html']) {
+// (production went back to before #428 on 29 November 2026: Inverloch's Auto quality is on the beta)
+for (const page of ['beta/app.html']) {
   test(page + ' defers Auto for held movement and ignores unrelated keys', async () => {
     const html = readFileSync(path.join(__dirname, '..', page), 'utf8');
     const source = html.slice(html.indexOf('  function townModelPair('), html.indexOf('  function townModelOn('));
@@ -89,7 +90,8 @@ for (const page of ['app.html', 'beta/app.html']) {
     assert.equal(timers.length, 0);
   });
 }
-for (const page of ['app.html', 'beta/app.html']) {
+// (production went back to before #428 on 29 November 2026: Inverloch's Auto quality is on the beta)
+for (const page of ['beta/app.html']) {
   test(page + ' rechecks legacy controls after the FPS probe', async () => {
     const html = readFileSync(path.join(__dirname, '..', page), 'utf8');
     const source = html.slice(html.indexOf('  function townModelPair('), html.indexOf('  function townModelOn('));

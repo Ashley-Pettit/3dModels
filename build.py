@@ -19,7 +19,8 @@ from tools.explore_collision import sync_preview
 site = sys.argv[1] if len(sys.argv) > 1 else "_site"
 here = os.path.dirname(os.path.abspath(__file__))
 app = open(os.path.join(here, "app.html"), encoding="utf-8").read()
-sync_preview(app, "app.html")
+if "explore/collision.mjs" in app:  # (production went back to before #428 on 29 November 2026, without the generated block)
+    sync_preview(app, "app.html")
 
 m = re.search(r"<title>(.*?)</title>", app)
 title = m.group(1) if m else "Awesome News"

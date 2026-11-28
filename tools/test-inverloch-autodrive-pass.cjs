@@ -5,7 +5,7 @@ const path = require("node:path");
 const { before, test } = require("node:test");
 const { Script } = require("node:vm");
 
-const app = readFileSync(path.join(__dirname, "..", "app.html"), "utf8").replace(/\r\n/g, "\n");
+const app = readFileSync(path.join(__dirname, "..", "beta", "app.html"), "utf8").replace(/\r\n/g, "\n");
 function section(begin, end) {
   const start = app.indexOf(begin), stop = app.indexOf(end, start + begin.length);
   assert.ok(start >= 0 && stop > start, `Missing host section ${begin}`);

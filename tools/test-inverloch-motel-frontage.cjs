@@ -4,7 +4,7 @@ const path = require('node:path');
 const {test} = require('node:test');
 const vm = require('node:vm');
 
-const app = readFileSync(path.join(__dirname, '../app.html'), 'utf8');
+const app = readFileSync(path.join(__dirname, '../beta/app.html'), 'utf8');
 const host = app.slice(app.indexOf('  function invCivicCollision('), app.indexOf('  // Things made for the model\'s town centre alone.'));
 const text = [];
 const context = {

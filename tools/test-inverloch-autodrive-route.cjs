@@ -4,7 +4,7 @@ const path = require("node:path");
 const { test } = require("node:test");
 const { runInNewContext } = require("node:vm");
 
-const host = readFileSync(path.join(__dirname, "..", "app.html"), "utf8");
+const host = readFileSync(path.join(__dirname, "..", "beta", "app.html"), "utf8");
 function section(start, end) {
   const a = host.indexOf(start), b = host.indexOf(end, a + start.length);
   assert.ok(a >= 0 && b > a, start);

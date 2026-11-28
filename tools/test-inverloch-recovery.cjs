@@ -5,7 +5,7 @@ const path = require("node:path");
 const { test } = require("node:test");
 const { runInNewContext } = require("node:vm");
 
-const app = readFileSync(path.join(__dirname, "..", "app.html"), "utf8");
+const app = readFileSync(path.join(__dirname, "..", "beta", "app.html"), "utf8");
 const start = app.indexOf("    C.canUnstickWalk =");
 const end = app.indexOf("    const unPlace =", start);
 assert.ok(start >= 0 && end > start);
