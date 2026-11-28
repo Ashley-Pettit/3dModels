@@ -10146,6 +10146,10 @@ const handle = async (m, post) => {
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
     if (inv) clearPolygons.push({ latLon: INV_GLADE_SHELTER });
     if (inv) clearPolygons.push({ latLon: invScrewCreekMask(), roads: true });
+    if (inv) clearLatLon.push({ lat: -38.64516604, lon: 145.69671720, r: 0.16 }); // 19 Acacia Court: superseded generated house slot 4106.
+    if (inv) clearLatLon.push({ lat: -38.64533720, lon: 145.69676601, r: 0.16 }); // 19 Acacia Court: superseded generated house slot 4107.
+    if (inv) clearLatLon.push({ lat: -38.64520207, lon: 145.69660809, r: 0.16 }); // 19 Acacia Court: seeded trunk under the confirmed house roof 42447.
+    if (inv) clearLatLon.push({ lat: -38.64528090, lon: 145.69667413, r: 0.16 }); // 19 Acacia Court: seeded trunk under the confirmed house roof 42488.
     // Moorooka's bridges (town.json's roads marked as one): their decks, so a car drives over them, not down through them into the creek.
     // The deck is as the model draws it (moorooka-model.js ?v=79): straight from one end's ground to the other's, a metre's hump in the
     // middle, and 0.6 m up, coming up from the road over its first and last 8 m. Under a bridge (a road under an overpass) you stay down:
@@ -10212,6 +10216,7 @@ const handle = async (m, post) => {
         let mine = []; if (inv) try { mine = townModelGuests(T, m); } catch (e) { console.warn("Town model: the town centre and Norman Road couldn't be added", e); }
         if (inv) {
           if (m.addParts) townGlade(T, m, BS.B.THREE);
+          if (m.addParts) invAcaciaCourt19(T, m, BS.B.THREE);
           invMotelFrontage(T, m, BS.B.THREE);
           const buildings = m.buildingBlockers?.();
           if (buildings) {
@@ -18204,6 +18209,77 @@ const handle = async (m, post) => {
     return at(0, 1);
   }
   // END GENERATED src/explore/collision.mjs
+
+  // 19 Acacia Court. The two-level house and lower garage share a grounded wall ring.
+  function invAcaciaCourt19(T, model, THREE) {
+    const walls = [[-2910.42,920.10],[-2907.58,922.30],[-2899.22,919.11],[-2904.4,906.17],
+      [-2909.32,907.93],[-2909.83,906.50],[-2913.84,908.22]];
+    const upper = [[-2899.22,919.11],[-2904.4,906.17],[-2909.32,907.93],[-2904.58,921.15]];
+    const west = [[-2907.58,922.30],[-2904.58,921.15],[-2909.32,907.93],[-2909.83,906.50],
+      [-2913.84,908.22],[-2910.42,920.10]];
+    const deck = [[-2909.58,907.10],[-2905.37,905.59],[-2905.08,906.40],[-2909.29,907.91]];
+    const x0 = -2906.5, z0 = 913.5, lower = 2.76;
+    const heights = walls.map(p => model.groundAt(...p)), floor = Math.max(...heights) + .09;
+    const positions = [], colors = [], point = ([x,z],y) => [x-x0,y,z-z0];
+    const across = ([x,z]) => (x+2913.8353)*.94136-(z-908.2216)*.33740;
+    const skillion = p => 6.31-(across(p)-4.35)*.158;
+    const lean = p => 2.89+across(p)*.066;
+    const tri = (a,b,c,tint) => {
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,c,d,hex) => {
+      const tint = new THREE.Color(hex);
+      tri(a,b,c,tint); tri(a,c,d,tint);
+    };
+    const up = (a,b,c,tint) => {
+      if ((b[2]-a[2])*(c[0]-a[0]) > (b[0]-a[0])*(c[2]-a[2])) tri(a,b,c,tint);
+      else tri(a,c,b,tint);
+    };
+    const skin = (ring,bottom,top,color) => {
+      for (let i = 0; i < ring.length; i++) {
+        const a = ring[i], b = ring[(i+1)%ring.length];
+        quad(point(a,bottom(a)),point(b,bottom(b)),point(b,top(b)),point(a,top(a)),color(a,b));
+      }
+    };
+    const cover = (ring,top,hex) => {
+      const tint = new THREE.Color(hex);
+      for (const face of THREE.ShapeUtils.triangulateShape(ring.map(([x,z]) => new THREE.Vector2(x-x0,z-z0)), [])) {
+        const [a,b,c] = face.map(i => point(ring[i],top(ring[i])));
+        up(a,b,c,tint);
+      }
+    };
+    const cream = 0xdad5bd, blue = 0x586870, metal = 0xc2cdd2;
+    skin(walls,p => model.groundAt(...p)-floor-.16,() => lower,(a,b) => (across(a)+across(b))/2 < 4.4 ? blue : cream);
+    skin(west,() => lower,lean,() => blue);
+    skin(upper,() => lower,skillion,() => cream);
+    cover(west,lean,0x8c9ba2);
+    cover(upper,skillion,metal);
+    cover(deck,() => lower+.03,0x927661);
+    cover(deck,skillion,metal);
+    const panel = (a,b,lo,hi,bottom,top,color,offset = .035) => {
+      const at = (u,y) => point([a[0]+(b[0]-a[0])*u-.3374*offset,a[1]+(b[1]-a[1])*u-.94136*offset],y);
+      quad(at(lo,bottom),at(lo,top),at(hi,top),at(hi,bottom),color);
+    };
+    const [garageLeft,garageRight] = [walls[6],walls[5]];
+    panel(garageLeft,garageRight,.045,.96,.055,2.37,0x454c50);
+    panel(garageLeft,garageRight,.065,.94,.075,2.29,0xdce1df,.051);
+    for (let y = .37; y < 2.25; y += .31) panel(garageLeft,garageRight,.065,.94,y,y+.015,0xb0bab9,.058);
+    const [entryLeft,entryRight] = [walls[4],walls[3]];
+    panel(entryLeft,entryRight,.11,.34,.09,2.23,0x596267);
+    panel(entryLeft,entryRight,.49,.86,.58,2.25,0x50636f);
+    panel(entryLeft,entryRight,.12,.50,lower+.11,5.20,0x405963);
+    panel(entryLeft,entryRight,.66,.87,lower+.80,5.18,0x526974);
+    const [railLeft,railRight] = deck;
+    panel(railLeft,railRight,0,1,lower-.14,lower+.04,0xc5cbc8);
+    panel(railLeft,railRight,0,1,3.75,3.80,blue);
+    for (const u of [0,.25,.50,.75,.98]) panel(railLeft,railRight,u,u+.02,lower+.03,3.80,blue,.028);
+    for (const y of [3.05,3.25,3.45,3.65]) panel(railLeft,railRight,0,1,y,y+.014,0x909b9f,.022);
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().makeTranslation(x0,floor,z0).elements, roughness: .86 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
+  }
 
   // Inverloch Motel at 39 Powlett Street. Follow the highway leg of mapped fence 988785313,
   // inset into Vicmap parcel 5287818 with the service driveway at the west end left open.

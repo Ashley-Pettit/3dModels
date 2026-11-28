@@ -1,0 +1,65 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "19-acacia-court-main-roof-20260127",
+      "properties": {
+        "view": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.696630,-38.645246&level=20",
+        "scene": 6072300,
+        "date": "2026-01-27",
+        "provider": "Vantor LG03 via Esri World Imagery",
+        "credits": "Esri, Vantor, Earthstar Geographics and the GIS User Community",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "samplingM": 0.34,
+        "positionalAccuracyM": 5,
+        "scope": "Approximate manually sampled principal roof and western attached garage eaves. Walls and projected unoccupied balcony are inset within the roof.",
+        "archivedFacade": "https://www.realestate.com.au/sold/property-house-vic-inverloch-143886716",
+        "neighborApprovedSaleStatement": "https://i2.au.reastatic.net/b9bbc30a8bb3b841fad91ce6606ba330a06558f4b5b3c91e2a3888653c2f5b11/statement.pdf"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.696524,
+              -38.645179
+            ],
+            [
+              145.696607,
+              -38.645151
+            ],
+            [
+              145.696643,
+              -38.645146
+            ],
+            [
+              145.696713,
+              -38.645283
+            ],
+            [
+              145.696665,
+              -38.645297
+            ],
+            [
+              145.696606,
+              -38.645315
+            ],
+            [
+              145.696568,
+              -38.645292
+            ],
+            [
+              145.696539,
+              -38.645212
+            ],
+            [
+              145.696524,
+              -38.645179
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
