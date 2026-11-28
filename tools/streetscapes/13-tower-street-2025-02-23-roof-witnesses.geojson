@@ -1,0 +1,110 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.733684,
+              -38.627022
+            ],
+            [
+              145.733811,
+              -38.62704
+            ],
+            [
+              145.733794,
+              -38.627156
+            ],
+            [
+              145.733684,
+              -38.627162
+            ],
+            [
+              145.733668,
+              -38.627139
+            ],
+            [
+              145.733684,
+              -38.627022
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source": "Esri World Imagery, Vantor",
+        "scene": 6072276,
+        "capture": "2025-02-23",
+        "groundSampleDistanceM": 0.31,
+        "reportedPositionAccuracyM": 5,
+        "manualMethod": "ArcGIS Online Map Viewer, Location tool, manually captured coordinate samples. Aerial and market listing imagery were used as visual references.",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.73372665,-38.62709309&level=20",
+        "digitizingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "archiveListing": "https://www.realestate.com.au/sold/property-house-vic-inverloch-120349641",
+        "parcel": "Lot 40 LP51877",
+        "parcelPfi": "5282850",
+        "sourceId": "microsoft-311223133-6a8c451b8c1d5c37",
+        "role": "Observed pale principal roof eaves"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.73354,
+            -38.62723
+          ],
+          [
+            145.733532,
+            -38.627187
+          ]
+        ]
+      },
+      "properties": {
+        "source": "Esri World Imagery, Vantor",
+        "scene": 6072276,
+        "capture": "2025-02-23",
+        "groundSampleDistanceM": 0.31,
+        "reportedPositionAccuracyM": 5,
+        "manualMethod": "ArcGIS Online Map Viewer, Location tool, manually captured coordinate samples. Aerial and market listing imagery were used as visual references.",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.73372665,-38.62709309&level=20",
+        "digitizingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "archiveListing": "https://www.realestate.com.au/sold/property-house-vic-inverloch-120349641",
+        "parcel": "Lot 40 LP51877",
+        "parcelPfi": "5282850",
+        "sourceId": "microsoft-311223133-6a8c451b8c1d5c37",
+        "role": "Observed western crossing and lane"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.733897,
+          -38.627105
+        ]
+      },
+      "properties": {
+        "source": "Esri World Imagery, Vantor",
+        "scene": 6072276,
+        "capture": "2025-02-23",
+        "groundSampleDistanceM": 0.31,
+        "reportedPositionAccuracyM": 5,
+        "manualMethod": "ArcGIS Online Map Viewer, Location tool, manually captured coordinate samples. Aerial and market listing imagery were used as visual references.",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.73372665,-38.62709309&level=20",
+        "digitizingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "archiveListing": "https://www.realestate.com.au/sold/property-house-vic-inverloch-120349641",
+        "parcel": "Lot 40 LP51877",
+        "parcelPfi": "5282850",
+        "sourceId": "microsoft-311223133-6a8c451b8c1d5c37",
+        "role": "Separate eastern cover, retained"
+      }
+    }
+  ]
+}

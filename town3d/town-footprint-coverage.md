@@ -39,6 +39,12 @@ python tools/streetscapes/coverage_inventory.py baseline.json candidate.json cov
 
 The placement report records source identifiers, accepted slots and reasons for rejected proposals. The coverage GeoJSON preserves both sides of every original road and checks that the map projection, original road data, original mapped buildings and original packed style fields stayed intact.
 
+## 13 Tower Street main house
+
+The [23 February 2025 Esri/Vantor aerial witness, scene 6072276](../tools/streetscapes/13-tower-street-2025-02-23-roof-witnesses.geojson) corroborates the pale principal roof on active Vicmap Lot 40 LP51877, parcel PFI 5282850. The 92.1 m² enclosed core follows the overlap with [Microsoft outline `microsoft-311223133-6a8c451b8c1d5c37`](https://github.com/microsoft/GlobalMLBuildingFootprints), under [CDLA-Permissive-2.0](https://cdla.dev/permissive-2-0/). [Vicmap Property](https://discover.data.vic.gov.au/en_AU/dataset/vicmap-property-parcel-polygon-with-parcel-detail) is © State of Victoria, CC BY 4.0. The [Alex Scott sale archive](https://www.realestate.com.au/sold/property-house-vic-inverloch-120349641) corroborates a low pale house with a separate covered entry and parking. The two narrow windows are placed approximately on the Tower Street facade. Roof pitch, wall height and cladding colour are approximate.
+
+One vertex-coloured guest supplies the house and a matching wall blocker. A 16 cm centre mask clears seeded trunk 31547 inside the main roof. The Roberts Court lane has 7.4 m clearance to the wall ring. The crossing, eastern cover, surrounding trees, and the existing models in slots 3467 and 4494 stay in place.
+
 ## Optional tree relocation pass
 
 Reproduce the second pass from the same original baseline and the three source snapshots above by adding `--relocate-blocking-trees` to the placement command. The importer completes the first pass before reconsidering tree-blocked outlines. It moves only a single packed, procedurally seeded trunk per accepted outline, with a margin inside both the source outline and the fitted shell. The new trunk needs a clear position within six metres on the same unambiguous active Vicmap parcel. Building and road offsets, neighbouring trunks and the two protected corridors constrain the destination. The report records each original and revised position and the reason when a move is declined.
