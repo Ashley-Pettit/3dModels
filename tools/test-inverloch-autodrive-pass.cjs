@@ -17,7 +17,7 @@ const hasModule = existsSync(path.join(__dirname, "../src/explore/collision.mjs"
 let collision = {};
 before(async () => { if (hasModule) collision = await import("../src/explore/collision.mjs"); });
 const driver = new Script([
-  ...(hasModule ? [] : [
+  ...(hasModule ? [section("  function townIndicatorSide(", "  // Amber indicators")] : [
     section("  function invCivicCollision(", "  function invAddDesignedWalls("),
     section("  const townTrafficBodies", "  function townTraffic("),
   ]),
