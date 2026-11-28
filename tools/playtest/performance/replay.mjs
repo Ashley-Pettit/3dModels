@@ -34,7 +34,12 @@ export async function occupyUte({first, physical}) {
   fly.goTo = null;
   town.model.setMinutes(720);
   const {x, z, heading} = first;
-  if (!town.car.enterCar({...ute, x, z, heading, distance: 0})) throw Error('Native handover refused the fixture ute');
+  if (!town.car.enterCar({...ute, x, z, heading, distance: 0})) {
+    throw Error(`Native handover refused the fixture ute: ${JSON.stringify({
+      current: town.car.where(), key, hidden: model.life.hiddenCars?.has(key),
+      occupiedSlots: model.life.drivenAt.size, toast: document.getElementById('toast')?.textContent,
+    })}`);
+  }
   const car = town.car.where();
   if (car?.kind !== 'car' || !model.life.drivenAt.has(key) || Math.hypot(car.x - x, car.z - z) > 0.1) {
     throw Error('Native ute handover or start pose mismatch');
