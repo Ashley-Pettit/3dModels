@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-albatross-drive-16-v1",
+      "x": -2065.23796875,
+      "z": -703.89511364,
+      "size": 105.60875977,
+      "file": "detail-albatross-drive-16-v1.webp",
+      "lo": "detail-albatross-drive-16-v1-lo.webp"
     }
   ]
 }
