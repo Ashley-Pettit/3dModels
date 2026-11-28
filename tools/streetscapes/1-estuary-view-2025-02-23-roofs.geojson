@@ -1,0 +1,145 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "activeParcelPFI": "133971168",
+    "activeAddressPFI": "133971172",
+    "source": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.75836,-38.62866&level=20",
+    "provider": "Vantor / Esri World Imagery",
+    "scene": "6072276",
+    "captureDate": "2025-02-23",
+    "imageryResolutionM": 0.31,
+    "imageryPositionalAccuracyM": 5,
+    "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "principal roof",
+        "method": "manual visual trace"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.758251,
+              -38.628531
+            ],
+            [
+              145.75825,
+              -38.628599
+            ],
+            [
+              145.75838,
+              -38.628599
+            ],
+            [
+              145.758381,
+              -38.628695
+            ],
+            [
+              145.758487,
+              -38.628695
+            ],
+            [
+              145.758486,
+              -38.628639
+            ],
+            [
+              145.758534,
+              -38.628639
+            ],
+            [
+              145.758536,
+              -38.628583
+            ],
+            [
+              145.758493,
+              -38.628583
+            ],
+            [
+              145.758493,
+              -38.628532
+            ],
+            [
+              145.758251,
+              -38.628531
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "detached garage",
+        "method": "manual visual trace"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.758416,
+              -38.628787
+            ],
+            [
+              145.758364,
+              -38.628854
+            ],
+            [
+              145.758423,
+              -38.628885
+            ],
+            [
+              145.758474,
+              -38.628817
+            ],
+            [
+              145.758416,
+              -38.628787
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "observed 50,000 L tank",
+        "observedRadiusM": 3.05
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.758481,
+          -38.628766
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "observed approach witnesses"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.758261,
+            -38.628961
+          ],
+          [
+            145.758282,
+            -38.6288
+          ],
+          [
+            145.758281,
+            -38.628666
+          ]
+        ]
+      }
+    }
+  ]
+}
