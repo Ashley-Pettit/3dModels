@@ -1,0 +1,67 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "Approximate exterior of the enclosed one-storey core only",
+        "address": "178 Surf Parade, Inverloch",
+        "vicmapParcelPfi": "5283393",
+        "sceneObjectId": 6072283,
+        "captureDate": "2025-05-13",
+        "imageryProvider": "Vantor / Esri World Imagery",
+        "sourceResolutionM": 0.34,
+        "reportedPositionalAccuracyM": 5,
+        "captureMethod": "Visible roof-core and recess witnesses manually selected in ArcGIS Online Map Viewer, Map Tools, Location, Capture mode, XY WGS84. Treated as an approximate inner building envelope, informed by the agent floor plan where eaves shade or pale deck surfaces obscure the wall junctions.",
+        "imageryViewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.699914,-38.645772&level=20",
+        "imageryTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "buildingSourceId": "microsoft-311223133-9661d1fdddb6eff3",
+        "floorPlanListing": "https://www.realestate.com.au/sold/property-house-vic-inverloch-131016146",
+        "holds": "The southeast double carport, both decks, any transparent pergola roof, independent rear shed and exact private crossover remain open for this building-core pass. The following coordinates are not surveyed walls."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [145.6998624, -38.6456885],
+          [145.6999361, -38.6456906],
+          [145.6999355, -38.6457513],
+          [145.6999194, -38.6457712],
+          [145.6999200, -38.6457911],
+          [145.6999355, -38.6458121],
+          [145.6999361, -38.6458356],
+          [145.6998577, -38.6458372],
+          [145.6998577, -38.6458100],
+          [145.6998899, -38.6457911],
+          [145.6998892, -38.6457728],
+          [145.6998530, -38.6457513],
+          [145.6998624, -38.6456885]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"role":"Southeast open carport interior witness"},
+      "geometry":{"type":"Point","coordinates":[145.6999757,-38.6458655]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"role":"East covered or open deck interior witness"},
+      "geometry":{"type":"Point","coordinates":[145.6999697,-38.6458042]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"role":"West deck interior witness"},
+      "geometry":{"type":"Point","coordinates":[145.6998624,-38.6457833]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"role":"Inside-lot approach witness; exact drive edges held"},
+      "geometry":{"type":"Point","coordinates":[145.6999790,-38.6458917]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"role":"Surf Parade–Lohr Avenue public footway witness"},
+      "geometry":{"type":"Point","coordinates":[145.7000153,-38.6458341]}
+    }
+  ]
+}
