@@ -7,8 +7,6 @@ import {gzipSync} from 'node:zlib';
 const threeUrl = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.152.2/three.min.js';
 const threeRoute = '/3dModels/_playtest/three.js';
 const prefix = '/3dModels/';
-const hostFile = 'inverloch/explore/index.html';
-const modelFile = 'town3d/inverloch-model.js';
 const types = {
   '.html': 'text/html; charset=utf-8', '.json': 'application/json', '.js': 'text/javascript',
   '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp',
@@ -37,9 +35,18 @@ function setPreferences() {
   };
 }
 
-export async function serveSite({site, three, ...options}) {
+export async function serveSite({site, three, channel = "production", ...options}) {
   const root = await fs.realpath(site);
-  const originals = await Promise.all([hostFile, modelFile, 'town3d/town.json'].map(file => fs.readFile(path.join(root, file))));
+  if (!['production', 'beta'].includes(channel)) throw Error('Unknown Explore channel');
+  const route = channel === 'beta' ? 'beta/inverloch/' : 'inverloch/explore/';
+  const hostFile = route + 'index.html';
+  const host = await fs.readFile(path.join(root, hostFile));
+  const entry = host.toString('utf8').split('\n').find(line => line.includes('lib: "InverlochModel", src: TOWN3D'));
+  const script = entry?.match(/src: TOWN3D \+ "(inverloch-model(?:-[a-zA-Z0-9_-]+)?\.js)(\?v=\d+)"/);
+  const map = entry?.match(/pre: \["(town(?:-[a-zA-Z0-9_-]+)?\.json)(?:\?[^"]*)?"/);
+  if (!script || !map) throw Error('Missing versioned Inverloch renderer or map in the selected host');
+  const modelFile = 'town3d/' + script[1];
+  const originals = [host, ...await Promise.all([modelFile, 'town3d/' + map[1]].map(file => fs.readFile(path.join(root, file))))];
   const keys = ['host', 'model', 'map'];
   const hashes = Object.fromEntries(keys.map((key, index) => [key, sha256(originals[index])]));
   for (const key of keys) {
@@ -57,8 +64,6 @@ export async function serveSite({site, three, ...options}) {
 
   let html = originals[0].toString('utf8').replaceAll(threeUrl, threeRoute)
     .replaceAll('https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js', threeRoute);
-  const expectedModelQuery = html.match(/lib: "InverlochModel", src: TOWN3D \+ "inverloch-model\.js(\?v=\d+)"/)?.[1];
-  if (!expectedModelQuery) throw Error('Inverloch model request version missing from the original host');
   html = replaceOnce(html, '<head>', `<head><script>(${setPreferences})();</script>`);
   html = replaceOnce(html, 'function townModelOn(T) {', 'function townModelOn(T) { window.__playtestHost = BS;');
   html = replaceOnce(html, 'mm.t0 = t0; return mm;', 'mm.__playtestScene = window.__playtestConstructed; mm.t0 = t0; return mm;');
@@ -107,6 +112,6 @@ export async function serveSite({site, three, ...options}) {
     server.listen(0, '127.0.0.1', resolve);
   });
   const port = server.address().port;
-  return {server, port, url: `http://127.0.0.1:${port}${prefix}inverloch/explore/`, hashes, requests,
-    expectedModelRequest: modelFile + expectedModelQuery};
+  return {server, port, url: `http://127.0.0.1:${port}${prefix}${route}`, hashes, requests,
+    expectedModelRequest: modelFile + script[2]};
 }

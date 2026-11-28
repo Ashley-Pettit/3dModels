@@ -9,13 +9,14 @@ import {beginReplay, occupyUte, readiness, readReplay, weatherEpoch} from './rep
 import {serveSite, sha256} from './site.mjs';
 
 const {values: options} = parseArgs({options: {
-  mode: {type: 'string', default: 'emulated'}, site: {type: 'string'}, out: {type: 'string'},
+  channel: {type: 'string', default: 'production'}, mode: {type: 'string', default: 'emulated'}, site: {type: 'string'}, out: {type: 'string'},
   label: {type: 'string'}, chrome: {type: 'string'}, adb: {type: 'string', default: 'adb'},
   three: {type: 'string'}, 'expect-host': {type: 'string'}, 'expect-model': {type: 'string'},
   'expect-map': {type: 'string'}, note: {type: 'string'}, smoke: {type: 'boolean'}, help: {type: 'boolean'},
 }});
 if (options.help) {
   console.log(`Usage: node run.mjs --mode emulated|physical --site BUILT_SITE --out RUN.json --label LABEL
+  --channel production|beta selects the host, versioned renderer and map (default production).
   Emulated mode requires --chrome PATH (or an executable on PATH).
   Physical mode uses USB and --adb PATH (defaults to adb on PATH).
   --smoke runs 3 seconds of A'Beckett in emulated mode. Default: 171 seconds.

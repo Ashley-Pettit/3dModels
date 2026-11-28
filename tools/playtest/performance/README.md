@@ -2,6 +2,8 @@
 
 Use this replay to compare renderer load for the same occupied ute and chase camera on the same streets. Run it when a change can affect sustained scene performance, for example geometry, foliage, traffic rendering, textures, shadows or weather. Use normal steering, Autodrive and trusted touch checks for input, navigation and collision. The replay places the native vehicle and camera from a trace, so those gameplay outcomes require separate evidence.
 
+Pass `--channel beta` to test a staged beta. The runner hashes and instruments the renderer and map named by that channel’s own host. Use the same channel and host for a renderer-only comparison.
+
 ## Prepare two pinned builds
 
 1. Obtain a complete static site for each revision. For release verification, use the matching Pages artifact when available, then verify the live HTML, model and map digests if claiming the measurement applies to the deployed bytes. For a source comparison, run `python build.py <output-folder>` in each pinned checkout with the same build settings. Use distinct output folders outside any served site. Preserve `inverloch/explore/index.html`, `town3d/inverloch-model.js`, `town3d/town.json` and all other site assets together. If a change only replaces the renderer, use the same underlying site assets in both variants and preserve the versioned model request.
