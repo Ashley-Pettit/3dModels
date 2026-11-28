@@ -9772,6 +9772,7 @@ const handle = async (m, post) => {
         replaying = to;
         for (const pose of driven.values()) to.driveCar(...pose);
       } else T.invStatic?.restoreCars(to);
+      T.fitMuseumFrontage?.(to);
       for (const k of LAST) if (last[k]) { try { const r = to[k](...last[k]); if (r?.then) await r; } catch {} }
       await new Promise(ok => requestAnimationFrame(() => requestAnimationFrame(ok)));
       if (dead || BS.town !== T) return;
@@ -16785,7 +16786,7 @@ const handle = async (m, post) => {
       shown = !far; for (let i = 0; i < parts.length; i++) h.setMatrix(i, shown ? I : FAR); } };
   }
   // Bunurong Environment Centre. Two mapped landmarks at the Ramsey foreshore approach.
-  function townMuseumFrontage(T, m, THREE) {
+  function townMuseumFrontage(m, THREE, grid) {
     // Charger node 12869788102 beside the north edge of car-park way 768985478.
     const [x,z] = m.fromLatLon(-38.6346880,145.7289911);
     const [a,b] = [[-38.6346392,145.7289537],[-38.6347083,145.7290923]].map(ll => m.fromLatLon(...ll));
@@ -16818,8 +16819,7 @@ const handle = async (m, post) => {
       part(new THREE.TubeGeometry(curve, 12, 0.025, 5, false), 0x282d30);
       box(side*0.31,1.12,0.28,0.075,0.16,0.10,0x353b3c);
     }
-    const grid = T.invStatic ??= invCivicCollision((X,Z) => [X,Z], () => false);
-    grid.worldBox(x,z,heading,1.05,0.65);
+    grid?.worldBox(x,z,heading,1.05,0.65);
 
     // Main entrance node 11897542004 and its adjoining north-west wall end on way 472789980.
     // The glazing and shallow canopy follow the historical Travel Victoria exterior view.
@@ -16848,7 +16848,7 @@ const handle = async (m, post) => {
       const foot = new THREE.Vector3(u,0,1.11).applyMatrix4(pose);
       const bottom = m.groundAt(foot.x,foot.z) - base - 0.025;
       box(u,(2.36+bottom)/2,1.11,0.10,2.36-bottom,0.10,0x747767);
-      grid.worldBox(foot.x,foot.z,facing,0.10,0.10);
+      grid?.worldBox(foot.x,foot.z,facing,0.10,0.10);
     }
     m.addParts([{ positions: new Float32Array(body), colors: new Float32Array(colours),
       matrix: new THREE.Matrix4().elements, roughness: 0.77 }]);
@@ -17124,7 +17124,10 @@ const handle = async (m, post) => {
       moving.forEach(r => whole(r, place));
       cars.forEach(c => { const cp = place.clone(); T.cars.push({ o: c, cp }); whole(c, cp); });  // each car kept on the model's road as it goes
       if (W.invNormanSpot) stop("Norman Rd", W.invNormanSpot, place, [x, z]); }
-    townMuseumFrontage(T, m, THREE);
+    // Collision stays in the host. Each native world owns a mesh fitted to its terrain.
+    const museumGrid = T.invStatic ??= invCivicCollision((X,Z) => [X,Z], () => false);
+    townMuseumFrontage(T.pair.cur, THREE, museumGrid);
+    T.fitMuseumFrontage = native => townMuseumFrontage(native, THREE);
     return jumps;
   }
   // A lawn laid on a slope (P: its middle x, z, half its width hw and depth hd, its heading, its colour): the plane that best fits the
