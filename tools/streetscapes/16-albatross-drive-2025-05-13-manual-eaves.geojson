@@ -1,0 +1,71 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.7067678,
+              -38.6309908
+            ],
+            [
+              145.7068415,
+              -38.630995
+            ],
+            [
+              145.7068449,
+              -38.6309809
+            ],
+            [
+              145.7069676,
+              -38.6309913
+            ],
+            [
+              145.7069549,
+              -38.6311192
+            ],
+            [
+              145.7067711,
+              -38.631105
+            ],
+            [
+              145.7067738,
+              -38.631061
+            ],
+            [
+              145.7067544,
+              -38.6310594
+            ],
+            [
+              145.7067678,
+              -38.6309908
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "address": "16 ALBATROSS DRIVE INVERLOCH 3996",
+        "parcelPFI": "424781294",
+        "vicmapAddressPFI": "424781269",
+        "legacyHouseSlot": 1857,
+        "shortlistedStreetSide": "inverloch-road-198bf32c9a505fa475ab-right",
+        "captureDate": "2025-05-13",
+        "source": "Esri World Imagery / Vantor Vivid LG04",
+        "sourceResolutionM": 0.34,
+        "nominalSourceAccuracyM": 5,
+        "attribution": "Esri, Vantor, Earthstar Geographics, and the GIS User Community",
+        "sourceItem": "https://www.arcgis.com/sharing/rest/content/items/10df2279f9684e4a9f6a7f08febac2a9?f=pjson",
+        "mapViewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.7069816933113,-38.63109054261611&level=20",
+        "imageryMetadataQuery": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/0/query?f=json&inSR=4326&outSR=4326&geometryType=esriGeometryPoint&geometry=145.7069816933113%2C-38.63109054261611&where=MinMapLevel%3D12+AND+SRC_DATE+%3E+0&outFields=OBJECTID%2CSRC_DATE%2CSRC_RES%2CSRC_ACC%2CSRC_DESC%2CNICE_DESC%2CDrawOrder%2CReleaseName&returnGeometry=false",
+        "addressQuery": "https://opendata.maps.vic.gov.au/geoserver/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=open-data-platform%3Aaddress&outputFormat=application%2Fjson&srsName=urn%3Aogc%3Adef%3Acrs%3AOGC%3A1.3%3ACRS84&CQL_FILTER=ezi_address%3D%2716+ALBATROSS+DRIVE+INVERLOCH+3996%27&propertyName=pfi%2Cproperty_pfi%2Cezi_address%2Cproperty_status%2Cgeom&count=5",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "parcelAttribution": "© State of Victoria, Department of Transport and Planning, Vicmap Property and Vicmap Address, CC BY 4.0",
+        "captureMethod": "Eight manually selected outer eaves in ArcGIS Online Map Viewer, Location Capture mode, XY WGS84, zoom 21.",
+        "interpretation": "Pale stepped roof. Small bright feature on western approach excluded. Eaves are approximate and unregistered against a survey."
+      }
+    }
+  ]
+}

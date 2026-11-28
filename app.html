@@ -9642,7 +9642,7 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=50", assets: TOWN3D, place: "inv", pre: ["town.json?v=56b7c1bf", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=50", assets: TOWN3D, place: "inv", pre: ["town.json?v=d91c0949", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
     moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=80", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
@@ -10092,6 +10092,7 @@ const handle = async (m, post) => {
       [-38.63116937, 145.72886301], [-38.63110856, 145.72815383], [-38.63106352, 145.72848114],
       [-38.63104775, 145.72879123], [-38.63113333, 145.72894915]
     ]) clearLatLon.push({ lat, lon, r: 0.16 });
+    if (inv) clearLatLon.push({ lat: -38.63109054, lon: 145.70698169, r: 0.16 }); // 16 Albatross Drive: retire the seeded house.
     if (inv && BS.W.invClock) { const [lat, lon] = townLL(D.c[0], D.c[1]); clearLatLon.push({ lat, lon, r: 4.5 }); detailLatLon.push({ lat, lon, r: 260 }); }
     // the model's power poles that land in a road (each is set out beside its own street, so where another street runs past, one can stand
     // in it): taken out, so none stands in the road. Seven in the detail round the town centre, one right in the middle of A'Beckett
@@ -10134,7 +10135,7 @@ const handle = async (m, post) => {
     townModelLoad(cfg).then(lib => {
       if (T.dead) return;
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
-        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cd69429f" } : cfg.assets;
+        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=847a58c3" } : cfg.assets;
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
         { onProgress: (f, label) => { if (!T.on && !T.dead) tip.textContent = `Loading the town model: ${String(label).toLowerCase()}…`; },
           onFloodLevel: v => T.onFlood?.(v),
