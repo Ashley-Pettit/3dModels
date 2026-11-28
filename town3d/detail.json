@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-bennison-way-vacant-lot-v1",
+      "x": 1838.37470703,
+      "z": -817.3004375,
+      "size": 105.60875977,
+      "file": "detail-bennison-way-vacant-lot-v1.webp",
+      "lo": "detail-bennison-way-vacant-lot-v1-lo.webp"
     }
   ]
 }
