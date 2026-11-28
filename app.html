@@ -10127,6 +10127,8 @@ const handle = async (m, post) => {
       [-38.63104775, 145.72879123], [-38.63113333, 145.72894915]
     ]) clearLatLon.push({ lat, lon, r: 0.16 });
     if (inv && BS.W.invClock) { const [lat, lon] = townLL(D.c[0], D.c[1]); clearLatLon.push({ lat, lon, r: 4.5 }); detailLatLon.push({ lat, lon, r: 260 }); }
+    if (inv) clearLatLon.push({ lat: -38.637551760, lon: 145.719479971, r: 0.16 }); // 4 Venus Street stock 473.
+    if (inv) clearLatLon.push({ lat: -38.637695893, lon: 145.719482842, r: 0.16 }); // 4 Venus Street stock 474.
     // the model's power poles that land in a road (each is set out beside its own street, so where another street runs past, one can stand
     // in it): taken out, so none stands in the road. Seven in the detail round the town centre, one right in the middle of A'Beckett
     // Street by Alma Street (Ash, 27 November 2026: "In Inverloch there is a power pole in the middle of the road near city centre. Move or
@@ -10235,6 +10237,7 @@ const handle = async (m, post) => {
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
+        if (inv && m.addParts) invVenusStreet4(T, m, BS.B.THREE);
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
         if (cfg.place === "moo") try { T.room6 = townRoom6(T, m); } catch (e) { console.warn("Town model: number 6's room couldn't be drawn", e); }  // (where the drone waited till 24 November 2026)
         if (cfg.place === "moo" && m.addParts && m.getCamera && !OFF.has("bal6")) try { T.bal6 = townBalcony6(T, m); } catch (e) { T.bal6 = null; console.warn("Town model: number 6's house and balcony couldn't be added", e); }  // number 6 as it is, or with the balcony concept
@@ -17593,6 +17596,93 @@ const handle = async (m, post) => {
     return jumps;
   }
   // The timber entry to beach access 38, off the concrete Surf Parade shared path.
+  function invVenusStreet4(T, model, THREE) {
+    const [x0,z0,cos,sin] = [-924.1,56.95,0.9973099,0.0733007];
+    const walls = [[0.91,7.05],[4.05,7.05],[4.05,21.15],[12.96,21.15],[12.96,0.85],[12.37,0.85],[12.37,1.84],[10.93,1.84],[10.93,0.85],[0.91,0.85]];
+    const eaves = [[0.48,0.42],[0.48,7.48],[3.62,7.48],[3.62,21.58],[13.39,21.58],[13.39,0.42],[8.85,0.42],[3.62,0.42]];
+    const hips = [[[8.505,16.695,1.49],[3.62,7.48,0.0],[3.62,21.58,0.0]],[[3.62,7.48,0.0],[8.505,16.695,1.49],[8.505,5.305,1.49]],[[8.505,5.305,1.49],[3.62,0.42,0.0],[6.076,3.194,0.749]],[[3.62,7.48,0.0],[8.505,5.305,1.49],[6.076,4.706,0.749]],[[6.076,4.706,0.749],[8.505,5.305,1.49],[6.076,3.194,0.749]],[[13.39,21.58,0.0],[13.39,0.42,0.0],[8.505,5.305,1.49]],[[8.505,5.305,1.49],[8.505,16.695,1.49],[13.39,21.58,0.0]],[[8.505,5.305,1.49],[8.85,0.42,0.0],[3.62,0.42,0.0]],[[8.85,0.42,0.0],[8.505,5.305,1.49],[13.39,0.42,0.0]],[[3.62,21.58,0.0],[13.39,21.58,0.0],[8.505,16.695,1.49]],[[0.48,0.42,0.0],[0.48,7.48,0.0],[4.01,3.95,0.953]],[[5.32,3.95,0.953],[6.076,4.706,0.749],[6.076,3.194,0.749]],[[6.076,3.194,0.749],[4.01,3.95,0.953],[5.32,3.95,0.953]],[[4.01,3.95,0.953],[6.076,3.194,0.749],[3.62,0.42,0.0]],[[4.01,3.95,0.953],[3.62,0.42,0.0],[0.48,0.42,0.0]],[[6.076,4.706,0.749],[5.32,3.95,0.953],[4.01,3.95,0.953]],[[3.62,7.48,0.0],[6.076,4.706,0.749],[4.01,3.95,0.953]],[[4.01,3.95,0.953],[0.48,7.48,0.0],[3.62,7.48,0.0]]];
+    const apron = [[0.99,0.85],[5.55,0.85],[4.42,-7.23],[0.75,-7.58]];
+    const fence = [[5.37,-7.09],[16.04,-6.49]];
+    const fenceRing = [[5.37,-7.145],[16.04,-6.545],[16.04,-6.4350000000000005],[5.37,-7.035]];
+    const offset = ([u,v]) => [u*cos-v*sin,u*sin+v*cos];
+    const world = p => { const [x,z] = offset(p); return [x+x0,z+z0]; };
+    const level = p => model.groundAt(...world(p));
+    const top = Math.max(...walls.map(level))+2.58;
+    const point = (p,y) => { const [x,z] = offset(p); return [x,y,z]; };
+    const positions = [], colours = [];
+    const sand = new THREE.Color(0xb4a087), base = new THREE.Color(0x867d70);
+    const fascia = new THREE.Color(0x65716c), roof = new THREE.Color(0x9a9f90);
+    const glass = new THREE.Color(0xa6b4b3), frames = new THREE.Color(0x5d6b6c);
+    const garage = new THREE.Color(0x515a5b), stone = new THREE.Color(0xb9aea1);
+    const timber = new THREE.Color(0x56656a), entry = new THREE.Color(0x5c4134);
+    const tri = (a,b,c,tint) => {
+      positions.push(...a,...b,...c);
+      for (let i=0; i<3; i++) colours.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,c,d,tint) => { tri(a,b,c,tint); tri(a,c,d,tint); };
+    function lowPrism(ring, bottom, ceiling, tint) {
+      ring.forEach((a,i) => {
+        const b=ring[(i+1)%ring.length];
+        quad(point(a,bottom(a)),point(b,bottom(b)),point(b,ceiling(b)),point(a,ceiling(a)),tint);
+      });
+      const [a,b,c,d]=ring.map(p=>point(p,ceiling(p)));
+      quad(a,b,c,d,tint);
+    }
+    walls.forEach((a,i) => {
+      const b=walls[(i+1)%walls.length], sill=Math.max(level(a),level(b))+.14;
+      quad(point(a,level(a)-.12),point(b,level(b)-.12),point(b,sill),point(a,sill),base);
+      quad(point(a,sill),point(b,sill),point(b,top),point(a,top),sand);
+    });
+    eaves.forEach((a,i) => {
+      const b=eaves[(i+1)%eaves.length];
+      quad(point(a,top-.065),point(b,top-.065),point(b,top+.07),point(a,top+.07),fascia);
+    });
+    for (const f of hips) {
+      const [a,b,c]=f.map(([u,v,h])=>point([u,v],top+.07+h));
+      tri(a,b,c,roof);
+    }
+    const front = (left,right,z,lo,hi,tint) =>
+      quad(point([right,z],lo),point([left,z],lo),point([left,z],hi),point([right,z],hi),tint);
+    front(1.21,5.34,.826,top-2.30,top-.40,fascia);
+    front(1.30,5.25,.817,top-2.24,top-.48,garage);
+    front(6.18,8.90,.826,top-1.97,top-.33,frames);
+    for (const [a,b] of [[6.26,7.08],[7.16,7.98],[8.06,8.82]]) front(a,b,.816,top-1.89,top-.41,glass);
+    front(11.15,12.06,1.82,top-2.32,top-.21,entry);
+    const rectangle = (u,v,w,d) => [[u-w,v-d],[u-w,v+d],[u+w,v+d],[u+w,v-d]];
+    const columns = [11.00,12.29].map(u=>rectangle(u,.69,.145,.145));
+    for (const ring of columns) lowPrism(ring,p=>level(p)-.03,()=>top,stone);
+    const [[u0,v0],[u1,v1]] = fence;
+    for (const lift of [.18,.45,.72]) {
+      lowPrism([fenceRing[1],fenceRing[0],fenceRing[3],fenceRing[2]],
+        p=>level(p)+lift,p=>level(p)+lift+.115,timber);
+    }
+    for (let i=0; i<=5; i++) {
+      const k=i/5;
+      const post=rectangle(u0+(u1-u0)*k,v0+(v1-v0)*k,.075,.078);
+      lowPrism(post,p=>level(p)-.025,p=>level(p)+.925,timber);
+    }
+    const pavement = [], paint = [];
+    const concrete = new THREE.Color(0xaba396);
+    const at = (a,b,t) => [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+    const groundPoint = p => { const [x,z]=world(p); return [x,.032,z]; };
+    for (let i=0; i<6; i++) {
+      const a=groundPoint(at(apron[0],apron[3],i/6)), b=groundPoint(at(apron[1],apron[2],i/6));
+      const c=groundPoint(at(apron[1],apron[2],(i+1)/6)), d=groundPoint(at(apron[0],apron[3],(i+1)/6));
+      pavement.push(...a,...b,...c,...a,...c,...d);
+      for (let j=0; j<6; j++) paint.push(concrete.r,concrete.g,concrete.b);
+    }
+    model.addParts([
+      { positions:new Float32Array(positions), colors:new Float32Array(colours), roughness:.89,
+        matrix:new THREE.Matrix4().makeTranslation(x0,0,z0).elements },
+      { positions:new Float32Array(pavement), colors:new Float32Array(paint), onGround:true, roughness:.92,
+        matrix:new THREE.Matrix4().elements },
+    ]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls.map(world));
+    grid.polygon(fenceRing.map(world));
+    for (const ring of columns) grid.polygon(ring.map(world));
+  }
+
   function townSurfParadeBeachAccess(T, m) {
     const THREE = BS.B.THREE, positions = [], colors = [];
     // OSM ways 1155344005, 1155344006 and 633621971, from the concrete landing to the beach.
