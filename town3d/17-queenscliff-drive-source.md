@@ -1,0 +1,9 @@
+# 17 Queenscliff Drive
+
+Esri World Imagery scene 6072283 shows the hipped main roof on 13 May 2025. Vantor reports a ground sample distance of 0.34 m and positioning accuracy of 5 m. Four approximate main eaves were sampled manually in the ArcGIS Online Map Viewer Location tool. The 200.26 m² wall ring follows the inset intersection with Microsoft outline `microsoft-311223133-65250ebf9d4614db` inside active Vicmap Lot 605 PS635645, parcel PFI 130939397. [Dated aerial](https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70557262,-38.63371779&level=20) · [Esri digitizing terms](https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data) · [Microsoft footprints](https://github.com/microsoft/GlobalMLBuildingFootprints) · [CDLA-Permissive-2.0](https://cdla.dev/permissive-2-0/) · [Vicmap Property, © State of Victoria, CC BY 4.0](https://discover.data.vic.gov.au/en_AU/dataset/vicmap-property-parcel-polygon-with-parcel-detail)
+
+| Northwest eave | Northeast eave | Southeast eave | Southwest eave |
+| --- | --- | --- | --- |
+| `145.7054754, -38.633662` | `145.7057309, -38.6336693` | `145.7057336, -38.633782` | `145.705468, -38.6337678` |
+
+The March 2026 Ray White sale archive corroborates the brick walls, warm tiled hips, cream gabled entrance, enclosed double garage and separate covered alfresco. The colours, pitch and height are approximate. The pale west cover, open street-side cover, driveway, separate shed and neighboring structures are outside the new collider. Seeded trunk 37546 stood within both measured walls and the main roof. The west tree stays at its sampled corner. The modeled No. 19 wall is 4.36 m from the No. 17 eave. [Ray White sale archive](https://raywhiteinverloch.com.au/properties/sold-residential/vic/inverloch-3996/house/3356058)
