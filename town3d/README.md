@@ -299,11 +299,11 @@ range requests (one 600 MB file, 3.6 MB of it read). Street View still gives eac
 - For the whole town: Microsoft's outlines put about 4,700 buildings where the model has its 5,712 made-up houses (and 311
   OpenStreetMap ones). Each would get its colours from the satellite, and Street View detail only where it matters.
 
-### Norman Road beta delivery
+### Norman Road in Explore v48
 
-The original No. 13 exterior and full-street outlines reached production in v46 via [Explore #381](https://github.com/Ashley-Pettit/3dModels/pull/381). The free-source height, frontage and vacant-lot refinements are in the [combined v48 beta](https://github.com/Ashley-Pettit/3dModels/pull/389). The beta bundle comes from [ai-forge source 29f7d18](https://github.com/Ashley-Pettit/ai-forge/commit/29f7d18697fc381f8163f0f94ad73f0f71d0fef8), now in the [canonical renderer branch via #53](https://github.com/Ashley-Pettit/ai-forge/pull/53).
+[Explore #400](https://github.com/Ashley-Pettit/3dModels/pull/400) brought the free-source roof, frontage and vacant-lot refinements to production. Production and [beta](https://ashley-pettit.github.io/3dModels/beta/inverloch/) serve the same v48 renderer bytes. The combined source [29f7d18](https://github.com/Ashley-Pettit/ai-forge/commit/29f7d18697fc381f8163f0f94ad73f0f71d0fef8) is in the [canonical renderer branch via #53](https://github.com/Ashley-Pettit/ai-forge/pull/53).
 
-[Explore #387](https://github.com/Ashley-Pettit/3dModels/pull/387) tracks production promotion of the existing v48 asset after Ash's beta sign-off. The individual model revisions below record how the street was built.
+The original No. 13 exterior and full-street outlines first reached production via [Explore #381](https://github.com/Ashley-Pettit/3dModels/pull/381). The model revisions below record the evidence and changes that led to v48.
 
 ### 13 Norman Road exterior preview
 
@@ -338,13 +338,13 @@ both frontages over that entire run, including the dead end short of Surf Parade
 - The renderer uses the same revision-42 release source as the number 13 draft, with the two Norman Road patches.
   The candidate adds no media assets to Explore. The review captures and provenance are outside the delivery bundle.
 
-#### Norman Road free-source pass (28 November 2026, v47)
+#### Norman Road free-source pass (28 November 2026)
 
 The [renderer source](https://github.com/Ashley-Pettit/ai-forge/commit/0e413f20504bddb45fc3ec002eb5a4c4b3c4cef1)
 fits the 26 mapped roof envelopes to Microsoft's open estimates of mean roof height above ground. It weights the
 roof planes by plan area and samples the existing bare-earth terrain under them. Number 13 uses the estimate for its
 own L-shaped roof to adjust the existing gables within a small range. Bounds keep the fit from implying a measured
-eave, pitch or ridge. The candidate builds on the released v46 renderer. Number 11's authored assets are unchanged.
+eave, pitch or ridge. Number 11's authored assets are outside this pass.
 
 - The [January 2024 sale description for 2](https://www.realestate.com.au/sold/property-house-vic-inverloch-142967772)
   and [November 2021 sale description for 5](https://www.realestate.com.au/sold/property-house-vic-inverloch-137987198)

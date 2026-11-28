@@ -6991,11 +6991,15 @@ const handle = async (m, post) => {
           pts.forEach(([ang, r], j) => { const x = Math.cos(ang) * r, y = Math.sin(ang) * r; (k || j) ? sh.lineTo(x, y) : sh.moveTo(x, y); }); }
         if (holeR) { const h = new THREE.Path(); h.absarc(0, 0, holeR, 0, Math.PI * 2, true); sh.holes.push(h); }
         const g2 = new THREE.ExtrudeGeometry(sh, { depth: 0.3, bevelEnabled: false, curveSegments: 4 }); g2.translate(0, 0, -0.15); return g2; };
-      // the navy gear: the same as the gold one, on the same centre, turned half a tooth so its teeth show between the gold ones
+      // The historic views show the navy cog behind the gold cog, with daylight around the inset clock housing.
       const navy = new THREE.MeshStandardMaterial({ color: 0x1f2f86, roughness: .55, metalness: .1 });
-      const back = new THREE.Mesh(gear(26, Ro, Ri, true), navy); back.scale.z = 0.6; back.position.set(0, CY, 0); back.rotation.z = Math.PI / 26; tower.add(back);  // centred on the gold one, its teeth in the gold one's gaps; thinner, so their faces never fight
-      // the clock itself: a gold gear with square teeth, its face a plain blue band with gold rims round a big white dial
-      const front = new THREE.Mesh(gear(26, Ro, Ri, true, 2.05), gold); front.position.y = CY; tower.add(front);
+      const frontZ = 0.36, backZ = -0.36;
+      const back = new THREE.Mesh(gear(26, Ro, Ri, true), navy);
+      back.scale.z = 0.6; back.position.set(0, CY, backZ); back.rotation.z = Math.PI / 26; tower.add(back);
+      const front = new THREE.Mesh(gear(26, Ro, Ri, true, 2.05), gold);
+      front.position.set(0, CY, frontZ); tower.add(front);
+      const housing = new THREE.Mesh(new THREE.CylinderGeometry(2.04, 2.04, frontZ - backZ, 32), navy);
+      housing.rotation.x = Math.PI / 2; housing.position.y = CY; tower.add(housing);
       const cv = document.createElement("canvas"); cv.width = cv.height = 512; const g = cv.getContext("2d"), C = 256;
       g.fillStyle = "#e9ad2c"; g.beginPath(); g.arc(C, C, C, 0, Math.PI * 2); g.fill();
       g.fillStyle = "#1d3fa0"; g.beginPath(); g.arc(C, C, C * 0.93, 0, Math.PI * 2); g.fill();
@@ -7013,12 +7017,26 @@ const handle = async (m, post) => {
       for (let n = 0; n < 12; n++) { const a2 = n / 12 * Math.PI * 2 - Math.PI / 2; g.save(); g.translate(C + Math.cos(a2) * C * 0.465, C + Math.sin(a2) * C * 0.465); g.rotate(a2 + Math.PI / 2); g.fillText(ROMAN[n], 0, 0); g.restore(); }
       const tex = new THREE.CanvasTexture(cv); tex.anisotropy = 4; if ("colorSpace" in tex) tex.colorSpace = THREE.SRGBColorSpace;
       const faceMat = new THREE.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: 0xfff1d0, emissiveIntensity: 0, roughness: .55 });
-      const hands = [];
-      [0, Math.PI].forEach(ry => { const side = new THREE.Group(); side.rotation.y = ry; side.position.y = CY;
-        const face = new THREE.Mesh(new THREE.CircleGeometry(Ri + 0.02, 64), faceMat); face.position.z = 0.16; side.add(face);
-        const mk = (len, w) => { const p = new THREE.Group(), h = new THREE.Mesh(new THREE.BoxGeometry(w, len, 0.04), black); h.position.y = len / 2 - 0.15; p.add(h); p.position.z = 0.2; side.add(p); return p; };
-        const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.08, 12), black); hub.rotation.x = Math.PI / 2; hub.position.z = 0.23; side.add(hub);
-        hands.push([mk(0.8, 0.11), mk(1.18, 0.07)]); tower.add(side); });
+      const handShape = (reach, half, tail) => {
+        const points = [[-half * 0.7, -tail], [half * 0.7, -tail], [half, -tail * 0.6], [half, 0.10],
+          [half * 0.24, reach - 0.065], [0, reach], [-half * 0.24, reach - 0.065], [-half, 0.10], [-half, -tail * 0.6]];
+        const geometry = new THREE.ExtrudeGeometry(new THREE.Shape(points.map(([x, y]) => new THREE.Vector2(x, y))), { depth: 0.04, bevelEnabled: false });
+        geometry.translate(0, 0, -0.02);
+        return geometry;
+      };
+      const hourHand = handShape(0.65, 0.078, 0.20), minuteHand = handShape(1.03, 0.046, 0.23), hands = [];
+      [[0, frontZ + 0.16], [Math.PI, backZ - 0.10]].forEach(([ry, z]) => {
+        const side = new THREE.Group(); side.rotation.y = ry; side.position.set(0, CY, z);
+        side.add(new THREE.Mesh(new THREE.CircleGeometry(Ri + 0.02, 64), faceMat));
+        const mount = (geometry, depth) => {
+          const pivot = new THREE.Group(); pivot.position.z = depth;
+          pivot.add(new THREE.Mesh(geometry, black)); side.add(pivot);
+          return pivot;
+        };
+        const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.08, 12), black);
+        hub.rotation.x = Math.PI / 2; hub.position.z = 0.095; side.add(hub);
+        hands.push([mount(hourHand, 0.043), mount(minuteHand, 0.065)]); tower.add(side);
+      });
       // the ship on top: a black gaff-rigged ketch sailing right, fixed to the tops of the poles
       const V = (pts) => new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y)));
       const shipShapes = [
@@ -7030,7 +7048,7 @@ const handle = async (m, post) => {
         V([[-1.85, 0.5], [-1.2, 0.5], [-1.2, 2.1], [-1.7, 1.75]]),                                          // mizzen
       ];
       const ship = new THREE.Mesh(new THREE.ExtrudeGeometry(shipShapes, { depth: 0.06, bevelEnabled: false }), black);
-      ship.position.set(-0.15, CY + Ro + 0.45, -0.03); ship.scale.setScalar(1.02); tower.add(ship);
+      ship.position.set(-0.15, CY + Ro + 0.45, -0.03); ship.scale.set(0.70, 0.71, 1.02); tower.add(ship);
       // the plaza: red brick, a garden bed of grasses and the four mosaic blocks
       const brick = new THREE.Mesh(new THREE.BoxGeometry(11.6, 0.3, 6.4), new THREE.MeshStandardMaterial({ color: 0xa4523f, roughness: 1 })); brick.position.set(-2.3, 0.15, -0.6); clk.add(brick);  // sized to the bed and blocks, so it stays off the road
       const bed = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 2.8, 0.45, 18), new THREE.MeshStandardMaterial({ color: 0x4a3426, roughness: 1 })); bed.position.set(0, 0.4, -0.3); clk.add(bed);
@@ -8208,6 +8226,7 @@ const handle = async (m, post) => {
     const llg = new THREE.BufferGeometry(); llg.setAttribute("position", new THREE.Float32BufferAttribute(lgLights, 3));
     W.loganLights = new THREE.PointsMaterial({ color: 0xffd9a0, size: 0.7, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: true });
     lgn.add(new THREE.Points(llg, W.loganLights));
+    // BEGIN LISTEN_AND_BOWLS_WEATHER_SCENES
     // ---- Your drive (shown during the traffic part of Listen): the motorway from just above it, cars as busy
     // as the traffic is, the overhead sign with your time, and any crash or roadworks on the way. Same sky, time and weather. ----
     {
@@ -8614,6 +8633,7 @@ const handle = async (m, post) => {
           r.roll.position.set(r.x0 + Math.sin(e * Math.PI) * r.sway, .52, r.z0 + (r.z1 - r.z0) * e); r.roll.rotation.x -= dt * (1 - t) * 6; });
       };
     }
+    // END LISTEN_AND_BOWLS_WEATHER_SCENES
     // ---- Moorooka, its landmarks in one view (seen from a little higher up): the Beaudesert Road roundabout with cars going
     // round, "Little Africa" shops and Ethiopian restaurants up Beaudesert Road, the Magic Mile of Motors car yards with
     // bunting and pylon signs, Queenslanders and jacarandas, Toohey Forest on the ridge, the city far off ----
@@ -9607,7 +9627,7 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=46", assets: TOWN3D, place: "inv", pre: ["town.json?v=1bef586b", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=48", assets: TOWN3D, place: "inv", pre: ["town.json?v=1bef586b", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
     moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=80", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
@@ -9780,30 +9800,65 @@ const handle = async (m, post) => {
       try { T.bowls?.swapped?.(); } catch {}  // what was shaped to the old model's ground is made again on this one's (Moorooka's road medians)
       try { T.gps?.swapped?.(); } catch {}  // older models need the line re-laid over their new ground
     };
-    const upgrade = async () => {
+    let activeQuality = first, pendingQuality = null;
+    const currentTown = () => !dead && BS.town === T;
+    // Compatible Inverloch tiers keep the scene, guest handles and player-owned vehicle on one canvas.
+    const changeQuality = async (target, initialLoadMs) => {
+      pendingQuality = target;
+      try {
+        if (graphics && (target === "medium" || target === "low") && cur.setQualityInPlace) {
+          const start = performance.now();
+          let applied = false;
+          try { applied = await cur.setQualityInPlace(target); }
+          catch (error) { if (currentTown()) console.warn("Inverloch quality transition failed; replacing the scene", error); }
+          if (applied) {
+            if (!currentTown()) return false;
+            activeQuality = target;
+            // Count both pieces of initialization, excluding time the player spent in Low.
+            if (target !== "low") save({ q: target, ms: Math.round(initialLoadMs + performance.now() - start) });
+            return true;
+          }
+        }
+        if (!currentTown()) return false;
+        const n = next = make(target, false); tag(n);
+        const el = rootOf(n); if (el) el.style.visibility = "hidden";
+        try { await n.ready; } catch { if (next === n) drop(); return false; }
+        if (next !== n || !currentTown()) return false;
+        const loadMs = Math.round(performance.now() - n.t0);
+        await swapTo(n, target);
+        if (cur !== n || !currentTown()) return false;
+        activeQuality = target;
+        if (target !== "low") save({ q: target, ms: loadMs });
+        return true;
+      } finally {
+        pendingQuality = null;
+        if (currentTown()) hiBox.hidden = true;
+      }
+    };
+    const upgrade = async initialLoadMs => {
       // wait for the view to be on screen, then see how smoothly the light one runs
       for (let i = 0; i < 600 && !T.on && !dead; i++) await new Promise(ok => setTimeout(ok, 100));
       await new Promise(ok => setTimeout(ok, 1500));
       if (dead || BS.town !== T) return;
       const f = await fps(2000);
-      if (f < 55 && !window.__anForceUp) return;  // not a steady 60: stay light (__anForceUp: for testing on slow machines)
+      if (!currentTown() || (f < 55 && !window.__anForceUp)) return;
       hiBox.hidden = false;
-      next = make(best, false); tag(next); const el = rootOf(next); if (el) el.style.visibility = "hidden";
-      const n = next;
-      try { await n.ready; } catch { if (next === n) drop(); return; }
-      if (dead || next !== n || BS.town !== T) return;
-      save({ q: best, ms: Math.round(performance.now() - n.t0) });
-      await swapTo(n, best);
+      if (!await changeQuality(best, initialLoadMs)) return;
       // the sharp one has to keep up: if it can't, back to light, and this device stays light
       await new Promise(ok => setTimeout(ok, 1500));
       if (dead || BS.town !== T) return;
       const g = await fps(2500);
-      if (g && g < 40 && !window.__anForceUp) { save({ slow: true }); const back = make("low", false); tag(back); const be = rootOf(back); if (be) be.style.visibility = "hidden";
-        try { await back.ready; } catch { return; } if (!dead && BS.town === T) await swapTo(back, "low"); }
+      if (currentTown() && g && g < 40 && !window.__anForceUp) {
+        save({ slow: true });
+        await changeQuality("low", initialLoadMs);
+      }
     };
     T.pair = { initialPreset, presets, get cur() { return cur; }, get next() { return next; },
+      get quality() { return activeQuality; }, get pendingQuality() { return pendingQuality; },
       setFrameTarget(target) { cur?.setFrameTarget?.(target); next?.setFrameTarget?.(target); } };
-    const ready = cur.ready.then(() => { if (!direct) upgrade(); else if (!manual && first === best) save({ q: best, ms: Math.round(performance.now() - cur.t0) }); });
+    const ready = cur.ready.then(() => { const loadMs = Math.round(performance.now() - cur.t0);
+      if (!direct) upgrade(loadMs).catch(error => { if (currentTown()) { hiBox.hidden = true; console.warn("Town quality upgrade failed", error); } });
+      else if (!manual && first === best) save({ q: best, ms: loadMs }); });
     return m;
   }
   function townModelOn(T) {
@@ -18765,7 +18820,7 @@ const handle = async (m, post) => {
               P.cars.some(D => D !== C && D.x != null && Math.hypot(D.x-sx,D.z-sz) < 12) ||
               (hiddenOnly && (!unobserved(sx,sz) || T.peers?.list?.().some(p => Math.hypot(sx-p.x,sz-p.z) < 100)))) continue;
         }
-        Object.assign(C, { r, i:a, d, s:0, v:0, y:null, p:null, rl:null, ln:null, still:0, blocked:0, x:sx, z:sz, h:null });
+        Object.assign(C, { r, i:a, d, s:0, v:0, y:null, p:null, rl:null, ln:null, still:0, blocked:0, x:sx, z:sz, h:null, dodge:0, dodgeT:0 });
         C.turnPlan = null; C.turnUntil = 0; showSignal(C, 0); return true; }
       return false; };
     const seg = C => { const r = C.r, a = C.i, b = C.i + C.d; return [r.p[a * 2], r.p[a * 2 + 1], r.p[b * 2], r.p[b * 2 + 1]]; };
@@ -18889,7 +18944,17 @@ const handle = async (m, post) => {
         let takenTurn = 0;
         for (let k = 0; k < 6 && C.s >= L; k++) { C.s -= L; takenTurn = next(C) || takenTurn; [ax, az, bx, bz] = seg(C); L = Math.hypot(bx - ax, bz - az) || 0.01; }
         const h = Math.atan2(bx - ax, bz - az); C.h = C.h == null ? h : C.h + wrap(h - C.h) * Math.min(1, dt * 5);
-        C.ln = C.ln == null ? C.r.lane : C.ln + bsClamp(C.r.lane - C.ln, -1.5 * dt, 1.5 * dt);  // (its place across the road: over to the next street's lane a bit at a time, not in one jump at the corner)
+        // Round what's poking into its lane (a parked car's nose, a post, a corner), as a driver would: it looks a few metres ahead
+        // five times a second and, if its lane is blocked there, eases over towards the middle of the road (or a little the other way)
+        // till it's past, then back. Before this it stopped dead behind it and sat there while you watched (Ash, 28 November 2026:
+        // "Check Inverloch for dumb car driving": cars stopped for good behind parked cars, a row of posts and a corner)
+        if (T.invStatic?.wholeTown && C.h != null && (C.lookT = (C.lookT || 0) - dt) <= 0) { C.lookT = 0.2;
+          const G = T.invStatic, [w, l] = townTrafficBodies[C.bus ? "bus" : "car"], hx = Math.sin(C.h), hz = Math.cos(C.h), sx = Math.cos(C.h), sz = -Math.sin(C.h), cx0 = C.x ?? 0, cz0 = C.z ?? 0, now0 = C.ln ?? C.r.lane;
+          const free = o => [2.5, 5, 7.5].every(a => !G.depth(cx0 + hx * a + sx * (o - now0), cz0 + hz * a + sz * (o - now0), C.h, l, w));  // (a lane offset o, a few metres on)
+          if (!free(C.r.lane + (C.dodge || 0))) { for (const k of [0, -0.5, -0.75, -1, -1.25, -1.5, -1.75, -2, -2.25, -2.5, 0.35, 0.7]) if (free(C.r.lane + k)) { C.dodge = k; C.dodgeT = 1.5; break; } }
+          else if (C.dodge && (C.dodgeT = (C.dodgeT || 0) - 0.2) <= 0 && free(C.r.lane)) C.dodge = 0; }
+        const laneTo = C.r.lane + (C.dodge || 0); if (C.dodge) C.v = Math.min(C.v, 7);
+        C.ln = C.ln == null ? C.r.lane : C.ln + bsClamp(laneTo - C.ln, -1.5 * dt, 1.5 * dt);  // (its place across the road: over to the next street's lane a bit at a time, not in one jump at the corner)
         const t = Math.min(1, C.s / L), lx = Math.cos(C.h), lz = -Math.sin(C.h)  /* (on the left of the road, as in Australia: Ash, 16 November 2026, "The cars should drive on the left side of the road"; then "the traffic is often on the wrong side of the roads ... all cars should drive on the left, and buses etc.": heading h runs (sin h, cos h) with z to the south, so the left is (cos h, -sin h); it had the right) */, x = ax + (bx - ax) * t + lx * C.ln, z = az + (bz - az) * t + lz * C.ln;
         if (Math.hypot(x - home[0], z - home[1]) > FAR && !C.rider) { start(C); return; }
         if (T.invStatic?.wholeTown) {
@@ -18897,6 +18962,9 @@ const handle = async (m, post) => {
           const clear = oldH == null || C.y == null ? !T.invStatic.depth(x,z,C.h,l,w) : T.invStatic.canDrive(cx,cz,oldH,x,z,C.h,l,w);
           if (!clear) {
             C.r = oldRoad; C.i = oldI; C.d = oldD; C.s = oldS; C.h = oldH; C.ln = oldLane; C.v = C.still = 0;
+            // stopped, but still edging over to the side it's going round on (a sideways step, if that's clear)
+            if (C.dodge && oldH != null && oldLane != null && C.x != null) { const dl = bsClamp(laneTo - oldLane, -1.5 * dt, 1.5 * dt), qx = cx + Math.cos(oldH) * dl, qz = cz - Math.sin(oldH) * dl;
+              if (dl && T.invStatic.canDrive(cx, cz, oldH, qx, qz, oldH, l, w)) { C.ln = oldLane + dl; C.x = qx; C.z = qz; } }
             C.blocked = (C.blocked || 0) + dt;
             if (C.blocked > 10 && !C.rider && unobserved(cx,cz)) { C.blocked = 8; start(C,true); }
             return;
