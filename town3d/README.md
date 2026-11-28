@@ -449,6 +449,19 @@ before expanding the same method block by block.
 Record source, capture date, rights and whether each footprint, height and finish is measured, mapped or estimated.
 Review the measured changes with the same street and aerial cameras as the v44 draft before extending their use.
 
+## Inverloch Motel frontage
+
+The fence at 39 Powlett Street follows roughly 77 m of the mapped Bass Highway frontage inside Vicmap parcel `5287818`.
+It uses silver slats, clipped hedges, two palms and a locally drawn sign. The fence and hedges are solid and the service
+driveway stays open. [Mapped fence](https://www.openstreetmap.org/way/988785313) · [Mapped driveway](https://www.openstreetmap.org/way/988183602) · [Vicmap Parcel](https://discover.data.vic.gov.au/en_AU/dataset/vicmap-property-parcel-polygon-with-parcel-detail) · [18 January 2025 view from the roundabout](https://www.mapillary.com/app/?pKey=1615864943147134) · [18 January 2025 view along the frontage](https://www.mapillary.com/app/?pKey=1669414413672530)
+
+**Renderer prerequisite.** Merge this frontage after the live Inverloch renderer supports `PartSpec.lambertNoCast` in
+`addParts`. The motel uses one opaque diffuse-lit batch with shadows received and casting disabled. Its slats dim with
+the surrounding scene at 22:00. The preview used an isolated v48 renderer built from ai-forge source `09bf705` plus the
+opt-in. A 114 m replay on desktop Chromium phone emulation at Medium (640 × 420 render buffer) measured 16 ms median
+and 24 ms p95 scene-render intervals for both the preview and baseline `a4efe38`. The matched animation callback intervals
+were 16 ms median and 18 ms p95. The renderer opt-in added 14 bytes to the gzip-compressed bundle.
+
 ## Inverloch's power poles cast no shadows
 
 Ash, 13 November 2026: "remove power pole shadows from Inverloch". The timber power poles and their wires along the

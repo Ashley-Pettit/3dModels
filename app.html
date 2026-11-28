@@ -10163,6 +10163,7 @@ const handle = async (m, post) => {
         let mine = []; if (inv) try { mine = townModelGuests(T, m); } catch (e) { console.warn("Town model: the town centre and Norman Road couldn't be added", e); }
         if (inv) {
           if (m.addParts) townGlade(T, m, BS.B.THREE);
+          invMotelFrontage(T, m, BS.B.THREE);
           const buildings = m.buildingBlockers?.();
           if (buildings) {
             const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
@@ -18104,6 +18105,132 @@ const handle = async (m, post) => {
     return at(0, 1);
   }
   // END GENERATED src/explore/collision.mjs
+
+  // Inverloch Motel at 39 Powlett Street. Follow the highway leg of mapped fence 988785313,
+  // inset into Vicmap parcel 5287818 with the service driveway at the west end left open.
+  // Mapillary views 1615864943147134 and 1669414413672530, maxim752, 18 January 2025.
+  function invMotelFrontage(T, model, THREE) {
+    const points = [[-800.60,-1062.98], [-766.60,-1071.23], [-728.16,-1057.54], [-727.08,-1056.91]];
+    const sections = [];
+    let distance = 0;
+    for (let i = 1; i < points.length; i++) {
+      const [x,z] = points[i - 1], [bx,bz] = points[i];
+      const width = Math.hypot(bx - x, bz - z);
+      sections.push({ x, z, ux: (bx - x) / width, uz: (bz - z) / width, start: distance, stop: distance + width });
+      distance += width;
+    }
+    const pick = s => sections.find(a => s <= a.stop) ?? sections.at(-1);
+    const at = (segment, s, v, y) => {
+      const { x, z, ux, uz, start } = segment;
+      return [x + (s - start) * ux - v * uz, y, z + (s - start) * uz + v * ux];
+    };
+    const positions = [], colors = [], solids = [];
+    const quad = (a,b,c,d,tint) => {
+      positions.push(...a, ...b, ...c, ...a, ...c, ...d);
+      for (let i = 0; i < 6; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const material = hex => new THREE.Color(hex);
+    const silver = [0xd9dfdc, 0xcbd2d0, 0xd3dad7, 0xe0e4df].map(material);
+    const frame = material(0xa9b4b4), hedge = [0x23391c, 0x30472a, 0x3b502f].map(material);
+    const signFrame = material(0x382f28), trunk = material(0x827864);
+    const leaf = [0x4a5b2f, 0x596a37, 0x70844a].map(material);
+    function block(axis, a, b, l, r, y0, y1, tint, top = tint) {
+      const p = [at(axis,a,l,y0), at(axis,a,r,y0), at(axis,b,r,y0), at(axis,b,l,y0),
+        at(axis,a,l,y1), at(axis,a,r,y1), at(axis,b,r,y1), at(axis,b,l,y1)];
+      quad(p[4],p[5],p[6],p[7],top);
+      for (const [i,j,k,n] of [[0,1,5,4],[1,2,6,5],[2,3,7,6],[3,0,4,7]]) quad(p[i],p[j],p[k],p[n],tint);
+    }
+    function footprint(axis, a, b, l, r) {
+      solids.push([[a,l],[b,l],[b,r],[a,r]].map(([s,v]) => {
+        const [x,,z] = at(axis,s,v,0);
+        return [x,z];
+      }));
+    }
+    // The observed alternating enclosures are laid out along the uninterrupted mapped frontage.
+    // Panel, hedge, sign and palm dimensions are estimates, all relative to the existing ground.
+    const clippedHedges = [[8.8,12.6],[19.1,23.4],[29.5,33.4],[42.4,46.4],[55.4,60.2],[68.0,72.4]];
+    const breaks = [0, ...clippedHedges.flat(), distance, ...sections.slice(0,-1).map(a => a.stop)].sort((a,b) => a - b);
+    for (let i = 1; i < breaks.length; i++) {
+      const a = breaks[i - 1], b = breaks[i], mid = (a + b) / 2, axis = pick(mid);
+      if (clippedHedges.some(([from,to]) => mid > from && mid < to)) {
+        const bottom = -0.03, top = 2.08;
+        block(axis,a,b,-0.32,0.75,bottom,top,hedge[0],hedge[1]);
+        const buds = Math.ceil((b - a) / 0.48);
+        for (let j = 0; j < buds; j++) {
+          const s = bsLerp(a,b,(j + 0.22) / buds), e = Math.min(s + 0.13,b);
+          const y = 0.27 + ((j * 7 + i * 3) % 23) * 0.067, v = -0.325;
+          quad(at(axis,s,v,y),at(axis,e,v,y + 0.024),at(axis,e,v,y + 0.14),at(axis,s,v,y + 0.11),hedge[1 + j % 2]);
+        }
+        footprint(axis,a,b,-0.33,0.75);
+      } else {
+        const pickets = Math.ceil((b - a) / 0.17);
+        for (let j = 0; j < pickets; j++) {
+          const s = bsLerp(a,b,(j + 0.5) / pickets), w = (b - a) / pickets * 0.235;
+          // Thin folded pickets need the road face and the oblique return surfaces.
+          const l = s - w, r = s + w, front = -0.044, back = 0.014, foot = 0.12, top = 1.55;
+          const tint = silver[j % silver.length];
+          quad(at(axis,l,front,foot),at(axis,l,front,top),at(axis,r,front,top),at(axis,r,front,foot),tint);
+          quad(at(axis,l,back,foot),at(axis,l,back,top),at(axis,l,front,top),at(axis,l,front,foot),silver[1]);
+          quad(at(axis,r,front,foot),at(axis,r,front,top),at(axis,r,back,top),at(axis,r,back,foot),silver[2]);
+        }
+        for (const y of [0.25, 1.42]) block(axis,a,b,0.012,0.068,y - 0.025,y + 0.025,frame);
+        const bays = Math.ceil((b - a) / 2.6);
+        for (let j = 0; j <= bays; j++) {
+          const s = bsLerp(a,b,j / bays);
+          block(axis,Math.max(a,s - 0.04),Math.min(b,s + 0.04),-0.038,0.07,-0.025,1.57,frame);
+        }
+        footprint(axis,a,b,-0.052,0.075);
+      }
+    }
+
+    // Both garden palms fit between fence and roof. Native tree trunks are farther behind the building.
+    const palms = [];
+    for (const [s,h,phase] of [[15,4.2,0.22],[48,4.85,0.72]]) {
+      const axis = pick(s), [x,,z] = at(axis,s,1.45,0);
+      palms.push([x,z]);
+      const ring = (radius, y, side) => [x + Math.cos(side * Math.PI / 3) * radius, y, z + Math.sin(side * Math.PI / 3) * radius];
+      for (let i = 0; i < 6; i++) quad(ring(0.13,0,i),ring(0.13,0,i + 1),ring(0.075,h,i + 1),ring(0.075,h,i),trunk);
+      for (let i = 0; i < 8; i++) {
+        const a = phase + Math.PI * i / 4, ux = Math.cos(a), uz = Math.sin(a);
+        const frond = (d,y,w) => [x + d * ux - w * uz, h + y, z + d * uz + w * ux];
+        const rows = [[0,0,0.04],[0.52,0.54,0.19],[1.02,0.35,0.16],[1.47,-0.29,0.02]];
+        for (let j = 1; j < rows.length; j++) {
+          const [d0,y0,w0] = rows[j - 1], [d1,y1,w1] = rows[j];
+          quad(frond(d0,y0,0),frond(d0,y0,-w0),frond(d1,y1,-w1),frond(d1,y1,0),leaf[i % leaf.length]);
+          quad(frond(d0,y0,w0),frond(d0,y0,0),frond(d1,y1,0),frond(d1,y1,w1),leaf[(i + 1) % leaf.length]);
+        }
+      }
+    }
+
+    const s = 5.6, axis = pick(s), l = s - 1.50, r = s + 1.50, low = 0.62, high = 1.51;
+    block(axis,l - 0.03,r + 0.03,-0.075,-0.035,low - 0.025,high + 0.025,signFrame);
+    const canvas = document.createElement("canvas");
+    canvas.width = 256;
+    canvas.height = 80;
+    const ctx = canvas.getContext("2d");
+    // Keep the sign and coloured structure in one mesh. A white strip preserves the vertex colours.
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0,0,256,80);
+    ctx.fillStyle = "#ede9dc";
+    ctx.fillRect(0,16,256,64);
+    ctx.strokeStyle = "#574b3c";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(5,21,246,54);
+    ctx.fillStyle = "#342b22";
+    ctx.font = "700 26px Georgia, serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("INVERLOCH MOTEL",128,49,226);
+    const uvs = new Float32Array(positions.length / 3 * 2 + 12);
+    for (let i = 0; i < uvs.length - 12; i += 2) { uvs[i] = 0.5; uvs[i + 1] = 0.9; }
+    uvs.set([0.004,0.012, 0.996,0.012, 0.996,0.787, 0.004,0.012, 0.996,0.787, 0.004,0.787], uvs.length - 12);
+    quad(at(axis,r,-0.077,low),at(axis,l,-0.077,low),at(axis,l,-0.077,high),at(axis,r,-0.077,high),material(0xffffff));
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors), uvs,
+      map: canvas, matrix: new THREE.Matrix4().elements, lambertNoCast: true, onGround: true, doubleSide: true }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    for (const ring of solids) grid.polygon(ring);
+    for (const [x,z] of palms) grid.post(x,z,0.13);
+  }
 
   // Things made for the model's town centre alone. The foot of the Rotary clock as in photos of it: brick paving, a planted
   // bed of tussock grasses and low shrubs round the two poles, their broad teal bases, and the four mosaic blocks in a row out
