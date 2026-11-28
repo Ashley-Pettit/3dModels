@@ -10163,6 +10163,7 @@ const handle = async (m, post) => {
             const distance = clockDistance();
             if (distance <= 65) {
               T.tween = null;
+              F.goTo = null;
               F.yaw = Math.atan2(F.pos.x - clock[0], F.pos.z - clock[1]);
               F.pitch = bsClamp(Math.atan2(ground(...clock) + 5.4 - F.pos.y, distance), -1.45, 1.45);
             }
