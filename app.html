@@ -9772,7 +9772,6 @@ const handle = async (m, post) => {
         replaying = to;
         for (const pose of driven.values()) to.driveCar(...pose);
       } else T.invStatic?.restoreCars(to);
-      T.fitMuseumFrontage?.(to);
       for (const k of LAST) if (last[k]) { try { const r = to[k](...last[k]); if (r?.then) await r; } catch {} }
       await new Promise(ok => requestAnimationFrame(() => requestAnimationFrame(ok)));
       if (dead || BS.town !== T) return;
@@ -9805,7 +9804,10 @@ const handle = async (m, post) => {
         if (!currentTown()) return false;
         const n = next = make(target, false); tag(n);
         const el = rootOf(n); if (el) el.style.visibility = "hidden";
-        try { await n.ready; } catch { if (next === n) drop(); return false; }
+        try {
+          await n.ready;
+          if (next === n && currentTown()) T.fitMuseumFrontage?.(n);
+        } catch { if (next === n) drop(); return false; }
         if (next !== n || !currentTown()) return false;
         const loadMs = Math.round(performance.now() - n.t0);
         await swapTo(n, target);
