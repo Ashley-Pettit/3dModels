@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-blue-wren-way-1-v1",
+      "x": -1879.44478027,
+      "z": -769.75452148,
+      "size": 111.47591309,
+      "file": "detail-blue-wren-way-1-v1.webp",
+      "lo": "detail-blue-wren-way-1-v1-lo.webp"
     }
   ]
 }
