@@ -332,6 +332,28 @@ both frontages over that entire run, including the dead end short of Surf Parade
 - The renderer uses the same revision-42 release source as the number 13 draft, with the two Norman Road patches.
   The candidate adds no media assets to Explore. The review captures and provenance are outside the delivery bundle.
 
+#### Norman Road free-source pass (28 November 2026, v45)
+
+The [renderer source](https://github.com/Ashley-Pettit/ai-forge/commit/0e413f20504bddb45fc3ec002eb5a4c4b3c4cef1)
+fits the 26 mapped roof envelopes to Microsoft's open estimates of mean roof height above ground. It weights the
+roof planes by plan area and samples the existing bare-earth terrain under them. Number 13 uses the estimate for its
+own L-shaped roof to adjust the existing gables within a small range. Bounds keep the fit from implying a measured
+eave, pitch or ridge. Number 11's authored assets are unchanged.
+
+- The [January 2024 sale description for 2](https://www.realestate.com.au/sold/property-house-vic-inverloch-142967772)
+  and [November 2021 sale description for 5](https://www.realestate.com.au/sold/property-house-vic-inverloch-137987198)
+  establish two visible levels. Number 5's main entry is at the rear. The [7–9 listing](https://www.realestate.com.au/sold/property-house-vic-inverloch-148947500)
+  and [15 listing](https://www.realestate.com.au/sold/property-house-vic-inverloch-135393894) support wider rear glazing.
+  Exact opening, deck, carport and canopy positions remain uncertain.
+- Where the model can fit a short entry against the rendered ground, it places supported treads. On steep or obstructed
+  ground, a window bay replaces the illustrative floating doorway. Number 14 is the most visible example.
+- Number 14A and number 19 use their Vicmap parcel rings to keep generated buildings off the open lots documented in
+  the [14A land listing](https://www.realestate.com.au/property-residential%2Bland-vic-inverloch-204538948) and
+  [19 property record](https://www.property.com.au/vic/inverloch-3996/norman-rd/19-pid-4519911/).
+- The checked open footprint sources still lack current replacement roof outlines at 1–3 and 23. Those use the previous
+  scene as a fallback. Roof finish and pitch remain illustrative elsewhere. The candidate uses original geometry and the
+  existing ground and model assets.
+
 #### Refined source plan for Norman Road and Inverloch
 
 **Footprints and address matching.** Pull dated OpenStreetMap outlines and building parts through
