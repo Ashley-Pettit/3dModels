@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-toorak-road-18-v1",
+      "x": -1200.81071289,
+      "z": -50.83686932,
+      "size": 97.78588867,
+      "file": "detail-toorak-road-18-v1.webp",
+      "lo": "detail-toorak-road-18-v1-lo.webp"
     }
   ]
 }
