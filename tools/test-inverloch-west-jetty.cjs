@@ -4,7 +4,7 @@ const path = require('node:path');
 const {test} = require('node:test');
 const vm = require('node:vm');
 
-const host = readFileSync(path.join(__dirname, '../app.html'), 'utf8');
+const host = readFileSync(path.join(__dirname, '../beta/app.html'), 'utf8');
 const registration = host.slice(host.indexOf('  function invWestJetty('), host.indexOf('  function invWestJettyParts('));
 
 test('the prepared jetty supports the player only when its world becomes active', () => {

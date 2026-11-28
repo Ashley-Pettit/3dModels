@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { invCivicCollision as make, invAddDesignedWalls as addWalls } from '../src/explore/collision.mjs';
 
-const source = readFileSync(new URL('../app.html', import.meta.url), 'utf8');
+const source = readFileSync(new URL('../beta/app.html', import.meta.url), 'utf8');
 const identity = (x,z) => [x,z];
 const makeIndex = () => make(identity,(x,z) => Math.abs(x) <= 100 && Math.abs(z) <= 100);
 const radius = .35;

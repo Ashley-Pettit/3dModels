@@ -3,7 +3,7 @@ const fs = require("node:fs");
 const vm = require("node:vm");
 const path = require("node:path");
 const {test} = require("node:test");
-const app = fs.readFileSync(path.join(__dirname, "..", "app.html"), "utf8");
+const app = fs.readFileSync(path.join(__dirname, "..", "beta", "app.html"), "utf8");
 const between = (start, end) => app.slice(app.indexOf(start), app.indexOf(end, app.indexOf(start)));
 const collision = import("../src/explore/collision.mjs");
 const mechanics = between("  function townIndicatorSide(", "  function townCritter(");

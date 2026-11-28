@@ -4,7 +4,7 @@ const path = require('node:path');
 const {test} = require('node:test');
 const vm = require('node:vm');
 
-const host = readFileSync(path.join(__dirname, '../app.html'), 'utf8');
+const host = readFileSync(path.join(__dirname, '../beta/app.html'), 'utf8');
 const source = host.slice(host.indexOf('  const INV_SCREW_CREEK ='), host.indexOf('  function townModelOn('));
 const {frame, makeBridge, mask} = vm.runInNewContext(source + `
   ({frame: INV_SCREW_CREEK, makeBridge: invScrewCreekBridge, mask: invScrewCreekMask});`, {
