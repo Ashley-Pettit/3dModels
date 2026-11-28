@@ -10131,6 +10131,59 @@ const handle = async (m, post) => {
     });
   }
 
+  // 49 Cashin Street. Two observed gable sections meet above a single solid shell.
+  function invCashinStreet49(T, model, THREE) {
+    const walls = [[-1221.97,-425.45],[-1222.12,-424.4],[-1209.92,-422.69],
+      [-1211.14,-413.99],[-1223.33,-415.69],[-1223.31,-415.82],
+      [-1238.84,-417.99],[-1237.5,-427.61]];
+    const sections = [{"eaves":[[-1237.78,-427.98],[-1221.83,-425.75],[-1223.26,-415.49],[-1239.21,-417.72]],"ridge":[[-1238.5,-422.85],[-1222.54,-420.62]],"wallTop":2.74,"ridgeY":4.08},{"eaves":[[-1222.1,-424.72],[-1209.56,-422.97],[-1210.87,-413.63],[-1223.41,-415.38]],"ridge":[[-1222.75,-420.05],[-1210.22,-418.3]],"wallTop":2.51,"ridgeY":3.68}];
+    const x0 = -1220.5, z0 = -421.0, floor = model.groundAt(x0,z0)+.12;
+    const positions = [], colors = [];
+    const point = ([x,z],y) => [x-x0,y,z-z0];
+    const tri = (a,b,c,hex) => {
+      const tint = new THREE.Color(hex);
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,c,d,hex) => { tri(a,b,c,hex); tri(a,c,d,hex); };
+    const wallHeights = [2.74,2.51,2.51,2.51,2.74,2.74,2.74,2.74];
+    for (let i=0; i<walls.length; i++) {
+      const a = walls[i], b = walls[(i+1)%walls.length], top = wallHeights[i];
+      const mid = [(a[0]+b[0])/2,(a[1]+b[1])/2];
+      const base = Math.min(-.13,Math.min(model.groundAt(...a),model.groundAt(...b),model.groundAt(...mid))-floor-.17);
+      quad(point(a,base),point(a,.12),point(b,.12),point(b,base),0xa5a294);
+      quad(point(a,.12),point(a,top),point(b,top),point(b,.12),0xc2bfb4);
+    }
+    for (const [i,{ eaves,ridge,wallTop,ridgeY }] of sections.entries()) {
+      const ring = eaves.map(p=>point(p,wallTop));
+      const [west,east] = ridge.map(p=>point(p,ridgeY));
+      quad(ring[0],west,east,ring[1],i?0xbfc7c5:0xb9bfb9);
+      quad(ring[2],east,west,ring[3],i?0xacb8ba:0x9fa6a4);
+      for (let j=0; j<ring.length; j++) {
+        const k = (j+1)%ring.length;
+        quad(point(eaves[j],wallTop-.13),ring[j],ring[k],point(eaves[k],wallTop-.13),0xb4b7ae);
+      }
+      // Close the step under the taller gable and the two outward-facing ends.
+      tri(ring[0],ring[3],west,0xc2bfb4);
+      tri(ring[1],east,ring[2],0xc2bfb4);
+    }
+    const panel = (side,start,end,low,high,hex,pad) => {
+      const a = walls[side], b = walls[(side+1)%walls.length];
+      const dx = b[0]-a[0], dz = b[1]-a[1], len = Math.hypot(dx,dz);
+      const p = (s,y) => point([a[0]+(dx*s+dz*pad)/len,a[1]+(dz*s-dx*pad)/len],y);
+      quad(p(start,low),p(start,high),p(end,high),p(end,low),hex);
+    };
+    // The front and side openings are representative under the visible eaves.
+    for (const [side,left,right] of [[1,3.2,5.3],[2,1.45,3.65],[2,5.25,7.35],[3,3.9,6.05],[5,4.3,6.5],[5,10.2,12.4]]) {
+      panel(side,left,right,.90,2.04,0xe4e0d3,.026);
+      panel(side,left+.08,right-.08,.98,1.96,0x56646a,.044);
+    }
+    model.addParts([{ positions:new Float32Array(positions), colors:new Float32Array(colors),
+      matrix:new THREE.Matrix4().makeTranslation(x0,floor,z0).elements, roughness:.88 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
+  }
+
   function invScrewCreekBridge(model, THREE) {
     const { length, half, point, local, nearby } = INV_SCREW_CREEK;
     const start = -0.006, end = length + 0.006, westJoin = 6, eastJoin = length - 9;
@@ -10249,6 +10302,9 @@ const handle = async (m, post) => {
       [-38.63116937, 145.72886301], [-38.63110856, 145.72815383], [-38.63106352, 145.72848114],
       [-38.63104775, 145.72879123], [-38.63113333, 145.72894915]
     ]) clearLatLon.push({ lat, lon, r: 0.16 });
+    if (inv) clearLatLon.push({ lat: -38.63321651, lon: 145.7160891, r: 0.16 }); // 49 Cashin Street: retire overlapping stock 790.
+    if (inv) clearLatLon.push({ lat: -38.63319849, lon: 145.7158795, r: 0.16 }); // 49 Cashin Street: retire overlapping stock 791.
+    if (inv) clearLatLon.push({ lat: -38.63317146, lon: 145.71596277, r: 0.16 }); // 49 Cashin Street: retire overlapping stock 36978.
     if (inv && BS.W.invClock) { const [lat, lon] = townLL(D.c[0], D.c[1]); clearLatLon.push({ lat, lon, r: 4.5 }); detailLatLon.push({ lat, lon, r: 260 }); }
     // the model's power poles that land in a road (each is set out beside its own street, so where another street runs past, one can stand
     // in it): taken out, so none stands in the road. Seven in the detail round the town centre, one right in the middle of A'Beckett
@@ -10295,7 +10351,7 @@ const handle = async (m, post) => {
       if (T.dead) return;
       if (gladeAsset) clearLatLon.push(...gladeAsset.clearings);
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
-        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cd69429f" } : cfg.assets;
+        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=862fb50c" } : cfg.assets;
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
         { onProgress: (f, label) => { if (!T.on && !T.dead) tip.textContent = `Loading the town model: ${String(label).toLowerCase()}…`; },
           onFloodLevel: v => T.onFlood?.(v),
@@ -10369,6 +10425,7 @@ const handle = async (m, post) => {
         if (inv && m.addParts) try { mine.push(invWestJetty(T, BS.B.THREE)); } catch (e) { console.warn("Inverloch: the west jetty could not be added", e); }
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
+        if (inv && m.addParts) invCashinStreet49(T, m, BS.B.THREE);
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
         if (cfg.place === "moo") try { T.room6 = townRoom6(T, m); } catch (e) { console.warn("Town model: number 6's room couldn't be drawn", e); }  // (where the drone waited till 24 November 2026)
