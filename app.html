@@ -7660,19 +7660,19 @@ const handle = async (m, post) => {
       // ---- Norman Road, about 1.6 km west: its own patch of the town (Explore's "Jump to Norman Rd"). Streets, house numbers, the
       // surf beach and the sea from OpenStreetMap; number 11 drawn in detail, the rest as simple coastal houses facing their streets.
       if (D.nr) {
-        const N = D.nr, [ncx, ncz] = N.c, nb = bag(), nl = bag(), nw = bag(), nt = bag(), ntl = bag();
-        put(nb, new THREE.BoxGeometry(620, 2.2, 620), 0x5b8a46, mtx(ncx, 1.1, ncz, 0));  // its own lawn, so it isn't floating
+        const N = D.nr, [ncx, ncz] = N.c, nb = bag(), nl = bag(), nw = bag(), nt = bag(), ntl = bag(), ng = bag();
+        put(ng, new THREE.BoxGeometry(620, 2.2, 620), 0x5b8a46, mtx(ncx, 1.1, ncz, 0));  // its own lawn, so it isn't floating
         // the sea beyond the coastline, then the beach on top
         if (N.coast.length > 3) { const cp = pts2(N.coast), [hx0, hz0] = N.c; const mid = cp[cp.length >> 1], ox = mid[0] - hx0, oz = mid[1] - hz0, ol = Math.hypot(ox, oz) || 1;
           const sea = [...cp, ...cp.slice().reverse().map(([x, z]) => [x + ox / ol * 700, z + oz / ol * 700])];
           const g = new THREE.ShapeGeometry(new THREE.Shape(sea.map(([x, z]) => new THREE.Vector2(x, -z)))); g.applyMatrix4(flatDown); put(nw, g, 0x2f7391, mtx(0, G0 + 0.05, 0, 0)); }
-        if (N.beach.length > 5) { const g = new THREE.ShapeGeometry(new THREE.Shape(P(N.beach))); g.applyMatrix4(flatDown); put(nb, g, 0xe6d6ac, mtx(0, G0 + 0.08, 0, 0)); }
+        if (N.beach.length > 5) { const g = new THREE.ShapeGeometry(new THREE.Shape(P(N.beach))); g.applyMatrix4(flatDown); put(ng, g, 0xe6d6ac, mtx(0, G0 + 0.08, 0, 0)); }
         // streets: bitumen, gravel for the service lanes, sandy tracks for paths
         const segs = [];
         N.r.forEach(([w, f]) => { const pp = pts2(f); for (let i = 0; i < pp.length - 1; i++) { const [ax, az] = pp[i], [bx, bz] = pp[i + 1], L = Math.hypot(bx - ax, bz - az); if (L < 0.2) continue;
           segs.push([ax, az, bx, bz, w]); const c = w >= 7 ? 0x3d4146 : w >= 4 ? 0x8d8a82 : 0xcdbb92;
-          put(nb, new THREE.BoxGeometry(w, 0.08, L + (w >= 7 ? w * 0.6 : 0.4)), c, mtx((ax + bx) / 2, G0 + 0.05, (az + bz) / 2, Math.atan2(bx - ax, bz - az)));
-          if (w >= 7) put(nb, new THREE.BoxGeometry(0.15, 0.1, L * 0.5), 0xe9e4d8, mtx((ax + bx) / 2, G0 + 0.1, (az + bz) / 2, Math.atan2(bx - ax, bz - az))); } });  // a dash down the middle
+          put(ng, new THREE.BoxGeometry(w, 0.08, L + (w >= 7 ? w * 0.6 : 0.4)), c, mtx((ax + bx) / 2, G0 + 0.05, (az + bz) / 2, Math.atan2(bx - ax, bz - az)));
+          if (w >= 7) put(ng, new THREE.BoxGeometry(0.15, 0.1, L * 0.5), 0xe9e4d8, mtx((ax + bx) / 2, G0 + 0.1, (az + bz) / 2, Math.atan2(bx - ax, bz - az))); } });  // a dash down the middle
         const nearRoad = (x, z, pad) => segs.some(([ax, az, bx, bz, w]) => { const dx = bx - ax, dz = bz - az, L2 = dx * dx + dz * dz, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L2));
           return Math.hypot(x - ax - dx * t, z - az - dz * t) < w / 2 + pad; });
         // a hipped roof: a ridge along x, eaves round all four sides
@@ -7776,44 +7776,54 @@ const handle = async (m, post) => {
           put(nb, new THREE.BoxGeometry(5.6, 0.12, 0.1), 0xd8d2c2, m(5, F0 + 2.48, 5.06));  // its head
           [[-9.3, 5.2], [1.3, 5.2]].forEach(([x, z]) => brick(0.5, 0.9, 0.5, x, F0 + H1 + 0.45 + 0.15, z));  // brick piers under the balcony posts
           // the bins out on the kerb for collection: red lid and yellow lid
-          [[0xc8302c, 7.4], [0xe6c228, 8.3]].forEach(([c, x]) => { put(nb, new THREE.BoxGeometry(0.6, 0.95, 0.7), 0x2f6b3a, m(x, G0 + 0.5, 15.0)); put(nb, new THREE.BoxGeometry(0.64, 0.06, 0.76), c, m(x, G0 + 1.0, 15.0)); });
+          W.invNormanBins = [[0xc8302c, 7.4], [0xe6c228, 8.3]].map(([colour, u]) => {
+            const v = 15, bin = bag();
+            put(bin, new THREE.BoxGeometry(.6, .95, .7), 0x2f6b3a, mtx(0, .475, 0, 0));
+            put(bin, new THREE.BoxGeometry(.64, .06, .76), colour, mtx(0, .975, 0, 0));
+            const mesh = done(bin, { side: THREE.DoubleSide });
+            mesh.applyMatrix4(m(u, G0 + .025, v));
+            return { mesh, u, v };
+          });
           // kangaroo paws and a grass tree among the natives
           for (let i = 0; i < 6; i++) { const x = -8.5 + i * 0.5, z = 9.4; put(nt, new THREE.CylinderGeometry(0.02, 0.02, 1.1, 4), 0x5e7a3c, m(x, G0 + 0.75, z)); put(ntl, new THREE.ConeGeometry(0.08, 0.3, 5), i % 2 ? 0xd2452c : 0xe8a52a, m(x, G0 + 1.4, z, 0, 1, 1, 1, Math.PI)); }
           put(nt, new THREE.CylinderGeometry(0.22, 0.26, 1.1, 8), 0x2a2420, m(-6.2, G0 + 0.65, 7.2)); for (let i = 0; i < 14; i++) put(ntl, new THREE.ConeGeometry(0.03, 1.1, 3), 0x8a9a52, m(-6.2 + Math.sin(i) * 0.15, G0 + 1.6, 7.2 + Math.cos(i) * 0.15, i * 0.45, 1, 1, 1, 0.6));
           put(nt, new THREE.CylinderGeometry(0.03, 0.03, 2.2, 4), 0x6a5a3a, m(-6.2, G0 + 2.4, 7.2));  // its flower spike
           // a concrete path from the street to the front door, and the nature strip
-          put(nb, new THREE.BoxGeometry(1.1, 0.05, 10), 0xc7c1b4, m(-4.4, G0 + 0.07, 10.2));
+          put(ng, new THREE.BoxGeometry(1.1, 0.05, 10), 0xc7c1b4, m(-4.4, G0 + 0.07, 10.2));
           // the driveway: exposed aggregate up to the garage, stamped red concrete out to the street
           skin.floor("aggregate", 5.2, G0+.09, 8.1, 6.6, 6.2);
           skin.floor("paving", 5.2, G0+.095, 13.3, 7.4, 4.3);
           // the white wildlife-rescue van (a long-wheelbase HiAce), nose to the garage and its back to the street as in the photo
-          { const vm = (lx, ly, lz, ry = 0) => m(6.4 + lx, ly, 8.6 + lz, ry);
+          { const van = bag(), vanRoot = W.invNormanVan = new THREE.Group(); TG.add(vanRoot);
+            const vm = (lx, ly, lz, ry = 0) => m(6.4 + lx, ly, 8.6 + lz, ry);
             const prof = new THREE.Shape([[2.45, 0.32], [2.5, 0.75], [2.38, 1.08], [2.05, 1.2], [1.55, 2.0], [1.3, 2.08], [-2.45, 2.08], [-2.5, 1.9], [-2.5, 0.32]].map(([x, y]) => new THREE.Vector2(x, y)));
             const vg = new THREE.ExtrudeGeometry(prof, { depth: 1.88, bevelEnabled: true, bevelSize: 0.05, bevelThickness: 0.05, bevelSegments: 2 }); vg.translate(0, 0, -0.94); vg.rotateY(Math.PI / 2);  // nose to -z
-            put(nb, vg, 0xf4f4f1, vm(0, G0, 0));
+            put(van, vg, 0xf4f4f1, vm(0, G0, 0));
             const dk = 0x232a31, gr = 0x3c4045;
             // windscreen, front side windows, the long side windows, the back windows
-            { const an = Math.atan2(0.5, 0.8); put(nb, new THREE.BoxGeometry(1.8, 0.92, 0.05), dk, vm(0, G0 + 1.62, -1.83).multiply(new THREE.Matrix4().makeRotationX(-an))); }
-            [-1, 1].forEach(sd => { put(nb, new THREE.BoxGeometry(0.05, 0.62, 0.8), dk, vm(sd * 0.99, G0 + 1.68, -1.05)); put(nb, new THREE.BoxGeometry(0.05, 0.55, 2.6), dk, vm(sd * 0.99, G0 + 1.7, 0.85));
-              put(nb, new THREE.BoxGeometry(0.03, 1.35, 0.02), 0xcfcfcb, vm(sd * 1.0, G0 + 1.25, -0.6)); put(nb, new THREE.BoxGeometry(0.03, 0.02, 1.0), 0xcfcfcb, vm(sd * 1.0, G0 + 0.85, -0.05));  // sliding door seams, handle line
-              put(nb, new THREE.BoxGeometry(0.18, 0.24, 0.1), 0x1f2124, vm(sd * 1.08, G0 + 1.55, -1.45)); put(nb, new THREE.BoxGeometry(0.06, 0.06, 0.18), 0x1f2124, vm(sd * 1.02, G0 + 1.5, -1.5));  // mirrors
-              put(nb, new THREE.BoxGeometry(0.06, 0.12, 4.3), gr, vm(sd * 0.98, G0 + 0.42, 0)); });  // rubbing strips
-            [-0.48, 0.48].forEach(a => put(nb, new THREE.BoxGeometry(0.78, 0.6, 0.05), dk, vm(a, G0 + 1.68, 2.53)));
-            put(nb, new THREE.BoxGeometry(0.02, 1.55, 0.05), 0xcfcfcb, vm(0, G0 + 1.15, 2.54));  // the barn doors' join
-            put(nb, new THREE.BoxGeometry(1.95, 0.24, 0.22), gr, vm(0, G0 + 0.42, 2.55)); put(nb, new THREE.BoxGeometry(1.95, 0.24, 0.22), gr, vm(0, G0 + 0.45, -2.55));  // bumpers
+            { const an = Math.atan2(0.5, 0.8); put(van, new THREE.BoxGeometry(1.8, 0.92, 0.05), dk, vm(0, G0 + 1.62, -1.83).multiply(new THREE.Matrix4().makeRotationX(-an))); }
+            [-1, 1].forEach(sd => { put(van, new THREE.BoxGeometry(0.05, 0.62, 0.8), dk, vm(sd * 0.99, G0 + 1.68, -1.05)); put(van, new THREE.BoxGeometry(0.05, 0.55, 2.6), dk, vm(sd * 0.99, G0 + 1.7, 0.85));
+              put(van, new THREE.BoxGeometry(0.03, 1.35, 0.02), 0xcfcfcb, vm(sd * 1.0, G0 + 1.25, -0.6)); put(van, new THREE.BoxGeometry(0.03, 0.02, 1.0), 0xcfcfcb, vm(sd * 1.0, G0 + 0.85, -0.05));  // sliding door seams, handle line
+              put(van, new THREE.BoxGeometry(0.18, 0.24, 0.1), 0x1f2124, vm(sd * 1.08, G0 + 1.55, -1.45)); put(van, new THREE.BoxGeometry(0.06, 0.06, 0.18), 0x1f2124, vm(sd * 1.02, G0 + 1.5, -1.5));  // mirrors
+              put(van, new THREE.BoxGeometry(0.06, 0.12, 4.3), gr, vm(sd * 0.98, G0 + 0.42, 0)); });  // rubbing strips
+            [-0.48, 0.48].forEach(a => put(van, new THREE.BoxGeometry(0.78, 0.6, 0.05), dk, vm(a, G0 + 1.68, 2.53)));
+            put(van, new THREE.BoxGeometry(0.02, 1.55, 0.05), 0xcfcfcb, vm(0, G0 + 1.15, 2.54));  // the barn doors' join
+            put(van, new THREE.BoxGeometry(1.95, 0.24, 0.22), gr, vm(0, G0 + 0.42, 2.55)); put(van, new THREE.BoxGeometry(1.95, 0.24, 0.22), gr, vm(0, G0 + 0.45, -2.55));  // bumpers
             [-0.82, 0.82].forEach(a => { put(nl, new THREE.BoxGeometry(0.2, 0.5, 0.06), 0xb81d22, vm(a, G0 + 1.05, 2.55)); put(nl, new THREE.BoxGeometry(0.38, 0.16, 0.06), 0xf2efe6, vm(a, G0 + 0.92, -2.54)); });  // tail lights, headlights
-            put(nb, new THREE.BoxGeometry(1.1, 0.26, 0.05), 0x2b2e31, vm(0, G0 + 0.8, -2.53)); put(nb, new THREE.BoxGeometry(0.5, 0.14, 0.03), 0xf2f2ee, vm(0, G0 + 0.75, 2.67));  // grille, number plate
-            [[-0.92, 1.55], [0.92, 1.55], [-0.92, -1.6], [0.92, -1.6]].forEach(([a, b]) => { put(nb, new THREE.CylinderGeometry(0.37, 0.37, 0.24, 14).rotateZ(Math.PI / 2), 0x17181a, vm(a, G0 + 0.37, b));
-              put(nb, new THREE.CylinderGeometry(0.2, 0.2, 0.26, 10).rotateZ(Math.PI / 2), 0xa9adb1, vm(a, G0 + 0.37, b)); put(nb, new THREE.CylinderGeometry(0.45, 0.45, 0.2, 14, 1, false, 0, Math.PI).rotateZ(Math.PI / 2).rotateX(Math.PI / 2), 0x2b2e31, vm(a * 1.02, G0 + 0.4, b)); });
-            [-0.7, 0.7].forEach(a => put(nb, new THREE.BoxGeometry(0.06, 0.06, 3.8), 0x55595c, vm(a, G0 + 2.18, 0.2))); [-1.3, 0, 1.3].forEach(b => put(nb, new THREE.BoxGeometry(1.5, 0.05, 0.06), 0x55595c, vm(0, G0 + 2.2, b)));  // roof racks
+            put(van, new THREE.BoxGeometry(1.1, 0.26, 0.05), 0x2b2e31, vm(0, G0 + 0.8, -2.53)); put(van, new THREE.BoxGeometry(0.5, 0.14, 0.03), 0xf2f2ee, vm(0, G0 + 0.75, 2.67));  // grille, number plate
+            [[-0.92, 1.55], [0.92, 1.55], [-0.92, -1.6], [0.92, -1.6]].forEach(([a, b]) => { put(van, new THREE.CylinderGeometry(0.37, 0.37, 0.24, 14).rotateZ(Math.PI / 2), 0x17181a, vm(a, G0 + 0.37, b));
+              put(van, new THREE.CylinderGeometry(0.2, 0.2, 0.26, 10).rotateZ(Math.PI / 2), 0xa9adb1, vm(a, G0 + 0.37, b)); put(van, new THREE.CylinderGeometry(0.45, 0.45, 0.2, 14, 1, false, 0, Math.PI).rotateZ(Math.PI / 2).rotateX(Math.PI / 2), 0x2b2e31, vm(a * 1.02, G0 + 0.4, b)); });
+            [-0.7, 0.7].forEach(a => put(van, new THREE.BoxGeometry(0.06, 0.06, 3.8), 0x55595c, vm(a, G0 + 2.18, 0.2))); [-1.3, 0, 1.3].forEach(b => put(van, new THREE.BoxGeometry(1.5, 0.05, 0.06), 0x55595c, vm(0, G0 + 2.2, b)));  // roof racks
             // "WILDLIFE" in green and yellow: on the back window (as in the photo) and down both sides
             const wl = (() => { const c = document.createElement("canvas"); c.width = 512; c.height = 96; const g = c.getContext("2d"); g.fillStyle = "#cfe63a"; g.fillRect(0, 0, 512, 96);
               g.fillStyle = "#1f6b3a"; g.fillRect(0, 0, 512, 10); g.fillRect(0, 86, 512, 10); g.font = "900 64px system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("WILDLIFE", 256, 50);
               const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return new THREE.MeshStandardMaterial({ map: t, roughness: .6 }); })();
-            const decal = (w, h, x, y, z, ry) => { const d = new THREE.Mesh(new THREE.PlaneGeometry(w, h), wl); d.applyMatrix4(vm(x, y, z, ry)); TG.add(d); };
-            decal(0.62, 0.13, 0.48, G0 + 1.48, 2.57, 0); decal(2.4, 0.42, 1.0, G0 + 1.1, 0.4, Math.PI / 2); decal(2.4, 0.42, -1.0, G0 + 1.1, 0.4, -Math.PI / 2); }
+            const decal = (w, h, x, y, z, ry) => { const d = new THREE.Mesh(new THREE.PlaneGeometry(w, h), wl); d.applyMatrix4(vm(x, y, z, ry)); vanRoot.add(d); };
+            decal(0.62, 0.13, 0.48, G0 + 1.48, 2.57, 0); decal(2.4, 0.42, 1.0, G0 + 1.1, 0.4, Math.PI / 2); decal(2.4, 0.42, -1.0, G0 + 1.1, 0.4, -Math.PI / 2);
+            vanRoot.add(done(van, { side: THREE.DoubleSide })); }
           // the garden: lawn at the street, a deep bed of natives (grey-green, white-flowering), pink daisies, a gum or two
-          put(nb, new THREE.BoxGeometry(10.5, 0.04, 5), 0x6a9a4e, m(-4, G0 + 0.04, 12.8)); put(nb, new THREE.BoxGeometry(10.5, 0.2, 5.4), 0x5a4030, m(-4, G0 + 0.1, 7.9));
+          put(ng, new THREE.BoxGeometry(10.5, 0.04, 5), 0x6a9a4e, m(-4, G0 + 0.04, 12.8));
+          put(nb, new THREE.BoxGeometry(10.5, 0.2, 5.4), 0x5a4030, m(-4, G0 + 0.1, 7.9));
           // Open forks and separate, flattened sprays leave sky between the gum crowns.
           // The atlas adds leaf-sized marks; the outline and forks are real geometry.
           const spray = (x, y, z, w, h, d, seed, colour) => {
@@ -7870,7 +7880,9 @@ const handle = async (m, post) => {
           put(nb, new THREE.BoxGeometry(0.1, 1.1, 0.1), 0x3a3d40, m(1.6, G0 + 0.55, 10.6)); put(nb, new THREE.BoxGeometry(0.55, 0.42, 0.42), 0xc8532a, m(1.6, G0 + 1.3, 10.6)); put(nb, new THREE.BoxGeometry(0.6, 0.06, 0.46), 0x9c3e1f, m(1.6, G0 + 1.53, 10.6));
           put(nb, new THREE.BoxGeometry(0.3, 0.04, 0.02), 0x2d2f31, m(1.6, G0 + 1.4, 10.82));  // the letter slot
           skin.front("number", 1.6, G0 + 1.13, 10.815, .26, .22);
-          W.invHomeGlass = skin.finish();
+          const finishes = skin.finish();
+          W.invHomeGlass = finishes.glassMaterial;
+          W.invNormanPaving = finishes.paving;
           put(nb, new THREE.BoxGeometry(0.5, 0.7, 0.03), 0x1f3c8a, m(1.6, G0 + 0.6, 10.67));
           { const gate = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.1, 1.6), new THREE.MeshStandardMaterial({ color: 0x8c9296, transparent: true, opacity: .55, metalness: .4, roughness: .5 })); gate.applyMatrix4(m(1.9, G0 + 0.55, 9.6)); TG.add(gate); }
           lights(...(() => { const v = new THREE.Vector3(-4, F0 + H1 + 2, 1.8).applyMatrix4(m(0, 0, 0)); return [v.x, v.y, v.z]; })());
@@ -7959,6 +7971,7 @@ const handle = async (m, post) => {
           // Explore's "Jump to Norman Rd": on the street out the front, looking at the house
           const sp = new THREE.Vector3(3.5, G0 + 1.9, 25).applyMatrix4(m(0, 0, 0)), tg = new THREE.Vector3(0, F0 + 3.2, 0).applyMatrix4(m(0, 0, 0)), s = toW(sp.x, sp.y, sp.z), l = toW(tg.x, tg.y, tg.z).sub(s);
           W.invNormanSpot = { pos: [s.x, s.y, s.z], yaw: Math.atan2(-l.x, -l.z), pitch: Math.atan2(l.y, Math.hypot(l.x, l.z)) }; }
+        W.invNormanGround = done(ng, { side: THREE.DoubleSide });
         done(nb, { side: THREE.DoubleSide }); done(nl, { roughness: .5 }); done(nt); done(ntl, { flatShading: true, roughness: 1 });
         { const gm = done(nw); gm.material.dispose(); gm.material = W.invGlass || gm.material; }  // windows glow at night, like the shops
       }
@@ -9376,6 +9389,7 @@ const handle = async (m, post) => {
   function bsBlock(F, ox, oz) { const T = BS.town;
     T?.invStatic?.slide(F.pos, ox, oz);
     if (F.noBlockTil > performance.now()) return;  // (just unstuck: let through)
+    T?.screwCreek?.slideRail(F.pos, ox, oz, F.pos.y - F.eye);
     if (T?.bal6?.block(F, ox, oz)) return;  // (up on number 6's balcony: no stepping off it)
     if (!T?.solidWalk || !T.solid || !T.solid(F.pos.x, F.pos.z) || T.solid(ox, oz)) return;
     if (!T.solid(F.pos.x, oz)) F.pos.z = oz; else if (!T.solid(ox, F.pos.z)) F.pos.x = ox; else { F.pos.x = ox; F.pos.z = oz; } if (F.wv) F.wv = [0, 0]; }
@@ -9400,7 +9414,8 @@ const handle = async (m, post) => {
     const r = (has("KeyD", "ArrowRight") ? 1 : 0) - (has("KeyA", "ArrowLeft") ? 1 : 0) + F.stick.x;
     const u = (F.walk ? 0 : (has("Space") ? 1 : 0) - (has("KeyC") ? 1 : 0)) + F.vert;  // Space up, C down (flying; on foot Space jumps: Ash, 16 November 2026, "On pc remove c and space for up down when walking. Make space bar for jump")
     const lk = Math.min(dt, 0.1);  // the look stick turns you, faster the further it's pushed
-    F.yaw -= F.lookStick.x * Math.abs(F.lookStick.x) * 2.4 * lk; F.pitch = bsClamp(F.pitch + F.lookStick.y * Math.abs(F.lookStick.y) * 1.6 * lk, -1.45, 1.45);
+    const lookTime = F.walk && BS.town?.slowWalkingLook ? lk * 0.5 : lk;
+    F.yaw -= F.lookStick.x * Math.abs(F.lookStick.x) * 2.4 * lookTime; F.pitch = bsClamp(F.pitch + F.lookStick.y * Math.abs(F.lookStick.y) * 1.6 * lookTime, -1.45, 1.45);
     const sy = Math.sin(F.yaw), cy = Math.cos(F.yaw);
     const lim = F.lim || [-420, 420, -420, 200];  // the area you can fly in (Norman Road has its own)
     // on foot with the keys (a computer): a walk, Shift to run, easing in and out, and a little bob of the head (Ash, 15 November 2026:
@@ -9627,7 +9642,7 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=48", assets: TOWN3D, place: "inv", pre: ["town.json?v=1bef586b", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=50", assets: TOWN3D, place: "inv", pre: ["town.json?v=56b7c1bf", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
     moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=80", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
@@ -9669,6 +9684,9 @@ const handle = async (m, post) => {
     openWeather(); if ($("weather").hidden) return;
     BS.invBeach = false; BS.mooAlt = false; BS.exploreOnly = cfg.place; if (BS.B) { bsPlace(); bsLite(); }  // Inverloch's town, not its beach; Moorooka's streets, not its bowls club
     const T = BS.town = { on: false, model: null, dead: false, keep: !!viaExplore, cfg };
+    if (cfg.place === "inv" && matchMedia("(pointer: coarse)").matches) {
+      try { T.slowWalkingLook = localStorage.getItem("an3d-inv-slow-look") === "1"; } catch {}
+    }
     { const mine = exTimeSaved(); BS.exTimeSet = mine != null;  // (each town opens at midday, or at an admin's own time)
       if (mine != null && BS.view) { BS.view.ms = bsMidnight(BS.view.day || bsKey(BS.view.ms)) + mine * 60000; const ti = $("bsFlyTime"); if (ti) ti.value = mine; } }
     exLoadShow(exploreName(cfg.place));
@@ -9724,10 +9742,16 @@ const handle = async (m, post) => {
       for (const [key, n] of [["positions", 3], ["normals", 3], ["colors", 3], ["uvs", 2]]) { const src = q[key]; if (!src) continue; const dst = new Float32Array(I.length * n);
         for (let i = 0; i < I.length; i++) { const o = I[i] * n; for (let c = 0; c < n; c++) dst[i * n + c] = src[o + c]; } out[key] = dst; }
       return out; }); }
-  function townModelPair(T, lib, box, cfg, opts, cb) {
+  function townModelPair(T, library, box, cfg, opts, cb) {
+    const lib = { ...library, create(node, options) {
+      return (cur && graphics && library.createStaged?.(node, options, cur)) || library.create(node, options);
+    } };
     const key = "an3d-" + cfg.place, mem = navigator.deviceMemory || 8, touch = matchMedia("(pointer: coarse)").matches;
     let seen = {}; try { seen = JSON.parse(localStorage.getItem(key) || "{}") || {}; } catch {}
-    const save = o => { seen = { ...seen, ...o }; try { localStorage.setItem(key, JSON.stringify(seen)); } catch {} };
+    let commitWaitMs = 0;
+    const save = o => {
+      if (o.ms !== undefined && commitWaitMs) { o.ms = Math.max(0, Math.round(o.ms - commitWaitMs)); commitWaitMs = 0; }
+      seen = { ...seen, ...o }; try { localStorage.setItem(key, JSON.stringify(seen)); } catch {} };
     const best = navigator.connection?.saveData || mem < 4 ? "low" : touch || mem <= 4 ? "medium" : "high";
     const graphics = cfg.place === "inv" ? invGraphics : null;
     const presets = lib.qualityPresets ? ["auto", ...lib.qualityPresets] : invGraphicsPresets;
@@ -9741,16 +9765,42 @@ const handle = async (m, post) => {
     const driven = cfg.place === "inv" ? new Map() : null;
     let replaying = null;
     const log = [], last = {}, LAST = ["setLabelObstacles", "setTide", "setFlood", "setFloodLevel", "setMinutes", "setCamera", "setGroundEdits", "setRemoved", "setMore", "driveCar", "setControlledCar"];
+    const movementKeys = ["KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space", "KeyC", "ShiftLeft", "ShiftRight"];
+    const waitForControls = async signal => {
+      const start = performance.now();
+      let lastHeld = -Infinity;
+      while (!dead && BS.town === T && !signal?.aborted) {
+        const fly = BS.fly, now = performance.now();
+        if (fly?.joys?.some(joy => joy.held()) || fly?.touches?.size || movementKeys.some(key => fly?.keys?.has(key)) ||
+            fly?.drag || fly?.rmb || fly?.vert || fly?.mw || fly?.boost || fly?.hand || fly?.jumpBtn || fly?.sprint ||
+            T.car?.passengerBoostHeld?.() || T.car?.bossFireHeld?.() || T.mapGestureHeld?.()) lastHeld = now;
+        if (now - lastHeld >= 350) break;
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      if (signal) commitWaitMs += performance.now() - start;
+    };
     const make = (q, own) => { const t0 = performance.now(); let mm = null;
-      mm = lib.create(box, { ...opts, quality: q, ...(graphics ? { frameTarget: graphics.frameTarget } : {}), onProgress: own ? cb.onProgress : undefined,
+      mm = lib.create(box, { ...opts, quality: q, ...(graphics ? { frameTarget: graphics.frameTarget, beforeQualityCommit: waitForControls } : {}), onProgress: own ? cb.onProgress : undefined,
         ...(graphics ? { onThunder: strength => { if (mm === cur && T.on && !T.dead && !document.hidden) T.snd?.thunder(strength); } } : {}),
         onFloodLevel: v => { if (mm === cur) cb.onFloodLevel(v); },
         onError: msg => { if (mm === cur) cb.onError(msg); else if (mm === next) drop(); } });
+      if (!own && T.fitWestJetty) mm.ready = mm.ready.then(value => {
+        if (!dead && BS.town === T && next === mm) T.fitWestJetty(mm);
+        return value;
+      });
       mm.t0 = t0; return mm; };
     // a handle Inverloch's town centre moves things with: always the one in the model that's showing
     const handle = real => { const H = { real, calls: new Map() };
       H.proxy = new Proxy(H, { get: (h, k) => { const v = h.real[k]; if (typeof v !== "function") return v;
-        return (...a) => { h.calls.set(k + ":" + (k === "setSignal" || k === "setCabin" ? "" : a[0]), a); return h.real[k](...a); }; } });
+        return (...a) => {
+          const key = k + ":" + (k === "setSignal" || k === "setCabin" ? "" : a[0]);
+          if (graphics && k === "setMatrix") {
+            let saved = h.calls.get(key);
+            if (!saved) { saved = [a[0], new Float64Array(16)]; h.calls.set(key, saved); }
+            saved[1].set(a[1]);
+          } else h.calls.set(key, a);
+          return h.real[k](...a);
+        }; } });
       return H; };
     const handles = [];
     let ids = 0; const tag = mm => { mm.id = ++ids; const el = box.lastElementChild; if (el) el.dataset.anModel = String(mm.id); };
@@ -9783,19 +9833,41 @@ const handle = async (m, post) => {
     tag(cur);
     // frames a second over a short while
     const fps = ms => new Promise(ok => { let n = 0, t0 = 0; const f = t => { if (dead) return ok(0); if (!t0) t0 = t; n++; if (t - t0 < ms) requestAnimationFrame(f); else ok(n * 1000 / (t - t0)); }; requestAnimationFrame(f); });
-    const swapTo = async (to, q) => { bsNote("sharper model swapped in");
-      for (const [name, a, H] of log) { if (H) H.real = to[name](...a); else to[name]?.(...a); }
-      for (const H of handles) for (const [ck, a] of H.calls) { const fn = ck.split(":")[0]; try { H.real[fn](...a); } catch {} }
+    const swapTo = async (to, q) => {
+      const screwCreek = T.screwCreek && invScrewCreekBridge(to, BS.B.THREE);
+      // A staged Inverloch world has synchronous replay calls. Keep every live handle
+      // on the old world until the canvas and all its replacements can change together.
+      const staged = typeof to.commitStagedWorld === "function";
+      const replacements = new Map();
+      for (const [name, a, H] of log) {
+        if (!H) { to[name]?.(...a); continue; }
+        const real = to[name](...a);
+        if (staged) replacements.set(H, real); else H.real = real;
+      }
+      for (const H of handles) for (const [ck, a] of H.calls) {
+        const fn = ck.split(":")[0];
+        if (staged) replacements.get(H)[fn](...a); else try { H.real[fn](...a); } catch {}
+      }
       if (driven) {
-        replaying = to;
+        if (!staged) replaying = to;
         for (const pose of driven.values()) to.driveCar(...pose);
       } else T.invStatic?.restoreCars(to);
-      for (const k of LAST) if (last[k]) { try { const r = to[k](...last[k]); if (r?.then) await r; } catch {} }
-      await new Promise(ok => requestAnimationFrame(() => requestAnimationFrame(ok)));
-      if (dead || BS.town !== T) return;
+      for (const k of LAST) if (last[k]) {
+        if (staged) to[k]?.(...last[k]);
+        else try { const r = to[k](...last[k]); if (r?.then) await r; } catch {}
+      }
+      if (!staged) await new Promise(ok => requestAnimationFrame(() => requestAnimationFrame(ok)));
+      if (dead || BS.town !== T || next !== to) return;
+      if (staged) {
+        if (!to.commitStagedWorld()) { drop(); return; }
+        for (const [H, real] of replacements) H.real = real;
+      }
+      bsNote("sharper model swapped in");
       const old = cur, oldEl = rootOf(old), el = rootOf(to);
       cur = to; next = null; replaying = null; if (el) el.style.visibility = ""; if (oldEl) oldEl.style.visibility = "hidden";
+      if (to.normanGrade) T.normanGrade.apply(to.normanGrade);
       try { old.dispose(); } catch {}
+      if (screwCreek) T.screwCreek = screwCreek;
       hiBox.hidden = true;
       try { T.bowls?.swapped?.(); } catch {}  // what was shaped to the old model's ground is made again on this one's (Moorooka's road medians)
       try { T.gps?.swapped?.(); } catch {}  // older models need the line re-laid over their new ground
@@ -9822,10 +9894,19 @@ const handle = async (m, post) => {
         if (!currentTown()) return false;
         const n = next = make(target, false); tag(n);
         const el = rootOf(n); if (el) el.style.visibility = "hidden";
-        try { await n.ready; } catch { if (next === n) drop(); return false; }
+        try {
+          await n.ready;
+          if (next === n && currentTown() && T.normanGrade) n.normanGrade = T.normanGrade.fit(n);
+        } catch { if (next === n) drop(); return false; }
         if (next !== n || !currentTown()) return false;
+        try { T.fitMuseumFrontage?.(n); } catch { drop(); return false; }
         const loadMs = Math.round(performance.now() - n.t0);
-        await swapTo(n, target);
+        try { await swapTo(n, target); } catch (error) {
+          if (!n.commitStagedWorld) throw error;
+          if (next === n) drop();
+          console.warn("Inverloch staged world could not replace the current view", error);
+          return false;
+        }
         if (cur !== n || !currentTown()) return false;
         activeQuality = target;
         if (target !== "low") save({ q: target, ms: loadMs });
@@ -9840,8 +9921,18 @@ const handle = async (m, post) => {
       for (let i = 0; i < 600 && !T.on && !dead; i++) await new Promise(ok => setTimeout(ok, 100));
       await new Promise(ok => setTimeout(ok, 1500));
       if (dead || BS.town !== T) return;
+      // Older embeds and full terrain replacements have no yield point inside the model.
+      const needsHostGate = graphics && !(best === "medium" && lib.canYieldQualityCommit && cur.setQualityInPlace);
+      if (needsHostGate) {
+        await waitForControls();
+        if (dead || BS.town !== T) return;
+      }
       const f = await fps(2000);
       if (!currentTown() || (f < 55 && !window.__anForceUp)) return;
+      if (needsHostGate) {
+        await waitForControls(); // A control may have been pressed during the frame-rate sample.
+        if (dead || BS.town !== T) return;
+      }
       hiBox.hidden = false;
       if (!await changeQuality(best, initialLoadMs)) return;
       // the sharp one has to keep up: if it can't, back to light, and this device stays light
@@ -9861,6 +9952,125 @@ const handle = async (m, post) => {
       else if (!manual && first === best) save({ q: best, ms: loadMs }); });
     return m;
   }
+  // Screw Creek footbridge, OSM way 596679699, as encoded in town.json. The low timber deck and
+  // paired open metal rails are documented in Bass Coast Council's walk film (2020) and in the
+  // For Our Future field report (2023, p. 45). The render and walking surface share one profile.
+  const INV_SCREW_CREEK = (() => {
+    const x = 2062.9, z = -407, dx = 2102.2 - x, dz = -394.8 - z;
+    const length = Math.hypot(dx, dz), ux = dx / length, uz = dz / length, half = 0.9;
+    const point = (along, across = 0) => [x + ux * along - uz * across, z + uz * along + ux * across];
+    const local = (X, Z) => [(X - x) * ux + (Z - z) * uz, (Z - z) * ux - (X - x) * uz];
+    const nearby = (X, Z) => X >= x - 2 && X <= x + dx + 2 && Z >= z - 2 && Z <= z + dz + 2;
+    return { length, half, point, local, nearby };
+  })();
+
+  function invScrewCreekMask() {
+    const { length, point } = INV_SCREW_CREEK;
+    // Clear the shared endpoint by a few millimetres so the native bridge's solid rails disappear.
+    // The timber end strips span the same seam against the original terrain-following tracks.
+    return [[-0.004, -1], [length + 0.004, -1], [length + 0.004, 1], [-0.004, 1]].map(([s, v]) => {
+      const [x, z] = point(s, v);
+      return [-38.637 - z / 111008.5, 145.73000000000002 + x / 87072];
+    });
+  }
+
+  function invScrewCreekBridge(model, THREE) {
+    const { length, half, point, local, nearby } = INV_SCREW_CREEK;
+    const start = -0.006, end = length + 0.006, westJoin = 6, eastJoin = length - 9;
+    const approachLift = 0.11, level = 2.65, railEdge = half - 0.09, railStart = 0.24, railEnd = length - 0.24;
+    const railRadius = 0.035, walkerRadius = 0.35;
+    const west = model.groundAt(...point(0)) + approachLift, east = model.groundAt(...point(length)) + approachLift;
+    const deckY = s => s < westJoin ? bsLerp(west, level, bsClamp(s / westJoin, 0, 1))
+      : s > eastJoin ? bsLerp(level, east, bsClamp((s - eastJoin) / (length - eastJoin), 0, 1)) : level;
+    const positions = [], colors = [];
+    const at = (s, v, h) => { const [x, z] = point(s, v); return [x, h, z]; };
+    const quad = (a, b, c, d, color) => {
+      positions.push(...a, ...b, ...c, ...a, ...c, ...d);
+      for (let i = 0; i < 6; i++) colors.push(color.r, color.g, color.b);
+    };
+    const material = hex => new THREE.Color(hex);
+    const boards = [0x9b8f7d, 0x928779, 0x897d70, 0xa19684, 0xa99b88].map(material);
+    const beam = material(0x62564b), edge = material(0x857969), rail = material(0xb9c7c8), post = material(0x91a0a3);
+    const prism = (a, b, l, r, lowA, lowB, topA, topB, tint) => {
+      const p = [at(a, l, lowA), at(a, r, lowA), at(b, r, lowB), at(b, l, lowB),
+        at(a, l, topA), at(a, r, topA), at(b, r, topB), at(b, l, topB)];
+      for (const [i, j, k, n] of [[3,2,1,0], [4,5,6,7], [0,1,5,4], [2,3,7,6], [1,2,6,5], [3,0,4,7]]) {
+        quad(p[i], p[j], p[k], p[n], tint);
+      }
+    };
+    const profile = [start, westJoin, eastJoin, end];
+    for (let i = 1; i < profile.length; i++) {
+      const a = profile[i - 1], b = profile[i], y0 = deckY(a), y1 = deckY(b);
+      prism(a, b, -half, half, y0 - 0.20, y1 - 0.20, y0 - 0.003, y1 - 0.003, beam);
+      for (const side of [-1, 1]) {
+        const v = side * (half - 0.046);
+        prism(a, b, v - 0.046, v + 0.046, y0 - 0.02, y1 - 0.02, y0 + 0.04, y1 + 0.04, edge);
+      }
+      const count = Math.ceil((b - a) / 0.21);
+      for (let j = 0; j < count; j++) {
+        const s = bsLerp(a, b, j / count), e = bsLerp(a, b, (j + 1) / count) - 0.004;
+        const y = deckY(s), h = deckY(e);
+        quad(at(s, -half, y), at(s, half, y), at(e, half, h), at(e, -half, h), boards[(j * 7 + i) % boards.length]);
+      }
+    }
+    // A light open railing with two continuous round-grey bars and a narrow timber toe board.
+    const railSegments = [railStart, westJoin, eastJoin, railEnd];
+    const railPoint = (s, v, h, i) => {
+      const a = i * Math.PI / 3;
+      return at(s, v + railRadius * Math.cos(a), deckY(s) + h + railRadius * Math.sin(a));
+    };
+    for (const side of [-1, 1]) {
+      const v = side * railEdge;
+      for (const h of [0.54, 1.04]) for (let i = 1; i < railSegments.length; i++) {
+        const a = railSegments[i - 1], b = railSegments[i];
+        for (let face = 0; face < 6; face++) {
+          quad(railPoint(a, v, h, face), railPoint(b, v, h, face),
+            railPoint(b, v, h, face + 1), railPoint(a, v, h, face + 1), rail);
+        }
+      }
+      const bays = Math.ceil((railEnd - railStart) / 2.0);
+      for (let i = 0; i <= bays; i++) {
+        const s = bsLerp(railStart, railEnd, i / bays), y = deckY(s);
+        prism(s - 0.021, s + 0.021, v - 0.022, v + 0.022, y + 0.025, y + 0.025, y + 1.07, y + 1.07, post);
+      }
+    }
+    // The covered beams and underside supports are estimated from the visible side profile.
+    for (const s of [11, 20.5, 30]) {
+      const y = deckY(s), pier = [Math.min(y - 0.28, model.groundAt(...point(s, -0.59)) - 0.12),
+        Math.min(y - 0.28, model.groundAt(...point(s, 0.59)) - 0.12)];
+      prism(s - 0.12, s + 0.12, -0.77, 0.77, y - 0.38, y - 0.38, y - 0.18, y - 0.18, beam);
+      for (const [i, v] of [-0.59, 0.59].entries()) {
+        prism(s - 0.13, s + 0.13, v - 0.10, v + 0.10, pier[i], pier[i], y - 0.36, y - 0.36, beam);
+      }
+    }
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().elements, roughness: 0.88, doubleSide: true }]);
+
+    function floorAt(x, z) {
+      if (!nearby(x, z)) return null;
+      const [s, v] = local(x, z);
+      return s >= start && s <= end && Math.abs(v) <= half ? deckY(s) : null;
+    }
+
+    function slideRail(pos, ox, oz, feetY) {
+      if (!nearby(pos.x, pos.z) && !nearby(ox, oz)) return;
+      const [oldS, oldV] = local(ox, oz), [s, v] = local(pos.x, pos.z);
+      for (const side of [-1, 1]) {
+        const before = side * oldV - railEdge, after = side * v - railEdge;
+        const direction = before <= 0 ? 1 : -1;
+        const edge = -direction * (walkerRadius + railRadius);
+        if (direction * (after - edge) <= 0 || direction * (after - before) <= 0) continue;
+        const hitS = bsLerp(oldS, s, bsClamp((edge - before) / (after - before), 0, 1));
+        if (hitS < railStart || hitS > railEnd) continue;
+        const y = deckY(hitS);
+        if (feetY < y - 0.46 || feetY > y + 1.12) continue;
+        [pos.x, pos.z] = point(s, side * (railEdge + edge));
+        return;
+      }
+    }
+    return { floorAt, slideRail };
+  }
+
   function townModelOn(T) {
     const F = BS.fly, box = $("bsTown"), tip = $("bsFlyTip"), jump = $("bsFlyJump"), list = $("bsTownList"), modeBox = $("bsTownMode");
     const fb = $("bsTownFlood"), fl = $("bsTownFloods"), riseBox = $("bsTownRise"), riseIn = $("bsTownRiseIn"), riseOut = $("bsTownRiseOut");
@@ -9875,6 +10085,13 @@ const handle = async (m, post) => {
     // Inverloch: the town centre and number 11 come across from the weather's Inverloch (below): keep the ground clear where
     // they'll stand (and round both, the model draws its small things: cars with proper shapes, letterboxes, bins, power lines)
     const cfg = T.cfg, inv = cfg.place === "inv", D = INV_TOWN, home = D.nr?.home, clearLatLon = [], clearPolygons = [], detailLatLon = [];
+    // Keep the seeded tree indices stable. Clear only trunks enclosed by the two surveyed Bayview school roofs.
+    if (inv) for (const [lat, lon] of [
+      [-38.63102523, 145.72813660], [-38.63101172, 145.72819115], [-38.63104325, 145.72849263],
+      [-38.63108604, 145.72868213], [-38.63107027, 145.72877400], [-38.63114684, 145.72855292],
+      [-38.63116937, 145.72886301], [-38.63110856, 145.72815383], [-38.63106352, 145.72848114],
+      [-38.63104775, 145.72879123], [-38.63113333, 145.72894915]
+    ]) clearLatLon.push({ lat, lon, r: 0.16 });
     if (inv && BS.W.invClock) { const [lat, lon] = townLL(D.c[0], D.c[1]); clearLatLon.push({ lat, lon, r: 4.5 }); detailLatLon.push({ lat, lon, r: 260 }); }
     // the model's power poles that land in a road (each is set out beside its own street, so where another street runs past, one can stand
     // in it): taken out, so none stands in the road. Seven in the detail round the town centre, one right in the middle of A'Beckett
@@ -9883,8 +10100,18 @@ const handle = async (m, post) => {
     // another street's width; the wires to each go with it
     if (inv) for (const [lat, lon] of [[-38.6337246, 145.7267682], [-38.6339579, 145.7292535], [-38.6348371, 145.7287447], [-38.6342723, 145.7293649],
       [-38.6338849, 145.7295854], [-38.6329661, 145.7297324], [-38.6348155, 145.7301642]]) clearLatLon.push({ lat, lon, r: 1.5 });
+    // Building centres on the verified vacant parcels at 1, 12, 16 and 17 Mountain Ash Close.
+    // Centre masks remove these legacy shells and their blockers without changing their packed slots.
+    if (inv) for (const [lat, lon] of [
+      [-38.628973588, 145.744513851],
+      [-38.628099781, 145.744806712],
+      [-38.627782237, 145.744849779],
+      [-38.627680894, 145.744189406],
+    ]) clearLatLon.push({ lat, lon, r: 0.25 });
     if (inv && home && BS.W.invHouse) { const [lat, lon] = townLL(home[0], home[1]); clearLatLon.push({ lat, lon, r: 24 }); detailLatLon.push({ lat, lon, r: 170 }); }
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
+    if (inv) clearPolygons.push({ latLon: INV_GLADE_SHELTER });
+    if (inv) clearPolygons.push({ latLon: invScrewCreekMask(), roads: true });
     // Moorooka's bridges (town.json's roads marked as one): their decks, so a car drives over them, not down through them into the creek.
     // The deck is as the model draws it (moorooka-model.js ?v=79): straight from one end's ground to the other's, a metre's hump in the
     // middle, and 0.6 m up, coming up from the road over its first and last 8 m. Under a bridge (a road under an overpass) you stay down:
@@ -9907,7 +10134,7 @@ const handle = async (m, post) => {
     townModelLoad(cfg).then(lib => {
       if (T.dead) return;
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
-        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json" } : cfg.assets;
+        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cd69429f" } : cfg.assets;
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
         { onProgress: (f, label) => { if (!T.on && !T.dead) tip.textContent = `Loading the town model: ${String(label).toLowerCase()}…`; },
           onFloodLevel: v => T.onFlood?.(v),
@@ -9926,11 +10153,14 @@ const handle = async (m, post) => {
         // model's ground, so the helicopter behind it, you and anything else there stand on the lawn rather than sink into it)
         // (Logan's council precinct lays its ground 25 cm over the terrain (precinct.ts GROUND): cars and people stand on that, not in it.
         // Ash, 16 November 2026: "The golden car is still too low in Logan, sitting inside the road")
+        if (inv) T.screwCreek = invScrewCreekBridge(T.pair.cur, BS.B.THREE);
         const bed = (x, z) => (inv ? T.pair.cur.roadSurfaceAt?.(x, z) : null) ?? m.groundAt(x, z);
         const LIFT = cfg.lift, b = m.bounds(), ground = (x = F.pos.x, z = F.pos.z) => { const fo = T.floorOver?.(x, z); if (fo != null) return fo;  /* (Dino Land's island, up in the sky) */ let g = Math.max(bed(x, z), m.waterAt ? m.waterAt(x, z) : m.waterLevel());
-          if (T.decks) { const dy = T.deckAt(x, z); if (dy != null && dy > g) g = dy; }  // (on a bridge: its deck)
+          const deck = T.deckAt?.(x, z);
+          if (deck != null && deck > g) g = deck;
           if (LIFT && x > LIFT[0] && x < LIFT[2] && z > LIFT[1] && z < LIFT[3]) g += LIFT[4];
           if (T.pads) { const g0 = g; for (const P of T.pads) g = Math.max(g, padGround(P, x, z, g0)); }
+          if (T.walk && T.screwCreek) g = Math.max(g, T.screwCreek.floorAt(x, z) ?? g);
           if (T.bal6) g = T.bal6.top(x, z, g);  // number 6's floor, decks and stairs, where you can step up onto them
           return g; };
         ground.bed = bed;
@@ -9947,6 +10177,8 @@ const handle = async (m, post) => {
         // the town centre round the Rotary clock and number 11 Norman Road, stood in the model where they really are
         let mine = []; if (inv) try { mine = townModelGuests(T, m); } catch (e) { console.warn("Town model: the town centre and Norman Road couldn't be added", e); }
         if (inv) {
+          if (m.addParts) townGlade(T, m, BS.B.THREE);
+          invMotelFrontage(T, m, BS.B.THREE);
           const buildings = m.buildingBlockers?.();
           if (buildings) {
             const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
@@ -9962,7 +10194,11 @@ const handle = async (m, post) => {
               if (to && m.driveCar?.(c.id[0], c.id[1], to.x, ground(to.x, to.z) + 0.05, to.z, B.h, 0, 0)) grid.park(c.id, to.x, to.z, B.h, ground(to.x, to.z) + 0.05, 0, 0);
               else grid.park(c.id, B.x, B.z, B.h); } } catch (e) { console.warn("Inverloch: couldn't move the parked cars stuck in poles", e); }
           } else invAddDesignedWalls(T, m.designedWallFootprints?.());
+          if (m.addParts) try { townSurfParadeBeachAccess(T, m); }
+            catch (e) { console.warn("Inverloch: Surf Parade beach access couldn't be added", e); }
         }
+        if (inv && m.addParts) try { mine.push(invWestJetty(T, BS.B.THREE)); } catch (e) { console.warn("Inverloch: the west jetty could not be added", e); }
+        if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
@@ -9998,7 +10234,12 @@ const handle = async (m, post) => {
         // ---- Walk or Fly ----
         const tideBox = $("bsTownTide"), tideIn = $("bsTownTideIn"), tideOut = $("bsTownTideOut"), tidal = m.tide.max > m.tide.min, tideBtn = $("bsTideBtn");
         tideBtn.setAttribute("aria-expanded", "false"); tideBtn.onclick = () => { tideBox.hidden = !tideBox.hidden; tideBtn.setAttribute("aria-expanded", String(!tideBox.hidden)); };  // Moorooka has no tide to move
+        const ptrs = new Map(); let pinch = null;
+        T.mapGestureHeld = () => !T.walk && ptrs.size > 0;
+        const clearMapGesture = () => { ptrs.clear(); pinch = null; };
+        const endMapPointer = id => { if (ptrs.delete(id)) pinch = null; };
         const setMode = (walk, to) => { if (walk && F.home) { if (F.home.veh && T.car?.held?.()) T.car.drop?.(); F.home = null; }  // (Jump to from Explore mode, while in a car: it was left held, and you stuck half in it)
+          if (walk) clearMapGesture();
           T.walk = walk; T.car?.walkKeys?.(walk); document.body.classList.toggle("bswalk", walk); F.walk = walk ? () => ground() + (T.bal6 ? T.bal6.eye(F.eye) : F.eye) : null; tideBtn.hidden = walk || !tidal; tideBox.hidden = tideBtn.hidden || tideBtn.getAttribute("aria-expanded") !== "true"; F.lim = walk ? inner : outer;
           modeBox.querySelectorAll("button").forEach(bn => bn.setAttribute("aria-pressed", String((bn.dataset.townMode === "walk") === walk)));
           if (F.on?.freeFor) F.on.freeFor(); else if (document.pointerLockElement) document.exitPointerLock?.();
@@ -10067,7 +10308,6 @@ const handle = async (m, post) => {
           if (c && !(own && Math.hypot(mine.x - c.x, mine.z - c.z) < 1.5)) { const h = c.heading ?? 0, bx = c.x - Math.sin(h) * 7, bz = c.z - Math.cos(h) * 7;
             T.tween = null; setMode(true); F.pos.set(bx, ground(bx, bz) + F.eye, bz); F.yaw = h + Math.PI; F.pitch = -0.2; box.style.cursor = ""; box.title = ""; T.car.enterCar?.(c); }
           else if (own) { toMode(true); T.car.driveTo?.(hit.x, hit.z); } };
-        const ptrs = new Map(); let pinch = null;
         const gest = {
           pointerdown: e => { if (T.admin?.down(e)) return; if (T.walk) return; list.hidden = true; jump.setAttribute("aria-expanded", "false"); fl.hidden = true; fb.setAttribute("aria-expanded", "false"); closeAsk(); try { box.setPointerCapture(e.pointerId); } catch {}
             ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, t: e.timeStamp, b: e.button, one: ptrs.size === 0 }); pinch = null; T.tween = null; tip.classList.add("dim"); e.preventDefault(); },
@@ -10077,14 +10317,27 @@ const handle = async (m, post) => {
               if (pinch) { const da = ang - pinch.ang; zoomTurn(pinch.d / d, Math.atan2(Math.sin(da), Math.cos(da))); } pinch = { d, ang };
               if (T.admin?.tool) pan(dx / 2, dy / 2); }  // with an editing tool on, two fingers drag the map as well
             e.preventDefault(); },
-          pointerup: e => { if (T.admin?.up(e)) return; const p = ptrs.get(e.pointerId); ptrs.delete(e.pointerId); pinch = null;
+          pointerup: e => { const p = ptrs.get(e.pointerId); endMapPointer(e.pointerId); if (T.admin?.up(e)) return;
             if (p && p.one && p.b === 0 && e.type === "pointerup" && e.pointerType === "mouse" && Math.hypot(e.clientX - p.sx, e.clientY - p.sy) < 6 && e.timeStamp - p.t < 800) mapClick(e.clientX, e.clientY); },
           wheel: e => { if (T.walk) return; T.tween = null; zoomTurn(Math.exp(bsClamp(e.deltaY, -300, 300) * 0.0015), 0); e.preventDefault(); },
           contextmenu: e => e.preventDefault(),
         };
         gest.pointercancel = gest.pointerup;
-        Object.entries(gest).forEach(([k, f]) => box.addEventListener(k, f, { passive: BS_PASSIVE && /^pointer/.test(k) }));
-        T.ungest = () => Object.entries(gest).forEach(([k, f]) => box.removeEventListener(k, f));
+        gest.lostpointercapture = e => { if (e.target === box) endMapPointer(e.pointerId); };
+        const mapHidden = () => { if (document.hidden) clearMapGesture(); };
+        // If capture was refused, the release can be delivered outside the town.
+        const releaseOutside = e => { if (ptrs.has(e.pointerId) && !box.contains(e.target)) endMapPointer(e.pointerId); };
+        window.addEventListener("blur", clearMapGesture);
+        document.addEventListener("visibilitychange", mapHidden);
+        for (const event of ["pointerup", "pointercancel"]) document.addEventListener(event, releaseOutside, { capture: true, passive: true });
+        Object.entries(gest).forEach(([k, f]) => box.addEventListener(k, f, { passive: k === "lostpointercapture" || (BS_PASSIVE && /^pointer/.test(k)) }));
+        T.ungest = () => {
+          Object.entries(gest).forEach(([k, f]) => box.removeEventListener(k, f));
+          window.removeEventListener("blur", clearMapGesture);
+          document.removeEventListener("visibilitychange", mapHidden);
+          for (const event of ["pointerup", "pointercancel"]) document.removeEventListener(event, releaseOutside, true);
+          clearMapGesture();
+        };
 
         // ---- the tide (flying) ----
         const tideName = v => { const f = (v - m.tide.min) / (m.tide.max - m.tide.min); return f < 0.25 ? "Low tide" : f < 0.7 ? "Mid tide" : "High tide"; };
@@ -10098,6 +10351,8 @@ const handle = async (m, post) => {
           if (walk) { F.pos.set(p.walk.x, ground(p.walk.x, p.walk.z) + F.eye, p.walk.z); F.yaw = p.walk.yaw; F.pitch = p.walk.pitch; }
           else { const v = typeof p.fly === "function" ? p.fly() : p.fly; F.pos.set(v.x, v.y, v.z); F.yaw = v.yaw; F.pitch = v.pitch; } };
         const goTo = cfg.flyTo && places.find(p => p.id === cfg.flyTo.id);
+        const clock = cfg.place === "inv" && mine.find(p => p.name === "the clock")?.target;
+        const clockDistance = () => clock && T.walk && !T.tween && !F.drive ? Math.hypot(F.pos.x - clock[0], F.pos.z - clock[1]) : Infinity;
         const flyTo = () => { closeAsk(); if (T.walk) setMode(false);
           const v = goTo.fly, a = { x: F.pos.x, y: F.pos.y, z: F.pos.z, yaw: F.yaw, pitch: F.pitch }, d = Math.hypot(v.x - a.x, v.z - a.z);
           T.tween = { a, b: { x: v.x, y: v.y, z: v.z, yaw: v.yaw, pitch: v.pitch }, t0: performance.now(), ms: bsClamp(1400 + d * 0.32, 1600, 6500), arc: Math.min(d * 0.28, 2600) };
@@ -10115,6 +10370,7 @@ const handle = async (m, post) => {
           const top = [...(T.gps ? [item({ townGps: "1" }, "GPS", "Type an address, or pick a place to go")] : []),
             ...(T.race ? [item({ townRace: "1" }, `Race around ${T.race.name}`, T.race.active() ? "In a race now" : T.race.host ? `Talk to ${T.race.host.name}: ${T.race.host.what}` : "Everyone here, standard cars, one lap")] : [])];
           if (T.car?.bossGo && ["inv", "logan", "moo"].includes(T.cfg?.place)) top.push(item({ townBoss: "1" }, "Boss fight: T-rex", `Into the hotrod ${T.cfg?.place === "logan" ? "out the front of the council" : T.cfg?.place === "moo" ? "in the Woolworths car park" : "by The Hub"}. The T-rex comes in a few seconds`));  // (Ash, 26 November 2026: "Add a jump to boss fight")
+          if (clockDistance() <= 65) top.push(item({ townFaceClock: "1" }, "Face the Rotary clock", "Turn towards the clock from where you’re standing"));
           if (T.car?.canUnstickWalk?.()) top.push(item({ townUnstick: "1" }, "Unstick on foot", "Move to a clear spot nearby (U)"));
           const who = T.peers?.list?.() || []; if (!who.length) { list.prepend(...top); return; }
           const near = who.map(q => ({ ...q, d: Math.hypot(q.x - F.pos.x, q.z - F.pos.z) })).sort((a, b) => a.d - b.d);
@@ -10155,6 +10411,16 @@ const handle = async (m, post) => {
         list.onclick = e => { if (e.target.closest("[data-town-fly]")) { openList(false); flyTo(); jump.focus({ preventScroll: true }); return; }
           if (e.target.closest("[data-town-race]")) { openList(false); T.race?.fromJump ? T.race.fromJump() : T.race?.open(); return; }
           if (e.target.closest("[data-town-gps]")) { openList(false); T.gps?.open(); return; }
+          if (e.target.closest("[data-town-face-clock]")) {
+            openList(false);
+            const distance = clockDistance();
+            if (distance <= 65) {
+              F.goTo = null;
+              F.yaw = Math.atan2(F.pos.x - clock[0], F.pos.z - clock[1]);
+              F.pitch = bsClamp(Math.atan2(ground(...clock) + 5.4 - F.pos.y, distance), -1.45, 1.45);
+            }
+            jump.focus({ preventScroll: true }); return;
+          }
           if (e.target.closest("[data-town-unstick]")) { openList(false); T.car?.unstick?.(); return; }
           if (e.target.closest("[data-town-boss]")) { openList(false); T.car?.bossGo?.(); return; }
           const nw = e.target.closest("[data-town-new]"); if (nw) { const q = MOO_NEW[+nw.dataset.townNew]; openList(false); if (q) { T.tween = null; if (!T.walk) setMode(true);
@@ -10295,6 +10561,9 @@ const handle = async (m, post) => {
   }
   // The town's own metres (x east, z south, from the library: tools/inverloch_town.py) as latitude and longitude
   const townLL = (x, z) => [-38.63351 - z / 110540, 145.72774 + x / (111320 * Math.cos(38.63351 * Math.PI / 180))];
+  // The Glade's open picnic shelter. Replace its mapped roof alone (OSM way 1117561260).
+  const INV_GLADE_SHELTER = [[-38.6353608, 145.7301261], [-38.6353350, 145.7302765],
+    [-38.6354224, 145.7303011], [-38.6354483, 145.7301507]];
   // The town centre round the clock, in the town's metres: the Hub and library, the war memorial, the shops along Reilly Street
   // and on both sides of A'Beckett Street (the bakery among them). Three convex pieces, corners clockwise on the map. Inside
   // them the whole-town model keeps only its ground, and the weather's own town centre is stood there instead (below).
@@ -16802,6 +17071,74 @@ const handle = async (m, post) => {
       if (far !== shown) return;  // already where it should be
       shown = !far; for (let i = 0; i < parts.length; i++) h.setMatrix(i, shown ? I : FAR); } };
   }
+  // Bunurong Environment Centre. Two mapped landmarks at the Ramsey foreshore approach.
+  function townMuseumFrontage(m, THREE, grid) {
+    // Charger node 12869788102 beside the north edge of car-park way 768985478.
+    const [x,z] = m.fromLatLon(-38.6346880,145.7289911);
+    const [a,b] = [[-38.6346392,145.7289537],[-38.6347083,145.7290923]].map(ll => m.fromLatLon(...ll));
+    const heading = -Math.atan2(b[1]-a[1], b[0]-a[0]);
+    const pose = new THREE.Matrix4().makeRotationY(heading);
+    pose.setPosition(x, m.groundAt(x,z) + 0.025, z);
+    const body = [], colours = [];
+    function part(shape, hex) {
+      shape.applyMatrix4(pose);
+      const tint = new THREE.Color(hex), pos = shape.attributes.position;
+      for (const i of shape.index.array) {
+        body.push(pos.getX(i), pos.getY(i), pos.getZ(i));
+        colours.push(tint.r, tint.g, tint.b);
+      }
+      shape.dispose();
+    }
+    function box(u,y,v,w,h,d,colour) {
+      part(new THREE.BoxGeometry(w,h,d).translate(u,y,v), colour);
+    }
+    box(0,0,0,1.16,0.18,0.81,0xb3b0a8);
+    box(0,0.15,0,0.72,0.12,0.49,0x404449);
+    box(0,1.01,0,0.82,1.64,0.50,0xd5d6d3);
+    box(0,1.83,0,0.85,0.08,0.53,0x3a4247);
+    box(0,1.27,0.257,0.42,0.34,0.035,0x30383d);
+    box(0,1.30,0.278,0.29,0.19,0.012,0x55737c);
+    for (const side of [-1,1]) {
+      const lead = [[0.38,1.44,0.18],[0.52,1.05,0.21],[0.50,0.49,0.27],
+        [0.40,0.43,0.32],[0.32,0.88,0.31],[0.31,1.10,0.28]];
+      const curve = new THREE.CatmullRomCurve3(lead.map(([u,y,v]) => new THREE.Vector3(side*u,y,v)));
+      part(new THREE.TubeGeometry(curve, 12, 0.025, 5, false), 0x282d30);
+      box(side*0.31,1.12,0.28,0.075,0.16,0.10,0x353b3c);
+    }
+    grid?.worldBox(x,z,heading,1.05,0.65);
+
+    // Main entrance node 11897542004 and its adjoining north-west wall end on way 472789980.
+    // The glazing and shallow canopy follow the historical Travel Victoria exterior view.
+    const [ex,ez] = m.fromLatLon(-38.6345773,145.7291541);
+    const [wx,wz] = m.fromLatLon(-38.6345195,145.7290502);
+    const facing = -Math.atan2(wz-ez,wx-ex), base = m.groundAt(ex,ez);
+    pose.makeRotationY(facing).setPosition(ex,base,ez);
+    // The paved landing under the canopy follows the slope and ends at the porch.
+    const landing = [[-2.52,.05],[2.52,.05],[2.52,1.36],[-2.52,1.36]]
+      .map(([u,v]) => new THREE.Vector3(u,0,v).applyMatrix4(pose));
+    const paving = new THREE.Color(0xb9b8a9);
+    for (const i of [0,2,1,0,3,2]) {
+      const p = landing[i];
+      body.push(p.x,m.groundAt(p.x,p.z)+.025,p.z);
+      colours.push(paving.r,paving.g,paving.b);
+    }
+    // A shallow insert on the solid native building. Keep the entrance and sidelights visually distinct.
+    box(0,1.14,0.12,4.6,2.28,0.18,0x53554f);
+    for (const u of [-1.71,-0.57,0.57,1.71]) {
+      box(u,1.15,0.23,1.06,2.1,0.06,Math.abs(u)<1 ? 0x34484e : 0x50656a);
+      box(u,1.76,0.28,1.06,0.045,0.035,0x9d9f95);
+    }
+    for (const u of [-0.13,0.13]) box(u,1.02,0.285,0.035,0.30,0.06,0xb4b6ac);
+    box(0,2.41,0.62,5.05,0.15,1.26,0xb8b9a8);
+    for (const u of [-2.32,2.32]) {
+      const foot = new THREE.Vector3(u,0,1.11).applyMatrix4(pose);
+      const bottom = m.groundAt(foot.x,foot.z) - base - 0.025;
+      box(u,(2.36+bottom)/2,1.11,0.10,2.36-bottom,0.10,0x747767);
+      grid?.worldBox(foot.x,foot.z,facing,0.10,0.10);
+    }
+    m.addParts([{ positions: new Float32Array(body), colors: new Float32Array(colours),
+      matrix: new THREE.Matrix4().elements, roughness: 0.77 }]);
+  }
   // One mipmapped sheet for the photographed finishes at number 11. Its opaque faces
   // travel into Explore in one mesh. The night-lit batch only needs the little glazing tile.
   function normanHouseFinishes(THREE, parent, frame) {
@@ -16884,10 +17221,11 @@ const handle = async (m, post) => {
     });
     const texture = new THREE.CanvasTexture(sheet);
     texture.colorSpace = THREE.SRGBColorSpace; texture.anisotropy = 4;
-    const batch = () => ({ p: [], n: [], c: [], uv: [] }), masonry = batch(), windows = batch();
+    const batch = () => ({ p: [], n: [], c: [], uv: [] }), masonry = batch(), windows = batch(), paving = batch();
     const normal = new THREE.Vector3(), a = new THREE.Vector3(), b = new THREE.Vector3();
     const face = (name, corners, uv, shade = [], tint, normals) => {
-      const [x, y, w, h] = regions[name], dst = name === "glass" ? windows : masonry;
+      const [x, y, w, h] = regions[name], dst = name === "glass" ? windows
+        : name === "aggregate" || name === "paving" ? paving : masonry;
       a.fromArray(corners[1]).sub(b.fromArray(corners[0])); b.fromArray(corners[2]).sub(normal.fromArray(corners[0]));
       normal.crossVectors(a, b).normalize();
       for (let j = 1; j < corners.length - 1; j++) for (const i of [0, j, j + 1]) {
@@ -16923,8 +17261,8 @@ const handle = async (m, post) => {
       face("roof", corners, corners.map(([x,y,z]) => [(ribsAlongZ ? x + 12 : z + 9)/22, (y-2)/13]));
     };
     const finish = () => {
-      let glassMaterial;
-      for (const dst of [masonry, windows]) {
+      let glassMaterial, pavingMesh;
+      for (const dst of [masonry, windows, paving]) {
         const geom = new THREE.BufferGeometry();
         for (const [k, data, size] of [["position",dst.p,3],["normal",dst.n,3],["color",dst.c,3],["uv",dst.uv,2]])
           geom.setAttribute(k, new THREE.Float32BufferAttribute(data, size));
@@ -16938,12 +17276,118 @@ const handle = async (m, post) => {
           glassMaterial = mat; mat.roughness = .35; mat.emissive.setHex(0xffc98a); mat.emissiveIntensity = 0;
         }
         const mesh = new THREE.Mesh(geom, mat); mesh.applyMatrix4(frame); parent.add(mesh);
+        if (dst === paving) pavingMesh = mesh;
       }
-      return glassMaterial;
+      return { glassMaterial, paving: { mesh: pavingMesh, map: sheet, aggregate: regions.aggregate, tiles: regions.paving } };
     };
     return { face, front, floor, brick, metal, finish };
   }
 
+  // Ramsey Boulevard to The Glade. Road, aerial ground and adjoining buildings are the native model's.
+  function townGlade(T, m, THREE) {
+    const matrix = new THREE.Matrix4().elements;
+    // Explore metres measured east/south from the town.json origin. These runs follow the
+    // native pavements. Add surface detail within their widths and leave the original joins.
+    const concrete = [
+      [2.42, 0.15, [-133.86,-126.86, -120.92,-134.4, -104.82,-148.37, -106.33,-176.26, -92.17,-189.23, -70.95,-199.37,
+        -67.99,-200.17, -59.45,-203.12, -9.75,-223.56, -1.47,-223.85, 4.33,-224.61, 14.18,-223.82,
+        32.19,-229.8, 40.04,-227.73, 61.58,-213.58, 84,-199.14, 99.97,-193.17, 114.09,-191.21]],
+      [1.64, 0.13, [-145.85,-176.67, -121.8,-212.95, -116.89,-227.37, -109.48,-238.21, -99.72,-252.48]],
+      [1.64, 0.13, [-6.41,-240.9, -1.6,-232.12, -1.47,-223.85]],
+      [1.64, 0.13, [-172.94,-175.27, -145.03,-214.79]],
+      [1.64, 0.13, [-136.8,-227.8, -125.07,-244.12]],
+    ];
+    const positions = [], colours = [];
+    function joints(line, width, height, interval, hex, endClearance = 0.12) {
+      const tint = new THREE.Color(hex), half = width / 2, gap = 0.022;
+      let next = interval / 2;
+      for (let i = 2; i < line.length; i += 2) {
+        const ax = line[i - 2], az = line[i - 1], dx = line[i] - ax, dz = line[i + 1] - az;
+        const length = Math.hypot(dx, dz), ux = dx / length, uz = dz / length;
+        for (; next < length; next += interval) {
+          if (next < endClearance || length - next < endClearance) continue;
+          const X = ax + next * ux, Z = az + next * uz;
+          for (const [a, b] of [[-1,-1], [-1,1], [1,1], [-1,-1], [1,1], [1,-1]]) {
+            positions.push(X + a * gap * ux - b * half * uz, height, Z + a * gap * uz + b * half * ux);
+            colours.push(tint.r, tint.g, tint.b);
+          }
+        }
+        next -= length;
+      }
+    }
+    for (const [width, height, line] of concrete) joints(line, width, height, 4.3, 0xa39d91);
+    // Leave the timber seams inside the connector, clear of the taller shared path at the join.
+    joints([-70.95,-199.37, -55.99,-184.5], 1.64, 0.15, 0.27, 0x79654e, 1.4);
+
+    const [[ax, az], [bx, bz], [cx, cz], [dx, dz]] = INV_GLADE_SHELTER.map(([lat, lon]) => m.fromLatLon(lat, lon));
+    const x = (ax + bx + cx + dx) / 4, z = (az + bz + cz + dz) / 4;
+    const width = Math.hypot(bx - ax, bz - az), depth = Math.hypot(dx - ax, dz - az);
+    const tx = (bx - ax) / width, tz = (bz - az) / width, yaw = -Math.atan2(tz, tx);
+    const at = (u, v) => [x + u * tx - v * tz, z + u * tz + v * tx];
+    const hw = width / 2, hd = depth / 2;
+    const floor = Math.max(...[[-hw, -hd], [hw, -hd], [hw, hd], [-hw, hd], [0, 0]].map(p => m.groundAt(...at(...p))));
+    const eave = floor + 2.42, ridge = eave + 0.92, roof = [], shades = [], box = new THREE.BoxGeometry(1, 1, 1);
+    const roofPoint = (u, y, v) => { const [X, Z] = at(u, v); return [X, y, Z]; };
+    const triangle = (p, q, r, colour) => {
+      roof.push(...p, ...q, ...r);
+      for (let i = 0; i < 3; i++) shades.push(colour.r, colour.g, colour.b);
+    };
+    const quad = (a, b, c, d, hex) => {
+      const colour = new THREE.Color(hex);
+      triangle(a, b, c, colour);
+      triangle(a, c, d, colour);
+    };
+    for (const side of [-1, 1]) {
+      const v = side * hd;
+      // Narrow bands read as the seams of light corrugated sheets without a texture.
+      const sheets = Math.ceil(width / 0.56);
+      for (let i = 0; i < sheets; i++) {
+        const u = -hw + i * width / sheets, next = -hw + (i + 1) * width / sheets;
+        quad(roofPoint(u, ridge, 0), roofPoint(next, ridge, 0),
+          roofPoint(next, eave, v), roofPoint(u, eave, v), [0xd8d8d1, 0xd0d0c9, 0xd4d4cd][i % 3]);
+      }
+      quad(roofPoint(-hw, eave, v), roofPoint(hw, eave, v),
+        roofPoint(hw, eave - 0.13, v), roofPoint(-hw, eave - 0.13, v), 0xa4a7a0);
+    }
+    for (const u of [-hw, hw]) triangle(roofPoint(u, eave, -hd), roofPoint(u, ridge, 0),
+      roofPoint(u, eave, hd), new THREE.Color(0x9f9d93));
+
+    const solids = [], p = box.attributes.position;
+    const block = (u, v, low, top, w, d, hex) => {
+      const colour = new THREE.Color(hex);
+      for (const i of box.index.array) {
+        roof.push(...roofPoint(u + p.getX(i) * w, low + (p.getY(i) + 0.5) * (top - low), v + p.getZ(i) * d));
+        shades.push(colour.r, colour.g, colour.b);
+      }
+    };
+    for (const u of [-hw + 0.45, -width / 6, width / 6, hw - 0.45]) for (const v of [-hd + 0.5, hd - 0.5]) {
+      const bottom = m.groundAt(...at(u, v)) - 0.03, top = eave + 0.07;
+      const base = bottom + 0.64;
+      block(u, v, bottom, base, 0.58, 0.58, 0x8d7d6b);
+      for (let band = 0; band < 6; band++) {
+        const from = base + (top - base) * band / 6, to = base + (top - base) * (band + 1) / 6;
+        block(u, v, from, to, 0.48, 0.48, [0x837669, 0x8b7c6e, 0x796f65][band % 3]);
+      }
+      solids.push([...at(u, v), 0.58]);
+    }
+    const wall = { v: hd - 0.5, width: width / 3, depth: 0.38 };
+    const wallBase = Math.min(m.groundAt(...at(-wall.width / 2, wall.v)), m.groundAt(...at(wall.width / 2, wall.v)));
+    block(0, wall.v, wallBase - 0.04, floor + 0.55, wall.width, wall.depth, 0x8d7d6b);
+    box.dispose();
+    const slab = [[-hw + 0.22, -hd + 0.22], [hw - 0.22, -hd + 0.22], [hw - 0.22, hd - 0.22], [-hw + 0.22, hd - 0.22]];
+    const paving = new THREE.Color(0xa59c8c);
+    for (const i of [0, 2, 1, 0, 3, 2]) {
+      positions.push(...roofPoint(slab[i][0], 0.055, slab[i][1]));
+      colours.push(paving.r, paving.g, paving.b);
+    }
+    m.addParts([
+      { positions: new Float32Array(positions), colors: new Float32Array(colours), matrix, roughness: 0.97, onGround: true },
+      { positions: new Float32Array(roof), colors: new Float32Array(shades), matrix, roughness: 0.81, doubleSide: true },
+    ]);
+    const grid = T.invStatic ??= invCivicCollision((X, Z) => [X, Z], () => false);
+    for (const [X, Z, size] of solids) grid.worldBox(X, Z, yaw, size, size);
+    grid.worldBox(...at(0, wall.v), yaw, wall.width, wall.depth);
+  }
   // The town centre, the Rotary clock and number 11 Norman Road are copied out of the weather's Inverloch (which is left as it
   // is) and stood in the whole-town model where they really are: their shapes, colours and pictures. The clock's hands, its lit
   // faces, the flags, the koala, the wombats and the windows' glow at night keep following the weather's own, frame by frame.
@@ -16953,7 +17397,7 @@ const handle = async (m, post) => {
     if (!TG || !m.addParts) return jumps;
     TG.updateMatrixWorld(true);
     const toTG = T.toTG = new THREE.Matrix4().copy(TG.matrixWorld).invert(), v = new THREE.Vector3(), nm = new THREE.Matrix3();
-    T.live = []; T.glow = []; T.roots = []; T.cars = [];
+    T.live = []; T.glow = []; T.roots = []; T.cars = []; T.groundGuests = [];
     const rgb = c => [c.r, c.g, c.b], matOf = o => Array.isArray(o.material) ? o.material[0] : o.material;
     const plain = mat => mat && (mat.isMeshStandardMaterial || mat.isMeshBasicMaterial || mat.isMeshLambertMaterial || mat.isMeshPhongMaterial);
     const look = mat => ({ color: mat.color ? rgb(mat.color) : [1, 1, 1], map: mat.map?.image || undefined, mapRepeat: mat.map ? [mat.map.repeat.x, mat.map.repeat.y] : undefined,
@@ -16990,7 +17434,10 @@ const handle = async (m, post) => {
             if (C) col.push(C.getX(i), C.getY(i), C.getZ(i));
             if (U) uv.push(U.getX(i), U.getY(i)); } }
         if (pos.length) { parts.push({ positions: pos, normals: Nn ? nor : undefined, colors: C ? col : undefined, uvs: U ? uv : undefined, ...look(mat), matrix: place.elements }); mats.push(mat); } });
-      if (parts.length) glows(m.addParts(parts), mats); };
+      if (!parts.length) return;
+      const h = m.addParts(parts); glows(h, mats);
+      const count = parts.length;
+      return matrix => { for (let i = 0; i < count; i++) h.setMatrix(i, matrix.elements); }; };
     // a Jump stop from one of Explore's own spots (kept in the weather scene's coordinates): to the town's metres, then the model's
     const stop = (name, sp, place, target) => { const p = v.set(...sp.pos).applyMatrix4(toTG).applyMatrix4(place);
       jumps.push({ name, target, walk: { x: p.x, z: p.z, yaw: sp.yaw - TG.rotation.y, pitch: sp.pitch } }); };
@@ -16998,7 +17445,8 @@ const handle = async (m, post) => {
     const tower = W.invClock?.children.find(o => !o.isMesh && o.children.length);  // the clock's poles, faces, hands and ship; the rest of it is its plaza
     const flags = (W.invFlags || []).filter(under), drive = (W.invDriveCars || []).map(d => d.mesh).filter(Boolean);
     // what moves at number 11: the koala, the wombats, the joey and the magpie, the two on the balcony; and the cars on Norman Road
-    const moving = [W.invKoala?.ko, ...(W.invWombats || []).map(w => w.g), W.invCritters?.roo, W.invCritters?.mag, ...(W.invFolk?.all || [])].filter(Boolean), cars = W.invNormanCars || [], skip = new Set();
+    const wombats = (W.invWombats || []).map(w => w.g);
+    const moving = [W.invKoala?.ko, ...wombats, W.invCritters?.roo, W.invCritters?.mag, ...(W.invFolk?.all || [])].filter(Boolean), cars = W.invNormanCars || [], skip = new Set();
     [W.invClock, ...moving, ...cars].filter(Boolean).forEach(r => r.traverse(o => skip.add(o)));
 
     // the town centre round the clock: the bakery and the other shops, the war memorial, the library and the Hub, the streets
@@ -17055,46 +17503,280 @@ const handle = async (m, post) => {
     const home = D.nr?.home;
     if (home && W.invHouse) { const [hx, hz, nx, nz] = home, ry = Math.atan2(nx, nz), half = 16.5, zBack = -17, zFront = 15.4, zc = (zBack + zFront) / 2;
       const [x, z] = m.fromLatLon(...townLL(hx, hz));
-      // The lawn lies on the slope, just above the ground, not on a flat pad level with the slope's highest corner (which stood it up to
-      // 1.4 m over the ground on the low side). The house and everything on the lot lean with it, walls still upright: the slope is about
-      // a degree, too little to see. Ash, 26 November 2026: "The grass on 11 Norman Rd is too high", then "Remove that extra grass from
-      // 11 Norman Rd that you just added and instead just make the grass lower" (the grassy bank round it, which is gone)
-      const L = slopePad(m, { x: x + Math.sin(ry) * zc, z: z + Math.cos(ry) * zc, hw: half + 0.4, hd: (zFront - zBack) / 2 + 0.4, heading: ry, color: [0.105, 0.254, 0.061] }), top = L.top;
+      // The fitted slope still anchors the house and paving. The rendered lawn grades down around them.
+      const bounds = { x: x + Math.sin(ry) * zc, z: z + Math.cos(ry) * zc,
+        hw: half + 0.4, hd: (zFront - zBack) / 2 + 0.4, heading: ry, zc };
+      const houseParts = [[-4,-.5,11,11],[5,1,7,8],[5,-5.5,7,5]];
+      // Each native world owns these terrain-fitted vertices. Prepare them off screen on a swap.
+      const fit = native => {
+        const lawn = normanLawn(native, bounds, W.invNormanPaving);
+        for (const { mesh, u, v } of W.invNormanBins) normanGroundBin(native, lawn, mesh.geometry, u, v - zc, THREE);
+        normanFoundations(native, lawn, houseParts, zc, THREE);
+        return lawn;
+      };
+      const L = fit(T.pair.cur), place = new THREE.Matrix4(), vanPlace = new THREE.Matrix4(), vanU = 6.4, vanV = 8.6 - zc;
       (T.pads ||= []).push(L);
-      const place = L.lean.clone().multiply(new THREE.Matrix4().makeTranslation(x - hx, top - G0, z - hz));
-      lot(W.invHouse, half, zBack, zFront, place, skip);
+      const align = () => {
+        place.makeTranslation(x - hx, L.top - G0, z - hz).premultiply(L.lean);
+        vanPlace.copy(place);
+        const vanPlane = L.top + L.gu * vanU + L.gv * vanV;
+        vanPlace.elements[13] += L.surfaceAt(vanU, vanV, vanPlane) - vanPlane;
+      };
+      align();
+      skip.add(W.invNormanGround);  // the full-town terrain and road supply these surfaces
+      skip.add(W.invNormanPaving.mesh);
+      W.invNormanBins.forEach(({ mesh }) => skip.add(mesh));
+      W.invNormanVan.traverse(o => skip.add(o));
+      const moveHouse = lot(W.invHouse, half, zBack, zFront, place, skip);
+      whole(W.invNormanVan, vanPlace);
       if (m.buildingBlockers) {
         const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
         // House, garage, rear wing and rescue van use the same bearing as the lot.
-        for (const [u,v,w,l] of [[-4,-.5,11,11],[5,1,7,8],[5,-5.5,7,5],[6.4,8.6,1.98,5.1]]) {
+        for (const [u,v,w,l] of [...houseParts,[vanU,vanV + zc,1.98,5.1]]) {
           grid.worldBox(x + Math.cos(ry)*u + Math.sin(ry)*v, z - Math.sin(ry)*u + Math.cos(ry)*v, ry, w, l);
         }
       }
-      moving.forEach(r => whole(r, place));
+      moving.forEach(r => {
+        if (!wombats.includes(r)) { whole(r, place); return; }
+        const anchored = place.clone();
+        T.groundGuests.push({ root: r, anchored, place, lawn: L });
+        whole(r, anchored);
+      });
       cars.forEach(c => { const cp = place.clone(); T.cars.push({ o: c, cp }); whole(c, cp); });  // each car kept on the model's road as it goes
+      T.normanGrade = { fit, apply(grade) {
+        // Walking, wheels and grounded guests all retain this one pad reference.
+        Object.assign(L, grade);
+        align();
+        moveHouse?.(place);
+        for (const guest of T.groundGuests) guest.anchored.copy(place);
+        for (const car of T.cars) car.cp.copy(place);
+      } };
       if (W.invNormanSpot) stop("Norman Rd", W.invNormanSpot, place, [x, z]); }
+    // Collision stays in the host. Each native world owns a mesh fitted to its terrain.
+    const museumGrid = T.invStatic ??= invCivicCollision((X,Z) => [X,Z], () => false);
+    townMuseumFrontage(T.pair.cur, THREE, museumGrid);
+    T.fitMuseumFrontage = native => townMuseumFrontage(native, THREE);
     return jumps;
   }
-  // A lawn laid on a slope (P: its middle x, z, half its width hw and depth hd, its heading, its colour): the plane that best fits the
-  // model's ground under it (sampled 9 x 9), raised just enough that the ground doesn't come up through it (5 cm clear, at least 6 cm
-  // up). Gives back what padGround and the drone need, its height at its middle (top), the slope across and along it (gu, gv), and lean:
-  // the shear that tilts things laid flat at its middle onto it, keeping upright things upright
-  function slopePad(m, P) { const c = Math.cos(P.heading), s = Math.sin(P.heading), N = 9, g = [];
+  // The timber entry to beach access 38, off the concrete Surf Parade shared path.
+  function townSurfParadeBeachAccess(T, m) {
+    const THREE = BS.B.THREE, positions = [], colors = [];
+    // OSM ways 1155344005, 1155344006 and 633621971, from the concrete landing to the beach.
+    const [landing, stairHead, stairFoot] = [
+      [-38.6414344, 145.7150980], [-38.6414356, 145.7151465], [-38.6414245, 145.7151894]
+    ].map(point => m.fromLatLon(...point));
+    const deckWidth = 1.82, postWidth = 0.14;
+    const geometry = new THREE.BoxGeometry(), unit = geometry.toNonIndexed();
+    geometry.dispose();
+    const corners = unit.getAttribute("position"), matrix = new THREE.Matrix4(), rotation = new THREE.Quaternion();
+    const translation = new THREE.Vector3(), size = new THREE.Vector3(), vertex = new THREE.Vector3();
+    const tint = new THREE.Color(), angles = new THREE.Euler(0, 0, 0, "YXZ");
+    const solid = (x, y, z, width, height, length, heading, pitch, colour) => {
+      rotation.setFromEuler(angles.set(pitch, heading, 0));
+      matrix.compose(translation.set(x, y, z), rotation, size.set(width, height, length));
+      tint.setHex(colour);
+      for (let i = 0; i < corners.count; i++) {
+        vertex.fromBufferAttribute(corners, i).applyMatrix4(matrix);
+        positions.push(vertex.x, vertex.y, vertex.z);
+        colors.push(tint.r, tint.g, tint.b);
+      }
+    };
+    const floor = ([x, z]) => Math.max(m.groundAt(x, z), m.roadSurfaceAt?.(x, z) ?? -Infinity);
+    const pads = [], rails = [];
+    const boards = [0x918a78, 0xa19a88, 0x989181, 0xa49b87];
+    for (const [a, b, isStair] of [[landing, stairHead, false], [stairHead, stairFoot, true]]) {
+      const dx = b[0] - a[0], dz = b[1] - a[1], length = Math.hypot(dx, dz);
+      const heading = Math.atan2(dx, dz), c = dz / length, s = dx / length;
+      const point = (t, side = 0) => [a[0] + t * dx + side * c, a[1] + t * dz - side * s];
+      const count = isStair ? 4 : Math.ceil(length / 0.22), tops = [];
+      for (let i = 0; i < count; i++) {
+        const t = (i + 0.5) / count, [x, z] = point(t);
+        // Check both edges and allow for the terrain changing resolution after the host mesh is built.
+        const clearance = isStair ? 0.17 : 0.12;
+        const top = Math.max(floor([x, z]), ...[-1, 1].flatMap(end => [-1, 1].map(side =>
+          floor(point(t + end * 0.5 / count, deckWidth * side / 2))))) + clearance;
+        const thick = isStair ? 0.20 : 0.085;
+        solid(x, top - thick / 2, z, deckWidth, thick, length / count - 0.007, heading, 0, boards[i % boards.length]);
+        pads.push({ x, z, c, s, hw: deckWidth / 2, hd: length / (2 * count), top });
+        tops.push(top);
+      }
+      for (const side of [-1, 1]) {
+        const offset = side * (deckWidth / 2 + 0.035), posts = isStair ? [0.46, 0.97] : [0.02, 0.49, 0.98];
+        const [ax, az] = point(0, offset), [bx, bz] = point(1, offset);
+        const rise = tops.at(-1) - tops[0], railLength = Math.hypot(length, rise);
+        for (const height of [0.52, 1.00]) {
+          solid((ax + bx) / 2, (tops[0] + tops.at(-1)) / 2 + height, (az + bz) / 2,
+            0.095, height > 0.9 ? 0.20 : 0.145, railLength, heading, -Math.atan2(rise, length), 0x665e4f);
+        }
+        for (const t of posts) {
+          const [x, z] = point(t, offset), base = m.groundAt(x, z) - 0.03;
+          const top = tops[0] + rise * t + 1.13;
+          solid(x, (base + top) / 2, z, postWidth, top - base, postWidth, heading, 0, 0x807565);
+        }
+        rails.push([(ax + bx) / 2, (az + bz) / 2, heading, postWidth, length]);
+      }
+    }
+    unit.dispose();
+    m.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      color: [1, 1, 1], roughness: 0.93, matrix: new THREE.Matrix4().elements }]);
+    const grid = T.invStatic ??= invCivicCollision((x, z) => [x, z], () => false);
+    for (const rail of rails) grid.worldBox(...rail);
+    (T.pads ??= []).push(...pads);
+  }
+  // Fit the same placement plane as the original pad before grading the exposed lawn.
+  function normanLawn(m, P, paving) { const c = Math.cos(P.heading), s = Math.sin(P.heading), N = 9, g = [];
     for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) { const u = (i / (N - 1) * 2 - 1) * P.hw, v = (j / (N - 1) * 2 - 1) * P.hd; g.push([u, v, m.groundAt(P.x + u * c + v * s, P.z - u * s + v * c)]); }
     const mean = g.reduce((a, q) => a + q[2], 0) / g.length, gu = g.reduce((a, q) => a + q[0] * q[2], 0) / g.reduce((a, q) => a + q[0] * q[0], 0), gv = g.reduce((a, q) => a + q[1] * q[2], 0) / g.reduce((a, q) => a + q[1] * q[1], 0);
     const top = mean + Math.max(0.06, Math.max(...g.map(([u, v, y]) => y - (mean + gu * u + gv * v))) + 0.05);
     const gx = gu * c + gv * s, gz = -gu * s + gv * c, THREE = BS.B.THREE, M = (a, b, cc, d, e, f, h, k, l, n, o, q) => new THREE.Matrix4().set(a, b, cc, d, e, f, h, k, l, n, o, q, 0, 0, 0, 1);
     const lean = M(1, 0, 0, 0, gx, 1, gz, -gx * P.x - gz * P.z, 0, 0, 1, 0);  // (y goes up gx a metre across x and gz along z, about the lawn's middle)
-    // the lawn: a slab 1.5 m deep, its top on the plane, its sides down into the ground
-    const pos = [], box = (x0, x1, y0, y1, z0, z1) => { for (const f of [[[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]], [[x0, y0, z1], [x0, y1, z1], [x0, y1, z0], [x0, y0, z0]], [[x0, y1, z0], [x0, y1, z1], [x1, y1, z1], [x1, y1, z0]],
-      [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]], [[x1, y0, z0], [x0, y0, z0], [x0, y1, z0], [x1, y1, z0]]]) pos.push(...f[0], ...f[1], ...f[2], ...f[0], ...f[2], ...f[3]); };
-    box(-P.hw, P.hw, -1.5, 0, -P.hd, P.hd);
-    const at = lean.clone().multiply(new THREE.Matrix4().makeTranslation(P.x, top, P.z)).multiply(new THREE.Matrix4().makeRotationY(P.heading));
-    m.addParts([{ positions: new Float32Array(pos), color: P.color, roughness: 1, matrix: at.elements.slice() }]);
-    return { x: P.x, z: P.z, c, s, hw: P.hw, hd: P.hd, top, gu, gv, lean }; }
-  // the ground on a pad: its top where you're on it (on a sloping one, its slope), else the ground g
+    const { x, z, hw, hd, zc } = P;
+    const world = (u, v) => [x + c*u + s*v, z - s*u + c*v];
+    const roadAt = (u, v) => m.roadSurfaceAt?.(...world(u, v));
+    // Find the near edge of the rendered asphalt across the driveway and footpath.
+    let far = hd;
+    for (const u of [-4.95, -4.4, -3.85, 1.5, 3.1, 5.2, 7.4, 8.9]) {
+      for (let v = hd - .4; v <= hd + .4; v += .025) {
+        if (roadAt(u, v) != null) { far = Math.max(far, v); break; }
+      }
+    }
+    far += .045;
+    const finishes = [
+      { u0: 1.9, u1: 8.5, v0: 5 - zc, v1: 11.15 - zc, lift: .09, uv: paving.aggregate },
+      { u0: 1.5, u1: 8.9, v0: 11.15 - zc, v1: far, lift: .09, slopeFrom: 12.8 - zc, uv: paving.tiles },
+      { u0: -4.95, u1: -3.85, v0: 5.2 - zc, v1: far, lift: .095, slopeFrom: 12.8 - zc, color: new THREE.Color(0xc7c1b4).toArray() },
+    ];
+    const smooth = (a, b, t) => { const f = bsClamp((t - a) / (b - a), 0, 1); return f * f * (3 - 2 * f); };
+    // A single height grid has exact boundaries for each paving material and the shared walking/driving surface.
+    const grid = breaks => {
+      const knots = [...new Set(breaks)].sort((a, b) => a - b);
+      const coords = [knots[0]];
+      for (let k = 1; k < knots.length; k++) {
+        const a = knots[k - 1], b = knots[k], count = Math.ceil((b - a) / .46);
+        for (let i = 1; i < count; i++) coords.push(a + (b - a) * i / count);
+        coords.push(b);
+      }
+      return coords;
+    };
+    const across = grid([-hw, hw, ...finishes.flatMap(f => [f.u0, f.u1])]);
+    const along = grid([-hd, hd, far, ...finishes.flatMap(f => [f.v0, f.v1, f.slopeFrom ?? f.v0])]);
+    const stride = across.length, height = new Float32Array(stride * along.length);
+    const positions = [], indices = [], uvs = [], paveFaces = finishes.map(() => []);
+    const atToe = across.map(u => roadAt(u, far) ?? m.groundAt(...world(u, far)));
+    for (let j = 0; j < along.length; j++) for (let i = 0; i < stride; i++) {
+      const u = across[i], v = along[j], [wx, wz] = world(u, v), plane = top + gu*u + gv*v;
+      const bed = Math.max(m.groundAt(wx, wz), v > hd - .45 ? roadAt(u, v) ?? -Infinity : -Infinity);
+      const edge = Math.min(hw - Math.abs(u), v + hd, far - v);
+      const vergeTie = smooth(far - 1.45, far - .12, v) * smooth(0, 1.3, hw - Math.abs(u));
+      const grass = bed + Math.max(smooth(0, 4.1, edge) * Math.max(0, plane - bed),
+        vergeTie * Math.max(0, atToe[i] - bed));
+      let y = grass;
+      for (const f of finishes) {
+        const side = Math.max(f.u0 - u, u - f.u1, 0);
+        const end = Math.max(f.v0 - v, v - f.v1, 0);
+        const weight = 1 - smooth(0, .42, Math.hypot(side, end));
+        const slope = f.slopeFrom == null ? 0 : smooth(f.slopeFrom, far, v);
+        const deck = (1 - slope) * (plane + f.lift) + slope * atToe[i];
+        y = Math.max(y, grass + weight * (deck - grass));
+      }
+      height[j * stride + i] = y;
+      positions.push(wx, y + .012, wz);
+      uvs.push((u + hw) / (2 * hw), 1 - (v + hd) / (hd + far));
+      if (i === stride - 1 || j === along.length - 1) continue;
+      const id = j * stride + i, uu = (u + across[i + 1]) / 2, vv = (v + along[j + 1]) / 2;
+      const corners = [id, id + stride, id + 1, id + 1, id + stride, id + stride + 1];
+      const k = finishes.findIndex(f => uu >= f.u0 && uu <= f.u1 && vv >= f.v0 && vv <= f.v1);
+      if (k < 0) indices.push(...corners);
+      else paveFaces[k].push(...corners);
+    }
+    // Feather over the renderer's own verge texture, with a little deterministic lawn grain.
+    const map = document.createElement("canvas"); map.width = map.height = 128;
+    const ctx = map.getContext("2d"), pixels = ctx.createImageData(map.width, map.height);
+    let seed = 11;
+    for (let j = 0; j < map.height; j++) for (let i = 0; i < map.width; i++) {
+      const u = -hw + 2 * hw * i / (map.width - 1), v = -hd + (hd + far) * j / (map.height - 1);
+      const edge = Math.min(hw - Math.abs(u), v + hd, far - v);
+      const mottling = Math.sin(u*.94 + v*.31) * Math.cos(v*.59 - u*.24);
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      const grain = 6 * mottling + (seed / 4294967296 - .5) * 10;
+      const k = 4 * (j * map.width + i);
+      pixels.data[k] = 115 + grain;
+      pixels.data[k + 1] = 125 + grain;
+      pixels.data[k + 2] = 82 + grain;
+      const vergeOpacity = smooth(far - 1.45, far - .95, v) * smooth(0, .28, far - v) * smooth(0, 1.3, hw - Math.abs(u));
+      pixels.data[k + 3] = Math.round(255 * Math.max(vergeOpacity, smooth(0, 2.6 + .35 * mottling, edge)));
+    }
+    ctx.putImageData(pixels, 0, 0);
+    const matrix = new THREE.Matrix4().elements;
+    const parts = [{ positions, indices, uvs, map, opacity: .999, roughness: 1, matrix }];
+    const driveway = { positions: [], uvs: [], map: paving.map, roughness: .95, matrix };
+    finishes.forEach((f, k) => {
+      const part = f.uv ? driveway : { positions: [], color: f.color, roughness: .95, matrix };
+      for (const id of paveFaces[k]) {
+        part.positions.push(positions[id*3], height[id] + .004, positions[id*3 + 2]);
+        if (f.uv) {
+          const [tx, ty, w, h] = f.uv;
+          const u = (across[id % stride] - f.u0) / (f.u1 - f.u0);
+          const v = (f.v1 - along[Math.floor(id / stride)]) / (f.v1 - f.v0);
+          part.uvs.push((tx + 2 + u * (w - 4)) / paving.map.width,
+            1 - (ty + h - 2 - v * (h - 4)) / paving.map.height);
+        }
+      }
+      if (!f.uv) parts.push(part);
+    });
+    parts.push(driveway);
+    m.addParts(parts);
+    // Interpolate the same triangles that are drawn, so wheels and feet follow the visible grade.
+    const cellAt = (coords, v) => {
+      let lo = 0, hi = coords.length - 1;
+      while (hi > lo + 1) { const mid = (hi + lo) >> 1; if (coords[mid] <= v) lo = mid; else hi = mid; }
+      return lo;
+    };
+    const surfaceAt = (u, v, fallback) => {
+      if (Math.abs(u) > hw || v < -hd || v > far) return fallback;
+      const i = cellAt(across, u), j = cellAt(along, v), a = j * stride + i;
+      const p = (u - across[i]) / (across[i + 1] - across[i]), q = (v - along[j]) / (along[j + 1] - along[j]);
+      const y = p + q <= 1 ? height[a] * (1 - p - q) + height[a + 1] * p + height[a + stride] * q
+        : height[a + stride + 1] * (p + q - 1) + height[a + 1] * (1 - q) + height[a + stride] * (1 - p);
+      return Math.max(fallback, y);
+    };
+    return { x, z, c, s, hw, hd, top, gu, gv, lean, surfaceAt };
+  }
+  function normanGroundBin(m, lawn, geometry, u, v, THREE) {
+    const { c, s, x, z, surfaceAt } = lawn;
+    const wx = x + c*u + s*v, wz = z - s*u + c*v;
+    const feet = [[-.3,-.35],[.3,-.35],[-.3,.35],[.3,.35]].map(([du,dv]) => {
+      const bed = m.groundAt(wx + c*du + s*dv, wz - s*du + c*dv);
+      return [du, dv, surfaceAt(u + du, v + dv, bed)];
+    });
+    const gu = (feet[1][2] + feet[3][2] - feet[0][2] - feet[2][2]) / 1.2;
+    const gv = (feet[2][2] + feet[3][2] - feet[0][2] - feet[1][2]) / 1.4;
+    const y = Math.max(...feet.map(([du,dv,gy]) => gy - gu*du - gv*dv)) + .004;
+    const matrix = new THREE.Matrix4().set(c,0,s,wx, gu,1,gv,y, -s,0,c,wz, 0,0,0,1);
+    const a = geometry.attributes;
+    m.addParts([{ positions: a.position.array, normals: a.normal.array, colors: a.color.array, roughness: .9, matrix: matrix.elements }]);
+  }
+  function normanFoundations(m, lawn, houseParts, zc, THREE) {
+    const { c, s, x, z, top, gu, gv, surfaceAt } = lawn;
+    const positions = [];
+    for (const [u, localZ, width, depth] of houseParts) {
+      const v = localZ - zc, x0 = u - width/2, x1 = u + width/2, z0 = v - depth/2, z1 = v + depth/2;
+      const rim = [[x0,z0],[x0,z1],[x1,z1],[x1,z0]].map(([a,b]) => {
+        const wx = x + c*a + s*b, wz = z - s*a + c*b;
+        return { wx, wz, top: top + gu*a + gv*b + .3, bed: surfaceAt(a, b, m.groundAt(wx, wz)) };
+      });
+      const base = Math.min(...rim.map(p => p.bed)) - .14;
+      for (let i = 0; i < rim.length; i++) {
+        const a = rim[i], b = rim[(i + 1) % rim.length];
+        positions.push(a.wx,base,a.wz, b.wx,base,b.wz, b.wx,b.top,b.wz,
+          a.wx,base,a.wz, b.wx,b.top,b.wz, a.wx,a.top,a.wz);
+      }
+    }
+    m.addParts([{ positions, color: new THREE.Color(0x807364).toArray(), roughness: 1, matrix: new THREE.Matrix4().elements }]);
+  }
   function padGround(P, x, z, g) { const dx = x - P.x, dz = z - P.z, u = dx * P.c - dz * P.s, v = dx * P.s + dz * P.c;
-    return Math.abs(u) <= P.hw && Math.abs(v) <= P.hd ? Math.max(g, P.top + (P.gu || 0) * u + (P.gv || 0) * v) : g; }
+    if (P.surfaceAt) return P.surfaceAt(u, v, g);  // (Norman Road's lawn: #390)
+    return Math.abs(u) <= P.hw && Math.abs(v) <= P.hd ? Math.max(g, P.top + (P.gu || 0) * u + (P.gv || 0) * v) : g; }  // (a flat pad: Surf Parade's beach access, #407)
   // The weather's town centre, cut out of its merged shapes and laid over the whole-town model's ground, which slopes where
   // the weather's is flat: every shape goes across with its heights measured from the ground, and the model lays it down so
   // that it follows the ground beneath it. A building comes whole or not at all (by its outline on the map); so does each
@@ -17206,6 +17888,55 @@ const handle = async (m, post) => {
     const inPilot = (x,z) => townInBlock((x-o0[0])/kx, (z-o0[1])/kz);
     return { at, place, inPilot, parts: parts.length, corners: parts.reduce((n, p) => n + p.positions.length / 3, 0) };
   }
+  // The westbound wayfinder in the south verge, before the Bear Street turn.
+  // Estimated from maxim752 Mapillary frames 588735650795644 and 584548554484819 (18 January 2025).
+  function invIndustrialEstateSign(T, model, THREE) {
+    const x = -867.06, z = -1067.02, angle = 104 * Math.PI / 180;
+    const matrix = new THREE.Matrix4().makeRotationY(angle).setPosition(x, 0, z);
+    const canvas = document.createElement("canvas"); canvas.width = 192; canvas.height = 48;
+    const ink = canvas.getContext("2d");
+    if (!ink) return;
+    const faceWidth = 184;
+    ink.fillStyle = "#fff"; ink.fillRect(0, 0, canvas.width, canvas.height);
+    ink.fillStyle = "#19417c"; ink.fillRect(0, 0, faceWidth, canvas.height);
+    ink.strokeStyle = "#fff"; ink.lineWidth = 2; ink.strokeRect(3, 3, faceWidth - 6, 42);
+    ink.lineWidth = 5;
+    ink.beginPath(); ink.moveTo(33, 12); ink.lineTo(21, 24); ink.lineTo(33, 36); ink.stroke();
+    ink.fillStyle = "#fff"; ink.font = "bold 16px sans-serif";
+    ink.textAlign = "center"; ink.textBaseline = "middle";
+    ink.fillText("Inverloch", 110, 15); ink.fillText("Industrial Estate", 110, 33);
+
+    const positions = [], colors = [], uvs = [];
+    const metal = new THREE.Color(0x879098);
+    const box = (width, height, depth, localX, base, panel = false) => {
+      const geometry = new THREE.BoxGeometry(width, height, depth);
+      const pos = geometry.getAttribute("position"), norm = geometry.getAttribute("normal"), uv = geometry.getAttribute("uv");
+      for (const i of geometry.index.array) {
+        const front = panel && norm.getZ(i) > 0.5;
+        positions.push(localX + pos.getX(i), base + height / 2 + pos.getY(i), pos.getZ(i));
+        if (front) {
+          colors.push(1, 1, 1);
+          uvs.push((0.5 + uv.getX(i) * (faceWidth - 1)) / canvas.width, uv.getY(i));
+        } else {
+          colors.push(metal.r, metal.g, metal.b);
+          uvs.push(0.985, 0.5);
+        }
+      }
+    };
+    const posts = [-0.51, 0.51], postWidth = 0.065;
+    for (const localX of posts) box(postWidth, 2.32, postWidth, localX, 0);
+    box(1.90, 0.49, 0.045, 0, 2.04, true);
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      uvs: new Float32Array(uvs), map: canvas, matrix: matrix.elements, onGround: true }]);
+
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    for (const localX of posts) {
+      const foot = new THREE.Vector3(localX, 0, 0).applyMatrix4(matrix);
+      grid.worldBox(foot.x, foot.z, angle, postWidth, postWidth);
+    }
+  }
+
+  // BEGIN GENERATED src/explore/collision.mjs
   // Ground-level collision in model metres. Authored guest shapes use their local transform.
   function invCivicCollision(at, inPilot) {
     const dimensions = new Map(), owned = new WeakMap(), identity = (x,z) => [x,z];
@@ -17256,7 +17987,7 @@ const handle = async (m, post) => {
         const bucket = cells.get(k);
         if (!bucket) return;
         for (const B of bucket) {
-          if (B.stamp === id || B.hidden || B === ignore || x+ex < B.x0 || x-ex > B.x1 || z+ez < B.z0 || z-ez > B.z1) continue;
+          if (B.stamp === id || B.hidden || (hl > 0 && B.walkClearance) || B === ignore || x+ex < B.x0 || x-ex > B.x1 || z+ez < B.z0 || z-ez > B.z1) continue;
           B.stamp = id;
           let inside = false, distance2 = Infinity, vx = 0, vz = 0, rim = 0;
           for (const e of B.edges) {
@@ -17274,12 +18005,16 @@ const handle = async (m, post) => {
           const push = hl ? Math.max(rim, inside ? d + Math.min(hl,hw) : 0) : hw + (inside ? d : -d);
           if (push <= deepest) continue;
           deepest = push;
-          if (normal) { const sign = (inside ? -1 : 1) / (d || 1); normal.x = vx*sign; normal.z = vz*sign; }
+          if (normal) { const sign = (inside ? -1 : 1) / (d || 1); normal.x = vx*sign; normal.z = vz*sign; normal.shape = B; }
         }
       });
       return deepest;
     }
     const depth = (x,z,h,hl,hw) => contact(x,z,h,hl,hw);
+    const obstacle = (x,z,h,hl,hw) => {
+      const hit = {};
+      return contact(x,z,h,hl,hw,hit) > 0 ? hit.shape : null;
+    };
     // Bound the entire rotating body during a step. Only subdivide when its conservative
     // midpoint box touches something; centimetre-scale uncertainty stops the step.
     function canDrive(x,z,h,tx,tz,th,hl,hw) {
@@ -17333,7 +18068,7 @@ const handle = async (m, post) => {
       if (y != null) moved.set(k,[...id,x,y,z,h,pitch,roll]);
       if (!wholeTown && !inPilot(x,z)) return;
       const [w,l] = dimensions.get(k) || [1.85,4.55];
-      const shape = worldBox(x,z,h,w,l); shape.hidden = hiddenCars.has(k); parked.set(k,shape);
+      const shape = worldBox(x,z,h,w,l); shape.hidden = hiddenCars.has(k); shape.key = k; parked.set(k,shape);
     }
     function addCars(cars) {
       for (const {x,z,heading} of cars) { const id=[x,z]; take(id); parked.set(carKey(x,z),null); park(id,x,z,heading); }
@@ -17375,7 +18110,7 @@ const handle = async (m, post) => {
     }
     // A quality swap reconstructs the renderer (including the cars in their original bays).
     const restoreCars = model => { for (const pose of moved.values()) model.driveCar?.(...pose); };
-    return { polygon, box, worldBox, post, depth, slide, canDrive, take, park, addCars, addTown, own, originalBay, bayFree, hideCars, restoreCars, get wholeTown() { return wholeTown; } };
+    return { polygon, box, worldBox, post, depth, obstacle, slide, canDrive, take, park, addCars, addTown, own, originalBay, bayFree, hideCars, restoreCars, get wholeTown() { return wholeTown; } };
   }
 
   // Native wall rings are already in model metres. Register individual masses so open
@@ -17388,6 +18123,178 @@ const handle = async (m, post) => {
       for (let i = 0; i < ring.length; i += 2) points.push([ring[i], ring[i + 1]]);
       grid.polygon(points);
     }
+  }
+
+  // Half width, half length and height in metres. The sedan follows the traffic sedan in townPlaneParts.
+  const townTrafficBodies = { walk: [0.32, 0.32, 1.75], car: [0.98, 2.22, 1.4], bus: [1.27, 5.55, 3.12] };
+
+  // First contact in [0,1] for two moving footprints. Straight travel is a swept
+  // separating-axis test. On turns, enclose the turning corners and refine only
+  // intervals that can touch, to a centimetre. Headings use +Z for the nose.
+  function townTrafficSweep(a, endA, bodyA, b, endB, bodyB) {
+    const x = a.x - b.x, z = a.z - b.z, ex = endA.x - endB.x, ez = endA.z - endB.z;
+    const reach = bodyA[0] + bodyA[1] + bodyB[0] + bodyB[1];
+    if (Math.min(x, ex) > reach || Math.max(x, ex) < -reach || Math.min(z, ez) > reach || Math.max(z, ez) < -reach) return 1;
+    if (Math.min(a.y, endA.y) >= Math.max(b.y, endB.y) + bodyB[2] ||
+        Math.min(b.y, endB.y) >= Math.max(a.y, endA.y) + bodyA[2]) return 1;
+    const ra = Math.hypot(bodyA[0], bodyA[1]), rb = Math.hypot(bodyB[0], bodyB[1]);
+    const dx = ex - x, dz = ez - z;
+    const da = Math.atan2(Math.sin(endA.h - a.h), Math.cos(endA.h - a.h));
+    const db = Math.atan2(Math.sin(endB.h - b.h), Math.cos(endB.h - b.h));
+    const at = (lo, hi) => {
+      const mid = (lo + hi) / 2, len = hi - lo;
+      const sa = Math.sin(a.h + da * mid), ca = Math.cos(a.h + da * mid);
+      const sb = Math.sin(b.h + db * mid), cb = Math.cos(b.h + db * mid);
+      const pad = (ra * Math.abs(da) + rb * Math.abs(db)) * len / 2;  // maximum travel of a corner from the midpoint orientation
+      let enter = 0, leave = 1, shallowest = -Infinity, outward = 0;
+      const axes = [ca, -sa, sa, ca, cb, -sb, sb, cb];
+      for (let i = 0; i < axes.length; i += 2) {
+        const ax = axes[i], az = axes[i + 1];
+        const span = bodyA[0] * Math.abs(ax * ca - az * sa) + bodyA[1] * Math.abs(ax * sa + az * ca)
+                   + bodyB[0] * Math.abs(ax * cb - az * sb) + bodyB[1] * Math.abs(ax * sb + az * cb) + pad;
+        const offset = (x + dx * lo) * ax + (z + dz * lo) * az, speed = (dx * ax + dz * az) * len;
+        const gap = Math.abs(offset) - span;
+        if (gap > shallowest) { shallowest = gap; outward = Math.sign(offset) * speed; }
+        if (Math.abs(speed) < 1e-10) { if (gap >= 0) return 1; continue; }
+        const t0 = (-span - offset) / speed, t1 = (span - offset) / speed;
+        enter = Math.max(enter, Math.min(t0, t1)); leave = Math.min(leave, Math.max(t0, t1));
+        if (enter >= leave) return 1;
+      }
+      if (pad > 0.01) { const left = at(lo, mid); return left < 1 ? left : at(mid, hi); }
+      // In an existing overlap, allow motion away from its shallowest face. At coincident
+      // centres, or sliding along that face, the centres must also move apart.
+      if (shallowest < 0 && (outward > 2 * pad + 1e-8 ||
+          (!pad && outward >= 0 && (dx || dz) && (x + dx * lo) * dx + (z + dz * lo) * dz >= 0))) return 1;
+      return Math.max(0, lo + enter * len - 1e-5);
+    };
+    return at(0, 1);
+  }
+  // END GENERATED src/explore/collision.mjs
+
+  // Inverloch Motel at 39 Powlett Street. Follow the highway leg of mapped fence 988785313,
+  // inset into Vicmap parcel 5287818 with the service driveway at the west end left open.
+  // Mapillary views 1615864943147134 and 1669414413672530, maxim752, 18 January 2025.
+  function invMotelFrontage(T, model, THREE) {
+    const points = [[-800.60,-1062.98], [-766.60,-1071.23], [-728.16,-1057.54], [-727.08,-1056.91]];
+    const sections = [];
+    let distance = 0;
+    for (let i = 1; i < points.length; i++) {
+      const [x,z] = points[i - 1], [bx,bz] = points[i];
+      const width = Math.hypot(bx - x, bz - z);
+      sections.push({ x, z, ux: (bx - x) / width, uz: (bz - z) / width, start: distance, stop: distance + width });
+      distance += width;
+    }
+    const pick = s => sections.find(a => s <= a.stop) ?? sections.at(-1);
+    const at = (segment, s, v, y) => {
+      const { x, z, ux, uz, start } = segment;
+      return [x + (s - start) * ux - v * uz, y, z + (s - start) * uz + v * ux];
+    };
+    const positions = [], colors = [], solids = [];
+    const quad = (a,b,c,d,tint) => {
+      positions.push(...a, ...b, ...c, ...a, ...c, ...d);
+      for (let i = 0; i < 6; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const material = hex => new THREE.Color(hex);
+    const silver = [0xd9dfdc, 0xcbd2d0, 0xd3dad7, 0xe0e4df].map(material);
+    const frame = material(0xa9b4b4), hedge = [0x23391c, 0x30472a, 0x3b502f].map(material);
+    const signFrame = material(0x382f28), trunk = material(0x827864);
+    const leaf = [0x4a5b2f, 0x596a37, 0x70844a].map(material);
+    function block(axis, a, b, l, r, y0, y1, tint, top = tint) {
+      const p = [at(axis,a,l,y0), at(axis,a,r,y0), at(axis,b,r,y0), at(axis,b,l,y0),
+        at(axis,a,l,y1), at(axis,a,r,y1), at(axis,b,r,y1), at(axis,b,l,y1)];
+      quad(p[4],p[5],p[6],p[7],top);
+      for (const [i,j,k,n] of [[0,1,5,4],[1,2,6,5],[2,3,7,6],[3,0,4,7]]) quad(p[i],p[j],p[k],p[n],tint);
+    }
+    function footprint(axis, a, b, l, r) {
+      solids.push([[a,l],[b,l],[b,r],[a,r]].map(([s,v]) => {
+        const [x,,z] = at(axis,s,v,0);
+        return [x,z];
+      }));
+    }
+    // The observed alternating enclosures are laid out along the uninterrupted mapped frontage.
+    // Panel, hedge, sign and palm dimensions are estimates, all relative to the existing ground.
+    const clippedHedges = [[8.8,12.6],[19.1,23.4],[29.5,33.4],[42.4,46.4],[55.4,60.2],[68.0,72.4]];
+    const breaks = [0, ...clippedHedges.flat(), distance, ...sections.slice(0,-1).map(a => a.stop)].sort((a,b) => a - b);
+    for (let i = 1; i < breaks.length; i++) {
+      const a = breaks[i - 1], b = breaks[i], mid = (a + b) / 2, axis = pick(mid);
+      if (clippedHedges.some(([from,to]) => mid > from && mid < to)) {
+        const bottom = -0.03, top = 2.08;
+        block(axis,a,b,-0.32,0.75,bottom,top,hedge[0],hedge[1]);
+        const buds = Math.ceil((b - a) / 0.48);
+        for (let j = 0; j < buds; j++) {
+          const s = bsLerp(a,b,(j + 0.22) / buds), e = Math.min(s + 0.13,b);
+          const y = 0.27 + ((j * 7 + i * 3) % 23) * 0.067, v = -0.325;
+          quad(at(axis,s,v,y),at(axis,e,v,y + 0.024),at(axis,e,v,y + 0.14),at(axis,s,v,y + 0.11),hedge[1 + j % 2]);
+        }
+        footprint(axis,a,b,-0.33,0.75);
+      } else {
+        const pickets = Math.ceil((b - a) / 0.17);
+        for (let j = 0; j < pickets; j++) {
+          const s = bsLerp(a,b,(j + 0.5) / pickets), w = (b - a) / pickets * 0.235;
+          // Thin folded pickets need the road face and the oblique return surfaces.
+          const l = s - w, r = s + w, front = -0.044, back = 0.014, foot = 0.12, top = 1.55;
+          const tint = silver[j % silver.length];
+          quad(at(axis,l,front,foot),at(axis,l,front,top),at(axis,r,front,top),at(axis,r,front,foot),tint);
+          quad(at(axis,l,back,foot),at(axis,l,back,top),at(axis,l,front,top),at(axis,l,front,foot),silver[1]);
+          quad(at(axis,r,front,foot),at(axis,r,front,top),at(axis,r,back,top),at(axis,r,back,foot),silver[2]);
+        }
+        for (const y of [0.25, 1.42]) block(axis,a,b,0.012,0.068,y - 0.025,y + 0.025,frame);
+        const bays = Math.ceil((b - a) / 2.6);
+        for (let j = 0; j <= bays; j++) {
+          const s = bsLerp(a,b,j / bays);
+          block(axis,Math.max(a,s - 0.04),Math.min(b,s + 0.04),-0.038,0.07,-0.025,1.57,frame);
+        }
+        footprint(axis,a,b,-0.052,0.075);
+      }
+    }
+
+    // Both garden palms fit between fence and roof. Native tree trunks are farther behind the building.
+    const palms = [];
+    for (const [s,h,phase] of [[15,4.2,0.22],[48,4.85,0.72]]) {
+      const axis = pick(s), [x,,z] = at(axis,s,1.45,0);
+      palms.push([x,z]);
+      const ring = (radius, y, side) => [x + Math.cos(side * Math.PI / 3) * radius, y, z + Math.sin(side * Math.PI / 3) * radius];
+      for (let i = 0; i < 6; i++) quad(ring(0.13,0,i),ring(0.13,0,i + 1),ring(0.075,h,i + 1),ring(0.075,h,i),trunk);
+      for (let i = 0; i < 8; i++) {
+        const a = phase + Math.PI * i / 4, ux = Math.cos(a), uz = Math.sin(a);
+        const frond = (d,y,w) => [x + d * ux - w * uz, h + y, z + d * uz + w * ux];
+        const rows = [[0,0,0.04],[0.52,0.54,0.19],[1.02,0.35,0.16],[1.47,-0.29,0.02]];
+        for (let j = 1; j < rows.length; j++) {
+          const [d0,y0,w0] = rows[j - 1], [d1,y1,w1] = rows[j];
+          quad(frond(d0,y0,0),frond(d0,y0,-w0),frond(d1,y1,-w1),frond(d1,y1,0),leaf[i % leaf.length]);
+          quad(frond(d0,y0,w0),frond(d0,y0,0),frond(d1,y1,0),frond(d1,y1,w1),leaf[(i + 1) % leaf.length]);
+        }
+      }
+    }
+
+    const s = 5.6, axis = pick(s), l = s - 1.50, r = s + 1.50, low = 0.62, high = 1.51;
+    block(axis,l - 0.03,r + 0.03,-0.075,-0.035,low - 0.025,high + 0.025,signFrame);
+    const canvas = document.createElement("canvas");
+    canvas.width = 256;
+    canvas.height = 80;
+    const ctx = canvas.getContext("2d");
+    // Keep the sign and coloured structure in one mesh. A white strip preserves the vertex colours.
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0,0,256,80);
+    ctx.fillStyle = "#ede9dc";
+    ctx.fillRect(0,16,256,64);
+    ctx.strokeStyle = "#574b3c";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(5,21,246,54);
+    ctx.fillStyle = "#342b22";
+    ctx.font = "700 26px Georgia, serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("INVERLOCH MOTEL",128,49,226);
+    const uvs = new Float32Array(positions.length / 3 * 2 + 12);
+    for (let i = 0; i < uvs.length - 12; i += 2) { uvs[i] = 0.5; uvs[i + 1] = 0.9; }
+    uvs.set([0.004,0.012, 0.996,0.012, 0.996,0.787, 0.004,0.012, 0.996,0.787, 0.004,0.787], uvs.length - 12);
+    quad(at(axis,r,-0.077,low),at(axis,l,-0.077,low),at(axis,l,-0.077,high),at(axis,r,-0.077,high),material(0xffffff));
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors), uvs,
+      map: canvas, matrix: new THREE.Matrix4().elements, lambertNoCast: true, onGround: true, doubleSide: true }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    for (const ring of solids) grid.polygon(ring);
+    for (const [x,z] of palms) grid.post(x,z,0.13);
   }
 
   // Things made for the model's town centre alone. The foot of the Rotary clock as in photos of it: brick paving, a planted
@@ -17758,6 +18665,15 @@ const handle = async (m, post) => {
         add(bits, box(0.4, 0.04, 0.4), chair, cx, FOOT + 0.46, cz, r); add(bits, box(0.4, 0.42, 0.04), chair, bx, FOOT + 0.7, bz, r);
         [[-0.17, -0.17], [0.17, -0.17], [-0.17, 0.17], [0.17, 0.17]].forEach(([a, b]) => add(bits, rod(0.018, 0.45, 5), 0x8d9396, cx + Math.cos(r) * a + Math.sin(r) * b, FOOT + 0.225, cz - Math.sin(r) * a + Math.cos(r) * b)); }); };
     const units = W.invRetailUnits || D.u, pie = units.find(u => /PIEMAN/.test(u[9] || "")), larder = units.find(u => /LARDER/.test(u[9] || ""));
+    // The shop windows project past the mapped footprints. Keep the walking camera
+    // outside their display panels, while leaving the pavement under the awnings open.
+    for (const u of units) {
+      const [x, z, angle] = front(u, 0.5, 0.3);
+      if (townInBlock(x, z)) {
+        const panel = collision.box(x, z, angle, 0.5, Math.hypot(u[2] - u[0], u[3] - u[1]));
+        if (panel) panel.walkClearance = true; // camera near-plane buffer, including while backing away
+      }
+    }
     if (pie) [0.12, 0.3, 0.5, 0.68].forEach(t => table(pie, t, 1.5, 0xc8202a));
     if (larder) [0.28, 0.7].forEach(t => table(larder, t, 1.5, 0x2f7a72));
     // sandwich boards: two leaning panels, each shop's own colour with a pale face
@@ -17791,6 +18707,133 @@ const handle = async (m, post) => {
   const STREETS_KEY = "an3d-streets";
   const streetsPref = () => { try { return localStorage.getItem(STREETS_KEY) === "1"; } catch { return false; } };  // off to start with (Ash, 14 November 2026: "Names start off")
   const streetsSave = on => { try { localStorage.setItem(STREETS_KEY, on ? "1" : "0"); } catch {} };
+  // The late-2024 west boat-ramp jetty. The native pier across the slipway is the older east jetty.
+  function invWestJetty(T, THREE) {
+    const decks = new WeakMap();
+    const fit = model => {
+      const jetty = invWestJettyParts(model, THREE);
+      decks.set(model, jetty.deckAt);
+      return jetty;
+    };
+    const { blockers, bearing, stop } = fit(T.pair.cur);
+    const grid = T.invStatic ??= invCivicCollision((x, z) => [x, z], () => false);
+    for (const [x, z, w, l] of blockers) grid.worldBox(x, z, bearing, w, l);
+    // The destination can be ready before it owns the canvas. Feet and wheels follow the active deck.
+    T.fitWestJetty = fit;
+    T.deckAt = (x, z) => decks.get(T.pair.cur)(x, z);
+    return stop;
+  }
+  function invWestJettyParts(model, THREE) {
+    const shoreX = 332.8, shoreZ = -134.7, length = 30, half = 1.42;
+    const bearing = Math.atan2(10.6, 28.8), dx = Math.sin(bearing), dz = Math.cos(bearing);
+    const at = (along, west) => [shoreX + along * dx - west * dz, shoreZ + along * dz + west * dx];
+    const high = 3, low = 1.05; // Awarded AHD levels of 2.00 and 0.70 m in Explore's 1.5× height scale.
+    const access = -8, entry = model.groundAt(...at(access, 0)) + 0.06;
+    const stairsStart = length - 2.8, landingStart = 4.7, landingEnd = 15, steps = 8;
+    const riseAt = u => high + (entry - high) * Math.max(0, u / access);
+    const stepWidth = (landingStart - half) / steps;
+    const stepTop = index => high - (index + 1) * (high - low) / steps;
+    const positions = [], colours = [], blockers = [];
+    const silver = 0xbec5c6, steel = 0x393c3d, timber = 0x675848;
+    const point = (u, y, v) => { const [x, z] = at(u, v); return [x, y, z]; };
+    // Each run is a closed rectangular section, with its height allowed to change along the approach.
+    function prism(u0, u1, v0, v1, y0, y1, depth, tint) {
+      const top = [point(u0, y0, v0), point(u1, y1, v0), point(u1, y1, v1), point(u0, y0, v1)];
+      const bottom = top.map(([x, y, z]) => [x, y - depth, z]);
+      const vertices = [...top, ...bottom], color = new THREE.Color(tint);
+      for (const [a, b, c, d] of [[0,1,2,3], [4,7,6,5], [0,4,5,1], [1,5,6,2], [2,6,7,3], [3,7,4,0]]) {
+        for (const i of [a, c, b, a, d, c]) {
+          positions.push(...vertices[i]);
+          colours.push(color.r, color.g, color.b);
+        }
+      }
+    }
+    const collisionBox = (u, v, along, width) => blockers.push([...at(u, v), width, along]);
+    const post = (u, v, w, y, height, tint) => prism(u - w / 2, u + w / 2, v - w / 2, v + w / 2, y, y, height, tint);
+    const rail = (u0, u1, v) => {
+      for (const rise of [0.58, 1.04]) prism(u0, u1, v - 0.027, v + 0.027, riseAt(u0) + rise, riseAt(u1) + rise, 0.045, silver);
+      const count = Math.ceil((u1 - u0) / 2.5);
+      for (let i = 0; i <= count; i++) {
+        const u = u0 + (u1 - u0) * i / count;
+        post(u, v, 0.065, riseAt(u) + 1.04, 1.08, silver);
+      }
+      collisionBox((u0 + u1) / 2, v, u1 - u0, 0.09);
+    };
+
+    prism(access, 0, -half, half, entry, high, 0.18, 0xa5a399);
+    for (let u = 0; u < length; u += 1.25) {
+      const end = Math.min(length, u + 1.25);
+      prism(u, end, -half, half, high, high, 0.21, (u / 1.25) % 2 ? 0x42484a : 0x484f50);
+    }
+    rail(-2.7, length, -half);
+    rail(access + 1.8, stairsStart, half);
+    for (const rise of [0.58, 1.04]) prism(length - 0.055, length, -half, half, high + rise, high + rise, 0.045, silver);
+    collisionBox(length, 0, 0.09, half * 2);
+    for (const v of [-0.85, 0.85]) {
+      post(-0.55, v, 0.18, riseAt(-0.55) + 0.94, 0.94, 0xe5b72c);
+      collisionBox(-0.55, v, 0.18, 0.18);
+    }
+    for (let u = 2; u < length; u += 4) {
+      post(u, -half + 0.04, 0.25, high - 0.16, 5.35, steel);
+      post(u, half - 0.03, 0.27, high + 0.16, 5.55, steel);
+      prism(u - 0.19, u + 0.19, -half - 0.14, -half + 0.03, high - 0.27, high - 0.27, 1.8, 0x252728);
+    }
+    // Dark piles and the closely spaced timber baffles read separately from the water.
+    for (let u = 3; u < stairsStart - 0.38; u += 0.39) {
+      prism(u, u + 0.32, half - 0.08, half + 0.04, high - 0.22, high - 0.22, 2.45, timber);
+    }
+    for (const u of [0.9, 12.5, 25]) {
+      const v = half - 0.19, top = high + 4.35;
+      post(u, v, 0.105, top, 4.55, silver);
+      prism(u - 0.43, u + 0.43, v - 0.25, v + 0.25, top - 0.14, top + 0.13, 0.055, 0x202d3a);
+      prism(u - 0.17, u + 0.17, v - 0.38, v + 0.05, top - 0.3, top - 0.3, 0.085, 0xc1c6c4);
+      collisionBox(u, v, 0.105, 0.105);
+    }
+    for (let i = 0; i < steps; i++) {
+      const v = half + i * stepWidth, top = stepTop(i);
+      prism(stairsStart, length, v, v + stepWidth, top, top, 0.3, 0x505655);
+    }
+    prism(stairsStart, length, landingStart, landingEnd, low, low, 0.23, 0x454c4c);
+    for (const v of [landingStart + 0.4, 9, 13.6, landingEnd - 0.32]) {
+      post(stairsStart + 0.18, v, 0.27, low + 0.86, 4.7, steel);
+      post(length - 0.18, v, 0.27, low + 0.65, 4.5, steel);
+      collisionBox(stairsStart + 0.18, v, 0.27, 0.27);
+      collisionBox(length - 0.18, v, 0.27, 0.27);
+    }
+    // Handrails close the two sides of the short stair while leaving the entrance and landing open.
+    for (const u of [stairsStart, length]) {
+      post(u, half, 0.065, high + 0.99, 1.04, silver);
+      post(u, landingStart, 0.065, low + 0.99, 1.04, silver);
+      // Rotate the slope into the cross-deck axis for the stair handrail.
+      const p = point(u, high + 0.99, half), q = point(u, low + 0.99, landingStart);
+      const delta = new THREE.Vector3(q[0] - p[0], q[1] - p[1], q[2] - p[2]);
+      const mesh = new THREE.BoxGeometry(0.055, delta.length(), 0.055);
+      mesh.rotateX(Math.atan2(Math.hypot(delta.x, delta.z), delta.y));
+      mesh.rotateY(Math.atan2(delta.x, delta.z));
+      mesh.translate((p[0] + q[0]) / 2, (p[1] + q[1]) / 2, (p[2] + q[2]) / 2);
+      const silverColor = new THREE.Color(silver), vertex = mesh.attributes.position;
+      for (const i of mesh.index.array) {
+        positions.push(vertex.getX(i), vertex.getY(i), vertex.getZ(i));
+        colours.push(silverColor.r, silverColor.g, silverColor.b);
+      }
+      mesh.dispose();
+      collisionBox(u, (half + landingStart) / 2, 0.09, landingStart - half);
+    }
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colours),
+      matrix: new THREE.Matrix4().elements, roughness: 0.86 }]);
+    const deckAt = (x, z) => {
+      const ex = x - shoreX, ez = z - shoreZ;
+      if (ex < -19 || ex > 13 || ez < -9 || ez > 36) return null;
+      const u = ex * dx + ez * dz, v = -ex * dz + ez * dx;
+      if (u >= access && u <= length && Math.abs(v) <= half) return riseAt(u);
+      if (u < stairsStart || u > length || v <= half || v > landingEnd) return null;
+      return v >= landingStart ? low : stepTop(Math.min(steps - 1, Math.floor((v - half) / stepWidth)));
+    };
+    const [x, z] = at(access - 2, 0), target = at(8, 0);
+    const stop = { name: "Boat ramp jetty", walk: { x, z, yaw: Math.atan2(x - target[0], z - target[1]), pitch: -0.06 }, target };
+    return { blockers, bearing, deckAt, stop };
+  }
+
   // the address the model itself fetched a file from (Logan adds ?v=), so the browser serves it from its cache
   // (watched from when Explore opens a model: the browser's own list stops at 250 files)
   const townAssetWatch = () => { if (BS.assetSeen) return; BS.assetSeen = new Map();
@@ -18355,7 +19398,7 @@ const handle = async (m, post) => {
         // the potato hotrod (Ash, 26 November 2026): beside the golden car. 20 seconds after you get in, the T-rex comes (townCar). Logan has one too
         { x: -237.2, z: -375.5, h: Math.PI, hotrod: true, name: "The hotrod", what: "A potato hot rod with a blower and flames, on the lawn by The Hub. Get in if you dare" }],
       more: { planes: [{ x: -1602.1, z: 422, h: 2.6, heli: true, name: "The helicopter", at: "behind 11 Norman Road", what: "On the grass behind 11 Norman Road" }], cars: [{ x: -206.731, z: -348.385, h: -1.683, bus: true, hide: [[-203.77, -345.76]], name: "The bus", what: "In A'Beckett Street, at the kerb across the road from The Hub" }] },
-      roam: [[-278, -562], [627, -1086], [-108, -190], [17, -179], [-1585, 1221], [575, 1066]] },
+      roam: [[-278, -562], [627, -1086], [-108, -190], [22, -143], [-1585, 1221], [575, 1066]] },
     logan: { planes: [{ x: 5732, z: -12989, h: 1.0, name: "The plane", at: "on the big lawn in Civic Centre Park", what: "On the big open lawn in Civic Centre Park, behind the council, with room to take off" }],
       cars: [{ x: 5816.2, z: -13302.9, h: 1.94, spare: true, name: "The red car", what: "On the lawn out the front of the council, by the plane" }, { x: 5788.7, z: -13204.6, h: 3.63, gold: true, name: "The golden car", what: "In the car park behind the council. A fifth faster than the red one" },
         // Logan's potato hotrod and its T-rex (Ash, 27 November 2026: "start working on adding the boss fight to Logan. Make sure multiplayer
@@ -18648,9 +19691,6 @@ const handle = async (m, post) => {
   // the car you drive does (Ash, 15 November 2026: "Make the traffic ... a bit smarter ... Cars need to respect terrain a bit
   // better"). One stuck for 10 s, or more than 800 m off, starts again near the start. They are drawn by the app (the same as the cars
   // to drive), from the streets the model has already loaded, so every town gets them; nothing is fetched until 4 s in.
-  // Half width, half length and height in metres. The sedan follows the traffic sedan in townPlaneParts.
-  const townTrafficBodies = { walk: [0.32, 0.32, 1.75], car: [0.98, 2.22, 1.4], bus: [1.27, 5.55, 3.12] };
-
   // Vehicle-relative sides: negative is left. Positive yaw turns a nose pointing along +Z to its left.
   function townIndicatorSide(angle) {
     return Math.abs(angle) >= Math.PI / 6 && Math.abs(angle) < 5 * Math.PI / 6 ? -Math.sign(angle) : 0;
@@ -18712,48 +19752,6 @@ const handle = async (m, post) => {
     const car = m.addParts([{ ...townCarPart(kind, colour), matrix }]), sig = townSignals(m, kind);
     return { setMatrix(i, e) { car.setMatrix(i, e); if (i === 0) sig.at(e); }, setSignal: s => sig.set(s),
       remove() { try { car.remove(); } finally { sig.remove(); } } };
-  }
-
-  // First contact in [0,1] for two moving footprints. Straight travel is a swept
-  // separating-axis test. On turns, enclose the turning corners and refine only
-  // intervals that can touch, to a centimetre. Headings use +Z for the nose.
-  function townTrafficSweep(a, endA, bodyA, b, endB, bodyB) {
-    const x = a.x - b.x, z = a.z - b.z, ex = endA.x - endB.x, ez = endA.z - endB.z;
-    const reach = bodyA[0] + bodyA[1] + bodyB[0] + bodyB[1];
-    if (Math.min(x, ex) > reach || Math.max(x, ex) < -reach || Math.min(z, ez) > reach || Math.max(z, ez) < -reach) return 1;
-    if (Math.min(a.y, endA.y) >= Math.max(b.y, endB.y) + bodyB[2] ||
-        Math.min(b.y, endB.y) >= Math.max(a.y, endA.y) + bodyA[2]) return 1;
-    const ra = Math.hypot(bodyA[0], bodyA[1]), rb = Math.hypot(bodyB[0], bodyB[1]);
-    const dx = ex - x, dz = ez - z;
-    const da = Math.atan2(Math.sin(endA.h - a.h), Math.cos(endA.h - a.h));
-    const db = Math.atan2(Math.sin(endB.h - b.h), Math.cos(endB.h - b.h));
-    const at = (lo, hi) => {
-      const mid = (lo + hi) / 2, len = hi - lo;
-      const sa = Math.sin(a.h + da * mid), ca = Math.cos(a.h + da * mid);
-      const sb = Math.sin(b.h + db * mid), cb = Math.cos(b.h + db * mid);
-      const pad = (ra * Math.abs(da) + rb * Math.abs(db)) * len / 2;  // maximum travel of a corner from the midpoint orientation
-      let enter = 0, leave = 1, shallowest = -Infinity, outward = 0;
-      const axes = [ca, -sa, sa, ca, cb, -sb, sb, cb];
-      for (let i = 0; i < axes.length; i += 2) {
-        const ax = axes[i], az = axes[i + 1];
-        const span = bodyA[0] * Math.abs(ax * ca - az * sa) + bodyA[1] * Math.abs(ax * sa + az * ca)
-                   + bodyB[0] * Math.abs(ax * cb - az * sb) + bodyB[1] * Math.abs(ax * sb + az * cb) + pad;
-        const offset = (x + dx * lo) * ax + (z + dz * lo) * az, speed = (dx * ax + dz * az) * len;
-        const gap = Math.abs(offset) - span;
-        if (gap > shallowest) { shallowest = gap; outward = Math.sign(offset) * speed; }
-        if (Math.abs(speed) < 1e-10) { if (gap >= 0) return 1; continue; }
-        const t0 = (-span - offset) / speed, t1 = (span - offset) / speed;
-        enter = Math.max(enter, Math.min(t0, t1)); leave = Math.min(leave, Math.max(t0, t1));
-        if (enter >= leave) return 1;
-      }
-      if (pad > 0.01) { const left = at(lo, mid); return left < 1 ? left : at(mid, hi); }
-      // In an existing overlap, allow motion away from its shallowest face. At coincident
-      // centres, or sliding along that face, the centres must also move apart.
-      if (shallowest < 0 && (outward > 2 * pad + 1e-8 ||
-          (!pad && outward >= 0 && (dx || dz) && (x + dx * lo) * dx + (z + dz * lo) * dz >= 0))) return 1;
-      return Math.max(0, lo + enter * len - 1e-5);
-    };
-    return at(0, 1);
   }
 
   function townTraffic(T, m, F, ground, cfg) {
@@ -18820,7 +19818,7 @@ const handle = async (m, post) => {
               P.cars.some(D => D !== C && D.x != null && Math.hypot(D.x-sx,D.z-sz) < 12) ||
               (hiddenOnly && (!unobserved(sx,sz) || T.peers?.list?.().some(p => Math.hypot(sx-p.x,sz-p.z) < 100)))) continue;
         }
-        Object.assign(C, { r, i:a, d, s:0, v:0, y:null, p:null, rl:null, ln:null, still:0, blocked:0, x:sx, z:sz, h:null, dodge:0, dodgeT:0 });
+        Object.assign(C, { r, i:a, d, s:0, v:0, y:null, p:null, rl:null, ln:null, still:0, blocked:0, x:sx, z:sz, h:null, dodge:0, dodgeT:0, loop:null });
         C.turnPlan = null; C.turnUntil = 0; showSignal(C, 0); return true; }
       return false; };
     const seg = C => { const r = C.r, a = C.i, b = C.i + C.d; return [r.p[a * 2], r.p[a * 2 + 1], r.p[b * 2], r.p[b * 2 + 1]]; };
@@ -18953,6 +19951,11 @@ const handle = async (m, post) => {
           const free = o => [2.5, 5, 7.5].every(a => !G.depth(cx0 + hx * a + sx * (o - now0), cz0 + hz * a + sz * (o - now0), C.h, l, w));  // (a lane offset o, a few metres on)
           if (!free(C.r.lane + (C.dodge || 0))) { for (const k of [0, -0.5, -0.75, -1, -1.25, -1.5, -1.75, -2, -2.25, -2.5, 0.35, 0.7]) if (free(C.r.lane + k)) { C.dodge = k; C.dodgeT = 1.5; break; } }
           else if (C.dodge && (C.dodgeT = (C.dodgeT || 0) - 0.2) <= 0 && free(C.r.lane)) C.dodge = 0; }
+        // Going round in a little circle (a few short pieces of street in the town centre that only lead back to each other, or every
+        // way out blocked): when it has got less than 25 m in 30 s, it starts again somewhere else, once it's out of sight (behind you, or a long way off)
+        if (C.x != null && !C.rider) { const K = C.loop || (C.loop = { t: 0, x: C.x, z: C.z }); K.t += dt;
+          if (K.t > 30) { const moved = Math.hypot(C.x - K.x, C.z - K.z); C.loop = { t: 0, x: C.x, z: C.z }; const dx = C.x - F.pos.x, dz = C.z - F.pos.z, d = Math.hypot(dx, dz), behind = dx * Math.sin(F.yaw) + dz * Math.cos(F.yaw) > 0.2 * d;
+            if (moved < 25 && (d > 150 || (d > 30 && behind) || unobserved(C.x, C.z))) { start(C, true); return; } } }
         const laneTo = C.r.lane + (C.dodge || 0); if (C.dodge) C.v = Math.min(C.v, 7);
         C.ln = C.ln == null ? C.r.lane : C.ln + bsClamp(laneTo - C.ln, -1.5 * dt, 1.5 * dt);  // (its place across the road: over to the next street's lane a bit at a time, not in one jump at the corner)
         const t = Math.min(1, C.s / L), lx = Math.cos(C.h), lz = -Math.sin(C.h)  /* (on the left of the road, as in Australia: Ash, 16 November 2026, "The cars should drive on the left side of the road"; then "the traffic is often on the wrong side of the roads ... all cars should drive on the left, and buses etc.": heading h runs (sin h, cos h) with z to the south, so the left is (cos h, -sin h); it had the right) */, x = ax + (bx - ax) * t + lx * C.ln, z = az + (bz - az) * t + lz * C.ln;
@@ -19222,6 +20225,19 @@ const handle = async (m, post) => {
         choice("Frame-rate target", [["30", "30 fps"], ["60", "60 fps"]], invGraphics.frameTarget, value => {
           invGraphics.frameTarget = Number(value); T.pair.setFrameTarget(invGraphics.frameTarget);
         }));
+      const renderer = T.pair.cur;
+      if (T.pair.initialPreset === "ultra" && renderer.getDrivingAA && renderer.setDrivingAA) {
+        const fallback = el("p", "", "This display currently uses MSAA. Your Temporal AA choice is saved.");
+        const showFallback = () => { fallback.hidden = !renderer.getDrivingAA().fallback; };
+        section.append(choice("Driving anti-aliasing", [["msaa", "MSAA (default)"], ["temporal", "Temporal AA"]],
+          renderer.getDrivingAA().mode, mode => {
+            renderer.setDrivingAA(mode);
+            showFallback();
+            // The first temporal frame checks whether the GPU can copy scene depth.
+            if (mode === "temporal") setTimeout(showFallback, 250);
+          }), fallback);
+        showFallback();
+      }
       section.append(el("p", "", "A new detail preset takes effect when you reopen Inverloch."), restart);
       return section;
     };
@@ -19280,11 +20296,22 @@ const handle = async (m, post) => {
       // play as an explorer or a construction worker (who sees themselves from behind and can suggest changes to the ground)
       // Standard or Google Maps style, here too, for once the welcome card has gone (Ash, 19 November 2026). Standard is "Play as explorer"
       // now (Ash, 24 November 2026: "Make play as explorer - relabel standard. This should be the default"), and the welcome card starts on it
-      const st = el("div", "bs-me-sec"); { const sr = el("div", "bs-me-role"); sr.setAttribute("role", "group"); sr.setAttribute("aria-label", "Controls style");
+      const st = el("div", "bs-me-sec");
+      if (!touch) { const sr = el("div", "bs-me-role"); sr.setAttribute("role", "group"); sr.setAttribute("aria-label", "Controls style");
         const gmNow = (() => { try { return localStorage.getItem("an3d-style") === "gmaps"; } catch { return false; } })();
         for (const [v, label] of [[false, "Gamer"], [true, "Simple"]]) { const bn = el("button", "", label); bn.type = "button"; bn.setAttribute("aria-pressed", String(gmNow === v));
           bn.onclick = () => { if (gmNow === v) return; meClose(); BS.mapStyle?.(v); toast(v ? (touch ? "Simple controls: tap to walk there, drag to look." : "Simple controls: click to walk there, hold and drag to look.") : "Gamer controls: on foot, with the game controls.", 2800); }; sr.append(bn); }
-        st.append(el("span", "bs-me-lbl", "Controls style"), sr); if (touch) st.hidden = true; }  // (a phone is always Simple)
+        st.append(el("span", "bs-me-lbl", "Controls style"), sr);
+      } else if (place === "inv") {
+        const label = el("label", "bs-wel-tick"), slow = el("input");
+        slow.type = "checkbox"; slow.checked = !!T.slowWalkingLook;
+        slow.onchange = () => {
+          T.slowWalkingLook = slow.checked;
+          try { localStorage.setItem("an3d-inv-slow-look", slow.checked ? "1" : "0"); } catch {}
+        };
+        label.append(slow, "Turn more slowly with the Look stick");
+        st.append(el("span", "bs-me-lbl", "Walking controls"), label);
+      } else st.hidden = true;  // phones always use Simple controls
       const as = el("div", "bs-me-sec"), rl = el("div", "bs-me-role"); rl.setAttribute("role", "group"); rl.setAttribute("aria-label", "Play as");
       for (const [v, label] of [["explorer", "Explorer"], ["builder", "Construction worker"]]) { const bn = el("button", "", label); bn.type = "button"; bn.setAttribute("aria-pressed", String(townRole() === v));
         bn.onclick = () => { if (townRole() === v) return; try { if (v === "builder") localStorage.setItem("an-player-role", "builder"); else localStorage.removeItem("an-player-role"); } catch {}
@@ -22614,7 +23641,7 @@ const handle = async (m, post) => {
       const t = performance.now() / 1000, bob = Math.sin(t * 2.1) * 0.06 - 0.32, rl = (car.r || 0) + Math.sin(t * 1.6) * 0.03 + bsClamp((car.yr || 0) * 0.08, -0.12, 0.12);
       M.compose(V.set(car.x, car.y + bob, car.z), Q.setFromEuler(E.set(-(car.p || 0) - bsClamp(car.v / 60, -0.05, 0.12), car.h + (car.spinY || 0), rl, "YXZ")), ONE); boatP.setMatrix(0, M.elements); };
     const boatCheck = () => { if (car.bus || !m.groundAt) return false; const w = m.waterAt ? m.waterAt(car.x, car.z) : m.waterLevel?.(); if (!(w > -1e4)) return car.boat = false;
-      const dk = T.decks ? T.deckAt(car.x, car.z) : null, d = w - ground.bed(car.x, car.z), on = dk != null && dk > w ? false : car.boat ? d > 0.15 : d > 0.5;  // (on a bridge's deck over the creek: still a car)
+      const dk = T.deckAt?.(car.x, car.z), d = w - ground.bed(car.x, car.z), on = dk != null && dk > w ? false : car.boat ? d > 0.15 : d > 0.5;  // (on a deck above water: still a car)
       if (on !== !!car.boat) { car.boat = on; fxBurst(car, false); snd.whoosh?.(); if (!rexRole) toast(on ? "\ud83d\udea4 Boat mode! Drive back onto land to be a car again." : "\ud83d\ude97 Back on the road.", 2200); if (!on) boatDraw(false); }
       return on; };
     const sit = (dt, signal = 0) => { T.deckY = car.y; const [y, p, r] = car.bus ? lie(car, 3.6, 1.1) : lie(car, 1.3, 0.8), e = dt ? Math.min(1, dt * 12) : 1; car.y += (y + 0.05 + (car.hop || 0) - car.y) * (car.flip || car.trick ? 1 : e); car.p += (p - car.p) * e; car.r += (r - car.r) * e; const rd = car.r + (car.roll || 0), hd = car.h + (car.spinY || 0);
@@ -23593,7 +24620,8 @@ const handle = async (m, post) => {
     // the nuke at the console), held, and so does the left mouse button while the mouse is looking round; Q or the right button rolls the
     // choppa, Shift boosts it. Simple: press on the dinosaur and hold to fire (in a car you still drive as you hold), a quick right click
     // rolls the choppa to that side of the screen. L, B and 0 still work, and the buttons on the screen
-    const fireHeld = () => spudHeld || mouseFire || F.keys.has("KeyL") || F.keys.has("KeyZ");
+    const fireHeld = R => !!R?.live && !R.nuke && R.st !== "dead" && (spudHeld || mouseFire || F.keys.has("KeyL") || F.keys.has("KeyZ"));
+    C.bossFireHeld = () => fireHeld(rex) && fighting() && !!meNow();
     // (is the screen point on the dinosaur: the ray through it close to its hips, chest, head or tail, generously)
     const rexUnder = (sx, sy) => { const R = rex; if (!R) return false; const ray = townRayAt(m, F, sx, sy); if (!ray) return false;
       const gy = m.groundAt(R.x, R.z) + (R.pose?.jump || 0), fx = Math.sin(R.h), fz = Math.cos(R.h), s = R.s;
@@ -24092,13 +25120,13 @@ const handle = async (m, post) => {
       // In the choppa, rockets: four or five a second, from under its nose, straight at her chest if she's anywhere ahead (no drop)
       // (riding with someone: you fire too, rockets from their helicopter, spuds from their car. Ash, 27 November 2026, "If riding I want to be
       // able to shoot")
-      spudCd -= dt; if (me && me !== car && !(me.ride && !me.air) && R.live && !R.nuke && R.st !== "dead" && fireHeld() && spudCd <= 0 && spuds.length < REX_SPUDS) { spudCd = 0.22;
+      spudCd -= dt; if (me && me !== car && !(me.ride && !me.air) && fireHeld(R) && spudCd <= 0 && spuds.length < REX_SPUDS) { spudCd = 0.22;
         // (off the way the helicopter's facing, tipped up or down at her if she's ahead (a helicopter's nose can't point down at her), then
         // steering only a little after her: Ash, 27 November 2026, "The homing missles home too much, maybe just slightly")
         const hx = Math.sin(me.h), hz = Math.cos(me.h), x0 = me.x + hx * 2.2, y0 = me.y + 0.9, z0 = me.z + hz * 2.2, tx = R.x + fx * 1.6 * s, ty = m.groundAt(R.x, R.z) + 3.4 * s + (p.jump || 0), tz = R.z + fz * 1.6 * s;
         const th = Math.hypot(tx - x0, tz - z0), aim = Math.abs(rexWrap(Math.atan2(tx - x0, tz - z0) - me.h)), pt = aim < 0.7 && th < 400 ? Math.atan2(ty - y0, th) : -0.05;
         spuds.push({ x: x0, y: y0, z: z0, vx: hx * Math.cos(pt) * 110, vy: Math.sin(pt) * 110, vz: hz * Math.cos(pt) * 110, t: 0, rk: true }); snd.whoosh(); snd.tone?.(520, 140, 0.25, 0.07, "sawtooth"); }
-      else if (me && (me === car || (me.ride && !me.air)) && R.live && !R.nuke && R.st !== "dead" && fireHeld() && spudCd <= 0 && spuds.length < REX_SPUDS) { spudCd = 0.3;
+      else if (me && (me === car || (me.ride && !me.air)) && fireHeld(R) && spudCd <= 0 && spuds.length < REX_SPUDS) { spudCd = 0.3;
         const hx = Math.sin(me.h), hz = Math.cos(me.h), x0 = me.x + hx * 1.4, y0 = me.y + (me.hotrod ? 2.2 : 1.7), z0 = me.z + hz * 1.4, tx = R.x + fx * 1.6 * s, ty = m.groundAt(R.x, R.z) + 3.4 * s, tz = R.z + fz * 1.6 * s;
         let vx = hx * 60 + Math.sin(me.dir ?? me.h) * me.v, vy = 3, vz = hz * 60 + Math.cos(me.dir ?? me.h) * me.v; const td = Math.hypot(tx - x0, tz - z0), aim = Math.abs(rexWrap(Math.atan2(tx - x0, tz - z0) - me.h));
         // (right up close, its chest can be beside or behind you while its body is in front: then at its body, up where it counts. They
@@ -24504,7 +25532,7 @@ const handle = async (m, post) => {
             : auto ? auto.indicator || 0 : townManualIndicator(car, str, go);
           signal = townIndicatorFlash(car, side, now);
         }
-        sit(dt, signal); unTick(now, thr);
+        sit(dt, signal); unTick(now, thr, bump > 0 && !brake);
         const a = Math.abs(car.v), G = [0, 7, 14, 21, 30, 44, 60], g = Math.max(0, G.findIndex(q => a < q) - 1), top = G[g + 1] ?? 60;  // the engine rises through each gear and drops into the next
         snd.set(0.18 + 0.82 * bsClamp((a - G[g]) / (top - G[g]), 0, 1), Math.abs(thr) > 0.05 && !brake ? 0.35 + 0.65 * Math.abs(thr) : 0.08, a, boosting || teamOn, slide ? 1 : Math.min(1, Math.abs(wrap(car.h - car.dir)) * 2.5));
         showRing(boosting || charge < 0.999, boosting);
@@ -24857,7 +25885,22 @@ const handle = async (m, post) => {
         if (d < RIDE_REACH[q.k] && q.y - ground(q.x, q.z) < 3 && (!best || d < best.distance)) best = { ride: q, distance: d }; }
       const pick = best && (!r2 || best.distance < (r2.distance ?? 11) + 4) ? best : r2;
       const B = T.traffic?.bus, db = B && B.x != null && !B.away ? Math.hypot(B.x - F.pos.x, B.z - F.pos.z) : Infinity;  // the bus that drives itself, within 9 m
-      return db < 9 && (!pick || db < (pick.distance ?? 11) + 3) ? { bus: B, distance: db } : pick; };  // (someone in it wins over an empty one beside it, such as your own copy of the golden car they drove off in)
+      const res = db < 9 && (!pick || db < (pick.distance ?? 11) + 3) ? { bus: B, distance: db } : pick;  // (someone in it wins over an empty one beside it, such as your own copy of the golden car they drove off in)
+      if (inspect) return res;
+      // Of the vehicles in reach, the one you're looking at, not just the nearest (Ash, 28 November 2026: "When getting into a vehicle
+      // try to prefer the one I am looking at"): anything within 40 degrees of straight ahead, the most nearly straight ahead first.
+      // A parked car is found by looking a few metres along your view, as the nearest one may be the car beside you.
+      const fx = -Math.sin(F.yaw), fz = -Math.cos(F.yaw), off = (x, z) => { const dx = x - F.pos.x, dz = z - F.pos.z, L = Math.hypot(dx, dz) || 1; return Math.acos(bsClamp((dx * fx + dz * fz) / L, -1, 1)); };
+      const seen = [];
+      for (const k of [2, 3.5, 5]) { const q = parked(F.pos.x + fx * k, F.pos.z + fz * k, 2.4); const d = q ? Math.hypot(q.x - F.pos.x, q.z - F.pos.z) : Infinity;
+        if (d <= 5.6) { seen.push({ r: { ...q, distance: d }, x: q.x, z: q.z }); break; } }
+      if (G && dg < (G.bus ? 15 : 5.6)) seen.push({ r: { own: G, gold: G.gold, distance: dg }, x: G.x, z: G.z });
+      if (P && d < 11) seen.push({ r: { plane: P }, x: P.x, z: P.z });
+      for (const q of T.peers?.list?.() || []) { if (!RIDE_REACH[q.k]) continue; const dq2 = Math.hypot(q.x - F.pos.x, q.z - F.pos.z);
+        if (dq2 < RIDE_REACH[q.k] && q.y - ground(q.x, q.z) < 3) seen.push({ r: { ride: q, distance: dq2 }, x: q.x, z: q.z }); }
+      if (db < 9) seen.push({ r: { bus: B, distance: db }, x: B.x, z: B.z });
+      let look = null, la = 0.7; for (const e of seen) { const a = off(e.x, e.z); if (a < la) { la = a; look = e.r; } }
+      return look || res; };
     const RIDE_REACH = { car: 5.6, gold: 5.6, hotrod: 5.6, bus: 15, plane: 11, goldplane: 11, heli: 11, goldheli: 11, possum: 6 }, RIDE_BACK = { car: 7, gold: 7, hotrod: 7.5, bus: 13, plane: 15, goldplane: 15, heli: 14, goldheli: 14, possum: 3.6 },
       RIDE_UP = { car: 1.5, gold: 1.5, hotrod: 1.8, bus: 3.4, plane: 2.4, goldplane: 2.4, heli: 2.4, goldheli: 2.4, possum: 0.9 };
     let ride = null, shownRide = null;  // the player you're riding with: { id, name, k, at: [x, y, z, t] }; who the button last offered
@@ -24988,11 +26031,14 @@ const handle = async (m, post) => {
       const [a, b, r] = W.segs[S[1]], fwd = !!(r.one || r.ring) || Math.sin(car.h) * (W.X[b] - W.X[a]) + Math.cos(car.h) * (W.Z[b] - W.Z[a]) >= 0, to = fwd ? b : a, from = fwd ? a : b;
       const lane = laneOf(r);
       autoBegin([car.x, S[3], W.X[to]], [car.z, S[4], W.Z[to]], [0, lane], { cruise: true, turn, node: to, from, sign: null }); autoPin(null); cruiseOn(auto); return true; };
-    // more of the way ahead, to about 130 m on: at each corner straight on (the street that bends least), or the turn asked for, the
+    // more of the way ahead: at each corner straight on (the street that bends least), or the turn asked for, the
     // first corner that has one (a street off to that side by 35 to 135 degrees: not a hairpin back down the other side of a divided
     // road); never back the way it came unless the street ends, and never against a one-way
     const cruiseOn = A => { let W = net; if (!W) return; let grew = false;
-      for (let g = 0; g < 60 && A.node != null; g++) { const n = A.cx.length; let ahead = 0; for (let i = A.i; i + 1 < n; i++) ahead += Math.hypot(A.cx[i + 1] - A.cx[i], A.cz[i + 1] - A.cz[i]) * (i === A.i ? 1 - A.t : 1); if (ahead > 130) break;  // (from where the car is on its stretch: a long straight one is not 130 m ahead for long)
+      // An indexed pass must see the return lane beyond a long row. Buffer a little extra
+      // centreline for the offset lane and the distance driven between route updates.
+      const lookahead = place === "inv" && T.invStatic?.wholeTown && (A.blk || A.dTgt) ? AUTO_PASS_HORIZON + 25 : 130;
+      for (let g = 0; g < 60 && A.node != null; g++) { const n = A.cx.length; let ahead = 0; for (let i = A.i; i + 1 < n; i++) ahead += Math.hypot(A.cx[i + 1] - A.cx[i], A.cz[i + 1] - A.cz[i]) * (i === A.i ? 1 - A.t : 1); if (ahead > lookahead) break;
         // near the edge of the streets it knows: the streets round here instead, picking up at the same point
         const u0 = A.node, ux = W.X[u0], uz = W.Z[u0];
         if (ux < W.box[0] + 150 || ux > W.box[1] - 150 || uz < W.box[2] + 150 || uz > W.box[3] - 150) { const fx = W.X[A.from], fz = W.Z[A.from]; W = autoNet(ux, uz); if (!W) { A.node = null; break; }
@@ -25032,6 +26078,20 @@ const handle = async (m, post) => {
       if (!cruise(side)) toast("There's no street near enough to follow. Drive onto a street first.", 3400); return true; };
     ezGo.onclick = e => { e.stopPropagation(); ezGo.blur(); C.autoGo(); }; ezL.onclick = e => { e.stopPropagation(); ezL.blur(); C.autoTurn(1); }; ezR.onclick = e => { e.stopPropagation(); ezR.blur(); C.autoTurn(-1); };
     const AUTO_V = 50 / 3.6;  // it drives at up to 50 km/h
+    const AUTO_PASS_HORIZON = 185;
+    // Predict how long it takes to reach a station along a pass. A GPS car approaching
+    // a moving lead can accelerate without boost; allow for that run-up in its merge.
+    const autoPassMotion = (v, movingLead) => {
+      // Normal throttle scales by (1 - speed / top). Reserve at least 20% of it
+      // and use the weakest acceleration in the predicted speed range.
+      const current = bsClamp(Math.abs(v),4,AUTO_V), top = R.carTop/3.6, attainable = Math.min(AUTO_V,0.8*top);
+      if (!movingLead || v < 0 || v >= attainable || !(R.carAccel > 0 && attainable > 0))
+        return {speed:current, delay:0, timeAt:d => d/current};
+      const acceleration = R.carAccel*(1-attainable/top), rampTime = (attainable-v)/acceleration;
+      const rampDistance = (v+attainable)*rampTime/2, delay = rampTime-rampDistance/attainable;
+      return {speed:attainable, delay, timeAt:d => d < rampDistance
+        ? (Math.sqrt(v*v+2*acceleration*d)-v)/acceleration : d/attainable+delay};
+    };
     // Autodrive from the GPS drives like a hoon (Ash, 23 November 2026: "When I type in the address allow standard or autodrive to drive
     // me there automatically. Drive like a hoon to get there"): flat out to the car's own top speed, boost down the straights, braking
     // late and hard for the corners, a flick of the handbrake to swing round the sharp ones, and a skid to a stop at the door
@@ -25047,30 +26107,247 @@ const handle = async (m, post) => {
     const autoDir = (A, sd) => { const [x, z] = autoPt(A, sd), [x2, z2] = autoPt(A, sd + 1.5); let ux = x2 - x, uz = z2 - z; const l = Math.hypot(ux, uz);
       if (l < 1e-3) { const [x0, z0] = autoPt(A, sd - 1.5); ux = x - x0; uz = z - z0; const l0 = Math.hypot(ux, uz); return l0 < 1e-3 ? [x, z, Math.sin(car.h), Math.cos(car.h)] : [x, z, ux / l0, uz / l0]; }
       return [x, z, ux / l, uz / l]; };
+    // Blend the passing normal over the vehicle's footprint so its target stays continuous
+    // as the front enters a bend. Both the swept path and the steering use this same point.
+    const autoPassPoint = (A, sd, offset) => {
+      const [x,z] = autoPt(A,sd);
+      if (!offset) return [x,z];
+      const span = townTrafficBodies[car.bus ? "bus" : "car"][1];
+      const [ax,az] = autoPt(A,sd-span), [bx,bz] = autoPt(A,sd+span);
+      const dx = bx-ax, dz = bz-az, length = Math.hypot(dx,dz);
+      if (length < 0.01) {
+        const [, , ux,uz] = autoDir(A,sd);
+        return [x-offset*uz,z+offset*ux];
+      }
+      return [x-offset*dz/length,z+offset*dx/length];
+    };
     // (right of the way (ux, uz) is (-uz, ux): out towards the middle of the road. Left of it is the kerb)
     const autoFree = (A, x, z, h) => { const SH = car.bus ? BUS : CAR; return inside(x, z) && fits(SH, x, z, h); };
+    // Only gather road segments near a manoeuvre. GPS routes can start without the click-to-drive road graph.
+    const autoPassRoads = A => {
+      if (!T.roadsAll?.length) return null;
+      if (A.passRoads?.source === T.roadsAll && Math.hypot(car.x - A.passRoads.x, car.z - A.passRoads.z) < 45) return A.passRoads.segments;
+      const segments = [];
+      for (const r of T.roadsAll) {
+        if (r.cls > 5 || !(r.wd > 0)) continue;
+        const pad = 235 + r.wd / 2, p = r.pts;
+        if (r.bb && (r.bb[0] > car.x + pad || r.bb[1] < car.x - pad || r.bb[2] > car.z + pad || r.bb[3] < car.z - pad)) continue;
+        for (let i = 2; i < p.length; i += 2) {
+          const ax = p[i-2], az = p[i-1], bx = p[i], bz = p[i+1];
+          if (Math.min(ax,bx) > car.x + pad || Math.max(ax,bx) < car.x - pad || Math.min(az,bz) > car.z + pad || Math.max(az,bz) < car.z - pad) continue;
+          const dx = bx-ax, dz = bz-az;
+          segments.push({ax, az, dx, dz, len2: dx*dx + dz*dz || 1, half: r.wd/2});
+        }
+      }
+      A.passRoads = {source:T.roadsAll, x:car.x, z:car.z, segments};
+      return segments;
+    };
+    // Plan the whole excursion in route metres relative to the car. The indexed polygons include the parked
+    // car's actual trim, orientation and position. The ordinary vehicle movement still checks every substep.
+    const autoIndexedPass = (A, at, rem, v, cars, homeTraffic, oncoming, latCar, path, passHorizon, motion) => {
+      const grid = T.invStatic, shape = townTrafficBodies[car.bus ? "bus" : "car"], [width, length] = shape;
+      const margin = 0.55, transition = offset => 8 + 4 * Math.abs(offset);
+      const blockers = [], seen = new Set();
+      // Look beyond the first blocker for a place to merge back. Testing the home lane alongside the car
+      // keeps the target until its rear clears, including after braking, reversing or a route-buffer trim.
+      for (const [d,x,z,ux,uz] of path) {
+        if (d > passHorizon) break;
+        if (!A.cut && A.join < 20 && at + d < A.join + 1) continue;
+        // Only an obstruction of the actual home lane needs to be overtaken. The candidate
+        // sweep below still checks nearby walls and parked vehicles throughout the return.
+        const hit = grid.obstacle(x,z,Math.atan2(ux,uz),length,width);
+        if (!hit || seen.has(hit)) continue;
+        seen.add(hit);
+        let near = Infinity, far = -Infinity, left = Infinity, right = -Infinity;
+        for (const e of hit.edges) {
+          const dx = e.x-x, dz = e.z-z, along = d + dx*ux + dz*uz, across = dz*ux - dx*uz;
+          near = Math.min(near,along); far = Math.max(far,along);
+          left = Math.min(left,across); right = Math.max(right,across);
+        }
+        blockers.push({near,far,left,right,key:hit.key,wall:true,still:true});
+      }
+      for (const lead of homeTraffic) blockers.push({
+        near:lead.al-lead.ext, far:lead.al+lead.ext, left:lead.lat-lead.across, right:lead.lat+lead.across, ...lead
+      });
+      blockers.sort((a,b) => a.near-b.near);
+      const first = blockers[0], reach = Math.max(32, 2*transition(A.dTgt));
+      const passing = first && first.near-length <= reach;
+      const roads = autoPassRoads(A);
+      const onRoad = (x,z) => !roads || roads.some(s => {
+        const dx = x-s.ax, dz = z-s.az, t = bsClamp((dx*s.dx + dz*s.dz)/s.len2,0,1);
+        return Math.hypot(dx-t*s.dx, dz-t*s.dz) <= s.half;
+      });
+      const from = {x:car.x,z:car.z,h:car.h,y:car.y};
+      const slowSpeed = bsClamp(Math.abs(v),4,AUTO_V);
+      let trafficConflict = false, waitForTraffic = false;
+      const check = (offset, near, far) => {
+        const enter = bsClamp(near-length-0.8, 6, transition(offset-latCar)), leave = transition(offset);
+        const end = Math.min(rem, far+leave);
+        if (far > rem || end > passHorizon || (offset && end < far+leave)) return null;
+        const smooth = t => t*t*(3-2*t);
+        const [, , startX, startZ] = autoDir(A,at);
+        const lateralSlope = bsClamp(Math.tan(wrap(Math.atan2(startX,startZ)-car.h)),-0.6,0.6);
+        let previous = from, previousD = 0, speedLimit = Infinity;
+        // A stopped driver needs room to accelerate into the pass. Wait until opposing traffic
+        // clears that lane even if one exact constant-speed prediction would slip in behind it.
+        if (offset && oncoming.some(b => Math.abs(offset-b.lat) < width+b.across+0.35 &&
+          b.al+b.ext+length >= -1 && b.al-b.ext-length < end + b.closing*Math.max(end/slowSpeed,motion.timeAt(end)))) {
+          trafficConflict = waitForTraffic = true; return null;
+        }
+        const steps = Math.max(1,Math.ceil(end/2));
+        for (let i = 1; i <= steps; i++) {
+          const d = end*i/steps;
+          const t = Math.min(1,d/enter), approach = smooth(t);
+          const back = smooth(bsClamp((d-far)/leave,0,1));
+          const lateral = (latCar + (offset-latCar)*approach + lateralSlope*d*(1-t)*(1-t))*(1-back);
+          const [x,z] = autoPassPoint(A,at+d,lateral);
+          const step = Math.hypot(x-previous.x,z-previous.z);
+          if (step < 0.01) return null;
+          const h = Math.atan2(x-previous.x,z-previous.z), next = {x,z,h,y:ground(x,z)};
+          if (!autoFree(A,x,z,h) || !grid.canDrive(previous.x,previous.z,previous.h,x,z,h,length,width+0.07)) return null;
+          if (roads) {
+            const sx = Math.sin(h), cz = Math.cos(h);
+            for (const l of [-length,length]) for (const w of [-width,width])
+              if (!onRoad(x+sx*l+cz*w,z+cz*l-sx*w)) return null;
+          }
+          const previousTime = motion.timeAt(previousD), nextTime = motion.timeAt(d);
+          for (const D of cars) {
+            const body = townTrafficBodies[D.bus ? "bus" : "car"];
+            const predicted = seconds => ({x:D.x+Math.sin(D.h)*(D.v||0)*seconds,
+              z:D.z+Math.cos(D.h)*(D.v||0)*seconds,h:D.h,y:D.y ?? next.y});
+            if (townTrafficSweep(previous,next,shape,predicted(previousTime),predicted(nextTime),body) < 1) {
+              trafficConflict = true; if (Math.abs(D.v || 0) >= 0.6) waitForTraffic = true; return null;
+            }
+          }
+          // Brake in time for curvature ahead, then regain speed on the straight part of the pass.
+          const curvature = Math.abs(wrap(h-previous.h))/step;
+          if (curvature > 0.002) speedLimit = Math.min(speedLimit,Math.sqrt(2.8/curvature + 9*previousD));
+          previous = next; previousD = d;
+        }
+        return speedLimit;
+      };
+      if (!passing) {
+        if (A.dTgt || Math.abs(latCar) > 0.15) {
+          const cap = check(0, transition(latCar)+length+1, transition(latCar));
+          if (cap == null) { A.cap = 0; A.blk = {still:true, wall:true, free:0}; return; }
+          A.passCap = cap;
+        }
+        A.dTgt = 0; return;
+      }
+      // The rear must clear the lead's future front bumper before steering back.
+      // Use the travel time from the swept traffic check; a non-closing pass cannot fit.
+      const clearStation = b => {
+        const distance = b.far + length + 0.8;
+        if (!b.forwardSpeed || distance <= 0) return distance;
+        // d / speed + delay bounds travel time even inside the acceleration phase.
+        return b.forwardSpeed < motion.speed ? (distance + b.forwardSpeed*motion.delay) / (1 - b.forwardSpeed/motion.speed) : Infinity;
+      };
+      let left = first.left, right = first.right, far = clearStation(first);
+      for (const b of blockers.slice(1)) {
+        if (b.near-length-far > 2*transition(Math.min(Math.abs(left-width-margin), Math.abs(right+width+margin)))) break;
+        far = Math.max(far,clearStation(b)); left = Math.min(left,b.left); right = Math.max(right,b.right);
+      }
+      const free = first.near-length-1.6;
+      A.blk = {...first, free};
+      // Smallest safe displacement first, keeping an established passing line through a row.
+      const rightPass = right+width+margin, leftPass = left-width-margin;
+      const options = A.dTgt > 0 ? [Math.max(A.dTgt,rightPass)] : A.dTgt < 0 ? [Math.min(A.dTgt,leftPass)]
+        : [rightPass,leftPass].sort((a,b) => Math.abs(a)-Math.abs(b));
+      const maxOffset = car.bus ? 4.8 : 4.2;
+      // A long vehicle can already be farther out than its target. Check the path that
+      // holds that line before braking for an inward turn that would clip a parked car.
+      const heldOffset = bsClamp(latCar,-maxOffset,maxOffset);
+      if (A.dTgt && Math.sign(heldOffset) === Math.sign(A.dTgt) && Math.abs(heldOffset) > Math.abs(options[0]))
+        options.push(heldOffset);
+      // An object beside the home lane may block the minimum offset. Try farther out
+      // on each permitted side, within the same road, body-sweep and displacement limits.
+      if (!A.dTgt) for (const base of options.slice()) {
+        for (let distance = Math.abs(base); distance < maxOffset;) {
+          distance = Math.min(distance+0.5,maxOffset);
+          options.push(Math.sign(base)*distance);
+        }
+      }
+      for (const offset of options) {
+        if (Math.abs(offset) > maxOffset) continue;
+        const cap = check(offset,first.near,far);
+        if (cap == null) continue;
+        A.dTgt = offset; A.passCap = cap;
+        return true;
+      }
+      // Leave enough run-up to steer around a parked car after oncoming traffic has cleared.
+      A.blk.waitForTraffic = waitForTraffic;
+      A.cap = Math.min(A.cap, Math.sqrt(9*Math.max(0, free-(trafficConflict ? 8 : 0))));
+    };
     const autoLook = (A, at, rem, v, H) => {
       const L = Math.max(6, Math.min(rem + 3, bsClamp(12 + Math.abs(v) * 2.2, 16, 50))), hlS = car.bus ? 5.6 : 2.25, hwS = car.bus ? 1.27 : 0.98;
-      const P = []; for (let d = 0; d <= L; d += 2) P.push([d, ...autoDir(A, at + d)]);
+      const P = [], extendProjection = range => {
+        for (let d = 2*P.length; d <= range; d += 2) P.push([d, ...autoDir(A, at+d)]);
+      };
+      extendProjection(L);
       // where something is from the way: how far along, and how far right of it; and how it lies across it
       const proj = (qx, qz) => { let b = P[0], bd = Infinity; for (const p of P) { const q = (qx - p[1]) ** 2 + (qz - p[2]) ** 2; if (q < bd) { bd = q; b = p; } }
         const dx = qx - b[1], dz = qz - b[2]; return [b[0] + dx * b[3] + dz * b[4], -dx * b[4] + dz * b[3], b]; };
       const latCar = -(car.x - P[0][1]) * P[0][4] + (car.z - P[0][2]) * P[0][3], off = d => d > hlS + 4 ? A.dTgt : latCar;  // (where the car is across the road, or will be by then)
-      const cars = (T.traffic?.cars || []).filter(D => D.x != null && D.h != null && !D.away && Math.hypot(D.x - car.x, D.z - car.z) < L + 16);
+      const indexed = place === "inv" && T.invStatic?.wholeTown;
+      const traffic = T.traffic?.cars || [], live = D => D.x != null && D.h != null && !D.away;
+      const cars = traffic.filter(D => live(D) && Math.hypot(D.x-car.x,D.z-car.z) < (indexed ? 80 + 8*Math.abs(D.v || 0) : L + 16));
       const body = (D, p) => { const c = Math.sin(D.h) * p[3] + Math.cos(D.h) * p[4], s = Math.sqrt(Math.max(0, 1 - c * c)), hl = D.bus ? 5.55 : 2.22, hw = D.bus ? 1.27 : 0.98; return { c, across: hw * Math.abs(c) + hl * s, along: hl * Math.abs(c) + hw * s }; };
       // a car of the traffic in the way: the nearest one ahead (or alongside) within the car's width of where it's going
-      let blk = null, cap = Infinity;
-      for (const D of cars) { const [al, lat, p] = proj(D.x, D.z), B = body(D, p), gap = al - B.along - hlS;
-        if (gap < -1.5 || al > L + B.along || Math.abs(lat - off(al)) > hwS + B.across + 0.35) continue;
-        const free = gap - 1.6, dv = (D.v || 0) * B.c, still = (D.v || 0) < 0.6;
+      const observe = D => {
+        const [al, lat, p] = proj(D.x,D.z), B = body(D,p), forwardSpeed = (D.v || 0)*B.c;
+        const still = (D.v || 0) < 0.6, slow = !still && B.c > 0.6 && forwardSpeed < (H ? 12 : 4);
+        return {D, al, lat, across:B.across, ext:B.along, forwardSpeed, still, slow, opposing:!still && B.c < -0.5};
+      };
+      const homeLane = (b, range) => indexed && (b.still || (H && b.slow)) && b.al+b.ext+hlS >= -1 &&
+        b.al <= range+b.ext && Math.abs(b.lat) < hwS+b.across+0.35;
+      let blk = null, cap = Infinity, followingCap = Infinity, nearLead = false, movingLead = false;
+      for (const D of cars) {
+        const b = observe(D), {al, lat, ext, across, still, forwardSpeed:dv} = b, gap = al-ext-hlS;
+        const inHomeLane = homeLane(b,L);
+        if (inHomeLane) { nearLead = true; if (b.slow) movingLead = true; }
+        if (gap < -1.5 || al > L + ext || Math.abs(lat-off(al)) > hwS+across+0.35) continue;
+        const free = gap - 1.6;
         const vt = free <= 0 ? 0 : still || dv < 0.5 ? Math.sqrt(2 * 4.5 * free) : Math.min(Math.sqrt(2 * 4.5 * free) + dv, dv + free * 0.5);
-        cap = Math.min(cap, vt); if (!blk || free < blk.free) blk = { D, al, lat, across: B.across, free, still, ext: B.along, slow: !still && B.c > 0.6 && dv < (H ? 12 : 4) }; }
+        if (!inHomeLane) followingCap = Math.min(followingCap,vt);
+        cap = Math.min(cap,vt); if (!blk || free < blk.free) blk = {...b, free};
+      }
       // the rest of what it can't fit past (a parked car, a post, a wall), along where it's going
       // (every metre close in, every 2 further on; not right in front while it's already touching something)
       // (and not on its first stretch, from where the car was to the street: getting out of a parking spot, the car's own bumping sorts it)
       const near0 = autoFree(A, car.x, car.z, car.h) ? 1 : 3, DS = [1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28], first = d => !A.cut && A.join < 20 && at + d < A.join + 1;
       for (const d of DS) { if (d > L) break; if (d < near0 || first(d)) continue; const o = off(d), [px, pz, ux, uz] = autoDir(A, at + d), x = px - uz * o, z = pz + ux * o;
         if (!autoFree(A, x, z, Math.atan2(ux, uz))) { const free = d - 1.3; cap = Math.min(cap, free <= 0 ? 0 : Math.sqrt(2 * 4.5 * free)); if (!blk || free < blk.free) blk = { al: d, free, still: true, ext: 1, wall: true }; break; } }
+      if (indexed) {
+        A.blk = blk; A.cap = cap; A.passCap = Infinity;
+        if (blk?.wall || nearLead || A.dTgt || Math.abs(A.dCur) > 0.1) {
+          // The following scan starts a pass. Check the whole return route for queued traffic,
+          // including cars on another approach that can reach it within the predicted travel time.
+          const horizon = Math.min(rem,AUTO_PASS_HORIZON), motion = autoPassMotion(v,movingLead);
+          const seconds = Math.max(horizon/bsClamp(Math.abs(v),4,AUTO_V), motion.timeAt(horizon));
+          extendProjection(horizon);
+          let minX = car.x, maxX = car.x, minZ = car.z, maxZ = car.z;
+          for (const [,x,z] of P) {
+            minX = Math.min(minX,x); maxX = Math.max(maxX,x); minZ = Math.min(minZ,z); maxZ = Math.max(maxZ,z);
+          }
+          // Both bus bodies and the widest passing offset fit inside this padding.
+          const pad = 18, passCars = traffic.filter(D => {
+            if (!live(D)) return false;
+            const travel = seconds*(D.v || 0), x = D.x+Math.sin(D.h)*travel, z = D.z+Math.cos(D.h)*travel;
+            return Math.min(D.x,x) <= maxX+pad && Math.max(D.x,x) >= minX-pad &&
+              Math.min(D.z,z) <= maxZ+pad && Math.max(D.z,z) >= minZ-pad;
+          });
+          const homeTraffic = [], oncoming = [];
+          for (const D of passCars) {
+            const b = observe(D);
+            if (homeLane(b,horizon)) homeTraffic.push(b);
+            if (b.opposing) oncoming.push({...b, closing:-b.forwardSpeed});
+          }
+          A.cap = followingCap;
+          const clearPass = autoIndexedPass(A,at,rem,v,passCars,homeTraffic,oncoming,latCar,P,horizon,motion);
+          if (!clearPass) A.cap = Math.min(A.cap,cap);
+        }
+        return;
+      }
       // is a line across the road, from `from` to `to` along the way, clear: of what the car can't fit past, and of the traffic (where
       // it is now and where it'll be in a second and in two and a half), but the one being got round
       const clear = (o, from, to, not) => { for (const d of DS) { if (d > Math.min(to, L)) break; if (d < near0 || first(d)) continue; const oo = d < Math.min(from, 6) ? o / 2 : o, [px, pz, ux, uz] = autoDir(A, at + d);
@@ -25093,7 +26370,7 @@ const handle = async (m, post) => {
         if (!autoFree(A, x, z, h)) continue; if (place === "inv" && !vacant(x, z, h, car.bus ? 5.4 : 2.25, car.bus ? 1.2 : 0.95)) continue;
         if (T.traffic?.occupied?.(car.bus ? "bus" : "car", x, z, h, ground(x, z))) continue;
         car.flip = car.trick = car.face = null; car.hop = car.roll = car.spinY = car.teamTil = 0;
-        car.x = x; car.z = z; car.h = car.dir = h; car.v = 0; car.steer = 0; if (place === "inv") sit(0);
+        car.x = x; car.z = z; car.h = car.dir = h; car.v = 0; car.steer = 0; if (place === "inv") { sit(0); A.cursorX = x; A.cursorZ = z; }
         const [, , i, f] = autoPt(A, at + d); A.i = i; A.t = f; A.slow = A.rev = A.waitT = 0; A.tries = 0; A.dTgt = A.dCur = 0; A.lookT = 0; A.hopAt = A.odo;
         unReset(); snd.whoosh?.(); toast("Unstuck: on its way again.", 1800); return true; }
       return false; };
@@ -25103,17 +26380,42 @@ const handle = async (m, post) => {
       recover(); if (Math.hypot(car.x - x0, car.z - z0) < 0.5) return false;  // (nowhere clear to put it)
       auto = null; try { if (was.cruise) cruise(was.turn || 0); else if (was.click && was.goal) C.driveTo(was.goal[0], was.goal[1]); else C.drivePath([car.x, car.z, ...rest], { hoon: !!was.hoon }); } catch (e) { console.warn("Autodrive: couldn't set off again", e); }
       if (!auto) ezShow(); return true; };
+    // Passing a parked car can put us beside the return leg of a hairpin. Advance from our
+    // current segment with actual travel, allowing for the car cutting the inside of a corner.
+    const invAdvanceRoute = A => {
+      const moved = Math.hypot(car.x - (A.cursorX ?? car.x), car.z - (A.cursorZ ?? car.z));
+      A.cursorX = car.x; A.cursorZ = car.z;
+      if (!moved || car.v < 0 || A.rev > 0) return;
+      const at = A.s[A.i] + (A.s[A.i + 1] - A.s[A.i]) * A.t;
+      const limit = at + moved * 1.6, hx = Math.sin(car.h), hz = Math.cos(car.h);
+      let best = Infinity, station = at;
+      // The adjacent stretch can guide us through a bend before we reach its vertex.
+      // Further stretches must start within this tick's forward travel.
+      for (let i = A.i; i < A.x.length - 1 && (i <= A.i + 1 || A.s[i] <= limit); i++) {
+        const dx = A.x[i + 1] - A.x[i], dz = A.z[i + 1] - A.z[i], length = A.s[i + 1] - A.s[i];
+        if (!length || (i !== A.i && dx * hx + dz * hz < -0.1 * length)) continue;
+        const rx = car.x - A.x[i], rz = car.z - A.z[i];
+        const t = bsClamp((rx * dx + rz * dz) / (length * length), i === A.i ? A.t : 0, 1);
+        const distance = Math.hypot(rx - dx * t, rz - dz * t);
+        if (distance < best - 0.01) { best = distance; station = A.s[i] + length * t; }
+      }
+      station = Math.min(station, limit);
+      while (A.i < A.x.length - 2 && A.s[A.i + 1] <= station) A.i++;
+      A.t = (station - A.s[A.i]) / (A.s[A.i + 1] - A.s[A.i] || 1);
+    };
     // one step of it: what to do with the accelerator and the wheel, [go, steer]
     const autoStep = dt => { const A = auto, v = car.v; A.odo += Math.abs(v) * dt;
       A.indicator = 0;
       if (A.cruise && !A.done) cruiseOn(A);
       const n = A.x.length;
-      // where the car is along the way: the nearest point on the next few stretches, never back the way it came
-      let best = Infinity, bi = A.i, bt = A.t;
-      for (let i = A.i; i < Math.min(n - 1, A.i + (A.hoon || A.userBoost ? 12 : 5)); i++) { const ax = A.x[i], az = A.z[i], dx = A.x[i + 1] - ax, dz = A.z[i + 1] - az, L2 = dx * dx + dz * dz || 1;
-        const t = bsClamp(((car.x - ax) * dx + (car.z - az) * dz) / L2, i === A.i ? A.t : 0, 1), d = Math.hypot(car.x - ax - dx * t, car.z - az - dz * t); if (d < best - 0.01) { best = d; bi = i; bt = t; } }
-      A.i = bi; A.t = bt;
-      const at = A.s[bi] + ((A.s[bi + 1] ?? A.s[bi]) - A.s[bi]) * bt, total = A.s[n - 1], rem = total - at, toEnd = Math.hypot(A.x[n - 1] - car.x, A.z[n - 1] - car.z); A.rem = rem;
+      if (place === "inv") invAdvanceRoute(A);
+      else {
+        let best = Infinity, bi = A.i, bt = A.t;
+        for (let i = A.i; i < Math.min(n - 1, A.i + (A.hoon || A.userBoost ? 12 : 5)); i++) { const ax = A.x[i], az = A.z[i], dx = A.x[i + 1] - ax, dz = A.z[i + 1] - az, L2 = dx * dx + dz * dz || 1;
+          const t = bsClamp(((car.x - ax) * dx + (car.z - az) * dz) / L2, i === A.i ? A.t : 0, 1), d = Math.hypot(car.x - ax - dx * t, car.z - az - dz * t); if (d < best - 0.01) { best = d; bi = i; bt = t; } }
+        A.i = bi; A.t = bt;
+      }
+      const bi = A.i, at = A.s[bi] + (A.s[bi + 1] - A.s[bi]) * A.t, total = A.s[n - 1], rem = total - at, toEnd = Math.hypot(A.x[n - 1] - car.x, A.z[n - 1] - car.z); A.rem = rem;
       const pt = d => { const sd = Math.min(total, at + d); let i = bi; while (i < n - 2 && A.s[i + 1] < sd) i++; const L = (A.s[i + 1] ?? A.s[i]) - A.s[i] || 1, f = bsClamp((sd - A.s[i]) / L, 0, 1), j = Math.min(i + 1, n - 1); return [A.x[i] + (A.x[j] - A.x[i]) * f, A.z[i] + (A.z[j] - A.z[i]) * f]; };
       if (A.sign && Math.hypot(A.sign.x - car.x, A.sign.z - car.z) < 7) A.sign.near = true; else if (A.sign?.near) { A.sign = null; ezShow(); }  // the turn it was asked for is behind it now
       // there (or as near as the way goes), or told to stop: brake to a stop, and it is yours again
@@ -25123,10 +26425,18 @@ const handle = async (m, post) => {
       if (A.done || rem < 1.6 || (rem < 7 && toEnd < 2.6)) { if (!A.done) { A.done = true; ezShow(); if (A.cruise) toast("That's as far as this street goes.", 2800); } if (Math.abs(v) < 0.6) { autoEnd(); return [0, 0]; } return [v > 0 ? -1 : 1, 0, 0, !!A.hoon && !car.bus && v > 4]; }
       const big = car.bus ? 1.6 : 1, look = bsClamp(4.5 + Math.abs(v) * 0.75, 5, H ? 26 : 15) * big;
       // what's in the way, ten times a second; and over across the road (to go round something) a little at a time, as it goes along
-      if ((A.lookT -= dt) <= 0) { A.lookT = 0.1; try { autoLook(A, at, rem, v, H); } catch (e) { A.cap = Infinity; A.blk = null; } }
+      if ((A.lookT -= dt) <= 0) { A.lookT = 0.1; try { autoLook(A, at, rem, v, H); } catch (e) { A.cap = place === "inv" && T.invStatic?.wholeTown ? 0 : Infinity; A.blk = null; } }
       { const dd = A.dTgt - A.dCur; A.dCur += Math.sign(dd) * Math.min(Math.abs(dd), bsClamp(Math.abs(v) * 0.45, 0.6, 3) * dt); }
       // (aimed a little further over while the car is short of it, so it gets there, not just near)
-      let [tx, tz] = pt(look); if (Math.abs(A.dCur) > 0.01) { const [px, pz, u0, w0] = autoDir(A, at), lat = -(car.x - px) * w0 + (car.z - pz) * u0, o = A.dCur + bsClamp((A.dCur - lat) * 0.8, -1.5, 1.5), [, , ux, uz] = autoDir(A, at + look); tx -= uz * o; tz += ux * o; }
+      // On a pass keep the steering point close enough to follow the checked line around a bend.
+      const aim = A.passCap != null && (A.dTgt || Math.abs(A.dCur) > 0.1) ? Math.min(look, (2.2 + Math.abs(v)*0.38)*big) : look;
+      let [tx,tz] = pt(aim);
+      if (Math.abs(A.dCur) > 0.01) {
+        const [px,pz,ux,uz] = autoDir(A,at), lat = -(car.x-px)*uz + (car.z-pz)*ux;
+        const offset = A.dCur + bsClamp((A.dCur-lat)*0.8,-1.5,1.5);
+        if (A.passCap != null) [tx,tz] = autoPassPoint(A,at+aim,offset);
+        else { const [, , fx,fz] = autoDir(A,at+aim); tx -= fz*offset; tz += fx*offset; }
+      }
       const e = wrap(Math.atan2(tx - car.x, tz - car.z) - car.h);
       // backing off something it has run into: a second or so in reverse, the wheel the other way, then on again
       if (A.rev > 0) { A.rev -= dt; return [-0.8, bsClamp(A.revE * 2.4, -1, 1)]; }
@@ -25146,14 +26456,14 @@ const handle = async (m, post) => {
         if (A.hoon && !A.ht && !A.hc && v > 9 && worst > 0.9 && Math.abs(e) > 0.35 && rem > 25) { A.ht = 0.32; A.hc = 1.8; }
         hoonH = A.ht > 0; }
       else { vt = Math.min(vt, Math.sqrt(2 * 2.4 * Math.max(0, rem - 1.2)) + 0.9); if (Math.abs(e) > 0.7) vt = Math.min(vt, 3.8); }
-      vt = Math.min(vt, A.cap); if (A.dTgt || Math.abs(A.dCur) > 0.4) vt = Math.min(vt, H ? 9 : 7);  // (what's in the way; going round it, steady)
+      vt = Math.min(vt, A.cap); if (A.dTgt || Math.abs(A.dCur) > (A.passCap != null ? 0.1 : 0.4)) vt = Math.min(vt, A.passCap ?? (H ? 9 : 7));
       if (A.cap < 0.3) hoonB = hoonH = false;
       let go = bsClamp((vt - v) * (H ? 1.4 : 0.6), -1, 1); if (go < 0 && v < 0.8) go = 0;
       // stopped behind something that isn't going anywhere, with no way round it, for 4 seconds: Unstick, done for it (three goes,
       // then it's left with the driver)
-      if (A.blk?.still && A.cap < 0.6 && Math.abs(v) < 0.6) { if ((A.waitT += dt) > 4) { A.waitT = 0;
+      if (A.blk?.still && !A.blk.waitForTraffic && A.cap < 0.6 && Math.abs(v) < 0.6) { if ((A.waitT += dt) > 4) { A.waitT = 0;
           if (++A.hops > 3 || !autoUnstick(A)) { autoEnd("The car can't get past. Drive round it yourself, or try Unstick."); return [0, 0]; } return [0, 0]; } }
-      else if (Math.abs(v) > 1) A.waitT = 0;
+      else if (Math.abs(v) > 1 || A.blk?.waitForTraffic) A.waitT = 0;
       // stuck against something: back off and try again; stuck again, Unstick, done for it; and after that, leave it with the driver
       A.slow = Math.abs(v) < 0.5 && go > 0.2 ? A.slow + dt : 0;
       if (A.slow > 0.9) { A.slow = 0; A.triedAt = A.odo; if (++A.tries > 1) { if (A.tries <= 3 && ++A.hops <= 3 && autoUnstick(A)) return [0, 0]; if (A.tries > 4) { autoEnd("The car can't find a way there. Click somewhere else, or drive it yourself."); return [0, 0]; } } A.rev = 1.1 + 0.25 * A.tries; A.revE = Math.abs(e) > 0.15 ? e : (A.tries % 2 ? 0.6 : -0.6); return [-0.8, bsClamp(A.revE * 2.4, -1, 1)]; }
@@ -25289,6 +26599,7 @@ const handle = async (m, post) => {
     const unBtn = document.createElement("button"); unBtn.type = "button"; unBtn.className = "bs-fly-x bs-unstick"; unBtn.textContent = "Unstick"; unBtn.dataset.key = "U"; unBtn.hidden = true;
     $("bsFly")?.append(unBtn);
     const un = { f: -1e9, b: -1e9, trail: [], at: null, placed: 0 };  // (never pushed yet, not "pushed when the page opened")
+    let gaveClearanceHint = false;
     C.canUnstickWalk = () => place === "inv" && T.walk && !veh && !F.home && !T.tween && !C.dizzyHold?.();
     // A relocation must be clear before it is applied. Use a conservative circle around the
     // destination car. These checks run on a placement attempt, never on ordinary driving frames.
@@ -25406,11 +26717,15 @@ const handle = async (m, post) => {
     // time, however it wriggled. It was forward and back both pushed in the last 8 s while staying within 6 m: too late against a wall
     // (pushing only forward never showed it), and too early in a fight or a tight turn. Ash, 27 November 2026: "Unstick often shows too
     // early or too late". Not while Drive for me is driving, or the car's flying or a boat)
-    const unTick = (now, thr) => { if (thr > 0.4) un.f = now; else if (thr < -0.4) un.b = now;
+    const unTick = (now, thr, hit) => { if (thr > 0.4) un.f = now; else if (thr < -0.4) un.b = now;
       if (!un.trail.length || now - un.trail[un.trail.length - 1][0] > 100) { un.trail.push([now, car.x, car.z, Math.abs(thr) > 0.4 && !auto ? 1 : 0]); while (now - un.trail[0][0] > UN_WIN + 150) un.trail.shift(); }
       let path = 0, push = 0; for (let i = 1; i < un.trail.length; i++) { const a = un.trail[i - 1], b = un.trail[i]; path += Math.hypot(b[1] - a[1], b[2] - a[2]); push += b[3]; }
       const still = now - un.trail[0][0] > UN_WIN - 150 && push >= (un.trail.length - 1) * 0.85 && path < 2.5 && !car.boat && !car.trick && !car.flip;
       const show = un.at ? Math.hypot(car.x - un.at[0], car.z - un.at[1]) < 12 && now - un.at[2] < 20000 : still && !!T.roadsAll;
+      if (place === "inv" && !gaveClearanceHint && show && still && hit && !auto && Math.abs(thr) > 0.4) {
+        gaveClearanceHint = true;
+        toast(thr > 0 ? "Reverse straight back to make room, then steer." : "Pull straight forward to make room, then steer.", 3500, true);
+      }
       if (show && !un.at) un.at = [car.x, car.z, now]; else if (!show) un.at = null;
       if (unBtn.hidden === show) { unBtn.hidden = !show; if (show) { un.placed = now; unPlace(); } } else if (show && now - un.placed > 500) { un.placed = now; unPlace(); } };
     const recover = () => { if (C.canUnstickWalk()) { recoverWalk(); return; } const roads = T.roadsAll; if (veh !== "car" || !car || !roads) return;
@@ -25452,6 +26767,8 @@ const handle = async (m, post) => {
     const tkBtn = document.createElement("button"); tkBtn.type = "button"; tkBtn.className = "bs-fly-x bs-tk"; tkBtn.dataset.key = "V"; tkBtn.hidden = true; tkBtn.textContent = "Jump";
     let pwCharge = 1, pwSpent = false, pwHeld = false, pwOn = false, pwSend = 0, tkWait = 0, pwLook = 0;
     const powerTo = () => veh === "ride" && ride?.id ? { id: ride.id, k: ride.k, possum: false } : veh === "possum" && pos?.cling ? { id: pos.cling.id, k: (T.peers?.list?.() || []).find(v => v.id === pos.cling.id)?.k, possum: true, gold: !!pos.gold } : null;
+    const boostPressed = () => pwHeld || F.keys.has("KeyB");
+    C.passengerBoostHeld = () => boostPressed() && !!powerTo();
     const usePower = () => { const to = powerTo(); if (!to) return false; if (pwSpent) toast("Still charging.", 900); return true; };
     const useTrick = () => { const to = powerTo(); if (!to) return false; if (tkWait > 0) return true; const air = /plane|heli/.test(to.k || ""), boss = !!(rexRole && rex?.live && veh === "ride");
       if (T.peers?.power?.(to.id, 2, to.possum && !air, to.gold)) { tkWait = boss ? 10 : R.trickBack; snd.boing(); if (boss) rexSay("BARREL ROLL!", 1100); else toast(air ? "Spin!" : to.possum ? "Jump and roll!" : "Jump!", 1200); } return true; };
@@ -25459,7 +26776,7 @@ const handle = async (m, post) => {
     for (const ev of ["pointerup", "pointercancel", "pointerleave"]) pwBtn.addEventListener(ev, () => { pwHeld = false; }); tkBtn.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); useTrick(); });
     $("bsFly")?.append(pwBtn, tkBtn); C.powerKey = k => (k === "B" ? usePower : useTrick)();
     const powersTick = dt => { const to = powerTo(); tkWait = Math.max(0, tkWait - dt);
-      const on = !!to && (pwHeld || F.keys.has("KeyB")) && pwCharge > 0 && !pwSpent;
+      const on = !!to && boostPressed() && pwCharge > 0 && !pwSpent;
       if (on) { pwCharge = Math.max(0, pwCharge - dt / R.teamBoostSecs); if (!pwCharge) pwSpent = true; if (!pwOn) { snd.whoosh(); pwSend = 0; } if ((pwSend -= dt) <= 0) { pwSend = 0.25; T.peers?.power?.(to.id, 1, false, to.gold); } }
       else { pwCharge = Math.min(1, pwCharge + dt / R.teamBoostBack); if (pwCharge >= 0.2) pwSpent = false; if (!to) pwHeld = false; }
       if (pwOn !== on) { pwOn = on; pwBtn.classList.toggle("on", on); }
@@ -25665,6 +26982,12 @@ const handle = async (m, post) => {
     // the clock's hands, the koala and the wombats: wherever the weather's own are now
     if (T.live?.length) { const M = T.mtx || (T.mtx = new BS.B.THREE.Matrix4());
       T.roots.forEach(r => r.updateWorldMatrix(true, true));
+      for (const { root, place, anchored, lawn } of T.groundGuests) {
+        const p = (T.cv || (T.cv = new BS.B.THREE.Vector3())).setFromMatrixPosition(root.matrixWorld).applyMatrix4(T.toTG).applyMatrix4(place);
+        const plane = lawn.top + lawn.lean.elements[1] * (p.x - lawn.x) + lawn.lean.elements[9] * (p.z - lawn.z);
+        const ground = padGround(lawn, p.x, p.z, m.groundAt(p.x, p.z));
+        anchored.elements[13] = place.elements[13] + ground - plane;
+      }
       for (const C of T.cars || []) { const p = (T.cv || (T.cv = new BS.B.THREE.Vector3())).setFromMatrixPosition(C.o.matrixWorld).applyMatrix4(T.toTG);
         C.cp.elements[13] = m.groundAt(p.x + C.cp.elements[12], p.z + C.cp.elements[14]) + 0.05 - 2.2; }  // the cars: on the ground under them (the weather's G0 is 2.2)
       for (const L of T.live) L.h.setMatrix(L.i, M.copy(L.place).multiply(T.toTG).multiply(L.o.matrixWorld).elements); }
