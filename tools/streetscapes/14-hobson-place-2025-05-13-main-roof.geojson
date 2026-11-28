@@ -1,0 +1,67 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "14-hobson-place-main-roof-20250513",
+      "properties": {
+        "view": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70583896,-38.63536274&level=20",
+        "scene": 6072283,
+        "date": "2025-05-13",
+        "provider": "Vantor LG04 via Esri World Imagery",
+        "attribution": "Esri, Vantor, Earthstar Geographics and the GIS User Community",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "samplingM": 0.34,
+        "positionalAccuracyM": 5,
+        "scope": "Manually observed ArcGIS map points on the continuous dark grey principal hip roof and wider south return. The pale rear area and small rear structures are outside this ring. Front eaves are softened by shade, and the approach points represent the visibly open paved corridor, not surveyed edge or threshold. The Vicmap historical aerial is separate reference only."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.705748,
+              -38.635217
+            ],
+            [
+              145.705865,
+              -38.635227
+            ],
+            [
+              145.705857,
+              -38.635347
+            ],
+            [
+              145.705903,
+              -38.635361
+            ],
+            [
+              145.705885,
+              -38.635436
+            ],
+            [
+              145.705841,
+              -38.63544
+            ],
+            [
+              145.705822,
+              -38.635449
+            ],
+            [
+              145.705738,
+              -38.635437
+            ],
+            [
+              145.705742,
+              -38.635273
+            ],
+            [
+              145.705748,
+              -38.635217
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
