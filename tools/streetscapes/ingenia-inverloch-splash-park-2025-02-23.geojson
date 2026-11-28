@@ -1,0 +1,50 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "esri-manual-ingenia-indoor-splash-park",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.741852,
+              -38.633124
+            ],
+            [
+              145.742042,
+              -38.633112
+            ],
+            [
+              145.742064,
+              -38.633279
+            ],
+            [
+              145.741866,
+              -38.633291
+            ],
+            [
+              145.741852,
+              -38.633124
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Indoor water splash park, BIG4 Ingenia Holidays Inverloch",
+        "parcelPfi": "135716645",
+        "source": "Esri World Imagery / Vantor WV03",
+        "captureDate": "2025-02-23",
+        "sourceResolutionM": 0.31,
+        "citedSceneAccuracyM": 5,
+        "sourceSceneObjectId": 6072276,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.741975,-38.633206&level=20",
+        "licenceSource": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "operatorMap": "https://cdn.sanity.io/files/06scyj92/production/5c4e72ee117cdbda3ed2bef6424a52634ede85ca.pdf",
+        "method": "Four visible eaves corners captured with ArcGIS Online Map Viewer Location tool.",
+        "scope": "Generalized roof extent. The curved roof profile and internal layout are not part of the trace."
+      }
+    }
+  ]
+}
