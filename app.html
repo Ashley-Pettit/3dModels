@@ -9753,7 +9753,7 @@ const handle = async (m, post) => {
       H.proxy = new Proxy(H, { get: (h, k) => { const v = h.real[k]; if (typeof v !== "function") return v;
         return (...a) => {
           const key = k + ":" + (k === "setSignal" || k === "setCabin" ? "" : a[0]);
-          if (k === "setMatrix") {
+          if (graphics && k === "setMatrix") {
             let saved = h.calls.get(key);
             if (!saved) { saved = [a[0], new Float64Array(16)]; h.calls.set(key, saved); }
             saved[1].set(a[1]);
