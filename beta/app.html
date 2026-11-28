@@ -10121,6 +10121,51 @@ const handle = async (m, post) => {
     return { length, half, point, local, nearby };
   })();
 
+  // 4 Sylvia Court uses the licensed roof fit with the pale roof seen in both aerials.
+  function invSylviaHouse(T, model, THREE) {
+    const walls = [[-2053.0,770.1],[-2052.7,772.4],[-2051.2,774.9],[-2041.5,769.2],
+      [-2042.7,767.1],[-2030.0,759.7],[-2033.3,754.1],[-2042.3,759.4],
+      [-2044.6,755.6],[-2052.2,760.1],[-2048.0,767.2]];
+    const eaves = [[-2053.26,769.97],[-2052.93,772.48],[-2051.28,775.23],[-2041.17,769.29],
+      [-2042.37,767.19],[-2029.67,759.79],[-2033.22,753.77],[-2042.22,759.07],
+      [-2044.52,755.27],[-2052.53,760.02],[-2048.33,767.11]];
+    const ridge = [[-2050.94,771.11],[-2050.86,771.76],[-2050.53,772.3],[-2044.09,768.51],
+      [-2045.29,766.41],[-2032.62,759.02],[-2033.98,756.71],[-2042.96,762.0],
+      [-2045.26,758.21],[-2049.58,760.77],[-2045.37,767.88]];
+    const x0 = -2043, z0 = 764;
+    const ground = walls.map(point => model.groundAt(...point));
+    const floor = Math.max(...ground) + .13, wallTop = 2.8;
+    const positions = [], colours = [];
+    const point = ([x,z], y) => [x - x0, y, z - z0];
+    const wallColour = new THREE.Color(0xbab2a0), fascia = new THREE.Color(0xd8d9d2);
+    const roof = new THREE.Color(0xcdd4d2), crown = new THREE.Color(0xdce0d9);
+    const tri = (a,b,c,colour) => {
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colours.push(colour.r,colour.g,colour.b);
+    };
+    const quad = (a,b,c,d,colour) => { tri(a,b,c,colour); tri(a,c,d,colour); };
+    for (let i = 0; i < walls.length; i++) {
+      const j = (i + 1) % walls.length;
+      const base = Math.min(ground[i],ground[j]) - floor - .11;
+      quad(point(walls[i],base),point(walls[j],base),
+        point(walls[j],wallTop),point(walls[i],wallTop),wallColour);
+      quad(point(eaves[i],wallTop - .1),point(eaves[j],wallTop - .1),
+        point(eaves[j],wallTop),point(eaves[i],wallTop),fascia);
+      quad(point(eaves[i],wallTop),point(eaves[j],wallTop),
+        point(ridge[j],wallTop + 1.28),point(ridge[i],wallTop + 1.28),roof);
+    }
+    const cap = ridge.map(([x,z]) => new THREE.Vector2(x - x0,z - z0));
+    for (const face of THREE.ShapeUtils.triangulateShape(cap, [])) {
+      const [a,b,c] = face.map(i => point(ridge[i],wallTop + 1.28));
+      const up = (b[2]-a[2])*(c[0]-a[0]) - (b[0]-a[0])*(c[2]-a[2]);
+      if (up > 0) tri(a,b,c,crown); else tri(a,c,b,crown);
+    }
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colours),
+      matrix: new THREE.Matrix4().makeTranslation(x0,floor,z0).elements, roughness: .85 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
+  }
+
   function invScrewCreekMask() {
     const { length, point } = INV_SCREW_CREEK;
     // Clear the shared endpoint by a few millimetres so the native bridge's solid rails disappear.
@@ -10269,6 +10314,7 @@ const handle = async (m, post) => {
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
     if (inv) clearPolygons.push({ latLon: INV_GLADE_SHELTER });
     if (inv) clearPolygons.push({ latLon: invScrewCreekMask(), roads: true });
+    if (inv) clearLatLon.push({ lat: -38.64385758, lon: 145.70666299, r: 0.16 }); // 4 Sylvia Court: seeded trunk on the confirmed clear main eave.
     // Moorooka's bridges (town.json's roads marked as one): their decks, so a car drives over them, not down through them into the creek.
     // The deck is as the model draws it (moorooka-model.js ?v=79): straight from one end's ground to the other's, a metre's hump in the
     // middle, and 0.6 m up, coming up from the road over its first and last 8 m. Under a bridge (a road under an overpass) you stay down:
@@ -10345,6 +10391,7 @@ const handle = async (m, post) => {
           T.glade = layout;
           mine.push(...layout.jumps);
         } catch (error) { console.warn("Inverloch: Soundshell could not be placed", error); }
+        if (inv && m.addParts) invSylviaHouse(T, m, BS.B.THREE);
         if (inv) {
           if (m.addParts) townGlade(T, m, BS.B.THREE);
           invMotelFrontage(T, m, BS.B.THREE);
