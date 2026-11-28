@@ -1,0 +1,178 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "activeParcelPFI": "5287294",
+    "activeAddressPFI": "53200776",
+    "source": "Vicmap Basemaps \u00a9 State of Victoria, AERIAL_WM_256",
+    "candidateAcquisitions": [
+      "2021-12-13",
+      "2023-01-08"
+    ],
+    "esriReference": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.72450339,-38.63479737&level=20",
+    "esriScene": "6072228",
+    "esriCaptureDate": "2022-03-26",
+    "streetView": "https://www.google.com/maps/@?api=1&map_action=pano&pano=B9qEQ6XHkKy8pNu-nbVciQ&heading=271&pitch=3",
+    "neighborView": "https://www.google.com/maps/@?api=1&map_action=pano&pano=enJkC3ScYqcqFStUwEK3gw&heading=275&pitch=3",
+    "streetViewDate": "2025-10",
+    "agentPhotoAndPlan": "https://www.domain.com.au/25-sandy-mount-avenue-inverloch-vic-3996-2018150807",
+    "licensedCrosscheck": "microsoft-311223133-d2eef4ec76c01359",
+    "originalRoadSide": "inverloch-road-4d6754166025c7ae431c-right",
+    "neighborParcelPFIs": [
+      "420793577",
+      "5287295"
+    ]
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "two-storey principal roof"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.72445198893547,
+              -38.63483891264018
+            ],
+            [
+              145.72462499141693,
+              -38.634855674105154
+            ],
+            [
+              145.72464242577553,
+              -38.634757200442294
+            ],
+            [
+              145.72446405887604,
+              -38.63473939136117
+            ],
+            [
+              145.72445198893547,
+              -38.63483891264018
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "attached double garage historic eaves"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.7245284318924,
+              -38.63490595847656
+            ],
+            [
+              145.7246182858944,
+              -38.63491538679227
+            ],
+            [
+              145.72462901473045,
+              -38.63486091206215
+            ],
+            [
+              145.72453781962395,
+              -38.63484938855625
+            ],
+            [
+              145.7245284318924,
+              -38.63490595847656
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "distinct driveway up to garage doors"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.72480335831642,
+            -38.634888149432385
+          ],
+          [
+            145.72474166750908,
+            -38.63488395906841
+          ],
+          [
+            145.72470545768738,
+            -38.63487662593086
+          ],
+          [
+            145.72464913129807,
+            -38.63488186388633
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "separate centre walk"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.7247658073902,
+            -38.63480119932966
+          ],
+          [
+            145.7246370613575,
+            -38.634804342106285
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "adjacentSeparateDrive"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.72471484541893,
+          -38.634955195222716
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "coveredRearPorch"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.72443589568138,
+          -38.63478443785194
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "rearPergola"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.72439968585968,
+          -38.63487243556621
+        ]
+      }
+    }
+  ]
+}
