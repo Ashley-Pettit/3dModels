@@ -10119,6 +10119,11 @@ const handle = async (m, post) => {
     // Inverloch: the town centre and number 11 come across from the weather's Inverloch (below): keep the ground clear where
     // they'll stand (and round both, the model draws its small things: cars with proper shapes, letterboxes, bins, power lines)
     const cfg = T.cfg, inv = cfg.place === "inv", D = INV_TOWN, home = D.nr?.home, clearLatLon = [], clearPolygons = [], detailLatLon = [];
+    // Two seeded trees stand within the principal house at 14 Lavender Place.
+    if (inv) for (const [lat, lon] of [
+      [-38.63481999, 145.70529344],
+      [-38.63495736, 145.70526185],
+    ]) clearLatLon.push({ lat, lon, r: 0.16 });
     // Keep the seeded tree indices stable. Clear only trunks enclosed by the two surveyed Bayview school roofs.
     if (inv) for (const [lat, lon] of [
       [-38.63102523, 145.72813660], [-38.63101172, 145.72819115], [-38.63104325, 145.72849263],
@@ -10240,6 +10245,7 @@ const handle = async (m, post) => {
         if (cfg.place === "moo" && m.addParts && m.getCamera && !OFF.has("bal6")) try { T.bal6 = townBalcony6(T, m); } catch (e) { T.bal6 = null; console.warn("Town model: number 6's house and balcony couldn't be added", e); }  // number 6 as it is, or with the balcony concept
         if (cfg.place === "moo" && m.addParts) try { townHouse24(T, m); } catch (e) { console.warn("Town model: 24 Beaudesert Road couldn't be added", e); }  // Pandy's house as it really is (a demo)
         if (cfg.place === "moo" && m.addParts) try { townHousesLite(T, m); } catch (e) { console.warn("Town model: the houses drawn the light way couldn't be added", e); }
+        if (inv && m.addParts) invLavenderPlace14(T, m, BS.B.THREE);
         // the planes (townCar), each with somewhere to stand beside it
         const rides = m.addParts ? TOWN_RIDES[cfg.place] : null;
         // golden ones only for Ash (Ash, 15 November 2026: "Only show the teleport to the golden objects if user name is ash or Ashley")
@@ -17968,6 +17974,58 @@ const handle = async (m, post) => {
       const foot = new THREE.Vector3(localX, 0, 0).applyMatrix4(matrix);
       grid.worldBox(foot.x, foot.z, angle, postWidth, postWidth);
     }
+  }
+
+  // 14 Lavender Place. Keep the detached garage and uncertain rear cover out of the wall ring.
+  function invLavenderPlace14(T, model, THREE) {
+    const walls = [[-2159.3,-226.8],[-2147.8,-225.4],[-2146.2,-235.8],
+      [-2145,-235.7],[-2143.4,-242.9],[-2157.1,-245]];
+    const eaves = [[-2159.68,-226.50],[-2147.51,-225.02],[-2145.91,-235.43],
+      [-2144.73,-235.34],[-2142.99,-243.18],[-2157.40,-245.39]];
+    const ridge = [[-2150.36,-237.86],[-2153.53,-231.87]];
+    const roofFaces = [[0,1,7],[1,2,7],[2,6,7],[2,3,6],[3,4,6],[4,5,6],[5,7,6],[5,0,7]];
+    const x0 = -2151, z0 = -236, heights = walls.map(p => model.groundAt(...p));
+    const floor = Math.max(...heights) + .12, edge = 2.77, positions = [], colors = [];
+    const point = ([x,z], y) => [x - x0,y,z - z0];
+    const tri = (a,b,c,hex) => {
+      const tint = new THREE.Color(hex);
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,c,d,hex) => { tri(a,b,c,hex); tri(a,c,d,hex); };
+    const up = (a,b,c,hex) => {
+      if ((b[2]-a[2])*(c[0]-a[0]) > (b[0]-a[0])*(c[2]-a[2])) tri(a,b,c,hex);
+      else tri(a,c,b,hex);
+    };
+    for (let i = 0; i < walls.length; i++) {
+      const j = (i + 1) % walls.length, a = walls[i], b = walls[j], c = eaves[i], d = eaves[j];
+      const base = Math.min(heights[i], heights[j]) - floor - .14;
+      quad(point(a,base),point(b,base),point(b,.14),point(a,.14),0x7e695a);
+      quad(point(a,.14),point(b,.14),point(b,edge),point(a,edge),0xa06d58);
+      quad(point(c,edge-.13),point(d,edge-.13),point(d,edge),point(c,edge),0xab9180);
+      quad(point(c,edge-.13),point(a,edge-.13),point(b,edge-.13),point(d,edge-.13),0xbeaea0);
+    }
+    const roof = [...eaves.map(p => point(p,edge)),...ridge.map(p => point(p,edge+1.51))];
+    for (const [i,j,k] of roofFaces) up(roof[i],roof[j],roof[k],i === 4 || i === 0 ? 0x686867 : 0x757675);
+    const [west,east] = [walls[5],walls[4]], dx = east[0]-west[0], dz = east[1]-west[1], width = Math.hypot(dx,dz);
+    const face = (u,y,o) => point([west[0]+(dx*u+dz*o)/width,west[1]+(dz*u-dx*o)/width],y);
+    const front = (lo,hi,bottom,top,hex,o = .037) =>
+      quad(face(lo,bottom,o),face(lo,top,o),face(hi,top,o),face(hi,bottom,o),hex);
+    front(7.56,13.25,.06,2.38,0x6d4f42);
+    front(7.71,13.10,.10,2.29,0x85533b,.052);
+    for (let y = .33; y < 2.2; y += .32) front(7.71,13.10,y,y+.018,0x714731,.061);
+    front(3.81,7.16,.06,2.56,0x74584f);
+    front(4.11,4.48,.08,2.61,0xcebaa1,.064);
+    front(6.74,7.05,.08,2.61,0xcebaa1,.064);
+    front(4.65,5.83,.10,2.33,0x473a33,.059);
+    front(5.92,6.54,.80,2.13,0x536066,.064);
+    front(.87,3.10,.67,2.22,0xd1bb9e);
+    front(.98,2.99,.77,2.12,0x566168,.049);
+    front(1.97,2.01,.77,2.12,0xbab1a4,.065);
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().makeTranslation(x0,floor,z0).elements, roughness: .87 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
   }
 
   // BEGIN GENERATED src/explore/collision.mjs

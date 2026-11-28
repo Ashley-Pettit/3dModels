@@ -26,6 +26,12 @@ Two one-storey volumes at Inverloch Primary School, 17 Bayview Avenue, fill the 
 
 Eleven seeded tree trunks inside the two new footprints are hidden by the existing Explore clearance controls. Tree slots, the gap between the roofs, nearby roads, and the two excluded streets are preserved. No reference image ships with the model.
 
+## 14 Lavender Place
+
+The 226.21 m² primary house and attached garage use Microsoft outline microsoft-311223133-2050d19eec6c532f as a starting point. Six controls in the 13 May 2025 Vantor capture support the registration. The conservative rear limit leaves the uncertain entertainment cover outside the modeled wall and keeps the wall ring at least 1.43 m within active parcel 130939453. [Microsoft outline source](https://github.com/microsoft/GlobalMLBuildingFootprints) · [CDLA-Permissive-2.0](https://cdla.dev/permissive-2-0/) · [Esri World Imagery](https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70525930,-38.63489041&level=20) · [Esri collection terms](https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data) · [Vicmap Property, © State of Victoria, CC BY 4.0](https://discover.data.vic.gov.au/en_AU/dataset/vicmap-property-parcel-polygon-with-parcel-detail)
+
+The 2017 agent frontage shows brown brick, a dark hipped roof, an east-side timber-toned double garage and pale entrance piers. A single untextured batch represents that main shell. The driveway and gate line remain unresolved under the northern aerial shadows. The distinct north garage and rear deck are outside the correction. The existing ground supplies both approaches. [Stockdale & Leggo sale gallery](https://www.realestate.com.au/sold/property-house-vic-inverloch-124050198)
+
 ## Inventory and reproduction
 
 The inventory assigns each footprint centre to its nearest suitable model road or path. The 881 original road/path records contain 1,762 sides, of which six are excluded. The eligible sides include 378 with a new or refitted outline, 90 with original mapped footprints, 289 with a source outline to review, 129 with generated buildings and no nearby source outline, and 870 with no assigned building or outline. Some latter records are paths or open land. These counts describe proximity to a model centreline. Street-level confirmation of building appearance, land use and every access remains separate.
