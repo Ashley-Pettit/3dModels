@@ -332,13 +332,13 @@ both frontages over that entire run, including the dead end short of Surf Parade
 - The renderer uses the same revision-42 release source as the number 13 draft, with the two Norman Road patches.
   The candidate adds no media assets to Explore. The review captures and provenance are outside the delivery bundle.
 
-#### Norman Road free-source pass (28 November 2026, v45)
+#### Norman Road free-source pass (28 November 2026, v47)
 
 The [renderer source](https://github.com/Ashley-Pettit/ai-forge/commit/0e413f20504bddb45fc3ec002eb5a4c4b3c4cef1)
 fits the 26 mapped roof envelopes to Microsoft's open estimates of mean roof height above ground. It weights the
 roof planes by plan area and samples the existing bare-earth terrain under them. Number 13 uses the estimate for its
 own L-shaped roof to adjust the existing gables within a small range. Bounds keep the fit from implying a measured
-eave, pitch or ridge. Number 11's authored assets are unchanged.
+eave, pitch or ridge. The candidate builds on the released v46 renderer. Number 11's authored assets are unchanged.
 
 - The [January 2024 sale description for 2](https://www.realestate.com.au/sold/property-house-vic-inverloch-142967772)
   and [November 2021 sale description for 5](https://www.realestate.com.au/sold/property-house-vic-inverloch-137987198)
