@@ -3,7 +3,7 @@ const {test} = require("node:test");
 const {readFileSync} = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
-const app = readFileSync(path.join(__dirname, "..", "app.html"), "utf8");
+const app = readFileSync(path.join(__dirname, "..", "app.html"), "utf8").replace(/\r\n/g, "\n");
 const between = (first,last) => app.slice(app.indexOf(first),app.indexOf(last,app.indexOf(first)));
 
 test("thirty-minute returns restart at exit, retry occupied bays, and ignore rescue cars",()=>{
