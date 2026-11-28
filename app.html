@@ -10167,6 +10167,11 @@ const handle = async (m, post) => {
       T.decks = L; }).catch(() => {});
     townModelLoad(cfg).then(lib => {
       if (T.dead) return;
+      // Clear only the two seeded trunks within the main roof at 10 Artisan Way.
+      if (inv) for (const [lat, lon] of [
+        [-38.63754726, 145.70572986],
+        [-38.63755626, 145.70584183],
+      ]) clearLatLon.push({ lat, lon, r: 0.16 });
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
         ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cd69429f" } : cfg.assets;
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
@@ -10252,6 +10257,7 @@ const handle = async (m, post) => {
         // the possum (Moorooka): on the footpath in Kingwell Street, a few steps from it
         if (rides?.possum) { const S = rides.possum; mine.push({ name: S.name, group: "Things to drive and fly", what: S.what, walk: { ...S.stand, pitch: -0.12 }, target: [S.x, S.z] }); }
         if (rides?.pigeon) { const S = rides.pigeon; mine.push({ name: S.name, group: "Things to drive and fly", what: S.what, walk: { ...S.stand, pitch: -0.25 }, target: [S.x, S.z] }); }
+        if (inv && m.addParts) invArtisanWay10(T, m, BS.B.THREE);
         // Places to jump to: each as somewhere to stand (walking) and a view from above (flying). Where the model knows a
         // spot on the kerb of the nearest street (Moorooka's does), you stand there; otherwise a few steps back from the place.
         // (Logan's list starts with the whole city, which is only ever seen from the air, like the water.)
@@ -17924,6 +17930,69 @@ const handle = async (m, post) => {
   }
   // The westbound wayfinder in the south verge, before the Bear Street turn.
   // Estimated from maxim752 Mapillary frames 588735650795644 and 584548554484819 (18 January 2025).
+  // 10 Artisan Way. The east apron meets Artisan Way beside the planted Meridian corner.
+  function invArtisanWay10(T, model, THREE) {
+    const walls = [[-2102,61.2],[-2103.1,71.8],[-2115.8,69.7],[-2115.6,68.3],[-2125.1,67.4],[-2124,59.5],[-2123.4,59.1]];
+    const eaves = [[-2101.6,60.88],[-2102.78,72.22],[-2116.21,70],[-2116.01,68.62],[-2125.51,67.72],[-2124.33,59.29],[-2123.49,58.73]];
+    const ridge = [[-2120,63.3,1.35],[-2115.65,64.75,1.08],[-2108.4,66.2,1.56]];
+    const faces = [[3,4,7],[4,5,7],[5,6,7],[6,8,7],[8,3,7],[6,0,9],[0,1,9],[1,2,9],[2,3,9],[3,8,9],[8,6,9]];
+    const x0 = -2111, z0 = 65, wallTop = 2.64, floor = model.groundAt(-2102.15,62.91)+.10;
+    const positions = [], colors = [];
+    const point = ([x,z], y) => [x-x0,y,z-z0];
+    const tri = (a,b,c,hex) => {
+      const tint = new THREE.Color(hex);
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const top = (a,b,c,hex) => {
+      const up = (b[2]-a[2])*(c[0]-a[0]) - (b[0]-a[0])*(c[2]-a[2]);
+      if (up > 0) tri(a,b,c,hex); else tri(a,c,b,hex);
+    };
+    const quad = (a,b,c,d,hex) => { tri(a,b,c,hex); tri(a,c,d,hex); };
+    const heights = walls.map(p => model.groundAt(...p));
+    for (let i = 0; i < walls.length; i++) {
+      const j = (i+1) % walls.length, a = walls[i], b = walls[j], c = eaves[i], d = eaves[j];
+      const mid = [(a[0]+b[0])/2,(a[1]+b[1])/2];
+      const base = Math.min(.04,Math.min(heights[i],heights[j],model.groundAt(...mid))-floor-.14);
+      quad(point(a,base),point(a,.13),point(b,.13),point(b,base),0xa9a295);
+      quad(point(a,.13),point(a,wallTop),point(b,wallTop),point(b,.13),0xd1cabd);
+      quad(point(c,wallTop-.12),point(c,wallTop),point(d,wallTop),point(d,wallTop-.12),0xd7d6d0);
+      quad(point(c,wallTop-.12),point(d,wallTop-.12),point(b,wallTop-.12),point(a,wallTop-.12),0xbdbab4);
+    }
+
+    const roof = [...eaves.map(p => point(p,wallTop)),...ridge.map(([x,z,y]) => point([x,z],wallTop+y))];
+    for (const [i,j,k] of faces) top(roof[i],roof[j],roof[k],0xc7cccb);
+
+    // The drive and roof are visible from above. The garage and windows use representative proportions.
+    const opening = (i,start,span,low,high,hex,offset) => {
+      const a = walls[i], b = walls[(i+1)%walls.length], dx = b[0]-a[0], dz = b[1]-a[1], len = Math.hypot(dx,dz);
+      const p = (t,y) => point([a[0]+(dx*t+dz*offset)/len,a[1]+(dz*t-dx*offset)/len],y);
+      quad(p(start,low),p(start,high),p(start+span,high),p(start+span,low),hex);
+    };
+    opening(0,.66,4.43,-.01,2.19,0x77766e,.025);
+    opening(0,.76,4.23,.02,2.10,0x96948c,.041);
+    for (const y of [.41,.76,1.12,1.48,1.83]) opening(0,.79,4.17,y,y+.018,0x85847e,.049);
+    for (const [side,start,span] of [[0,6.37,2.86],[1,1.1,2.32],[1,5.60,2.92],[3,3.05,2.30],[4,2.85,2.44],[6,11.35,2.64]]) {
+      opening(side,start,span,.86,2.12,0xe5e0d6,.025);
+      opening(side,start+.10,span-.20,.94,2.04,0x657075,.040);
+    }
+    // Sample short sections to follow the terrain and stop at the native asphalt edge.
+    const apron = [
+      [[-2102.12,61.86],[-2102.58,66.16]], [[-2100.44,60.97],[-2100.72,65.30]], [[-2098.62,60.75],[-2098.78,65.10]],
+      [[-2096.86,60.68],[-2097.08,65.06]], [[-2095.14,60.62],[-2095.39,65.02]], [[-2093.48,60.53],[-2093.78,64.96]],
+      [[-2091.87,60.44],[-2092.22,64.90]], [[-2090.11,60.37],[-2090.75,64.87]]
+    ].map(row => row.map(p => point(p,model.groundAt(...p)-floor+.038)));
+    for (let i = 1; i < apron.length; i++) {
+      const [a,b] = apron[i-1], [c,d] = apron[i];
+      top(a,c,b,0xaaa7a0);
+      top(b,c,d,0xaaa7a0);
+    }
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().makeTranslation(x0,floor,z0).elements, roughness: .87 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
+  }
+
   function invIndustrialEstateSign(T, model, THREE) {
     const x = -867.06, z = -1067.02, angle = 104 * Math.PI / 180;
     const matrix = new THREE.Matrix4().makeRotationY(angle).setPosition(x, 0, z);
