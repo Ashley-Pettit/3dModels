@@ -10269,6 +10269,7 @@ const handle = async (m, post) => {
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
     if (inv) clearPolygons.push({ latLon: INV_GLADE_SHELTER });
     if (inv) clearPolygons.push({ latLon: invScrewCreekMask(), roads: true });
+    if (inv) clearLatLon.push({ lat: -38.63477720, lon: 145.72454187, r: 0.16 }); // 25 Sandy Mount Avenue: seeded trunk 38442 inside the surveyed roof.
     // Moorooka's bridges (town.json's roads marked as one): their decks, so a car drives over them, not down through them into the creek.
     // The deck is as the model draws it (moorooka-model.js ?v=79): straight from one end's ground to the other's, a metre's hump in the
     // middle, and 0.6 m up, coming up from the road over its first and last 8 m. Under a bridge (a road under an overpass) you stay down:
@@ -10372,6 +10373,7 @@ const handle = async (m, post) => {
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
         if (cfg.place === "moo") try { T.room6 = townRoom6(T, m); } catch (e) { console.warn("Town model: number 6's room couldn't be drawn", e); }  // (where the drone waited till 24 November 2026)
+        if (inv && m.addParts) invSandyMount25(T, m, BS.B.THREE);
         if (cfg.place === "moo" && m.addParts && m.getCamera && !OFF.has("bal6")) try { T.bal6 = townBalcony6(T, m); } catch (e) { T.bal6 = null; console.warn("Town model: number 6's house and balcony couldn't be added", e); }  // number 6 as it is, or with the balcony concept
         if (cfg.place === "moo" && m.addParts) try { townHouse24(T, m); } catch (e) { console.warn("Town model: 24 Beaudesert Road couldn't be added", e); }  // Pandy's house as it really is (a demo)
         if (cfg.place === "moo" && m.addParts) try { townHousesLite(T, m); } catch (e) { console.warn("Town model: the houses drawn the light way couldn't be added", e); }
@@ -23804,6 +23806,93 @@ const handle = async (m, post) => {
       for (let j = 0; j < segs; j++) { const k = (j + 1) % segs; ring.t(inner[j], outer[k], outer[j]); ring.t(inner[j], inner[k], outer[k]); } }
     return [m.part({ roughness: 0.5 }), f.part({ unlit: true }), b.part({ unlit: true }), st.part({ unlit: true, opacity: 0.92 }), cap.part({ unlit: true, opacity: 0.94 }), ring.part({ unlit: true, opacity: 0.6 })]; }
   // Deadlines use wall time so a long visit in another tab counts. Only exited vehicles enter this queue.
+  // 25 Sandy Mount Avenue. The attached garage retains separation from 23A Sandy Mount.
+  function invSandyMount25(T, model, THREE) {
+    const [x0,z0,cos,sin] = [-483.07641941,-239.89906618,0.9924576,0.12258838];
+    const positions = [], colors = [];
+    const white = new THREE.Color(0xe9e6df), trim = new THREE.Color(0xf7f3e9);
+    const roof = new THREE.Color(0x575957), glass = new THREE.Color(0x44545a);
+    const rails = new THREE.Color(0x414647), doors = new THREE.Color(0xd5d3ca);
+    const driveFront = 14.90, front = 14.78;
+    const posts = [[16.47,4.45],[16.47,7.02]];
+    const offset = ([u,v]) => [u*cos+v*sin,u*sin-v*cos];
+    const world = p => { const [x,z]=offset(p); return [x+x0,z+z0]; };
+    const point = (p,y) => { const [x,z]=offset(p); return [x,y,z]; };
+    const ground = p => model.groundAt(...world(p));
+    const tri = (a,b,c,paint) => {
+      positions.push(...a,...b,...c);
+      for (let i=0;i<3;i++) colors.push(paint.r,paint.g,paint.b);
+    };
+    const quad = (a,b,c,d,paint) => { tri(a,b,c,paint); tri(a,c,d,paint); };
+    const rect = ([x,z,X,Z]) => [[x,z],[X,z],[X,Z],[x,Z]];
+    const ring = (r, bottom, top, paint) => r.forEach((a,i) => {
+      const b=r[(i+1)%r.length];
+      quad(point(a,bottom(a)),point(b,bottom(b)),point(b,top),point(a,top),paint);
+    });
+    const slab = (bounds,bottom,top,paint) => {
+      const r=rect(bounds); ring(r,()=>bottom,top,paint);
+      quad(...r.map(p=>point(p,top)),paint);
+    };
+    const hip = (bounds,top,rise) => {
+      const [x,z,X,Z]=bounds, c=(Z+z)/2, run=Math.min((Z-z)*.45,(X-x)*.44);
+      const [a,b,e,d]=rect(bounds).map(p=>point(p,top));
+      const west=point([x+run,c],top+rise), east=point([X-run,c],top+rise);
+      quad(a,b,east,west,roof); tri(b,e,east,roof);
+      quad(e,d,west,east,roof); tri(d,a,west,roof);
+      ring(rect(bounds),()=>top-.105,top,roof);
+    };
+    const main = rect([0.54,0.43,14.78,10.46]), garage = rect([8.07,-4.72,14.9,0.5]);
+    const base = Math.max(...main.map(ground)), garageBase = Math.max(...garage.map(ground));
+    const top=base+5.76, garageTop=garageBase+2.74;
+    ring(main,p=>ground(p)-.12,top+.015,white);
+    ring(garage,p=>ground(p)-.12,garageTop+.015,white);
+    hip([0.17,0.16,15.08,10.82],top,1.72); hip([7.7,-5.1,15.24,0.52],garageTop,.86);
+    const panel = (x,a,b,y,Y,paint) => quad(point([x,a],y),point([x,b],y),point([x,b],Y),point([x,a],Y),paint);
+    const window = (a,b,y,Y) => {
+      panel(front+.012,a,b,y,Y,trim);
+      panel(front+.022,a+.055,b-.055,y+.055,Y-.055,glass);
+      panel(front+.030,a+.055,b-.055,(y+Y)*.5-.017,(y+Y)*.5+.017,trim);
+    };
+    for (const z of [1.38,2.71,8.05,9.38]) {
+      window(z,z+.78,base+.58,base+2.30);
+      window(z,z+.78,base+3.48,base+5.13);
+    }
+    panel(front+.025,5.08,6.38,base+.13,base+2.34,glass);
+    panel(front+.022,5.12,6.33,base+3.22,base+5.16,glass);
+    for (const z of [-4.35,-1.84]) {
+      panel(driveFront+.016,z,z+2.22,garageBase+.035,garageBase+2.25,trim);
+      panel(driveFront+.024,z+.065,z+2.155,garageBase+.085,garageBase+2.17,doors);
+      for (let i=1;i<=5;i++) panel(driveFront+.03,z+.065,z+2.155,garageBase+.085+i*.33,garageBase+.097+i*.33,white);
+    }
+    slab([front,4.10,16.81,7.40],base+2.69,base+3.00,trim);
+    const rod = (x,z,r,y,Y,paint) => {
+      const r8=Array.from({length:8},(_,i)=>[x+r*Math.cos(i*Math.PI/4),z+r*Math.sin(i*Math.PI/4)]);
+      ring(r8,()=>y,Y,paint);
+    };
+    for (const [x,z] of posts) {
+      const foot=ground([x,z]);
+      slab([x-.21,z-.21,x+.21,z+.21],foot-.10,foot+.32,white);
+      rod(x,z,.145,foot+.32,base+2.72,trim);
+    }
+    slab([16.65,4.17,16.70,7.34],base+3.75,base+3.82,rails);
+    for (let i=0;i<7;i++) {
+      const z=4.25+i*.496;
+      panel(16.67,z,z+.027,base+3.02,base+3.77,rails);
+    }
+    const lip=base+5.19, ridge=base+5.78;
+    const a=point([16.83,4.08],lip), b=point([16.83,7.42],lip), mid=point([16.83,5.75],ridge);
+    const atWall=point([front,5.75],ridge);
+    tri(a,b,mid,white);
+    quad(a,mid,atWall,point([front,4.08],lip),roof);
+    quad(mid,b,point([front,7.42],lip),atWall,roof);
+    quad(a,b,point([front,7.42],lip),point([front,4.08],lip),white);
+    model.addParts([{positions:new Float32Array(positions),colors:new Float32Array(colors),
+      matrix:new THREE.Matrix4().makeTranslation(x0,0,z0).elements,roughness:.88,doubleSide:true}]);
+    const collision=T.invStatic??=invCivicCollision((x,z)=>[x,z],()=>false);
+    collision.polygon([[14.9,0.5],[14.9,-4.72],[8.07,-4.72],[8.07,0.43],[0.54,0.43],[0.54,10.46],[14.78,10.46],[14.78,0.5]].map(world));
+    posts.forEach(p => collision.post(...world(p),.21,(x,z)=>[x,z]));
+  }
+
   function invVehicleReturns(restore, now = Date.now) {
     const waiting = new Map(), timeout = 30*60*1000;
     let next = Infinity;
