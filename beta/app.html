@@ -1869,6 +1869,15 @@ body.bsfly, body.bsfly * { -webkit-user-select: none !important; user-select: no
    version tried). Locked here; unlocked when Explore closes. */
 html:has(body.bsfly), body.bsfly { overflow: hidden !important; overscroll-behavior: none !important; touch-action: none; height: 100%; }
 body.bsfly #weather { overflow: hidden !important; overscroll-behavior: none !important; touch-action: none; }
+/* While Explore is open the page is exactly the screen: the news home and its bar under the game come out of the layout. They made the
+   page 1005 px tall on a 664 px phone, so the phone's browser had a page to scroll, and its own scroll (pull to refresh, the toolbars
+   hiding) took the thumb off the Move stick: "Move stick let go: the phone cancelled the touch (0 other fingers down)" (Ash, 29
+   November 2026, on an iPhone in Edge). No long-press menu or text loupe on the game either */
+body.bsfly > #home, body.bsfly > #dock, body.bsfly > #ptr { display: none !important; }
+html:has(body.bsfly) { height: 100%; overflow: hidden !important; }
+body.bsfly, body.bsfly * { -webkit-touch-callout: none; }
+body.bsfly { -webkit-user-select: none; user-select: none; }
+body.bsfly input, body.bsfly textarea, body.bsfly [contenteditable] { -webkit-user-select: text; user-select: text; }
 body.bsfly #bsFly, body.bsfly #bsTown, body.bsfly #bsTown * { touch-action: none; }
 body.bsfly input, body.bsfly textarea { -webkit-user-select: text !important; user-select: text !important; }  /* on foot, no Up and Down (Ash, 15 November 2026) */
 .bs-me input[type="range"] { height: 28px; padding: 0; background: none; accent-color: #ffd36b; }
