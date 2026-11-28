@@ -10228,6 +10228,57 @@ const handle = async (m, post) => {
     return { floorAt, slideRail };
   }
 
+  // 4 Banksia Place. The pale L-shaped main house sits behind the existing street-side garage.
+  function invBanksiaPlace4Main(T, model, THREE) {
+    const walls = [[-712.09,-595.16],[-711.43,-601.09],[-711.01,-601.59],[-699.76,-600.34],[-694.43,-611.12],
+      [-687.66,-611.49],[-695.1,-596.44],[-698.64,-596.84],[-700.12,-593.83]];
+    const eaves = [[-712.4,-594.91],[-711.7,-601.21],[-711.13,-601.88],[-699.92,-600.64],[-694.61,-611.39],
+      [-687.2,-611.8],[-694.94,-596.14],[-698.48,-596.54],[-699.96,-593.53]];
+    const ridge = [[-708.89,-598.25,1.28],[-702.01,-597.67,1.23],[-697.61,-598.42,1.36],[-691.61,-608.38,1.36]];
+    const faces = [[0,1,9],[1,2,9],[2,3,10],[2,10,9],[3,4,12],[3,12,11],[4,5,12],[5,6,12],
+      [6,11,12],[6,7,11],[7,8,10],[8,0,10],[0,9,10],[7,10,11],[3,11,10]];
+    const x0 = -700, z0 = -602, wallTop = 2.7, floor = model.groundAt(-692.96,-610.6)+.09;
+    const positions = [], colors = [];
+    const point = ([x,z], y) => [x-x0,y,z-z0];
+    const tri = (a,b,c,hex) => {
+      const tint = new THREE.Color(hex);
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const top = (a,b,c,hex) => {
+      const up = (b[2]-a[2])*(c[0]-a[0]) - (b[0]-a[0])*(c[2]-a[2]);
+      if (up > 0) tri(a,b,c,hex); else tri(a,c,b,hex);
+    };
+    const quad = (a,b,c,d,hex) => { tri(a,b,c,hex); tri(a,c,d,hex); };
+    const grade = walls.map(p => model.groundAt(...p));
+    for (let i = 0; i < walls.length; i++) {
+      const j = (i+1) % walls.length, a = walls[i], b = walls[j], c = eaves[i], d = eaves[j];
+      const mid = [(a[0]+b[0])/2,(a[1]+b[1])/2];
+      const base = Math.min(-.08,Math.min(grade[i],grade[j],model.groundAt(...mid))-floor-.15);
+      quad(point(a,base),point(a,.14),point(b,.14),point(b,base),0xa1a095);
+      quad(point(a,.14),point(a,wallTop),point(b,wallTop),point(b,.14),0xc7c1ae);
+      quad(point(c,wallTop-.10),point(c,wallTop),point(d,wallTop),point(d,wallTop-.10),0xa6a8a1);
+      quad(point(c,wallTop-.10),point(d,wallTop-.10),point(b,wallTop-.10),point(a,wallTop-.10),0xc1bdb1);
+    }
+    const roof = [...eaves.map(p => point(p,wallTop)),...ridge.map(([x,z,y]) => point([x,z],wallTop+y))];
+    for (const [i,j,k] of faces) top(roof[i],roof[j],roof[k],0xc7cccb);
+
+    // Representative glazing along the long and rear wings.
+    const panel = (side,start,end,low,high,hex,offset) => {
+      const a = walls[side], b = walls[(side+1)%walls.length], dx = b[0]-a[0], dz = b[1]-a[1], len = Math.hypot(dx,dz);
+      const p = (t,y) => point([a[0]+(dx*t+dz*offset)/len,a[1]+(dz*t-dx*offset)/len],y);
+      quad(p(start,low),p(start,high),p(end,high),p(end,low),hex);
+    };
+    for (const [side,start,end] of [[2,2.02,4.69],[2,6.78,8.96],[3,3.06,6.34],[5,4.88,7.31],[5,9.81,13.23],[8,5.03,8.15]]) {
+      panel(side,start,end,.86,2.12,0xdcd9cd,.026);
+      panel(side,start+.09,end-.09,.95,2.03,0x526066,.041);
+    }
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().makeTranslation(x0,floor,z0).elements, roughness: .89 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
+  }
+
   function townModelOn(T) {
     const F = BS.fly, box = $("bsTown"), tip = $("bsFlyTip"), jump = $("bsFlyJump"), list = $("bsTownList"), modeBox = $("bsTownMode");
     const fb = $("bsTownFlood"), fl = $("bsTownFloods"), riseBox = $("bsTownRise"), riseIn = $("bsTownRiseIn"), riseOut = $("bsTownRiseOut");
@@ -10370,6 +10421,7 @@ const handle = async (m, post) => {
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
+        if (inv && m.addParts) invBanksiaPlace4Main(T, m, BS.B.THREE);
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
         if (cfg.place === "moo") try { T.room6 = townRoom6(T, m); } catch (e) { console.warn("Town model: number 6's room couldn't be drawn", e); }  // (where the drone waited till 24 November 2026)
         if (cfg.place === "moo" && m.addParts && m.getCamera && !OFF.has("bal6")) try { T.bal6 = townBalcony6(T, m); } catch (e) { T.bal6 = null; console.warn("Town model: number 6's house and balcony couldn't be added", e); }  // number 6 as it is, or with the balcony concept
