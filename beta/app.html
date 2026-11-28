@@ -9882,6 +9882,7 @@ const handle = async (m, post) => {
         const fn = ck.split(":")[0];
         if (staged) replacements.get(H)[fn](...a); else try { H.real[fn](...a); } catch {}
       }
+      T.glade?.install(to);
       if (driven) {
         if (!staged) replaying = to;
         for (const pose of driven.values()) to.driveCar(...pose);
@@ -10165,8 +10166,12 @@ const handle = async (m, post) => {
             if (T.deckY != null ? T.deckY > y - 2.5 : y - m.groundAt(x, z) < 3) { if (best == null || y > best) best = y; } } }
         return best; };
       T.decks = L; }).catch(() => {});
-    townModelLoad(cfg).then(lib => {
+    const glade = inv ? import(new URL("glade-soundshell.mjs", new URL(cfg.assets, document.baseURI)))
+      .then(async mod => ({ ...mod, kit: await mod.loadGlade(new URL(cfg.assets, document.baseURI)) }))
+      .catch(error => { console.warn("Inverloch: Soundshell asset could not be loaded", error); return null; }) : null;
+    Promise.all([townModelLoad(cfg), glade]).then(([lib, gladeAsset]) => {
       if (T.dead) return;
+      if (gladeAsset) clearLatLon.push(...gladeAsset.clearings);
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
         ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cd69429f" } : cfg.assets;
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
@@ -10195,6 +10200,7 @@ const handle = async (m, post) => {
           if (LIFT && x > LIFT[0] && x < LIFT[2] && z > LIFT[1] && z < LIFT[3]) g += LIFT[4];
           if (T.pads) { const g0 = g; for (const P of T.pads) g = Math.max(g, padGround(P, x, z, g0)); }
           if (T.walk && T.screwCreek) g = Math.max(g, T.screwCreek.floorAt(x, z) ?? g);
+          if (T.glade) g = T.glade.heightAt(T.pair.cur, x, z, g);
           if (T.bal6) g = T.bal6.top(x, z, g);  // number 6's floor, decks and stairs, where you can step up onto them
           return g; };
         ground.bed = bed;
@@ -10210,6 +10216,13 @@ const handle = async (m, post) => {
 
         // the town centre round the Rotary clock and number 11 Norman Road, stood in the model where they really are
         let mine = []; if (inv) try { mine = townModelGuests(T, m); } catch (e) { console.warn("Town model: the town centre and Norman Road couldn't be added", e); }
+        if (gladeAsset && m.addParts) try {
+          const grid = T.invStatic ??= invCivicCollision((x, z) => [x, z], () => false);
+          const layout = gladeAsset.installGlade(BS.B.THREE, gladeAsset.kit, grid);
+          layout.install(T.pair.cur);
+          T.glade = layout;
+          mine.push(...layout.jumps);
+        } catch (error) { console.warn("Inverloch: Soundshell could not be placed", error); }
         if (inv) {
           if (m.addParts) townGlade(T, m, BS.B.THREE);
           invMotelFrontage(T, m, BS.B.THREE);
@@ -19432,7 +19445,7 @@ const handle = async (m, post) => {
         // the potato hotrod (Ash, 26 November 2026): beside the golden car. 20 seconds after you get in, the T-rex comes (townCar). Logan has one too
         { x: -237.2, z: -375.5, h: Math.PI, hotrod: true, name: "The hotrod", what: "A potato hot rod with a blower and flames, on the lawn by The Hub. Get in if you dare" }],
       more: { planes: [{ x: -1602.1, z: 422, h: 2.6, heli: true, name: "The helicopter", at: "behind 11 Norman Road", what: "On the grass behind 11 Norman Road" }], cars: [{ x: -206.731, z: -348.385, h: -1.683, bus: true, hide: [[-203.77, -345.76]], name: "The bus", what: "In A'Beckett Street, at the kerb across the road from The Hub" }] },
-      roam: [[-278, -562], [627, -1086], [-108, -190], [22, -143], [-1585, 1221], [575, 1066]] },
+      roam: [[-278, -562], [627, -1086], [-108, -190], [48, -175], [-1585, 1221], [575, 1066]] },
     logan: { planes: [{ x: 5732, z: -12989, h: 1.0, name: "The plane", at: "on the big lawn in Civic Centre Park", what: "On the big open lawn in Civic Centre Park, behind the council, with room to take off" }],
       cars: [{ x: 5816.2, z: -13302.9, h: 1.94, spare: true, name: "The red car", what: "On the lawn out the front of the council, by the plane" }, { x: 5788.7, z: -13204.6, h: 3.63, gold: true, name: "The golden car", what: "In the car park behind the council. A fifth faster than the red one" },
         // Logan's potato hotrod and its T-rex (Ash, 27 November 2026: "start working on adding the boss fight to Logan. Make sure multiplayer
