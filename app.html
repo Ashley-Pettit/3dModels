@@ -10145,6 +10145,7 @@ const handle = async (m, post) => {
     if (inv && home && BS.W.invHouse) { const [lat, lon] = townLL(home[0], home[1]); clearLatLon.push({ lat, lon, r: 24 }); detailLatLon.push({ lat, lon, r: 170 }); }
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
     if (inv) clearPolygons.push({ latLon: INV_GLADE_SHELTER });
+    if (inv) clearLatLon.push({ lat: -38.62826869, lon: 145.74223413, r: 0.16 }); // 4 Stanley Court: packed shell 2881 under the dated main roof.
     if (inv) clearPolygons.push({ latLon: invScrewCreekMask(), roads: true });
     // Moorooka's bridges (town.json's roads marked as one): their decks, so a car drives over them, not down through them into the creek.
     // The deck is as the model draws it (moorooka-model.js ?v=79): straight from one end's ground to the other's, a metre's hump in the
@@ -10233,6 +10234,7 @@ const handle = async (m, post) => {
         }
         if (inv && m.addParts) try { mine.push(invWestJetty(T, BS.B.THREE)); } catch (e) { console.warn("Inverloch: the west jetty could not be added", e); }
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
+        if (inv && m.addParts) invStanleyCourt4(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
@@ -18757,6 +18759,63 @@ const handle = async (m, post) => {
     T.deckAt = (x, z) => decks.get(T.pair.cur)(x, z);
     return stop;
   }
+  // 4 Stanley Court. The pale west approach remains open beside the dated hip-roof return.
+  function invStanleyCourt4(T, model, THREE) {
+    const [x0,z0,cos,sin] = [1050.08289665,-951.08187682,0.977617,-0.21039248];
+    const walls = [[21.06,1.66],
+      [1.01,1.66],
+      [1.01,7.16],
+      [7.94,7.16],
+      [7.94,18.62],
+      [21.06,18.62]];
+    const eaves = [[21.6,1.12],
+      [7.4,1.12],
+      [0.47,1.12],
+      [0.47,7.7],
+      [7.4,7.7],
+      [7.4,19.16],
+      [21.6,19.16],
+      [21.6,7.7]], hips = [[[14.5,12.06,2.059],[7.4,7.7,0.0],[7.4,19.16,0.0]],
+      [[7.4,7.7,0.0],[14.5,8.22,2.059],[10.69,4.41,0.9541]],
+      [[14.5,12.06,2.059],[14.5,8.22,2.059],[7.4,7.7,0.0]],
+      [[14.5,8.22,2.059],[21.6,19.16,0.0],[21.6,1.12,0.0]],
+      [[14.5,8.22,2.059],[14.5,12.06,2.059],[21.6,19.16,0.0]],
+      [[18.31,4.41,0.9541],[21.6,1.12,0.0],[7.4,1.12,0.0]],
+      [[10.69,4.41,0.9541],[14.5,8.22,2.059],[18.31,4.41,0.9541]],
+      [[18.31,4.41,0.9541],[7.4,1.12,0.0],[10.69,4.41,0.9541]],
+      [[7.4,19.16,0.0],[21.6,19.16,0.0],[14.5,12.06,2.059]],
+      [[3.76,4.41,0.9541],[0.47,1.12,0.0],[0.47,7.7,0.0]],
+      [[7.4,1.12,0.0],[3.76,4.41,0.9541],[10.69,4.41,0.9541]],
+      [[3.76,4.41,0.9541],[7.4,1.12,0.0],[0.47,1.12,0.0]],
+      [[7.4,7.7,0.0],[10.69,4.41,0.9541],[3.76,4.41,0.9541]],
+      [[3.76,4.41,0.9541],[0.47,7.7,0.0],[7.4,7.7,0.0]]];
+    const positions = [], colours = [];
+    const render = new THREE.Color(0xb3a694), roof = new THREE.Color(0x6f605a);
+    const fascia = new THREE.Color(0x86786b);
+    const offset = ([u,v]) => [u*cos+v*sin,u*sin-v*cos];
+    const world = p => { const [x,z] = offset(p); return [x+x0,z+z0]; };
+    const point = (p,y) => { const [x,z] = offset(p); return [x,y,z]; };
+    const ground = p => model.groundAt(...world(p));
+    const tri = (a,b,c,paint) => {
+      positions.push(...a,...b,...c);
+      for (let i=0; i<3; i++) colours.push(paint.r,paint.g,paint.b);
+    };
+    const quad = (a,b,c,d,paint) => { tri(a,b,c,paint); tri(a,c,d,paint); };
+    const top = Math.max(...walls.map(ground))+2.67;
+    walls.forEach((a,i) => {
+      const b=walls[(i+1)%walls.length];
+      quad(point(a,ground(a)-.12),point(b,ground(b)-.12),point(b,top+.02),point(a,top+.02),render);
+    });
+    hips.forEach(face => tri(...face.map(p => point(p,top+p[2])),roof));
+    eaves.forEach((p,i) => {
+      const q=eaves[(i+1)%eaves.length];
+      quad(point(p,top-.115),point(q,top-.115),point(q,top),point(p,top),fascia);
+    });
+    model.addParts([{positions:new Float32Array(positions),colors:new Float32Array(colours),
+      matrix:new THREE.Matrix4().makeTranslation(x0,0,z0).elements,roughness:.9,doubleSide:true}]);
+    (T.invStatic??=invCivicCollision((x,z)=>[x,z],()=>false)).polygon(walls.map(world));
+  }
+
   function invWestJettyParts(model, THREE) {
     const shoreX = 332.8, shoreZ = -134.7, length = 30, half = 1.42;
     const bearing = Math.atan2(10.6, 28.8), dx = Math.sin(bearing), dz = Math.cos(bearing);

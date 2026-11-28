@@ -1,0 +1,135 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "activeParcelPFI": "5284771",
+    "activeAddressPFI": "53199927",
+    "source": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.74215985,-38.62832182&level=20",
+    "provider": "Vantor / Esri World Imagery",
+    "scene": "6072276",
+    "captureDate": "2025-02-23",
+    "sourceSamplingM": 0.31,
+    "sourcePositionalAccuracyM": 5,
+    "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+    "licensedCrosscheck": "microsoft-311223133-c61e822a3add981c",
+    "originalRoadSide": "inverloch-road-74a14076049da588a16b-right",
+    "uncertainty": "Dark earth-toned principal roof with a street-facing west return. Partial tree cover obscures the court-side approach by the wall. The northwest and south neighbors have separate roofs. Height, finish, openings and paved throat were not measured."
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "principal hip roof eave witnesses"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.7420599377142,
+              -38.628432350884644
+            ],
+            [
+              145.74232681751118,
+              -38.628387300402466
+            ],
+            [
+              145.7422584211813,
+              -38.62821967045274
+            ],
+            [
+              145.74208810090886,
+              -38.62824271959406
+            ],
+            [
+              145.74212565183507,
+              -38.62834853601143
+            ],
+            [
+              145.74204518556462,
+              -38.628364251307616
+            ],
+            [
+              145.7420599377142,
+              -38.628432350884644
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "visible pale west approach"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.74196471929417,
+            -38.62835272675741
+          ],
+          [
+            145.74199824690686,
+            -38.628365298993906
+          ],
+          [
+            145.7420237278925,
+            -38.62837891891428
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "canopy along court-facing frontage"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.7420438444601,
+          -38.62828253172981
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "gap towards eastern neighbor"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.74232681751118,
+          -38.628296151665914
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "distinct southern neighboring roof"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.74213638067113,
+          -38.62847530596919
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "distinct northern neighboring roof"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.74219002485142,
+          -38.62813899839975
+        ]
+      }
+    }
+  ]
+}
