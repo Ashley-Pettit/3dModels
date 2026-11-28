@@ -9804,11 +9804,9 @@ const handle = async (m, post) => {
         if (!currentTown()) return false;
         const n = next = make(target, false); tag(n);
         const el = rootOf(n); if (el) el.style.visibility = "hidden";
-        try {
-          await n.ready;
-          if (next === n && currentTown()) T.fitMuseumFrontage?.(n);
-        } catch { if (next === n) drop(); return false; }
+        try { await n.ready; } catch { if (next === n) drop(); return false; }
         if (next !== n || !currentTown()) return false;
+        try { T.fitMuseumFrontage?.(n); } catch { drop(); return false; }
         const loadMs = Math.round(performance.now() - n.t0);
         await swapTo(n, target);
         if (cur !== n || !currentTown()) return false;
