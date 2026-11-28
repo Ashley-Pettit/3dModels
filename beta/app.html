@@ -10349,6 +10349,7 @@ const handle = async (m, post) => {
           if (m.addParts) townGlade(T, m, BS.B.THREE);
           invMotelFrontage(T, m, BS.B.THREE);
           const buildings = m.buildingBlockers?.();
+          if (m.addParts) invStanleyCourt12(T, m, BS.B.THREE);
           if (buildings) {
             const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
             grid.addTown(buildings, m.parkedCarBlockers());
@@ -11990,6 +11991,43 @@ const handle = async (m, post) => {
       if (ws) for (const [ax, az, bx, bz] of ws) { const dx = bx - ax, dz = bz - az, l = Math.hypot(dx, dz) || 1, t = bsClamp(((mx - ax) * dx + (mz - az) * dz) / (l * l), 0, 1);
         if (Math.hypot(ax + dx * t - mx, az + dz * t - mz) < 2.5 && Math.abs((x1 - x0) * dx + (z1 - z0) * dz) / (L * l) > 0.85) return true; }
       return false; }; }
+  // 12 Stanley Court. The connected terracotta roof hips and enclosed walls share one guest mesh.
+  function invStanleyCourt12(town, model, THREE) {
+    const originX = 1104, originZ = -1029, eaveHeight = 2.64;
+    const wallRing = [[4.128,-2.686], [1.999,0.426], [9.815,5.73], [6.031,11.261], [-7.819,1.477], [-10.225,-0.968], [-9.575,-1.918], [-0.239,-10.735], [2.568,-8.452], [0.369,-5.237]];
+    const eaveRing = [[4.727,-2.8], [2.598,0.313], [10.413,5.617], [6.139,11.864], [-8.099,1.806], [-10.78,-0.919], [-9.904,-2.199], [-0.261,-11.306], [3.146,-8.535], [0.968,-5.351]];
+    const ridges = [[-1.494,-6.709,1.35], [-0.449,-0.16,1.55], [8.519,6.168,1.36]];
+    const roofFaces = [[1,0,9], [10,8,7], [9,10,11], [11,1,9], [8,10,9], [12,1,11], [12,3,2], [1,12,2], [11,4,3], [3,12,11], [4,11,5], [11,6,5], [6,11,10], [6,10,7]];
+    const walls = wallRing.map(([x,z]) => [x + originX,z + originZ]);
+    const ground = walls.map(([x,z]) => model.groundAt(x,z));
+    const floor = Math.max(...ground) + 0.06;
+    const render = new THREE.Color(0xd7c8b3);
+    const fascia = new THREE.Color(0xb7a28d);
+    const tile = new THREE.Color(0xa15d50);
+    const positions = [], colors = [];
+    const triangle = (a,b,c,tint) => {
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,c,d,tint) => { triangle(a,b,c,tint); triangle(a,c,d,tint); };
+    const at = ([x,z],y) => [x,y,z];
+    const fasciaBottom = eaveHeight - 0.12;
+    for (let i = 0; i < wallRing.length; i++) {
+      const j = (i + 1) % wallRing.length;
+      const a = wallRing[i], b = wallRing[j], eaveA = eaveRing[i], eaveB = eaveRing[j];
+      const skirt = Math.min(ground[i],ground[j]) - floor - 0.20;
+      quad(at(a,skirt),at(a,fasciaBottom),at(b,fasciaBottom),at(b,skirt),render);
+      quad(at(a,fasciaBottom),at(eaveA,fasciaBottom),at(eaveB,fasciaBottom),at(b,fasciaBottom),fascia);
+      quad(at(eaveA,fasciaBottom),at(eaveA,eaveHeight),at(eaveB,eaveHeight),at(eaveB,fasciaBottom),fascia);
+    }
+    const roof = [...eaveRing.map(p => at(p,eaveHeight)), ...ridges.map(([x,z,h]) => [x,eaveHeight + h,z])];
+    for (const [a,b,c] of roofFaces) triangle(roof[a],roof[b],roof[c],tile);
+    const matrix = new THREE.Matrix4().makeTranslation(originX,floor,originZ).elements;
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors), roughness: 0.87, matrix }]);
+    const grid = town.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
+  }
+
   function townShops(T, m) {
     const THREE = BS.B.THREE, out = [], parts = [], I = new THREE.Matrix4().elements; T.shopTags = [];  // (each shop's name and where its sign is, for the little name tags)
     const P = [], Nn = [], Cc = [];  // everything plain, in one piece: positions, normals, colours
