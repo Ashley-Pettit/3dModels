@@ -47,6 +47,14 @@
       "size": 105.60875977,
       "file": "detail-pad-abbott-street-3600.webp",
       "lo": "detail-pad-abbott-street-3600-lo.webp"
+    },
+    {
+      "name": "detail-pad-chelsea-square-12",
+      "x": -1322.06521484,
+      "z": -516.18975,
+      "size": 121.25450195,
+      "file": "detail-pad-chelsea-square-12.webp",
+      "lo": "detail-pad-chelsea-square-12-lo.webp"
     }
   ]
 }
