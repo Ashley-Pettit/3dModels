@@ -9036,9 +9036,20 @@ const handle = async (m, post) => {
       const fix = () => { clearTimeout(t); if (down || vv.scale < 1.01 || !m) return;
         m.content = "width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,viewport-fit=cover"; t = setTimeout(() => { m.content = was; }, 400); };
       const fingers = e => { down = e.touches.length; if (!down) { clearTimeout(t); t = setTimeout(fix, 250); } };
-      const vr = () => { if (!down) { clearTimeout(t); t = setTimeout(fix, 250); } };
-      F.unzoom = { vv, vr, fingers, stop: () => { clearTimeout(t); if (m) m.content = was; } };
-      ["touchstart", "touchend", "touchcancel"].forEach(k => document.addEventListener(k, fingers, { passive: true })); vv.addEventListener("resize", vr, { passive: true }); }
+      // An iPhone can ignore the viewport too (Ash, 28 November 2026, "Zoom stuff up", with a screenshot zoomed in on the Look stick,
+      // the Move stick off the screen). So while it's zoomed in, the game is drawn to fit what's on the screen: Explore's sheet is moved
+      // to the part of the page showing and shrunk by the zoom, so it fills the screen as if nothing had zoomed, sticks and all. Only a
+      // style is set (no layout work), straight away as the zoom changes, fingers down or not; the sticks measure themselves, so they
+      // still work at the new size
+      const sheet = document.getElementById("weather"); let fitRaf = 0, fitted = false;
+      const fit = () => { fitRaf = 0; if (!sheet) return; const k = vv.scale;
+        if (k > 1.01 || Math.abs(vv.offsetLeft) > 0.5 || Math.abs(vv.offsetTop) > 0.5) { fitted = true; sheet.style.transformOrigin = "0 0";
+          sheet.style.transform = `translate(${vv.offsetLeft}px, ${vv.offsetTop}px) scale(${1 / k})`; }
+        else if (fitted) { fitted = false; sheet.style.transform = ""; sheet.style.transformOrigin = ""; } };
+      const refit = () => { if (!fitRaf) fitRaf = requestAnimationFrame(fit); };
+      const vr = () => { refit(); if (!down) { clearTimeout(t); t = setTimeout(fix, 250); } };
+      F.unzoom = { vv, vr, refit, fingers, stop: () => { clearTimeout(t); cancelAnimationFrame(fitRaf); fitRaf = 0; if (m) m.content = was; if (sheet && fitted) { fitted = false; sheet.style.transform = ""; sheet.style.transformOrigin = ""; } } };
+      ["touchstart", "touchend", "touchcancel"].forEach(k => document.addEventListener(k, fingers, { passive: true })); vv.addEventListener("resize", vr, { passive: true }); vv.addEventListener("scroll", refit, { passive: true }); refit(); }
     clearTimeout(F.tipT); F.tipT = setTimeout(() => tip.classList.add("dim"), 6000);
     const look = (dx, dy, k) => { F.yaw -= dx * k; F.pitch = bsClamp(F.pitch - dy * k, -1.45, 1.45); };
     const typing = e => /^(INPUT|TEXTAREA|SELECT)$/.test(e.target?.tagName || "");
@@ -9351,7 +9362,7 @@ const handle = async (m, post) => {
     if (document.pointerLockElement === canvas) document.exitPointerLock?.();
     for (const j of [...(F.joys || []), ...(F.uds || [])]) { j.end(); Object.entries(j.h).forEach(([k, f]) => j.el.removeEventListener(k, f)); }
     if (F.noGesture) ["gesturestart", "gesturechange"].forEach(k => document.removeEventListener(k, F.noGesture));
-    if (F.unzoom) { const U = F.unzoom; ["touchstart", "touchend", "touchcancel"].forEach(k => document.removeEventListener(k, U.fingers)); U.vv.removeEventListener("resize", U.vr); U.stop(); }
+    if (F.unzoom) { const U = F.unzoom; ["touchstart", "touchend", "touchcancel"].forEach(k => document.removeEventListener(k, U.fingers)); U.vv.removeEventListener("resize", U.vr); U.vv.removeEventListener("scroll", U.refit); U.stop(); }
     clearTimeout(F.tipT); BS.fly = null;
     document.body.classList.remove("bsfly"); $("bsFly").hidden = true; $("bsShareBox").hidden = true; $("bsShareBtn").setAttribute("aria-expanded", "false");
     if (L.exploreHold) { L.exploreHold = false; wxListenOff(); if (L.on && L.paused) resumeListen(); }  // the news waited while you explored
