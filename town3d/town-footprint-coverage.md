@@ -10,6 +10,12 @@ The footprint pass uses mapped roof outlines for the existing Explore model, who
 
 All added or revised shells use the existing packed geometry and renderer. The importer fits rectangular envelopes, preserves local building orientation where possible and rejects conflicts with roads, mapped buildings, trees, protected areas and neighbouring shells. An existing house moves only if the source overlap or surveyed parcel supports the match and the new shape still covers most of its old ground pad. Heights from the source are estimates. Roof style, materials and facades still use the existing procedural approximation.
 
+## 26 Glendale Court
+
+The pale single-storey house uses a 255.55 m² main wall ring inside active parcel 130240366. Six eave controls in the 13 May 2025 Vantor capture support the east registration of Microsoft outline microsoft-311223133-1d00a3c051ec958f. The roof sits 7.05 m west of the reviewed eave limit at number 28. The current aerial shows the shared northern crossover, narrow eastern garden and separate southern pool cover. [Microsoft footprints](https://github.com/microsoft/GlobalMLBuildingFootprints) · [CDLA-Permissive-2.0](https://cdla.dev/permissive-2-0/) · [Esri World Imagery](https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.71115276,-38.63124147&level=20) · [Esri collection terms](https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data) · [Vicmap Property, © State of Victoria, CC BY 4.0](https://discover.data.vic.gov.au/en_AU/dataset/vicmap-property-parcel-polygon-with-parcel-detail)
+
+One untextured site mesh represents the primary shell and light hipped roof. The street-facing openings are representative because no dated street-level photograph was available. The eastern garden, southern cover and shared crossover sit outside the wall footprint. Seeded tree 35084 stood inside the house. The separate north tree remains by the crossover. [Public property profile](https://www.realestate.com.au/property/26-glendale-ct-inverloch-vic-3996/)
+
 ## Sources
 
 | Input | Snapshot and licence |

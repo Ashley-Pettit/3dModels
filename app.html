@@ -10165,6 +10165,8 @@ const handle = async (m, post) => {
             if (T.deckY != null ? T.deckY > y - 2.5 : y - m.groundAt(x, z) < 3) { if (best == null || y > best) best = y; } } }
         return best; };
       T.decks = L; }).catch(() => {});
+    // Retire the one trunk planted inside the primary residence at 26 Glendale Court.
+    if (inv) clearLatLon.push({ lat: -38.63129548, lon: 145.71113917, r: 0.16 });
     townModelLoad(cfg).then(lib => {
       if (T.dead) return;
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
@@ -10230,6 +10232,7 @@ const handle = async (m, post) => {
           } else invAddDesignedWalls(T, m.designedWallFootprints?.());
           if (m.addParts) try { townSurfParadeBeachAccess(T, m); }
             catch (e) { console.warn("Inverloch: Surf Parade beach access couldn't be added", e); }
+          if (m.addParts) invGlendalePlace26(T, m, BS.B.THREE);
         }
         if (inv && m.addParts) try { mine.push(invWestJetty(T, BS.B.THREE)); } catch (e) { console.warn("Inverloch: the west jetty could not be added", e); }
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
@@ -17315,6 +17318,55 @@ const handle = async (m, post) => {
       return { glassMaterial, paving: { mesh: pavingMesh, map: sheet, aggregate: regions.aggregate, tiles: regions.paving } };
     };
     return { face, front, floor, brick, metal, finish };
+  }
+
+  // 26 Glendale Court. Model the pale primary roof and keep the shared crossover clear.
+  function invGlendalePlace26(T, model, THREE) {
+    const walls = [[-1634,-628.5],[-1632.7,-637.8],[-1632.7,-648.3],[-1645.8,-648.9],[-1645.4,-628.1]];
+    const eaves = [[-1633.69,-628.16],[-1632.35,-637.78],[-1632.35,-648.63],[-1646.16,-649.27],[-1645.74,-627.74]];
+    const ridge = [[-1639.4,-642.15],[-1640.12,-633.82]];
+    const roofFaces = [[0,4,6],[4,3,5],[4,5,6],[3,2,5],[2,1,5],[1,0,6],[1,6,5]];
+    const x0 = -1639, z0 = -639, heights = walls.map(p => model.groundAt(...p));
+    const floor = Math.max(...heights) + .10, edge = 2.76, positions = [], colors = [];
+    const point = ([x,z], y) => [x - x0,y,z - z0];
+    const tri = (a,b,c,hex) => {
+      const tint = new THREE.Color(hex);
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,c,d,hex) => { tri(a,b,c,hex); tri(a,c,d,hex); };
+    for (let i = 0; i < walls.length; i++) {
+      const j = (i + 1) % walls.length, a = walls[i], b = walls[j], c = eaves[i], d = eaves[j];
+      const base = Math.min(heights[i],heights[j]) - floor - .13;
+      quad(point(a,base),point(b,base),point(b,.14),point(a,.14),0x9c9585);
+      quad(point(a,.14),point(b,.14),point(b,edge),point(a,edge),0xd6cdbb);
+      quad(point(c,edge-.12),point(d,edge-.12),point(d,edge),point(c,edge),0xe6e3d8);
+      quad(point(c,edge-.12),point(a,edge-.12),point(b,edge-.12),point(d,edge-.12),0xcbc5b8);
+    }
+    const roof = [...eaves.map(p => point(p,edge)),...ridge.map(p => point(p,edge+1.8))];
+    for (const [i,j,k] of roofFaces) {
+      const [a,b,c] = [roof[i],roof[j],roof[k]];
+      const up = (b[2]-a[2])*(c[0]-a[0]) - (b[0]-a[0])*(c[2]-a[2]);
+      const tint = i === 3 || i === 0 ? 0x989e9b : 0xa6aaa6;
+      if (up > 0) tri(a,b,c,tint); else tri(a,c,b,tint);
+    }
+    // Use restrained representative openings where street-level documentation is unavailable.
+    const opening = (i,u,span,low,high,hex,o = .035) => {
+      const a = walls[i], b = walls[(i+1)%walls.length], dx = b[0]-a[0], dz = b[1]-a[1], len = Math.hypot(dx,dz);
+      const p = (t,y) => point([a[0]+(dx*t-dz*o)/len,a[1]+(dz*t+dx*o)/len],y);
+      quad(p(u,low),p(u+span,low),p(u+span,high),p(u,high),hex);
+    };
+    for (const [side,start] of [[2,.95],[2,8.58],[3,3.25],[3,11.95],[0,2.26],[4,3.63]]) {
+      opening(side,start,2.92,.75,2.21,0xeee9dd);
+      opening(side,start+.12,2.68,.87,2.10,0x536670,.051);
+      opening(side,start+1.43,.06,.87,2.10,0xe0ded5,.066);
+    }
+    opening(2,5.67,1.53,.12,2.30,0xb8afa0);
+    opening(2,5.78,1.27,.15,2.18,0x686c66,.052);
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().makeTranslation(x0,floor,z0).elements, roughness: .84 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
   }
 
   // Ramsey Boulevard to The Glade. Road, aerial ground and adjoining buildings are the native model's.
