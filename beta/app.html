@@ -10250,6 +10250,7 @@ const handle = async (m, post) => {
       [-38.63104775, 145.72879123], [-38.63113333, 145.72894915]
     ]) clearLatLon.push({ lat, lon, r: 0.16 });
     if (inv && BS.W.invClock) { const [lat, lon] = townLL(D.c[0], D.c[1]); clearLatLon.push({ lat, lon, r: 4.5 }); detailLatLon.push({ lat, lon, r: 260 }); }
+    if (inv) clearLatLon.push({ lat: -38.6377049, lon: 145.71999391, r: .16 }); // Displaced shed at 8 Venus Street.
     // the model's power poles that land in a road (each is set out beside its own street, so where another street runs past, one can stand
     // in it): taken out, so none stands in the road. Seven in the detail round the town centre, one right in the middle of A'Beckett
     // Street by Alma Street (Ash, 27 November 2026: "In Inverloch there is a power pole in the middle of the road near city centre. Move or
@@ -10348,6 +10349,7 @@ const handle = async (m, post) => {
         if (inv) {
           if (m.addParts) townGlade(T, m, BS.B.THREE);
           invMotelFrontage(T, m, BS.B.THREE);
+          if (m.addParts) invVenusShed8(T, m, BS.B.THREE);
           const buildings = m.buildingBlockers?.();
           if (buildings) {
             const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
@@ -18889,6 +18891,46 @@ const handle = async (m, post) => {
   const streetsPref = () => { try { return localStorage.getItem(STREETS_KEY) === "1"; } catch { return false; } };  // off to start with (Ash, 14 November 2026: "Names start off")
   const streetsSave = on => { try { localStorage.setItem(STREETS_KEY, on ? "1" : "0"); } catch {} };
   // The late-2024 west boat-ramp jetty. The native pier across the slipway is the older east jetty.
+  // 8 Venus Street. The detached rear shed is separate from the main house and side access.
+  function invVenusShed8(town, model, THREE) {
+    const originX = -887, originZ = 79, eaveHeight = 2.37;
+    const wallRing = [[-2.403,4.685], [-1.46,-4.531], [3.273,-4.257], [2.41,5.143]];
+    const eaveRing = [[-2.667,4.901], [-1.676,-4.784], [3.534,-4.482], [2.627,5.405]];
+    const walls = wallRing.map(([x,z]) => [x + originX,z + originZ]);
+    const ground = walls.map(([x,z]) => model.groundAt(x,z));
+    const floor = Math.max(...ground) + .04;
+    const siding = new THREE.Color(0xb9bebc), edge = new THREE.Color(0xa5aaa8);
+    const roof = new THREE.Color(0xd5d8d5);
+    const positions = [], colors = [];
+    const triangle = (a,b,c,tint) => {
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,c,d,tint) => { triangle(a,b,c,tint); triangle(a,c,d,tint); };
+    const at = ([x,z],y) => [x,y,z];
+    const fasciaBottom = eaveHeight - .09;
+    for (let i = 0; i < wallRing.length; i++) {
+      const j = (i + 1) % wallRing.length;
+      const a = wallRing[i], b = wallRing[j], ea = eaveRing[i], eb = eaveRing[j];
+      const skirt = Math.min(ground[i],ground[j]) - floor - .14;
+      quad(at(a,skirt),at(a,fasciaBottom),at(b,fasciaBottom),at(b,skirt),siding);
+      quad(at(a,fasciaBottom),at(ea,fasciaBottom),at(eb,fasciaBottom),at(b,fasciaBottom),edge);
+      quad(at(ea,fasciaBottom),at(ea,eaveHeight),at(eb,eaveHeight),at(eb,fasciaBottom),edge);
+    }
+    const [a,b,c,d] = eaveRing.map(p => at(p,eaveHeight));
+    const ridge = (p,q) => [(p[0]+q[0])/2,eaveHeight+.47,(p[2]+q[2])/2];
+    const north = ridge(b,c), south = ridge(a,d);
+    quad(a,south,north,b,roof);
+    quad(south,d,c,north,roof);
+    triangle(b,north,c,edge);
+    triangle(d,south,a,edge);
+
+    const matrix = new THREE.Matrix4().makeTranslation(originX,floor,originZ).elements;
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors), roughness: .89, matrix }]);
+    const grid = town.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
+  }
+
   function invWestJetty(T, THREE) {
     const decks = new WeakMap();
     const fit = model => {
