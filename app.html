@@ -17511,7 +17511,7 @@ const handle = async (m, post) => {
     uvs.set([0.004,0.012, 0.996,0.012, 0.996,0.787, 0.004,0.012, 0.996,0.787, 0.004,0.787], uvs.length - 12);
     quad(at(axis,r,-0.077,low),at(axis,l,-0.077,low),at(axis,l,-0.077,high),at(axis,r,-0.077,high),material(0xffffff));
     model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors), uvs,
-      map: canvas, matrix: new THREE.Matrix4().elements, roughness: 0.85, onGround: true, doubleSide: true }]);
+      map: canvas, matrix: new THREE.Matrix4().elements, lambertNoCast: true, onGround: true, doubleSide: true }]);
     const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
     for (const ring of solids) grid.polygon(ring);
     for (const [x,z] of palms) grid.post(x,z,0.13);

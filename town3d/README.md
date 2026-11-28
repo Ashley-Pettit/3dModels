@@ -299,6 +299,19 @@ range requests (one 600 MB file, 3.6 MB of it read). Street View still gives eac
 - For the whole town: Microsoft's outlines put about 4,700 buildings where the model has its 5,712 made-up houses (and 311
   OpenStreetMap ones). Each would get its colours from the satellite, and Street View detail only where it matters.
 
+## Inverloch Motel frontage
+
+The fence at 39 Powlett Street follows roughly 77 m of the mapped Bass Highway frontage inside Vicmap parcel `5287818`.
+It uses silver slats, clipped hedges, two palms and a locally drawn sign. The fence and hedges are solid and the service
+driveway stays open. [Mapped fence](https://www.openstreetmap.org/way/988785313) · [Mapped driveway](https://www.openstreetmap.org/way/988183602) · [Vicmap Parcel](https://discover.data.vic.gov.au/en_AU/dataset/vicmap-property-parcel-polygon-with-parcel-detail) · [18 January 2025 view from the roundabout](https://www.mapillary.com/app/?pKey=1615864943147134) · [18 January 2025 view along the frontage](https://www.mapillary.com/app/?pKey=1669414413672530)
+
+**Renderer prerequisite.** Merge this frontage after the live Inverloch renderer supports `PartSpec.lambertNoCast` in
+`addParts`. The motel uses one opaque diffuse-lit batch with shadows received and casting disabled. Its slats dim with
+the surrounding scene at 22:00. The preview used an isolated v48 renderer built from ai-forge source `09bf705` plus the
+opt-in. A 114 m replay on desktop Chromium phone emulation at Medium (640 × 420 render buffer) measured 16 ms median
+and 24 ms p95 scene-render intervals for both the preview and baseline `a4efe38`. The matched animation callback intervals
+were 16 ms median and 18 ms p95. The renderer opt-in added 14 bytes to the gzip-compressed bundle.
+
 ## Inverloch's power poles cast no shadows
 
 Ash, 13 November 2026: "remove power pole shadows from Inverloch". The timber power poles and their wires along the
