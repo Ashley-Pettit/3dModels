@@ -19560,8 +19560,61 @@ const handle = async (m, post) => {
     choppa: [35, "Car hits on Mumma before Get to the choppa", "hits, everyone's added together", 1, 1000], packs: [3, "Health packs out at once", "packs", 0, 6], packSecs: [30, "A new health pack every", "seconds", 3, 600] };
   function rexClean(o) { const r = {}; for (const k in REX_DEF) { const [d, , , lo, hi] = REX_DEF[k], v = o?.[k] == null || o[k] === "" ? NaN : +o[k]; r[k] = Number.isFinite(v) ? bsClamp(v, lo, hi) : d; } return r; }
   function rexSettings() { let o = {}; try { o = JSON.parse(localStorage.getItem("an3d-rex") || "{}") || {}; } catch {} return rexClean(o); }
-  function townSound(weather) {
+  // Placeholder score. Each cue loops for as long as its encounter is active.
+  function inverlochMusicDirector() {
+    const tracks = {
+      rex: "music/deckbuilder-boss-escalation-1.mp3",
+      mumma: "music/deckbuilder-boss-escalation-2.mp3",
+    };
+    let current = null;
+
+    async function play(track, audio, master) {
+      const { signal } = track.request;
+      const response = await fetch(TOWN3D + tracks[track.cue], { signal });
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      const bytes = await response.arrayBuffer();
+      if (signal.aborted) return;
+      // Decode at the files' native rate. The longer stereo cue takes 33 MiB even on a 48 kHz device.
+      const decoder = new OfflineAudioContext(2, 1, 24000);
+      const buffer = await decoder.decodeAudioData(bytes);
+      if (signal.aborted) return;
+      const source = audio.createBufferSource(), gain = audio.createGain();
+      source.buffer = buffer;
+      source.loop = true;
+      gain.gain.value = 0;
+      gain.gain.setTargetAtTime(0.24, audio.currentTime, 0.08);
+      source.connect(gain);
+      gain.connect(master);
+      source.onended = () => { source.disconnect(); gain.disconnect(); };
+      source.start();
+      track.source = source;
+      track.gain = gain;
+    }
+
+    return function setCue(cue, audio, master) {
+      if (cue === (current?.cue ?? null)) return;
+      if (current) {
+        const { request, source, gain } = current;
+        request.abort();
+        if (source) {
+          const t = source.context.currentTime;
+          gain.gain.setTargetAtTime(0, t, 0.035);
+          source.stop(source.context.state === "running" ? t + 0.18 : t);
+        }
+        current = null;
+      }
+      // The existing town gestures unlock this context. A muted or locked game can pick up the cue later.
+      if (!cue || audio?.state !== "running") return;
+      const track = { cue, request: new AbortController() };
+      current = track;
+      play(track, audio, master).catch(error => {
+        if (!track.request.signal.aborted) console.warn("Inverloch music could not play", cue, error);
+      });
+    };
+  }
+  function townSound(inverloch) {
     let ac = null, master = null, hiss = null, eng = null, vol = 1, vsrc = null, hush = false, kick = false; const vbuf = {};
+    const setMusic = inverloch ? inverlochMusicDirector() : null;
     const ctx = () => { if (!ac) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
         ac = new AC(); master = ac.createGain(); master.gain.value = 0.9 * vol; master.connect(ac.destination);
         hiss = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate); const d = hiss.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -19578,7 +19631,7 @@ const handle = async (m, post) => {
     for (const ev of ["touchend", "pointerup", "keydown"]) document.addEventListener(ev, touched, { capture: true, passive: true });
     window.addEventListener("pageshow", back); window.addEventListener("focus", back);
     // A walking player can hear weather after the first town interaction, even before starting a vehicle.
-    const gestures = weather ? new AbortController() : null;
+    const gestures = inverloch ? new AbortController() : null;
     if (gestures) {
       const unlock = () => { if (vol > 0 && ctx()?.state === "running") gestures.abort(); };
       for (const type of ["pointerup", "keydown"]) document.addEventListener(type, unlock, { passive: true, signal: gestures.signal });
@@ -19611,6 +19664,7 @@ const handle = async (m, post) => {
         to(eng.wf.frequency, (eng.heli ? 350 : 450) + 1500 * Math.min(1, speed / 70)); to(eng.wg.gain, eng.heli ? 0.03 + 0.045 * rev : Math.min(0.19, (speed / 45) ** 2 * 0.065) * (eng.plane ? 1.4 : 1) + (boost ? 0.055 : 0));
         to(eng.sg.gain, skid * 0.1, 0.03); },
       level(v) { vol = v; if (master) master.gain.value = 0.9 * v; },
+      music(cue) { setMusic?.(cue, vol > 0 && !hush ? ac : null, master); },
       // Preload the compressed lines for this fight and decode one at a time for playback.
       voiceLoad(set, keys) { for (const k of keys) { const id = set + "/" + k; if (vbuf[id]) continue; vbuf[id] = fetch(TOWN3D + "voice/" + id + ".mp3").then(r => r.ok ? r.arrayBuffer() : null).catch(() => null); } },
       voice(set, key) { if (!vol) return; const a = ctx(), id = set + "/" + key; if (!a) return; this.voiceLoad(set, [key]);
@@ -24246,6 +24300,10 @@ const handle = async (m, post) => {
             else if (inIt && rexAway && rex.live) { rexAway = false; rexSend(["join", rexFid, String(playerName() || "").slice(0, 16)], rexHost); } }
           else if (rex.live && !rexTarget() && !(rexOut && !rexGhost)) { if (rexOut || [...rexGuests.values()].some(g => g.out)) rexLost(); else rexOver("🦖 The T-rex lost interest and stomped off. Get back in the hotrod to take it on again."); }
           if (rex) rexTick(dt); if (rex) rexSync(false); }
+        if (place === "inv") {
+          const playing = rex?.live && rex.st !== "dead" && stillIn();
+          snd.music(playing ? (rex.mum ? "mumma" : "rex") : null);
+        }
         if (fb || fbP) fbTick(dt);
         const noSpud = !(rex && rex.live && fighting() && !rex.nuke); if (spudBtn.hidden !== noSpud) spudBtn.hidden = noSpud;
         // into the choppa against Mumma: the button's Rockets, the GPS is done with, and how to fight her from up there
@@ -24285,7 +24343,7 @@ const handle = async (m, post) => {
       setTimeout(() => { if (veh) return; C.enter(); if (inHotrod() && !rex) { rexArmed = rexMs() - REX_WAIT + 3500; rexStep = 0; rexLoop(); }
         else if (!inHotrod()) toast(`Couldn't get you into the hotrod. Walk up to it ${REX_TOWN.lawn} and get in.`, 3500, true); }, 350);
       return true; };
-    const rexEnd = () => { cancelAnimationFrame(rexRaf); rexRaf = 0; rexArmed = 0; lobEnd(); if (rexRole === "host" && rexFid) rexSend(["end", rexFid, "gone"]); else if (rexRole === "guest") rexSend(["out", rexFid], rexHost);
+    const rexEnd = () => { snd.music(null); cancelAnimationFrame(rexRaf); rexRaf = 0; rexArmed = 0; lobEnd(); if (rexRole === "host" && rexFid) rexSend(["end", rexFid, "gone"]); else if (rexRole === "guest") rexSend(["out", rexFid], rexHost);
       ghostOff(false); gloom(false); lowOn(false); dizzyTil = 1; dizzyTick(); rescueClear(); if (scareEl) scareEl.hidden = true; rex = null; rexRole = ""; rexFid = ""; rexHost = null; rexGuests.clear(); rexOut = false; rexHide(); rexOfferHide(); nukeBtnShow(false); if (nukeFlash) nukeFlash.hidden = true;
       spudBtn.hidden = true; spudHeld = false; rexChop = false; spudBtn.textContent = "Spuds"; rollBtn.hidden = hBoostBtn.hidden = true; if (rexHud) rexHud.hidden = true; if (rexCall) rexCall.hidden = true; document.body.classList.remove("bsboss", "bscine"); rexStack(true); rexCam.d = 0; rexCam.up = 0; rexCam.shake = 0; rexMine(); mouseFire = false; if (bossNow) showKeys(keysKind); };
     // the golden possum's turbo rockets: two silver tubes on the back with flames out of them, while its boost or jump is on
