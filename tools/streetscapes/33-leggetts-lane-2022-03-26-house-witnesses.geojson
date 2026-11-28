@@ -1,0 +1,379 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.687102,
+          -38.6288
+        ]
+      },
+      "properties": {
+        "role": "northwest house behind garage",
+        "usedForEnclosedHouse": true,
+        "capture": 20220326,
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5,
+        "release": "2025-06-26",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.68713383,-38.62886131&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.687157,
+          -38.628794
+        ]
+      },
+      "properties": {
+        "role": "northeast house beside north verandah",
+        "usedForEnclosedHouse": true,
+        "capture": 20220326,
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5,
+        "release": "2025-06-26",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.68713383,-38.62886131&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.687191,
+          -38.628855
+        ]
+      },
+      "properties": {
+        "role": "east house behind glazed alfresco",
+        "usedForEnclosedHouse": true,
+        "capture": 20220326,
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5,
+        "release": "2025-06-26",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.68713383,-38.62886131&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.687217,
+          -38.628922
+        ]
+      },
+      "properties": {
+        "role": "southeast kitchen roof",
+        "usedForEnclosedHouse": true,
+        "capture": 20220326,
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5,
+        "release": "2025-06-26",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.68713383,-38.62886131&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.687206,
+          -38.628961
+        ]
+      },
+      "properties": {
+        "role": "east join to angled lounge",
+        "usedForEnclosedHouse": true,
+        "capture": 20220326,
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5,
+        "release": "2025-06-26",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.68713383,-38.62886131&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.687277,
+          -38.628986
+        ]
+      },
+      "properties": {
+        "role": "east lounge roof angle",
+        "usedForEnclosedHouse": true,
+        "capture": 20220326,
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5,
+        "release": "2025-06-26",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.68713383,-38.62886131&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.687242,
+          -38.629
+        ]
+      },
+      "properties": {
+        "role": "south lounge eave",
+        "usedForEnclosedHouse": true,
+        "capture": 20220326,
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5,
+        "release": "2025-06-26",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.68713383,-38.62886131&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.687179,
+          -38.62898
+        ]
+      },
+      "properties": {
+        "role": "southwest lounge join",
+        "usedForEnclosedHouse": true,
+        "capture": 20220326,
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5,
+        "release": "2025-06-26",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.68713383,-38.62886131&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.687102,
+          -38.628945
+        ]
+      },
+      "properties": {
+        "role": "southwest bedroom eave",
+        "usedForEnclosedHouse": true,
+        "capture": 20220326,
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5,
+        "release": "2025-06-26",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.68713383,-38.62886131&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.687086,
+          -38.628902
+        ]
+      },
+      "properties": {
+        "role": "west house beside fernery",
+        "usedForEnclosedHouse": true,
+        "capture": 20220326,
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5,
+        "release": "2025-06-26",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.68713383,-38.62886131&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.687053,
+          -38.628724
+        ]
+      },
+      "properties": {
+        "role": "north garage west eave",
+        "usedForEnclosedHouse": false,
+        "capture": 20220326,
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5,
+        "release": "2025-06-26",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.68713383,-38.62886131&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.687181,
+          -38.628721
+        ]
+      },
+      "properties": {
+        "role": "north garage east eave",
+        "usedForEnclosedHouse": false,
+        "capture": 20220326,
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5,
+        "release": "2025-06-26",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.68713383,-38.62886131&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.687069,
+          -38.628805
+        ]
+      },
+      "properties": {
+        "role": "fernery north extent",
+        "usedForEnclosedHouse": false,
+        "capture": 20220326,
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5,
+        "release": "2025-06-26",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.68713383,-38.62886131&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.68708,
+          -38.62889
+        ]
+      },
+      "properties": {
+        "role": "fernery south extent",
+        "usedForEnclosedHouse": false,
+        "capture": 20220326,
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5,
+        "release": "2025-06-26",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.68713383,-38.62886131&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.687057,
+          -38.628908
+        ]
+      },
+      "properties": {
+        "role": "open west path",
+        "usedForEnclosedHouse": false,
+        "capture": 20220326,
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5,
+        "release": "2025-06-26",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.68713383,-38.62886131&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.687132,
+          -38.62871
+        ]
+      },
+      "properties": {
+        "role": "open north turn",
+        "usedForEnclosedHouse": false,
+        "capture": 20220326,
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5,
+        "release": "2025-06-26",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.68713383,-38.62886131&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.687268,
+          -38.628897
+        ]
+      },
+      "properties": {
+        "role": "open east garden",
+        "usedForEnclosedHouse": false,
+        "capture": 20220326,
+        "source": "Esri World Imagery Wayback / Maxar WV02",
+        "scene": 140810,
+        "groundResolutionM": 0.5,
+        "reportedAccuracyM": 5,
+        "release": "2025-06-26",
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=a7d0b39d5c8e4c9ab5d8a63d2db9772a&center=145.68713383,-38.62886131&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    }
+  ]
+}
