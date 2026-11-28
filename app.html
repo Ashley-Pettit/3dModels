@@ -8995,6 +8995,17 @@ const handle = async (m, post) => {
     // reduced but not gone. Lag related"). They stay for a Mac's trackpad pinch
     F.noGesture = e => e.preventDefault();
     if (!BS_PASSIVE) ["gesturestart", "gesturechange"].forEach(k => document.addEventListener(k, F.noGesture, { passive: false }));
+    // And if an iPhone zooms the page in anyway (it can let a pinch through whatever the page asks: Ash, 28 November 2026, "When I was
+    // playing my iOS zoomed in which ruined the game experience"), put it back to normal size once every finger is off the glass, by
+    // setting the viewport again. Passive listeners only, and nothing runs while a finger is down, so the sticks are never held up
+    if (BS_PASSIVE && window.visualViewport) { const vv = window.visualViewport, m = document.querySelector('meta[name="viewport"]');
+      let down = 0, t = 0; const was = m?.content || "width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover";
+      const fix = () => { clearTimeout(t); if (down || vv.scale < 1.01 || !m) return;
+        m.content = "width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,viewport-fit=cover"; t = setTimeout(() => { m.content = was; }, 400); };
+      const fingers = e => { down = e.touches.length; if (!down) { clearTimeout(t); t = setTimeout(fix, 250); } };
+      const vr = () => { if (!down) { clearTimeout(t); t = setTimeout(fix, 250); } };
+      F.unzoom = { vv, vr, fingers, stop: () => { clearTimeout(t); if (m) m.content = was; } };
+      ["touchstart", "touchend", "touchcancel"].forEach(k => document.addEventListener(k, fingers, { passive: true })); vv.addEventListener("resize", vr, { passive: true }); }
     clearTimeout(F.tipT); F.tipT = setTimeout(() => tip.classList.add("dim"), 6000);
     const look = (dx, dy, k) => { F.yaw -= dx * k; F.pitch = bsClamp(F.pitch - dy * k, -1.45, 1.45); };
     const typing = e => /^(INPUT|TEXTAREA|SELECT)$/.test(e.target?.tagName || "");
@@ -9307,6 +9318,7 @@ const handle = async (m, post) => {
     if (document.pointerLockElement === canvas) document.exitPointerLock?.();
     for (const j of [...(F.joys || []), ...(F.uds || [])]) { j.end(); Object.entries(j.h).forEach(([k, f]) => j.el.removeEventListener(k, f)); }
     if (F.noGesture) ["gesturestart", "gesturechange"].forEach(k => document.removeEventListener(k, F.noGesture));
+    if (F.unzoom) { const U = F.unzoom; ["touchstart", "touchend", "touchcancel"].forEach(k => document.removeEventListener(k, U.fingers)); U.vv.removeEventListener("resize", U.vr); U.stop(); }
     clearTimeout(F.tipT); BS.fly = null;
     document.body.classList.remove("bsfly"); $("bsFly").hidden = true; $("bsShareBox").hidden = true; $("bsShareBtn").setAttribute("aria-expanded", "false");
     if (L.exploreHold) { L.exploreHold = false; wxListenOff(); if (L.on && L.paused) resumeListen(); }  // the news waited while you explored
@@ -9595,7 +9607,7 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=45", assets: TOWN3D, place: "inv", pre: ["town.json?v=1bef586b", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=46", assets: TOWN3D, place: "inv", pre: ["town.json?v=1bef586b", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
     moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=80", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
@@ -23298,7 +23310,7 @@ const handle = async (m, post) => {
     const mumUp = (x, z, h, host) => { if (!mumMake()) return false; const B = rex; rexCorpse = { x: B.x, z: B.z, h: B.h, s: B.s, pose: { ...B.pose }, t: 0, glow: 0, st: "dead", corpse: true };
       const n = rexRole === "host" ? rexGuests.size : 0, keep = { n: B.n, hostName: B.hostName };
       Object.assign(B, rexNew(x, z, h, host, true), keep); B.maxHp = B.hp = B.base * (1 + n); /* (her full health times how many are in the fight: Ash, 27 November 2026, "Increase both Dino's hps by a factor of the number of players in the lobby") */ B.me = rexOut ? 0 : 100; enrage();
-      gloom(false); snd.voiceLoad?.(rexVoiceSet, ["choppa", "back"]); rexSay("MUMMA T-REX!", 2800, true); snd.roar?.(1); rexCam.shake = Math.max(rexCam.shake, 1.4); hudK = "";
+      gloom(false); snd.voiceLoad?.(rexVoiceSet, ["choppa", "back", "roll"]); rexSay("MUMMA T-REX!", 2800, true); snd.roar?.(1); rexCam.shake = Math.max(rexCam.shake, 1.4); hudK = "";
        return true; };
     // her wings, at 30% health: out with a roar, and she's angry again (Ash, 27 November 2026: "At 30% hp give her wings and start flying
     // after the chopper")
@@ -23945,7 +23957,7 @@ const handle = async (m, post) => {
         // the fireball: she rears back, glowing and roaring, for 1.6 s ("FIREBALL! ROLL!"), then spits it at your helicopter (fbTick flies it)
         case "fireball": { const W = 1.6; stand(); look(); if (host && tg) turn(Math.atan2(dx, dz), 2.2);
           if (R.t < W) { to({ pitch: -0.3, neck: -0.75, jaw: 0.35 + 0.5 * R.t / W }, 6); R.glow = Math.max(R.glow, 0.5 + 0.5 * Math.sin(R.t * 18));
-            if (!R.roared) { R.roared = true; snd.roar?.(0.9); if (rexRole && !rexGhost && heliFight()) rexSay("FIREBALL! ROLL!", 1700, true); } }
+            if (!R.roared) { R.roared = true; snd.roar?.(0.9); if (rexRole && !rexGhost && heliFight()) { rexSay("FIREBALL! ROLL!", 1700, true); setTimeout(() => { if (rex === R && R.st === "fireball") snd.voice?.(rexVoiceSet, "roll"); }, 450); } } }  // ("Do a barrel roll!" over the radio, in an original voice: Ash, 28 November 2026, "I want a voice line as she fireballs ... that says do a barrel role")
           else { to({ pitch: 0.1, neck: -0.25, jaw: R.t < W + 0.35 ? 1.2 : 0.3 }, 10); if (!R.slam) { R.slam = true; fbGo(R); } }
           if (R.t > W + 0.9) { R.cd.fireball = 10 + Math.random() * 5; go("walk"); } break; }
         // flying (her wings out): up to a helicopter's height and after it, snapping and swiping when she's near; down again when it lands
@@ -25246,7 +25258,7 @@ const handle = async (m, post) => {
       return vacant(x, z, 0, 0, walkRadius);
     };
     const trail = [];
-    let walkPromptUntil = 0;
+    let walkPromptUntil = 0, walkStall = null, walkPromptAt = null;
     const hideWalkPrompt = () => {
       walkPromptUntil = 0;
       if (unBtn.classList.contains("walk")) { unBtn.hidden = true; unBtn.classList.remove("walk"); }
@@ -25254,6 +25266,7 @@ const handle = async (m, post) => {
     const rememberWalk = now => {
       if (!C.canUnstickWalk()) { trail.length = 0; hideWalkPrompt(); return; }
       if (now > walkPromptUntil && walkPromptUntil) hideWalkPrompt();
+      if (walkPromptUntil && walkPromptAt && Math.hypot(F.pos.x - walkPromptAt.x, F.pos.z - walkPromptAt.z) > 3) hideWalkPrompt();  // (walked off: not stuck any more)
       const { x, z } = F.pos, previous = trail[trail.length - 1];
       if (previous) {
         const d = Math.hypot(x - previous.x, z - previous.z);
@@ -25285,16 +25298,27 @@ const handle = async (m, post) => {
       if (spot) { standClear(spot); toast("You're back on clear ground.", 2000); }
       else toast("Couldn't find clear ground nearby.", 2500);
     };
+    const showWalkPrompt = (x, z) => {
+      walkStall = null; walkPromptAt = { x, z };
+      walkPromptUntil = performance.now() + 10000;
+      unBtn.classList.add("walk"); unBtn.hidden = false;
+      return true;
+    };
     C.walkStuck = () => {
       if (!C.canUnstickWalk()) return false;
       const { x, z } = F.pos;
       if (!inside(x, z) || groundSolid(x, z)) {
         const p = findWalkSpot(x, z, F.yaw, false, true);
         if (p) { standClear(p); return true; }
+        return showWalkPrompt(x, z);  // (inside something with no way out: the button straight away)
       }
-      walkPromptUntil = performance.now() + 10000;
-      unBtn.classList.add("walk"); unBtn.hidden = false;
-      return true;
+      // Not the button the moment you stall: bsUnstick calls this every 0.8 s you're pushing and getting nowhere, so let its own
+      // little side-step have a go first, and only offer Unstick after 4 s stuck in the one spot (Ash, 28 November 2026: "unstick
+      // seems to be showing too much")
+      const now = performance.now(), S = walkStall;
+      if (!S || now - S.last > 2000 || Math.hypot(x - S.x, z - S.z) > 1.5) { walkStall = { t: now, last: now, x, z }; return false; }
+      S.last = now; if (now - S.t < 4000) return false;
+      return showWalkPrompt(x, z);
     };
     // (above Spuds in a T-rex fight: Spuds is the one above Boost then, and Unstick sat right over it. Ash, 27 November 2026, "Move
     // things around to fit")
