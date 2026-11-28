@@ -155,7 +155,6 @@ def inverloch_preloads(page_body):
 def direct_inverloch_body(page_body):
     # bsLite drops these weather/Listen scenes for every town on the direct Explore entry,
     # including a different town restored on reload. Keep them on full app and preview pages.
-    # (From Bangerz's #388.)
     start = "    // BEGIN LISTEN_AND_BOWLS_WEATHER_SCENES\n"
     end = "    // END LISTEN_AND_BOWLS_WEATHER_SCENES\n"
     if page_body.count(start) != 1 or page_body.count(end) != 1:

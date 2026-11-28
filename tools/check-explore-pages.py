@@ -47,9 +47,7 @@ def check(site, revision):
                     raise SystemExit(f"Missing {kind} preload or file for {asset} in {channel_route}")
 
 
-
 def check_weather_scene_routes(site):
-    # (Bangerz's #388) the direct Inverloch entries leave out the weather and Listen scenes; the full app keeps them
     direct = ("inverloch/explore", "beta/inverloch")
     full = ("", "beta", "inverloch", "inverloch/rex", "moorooka/explore", "logan/explore",
             "beta/moorooka", "beta/logan")
@@ -59,6 +57,8 @@ def check_weather_scene_routes(site):
             if (constructor in body) != (route in full):
                 raise SystemExit(f"Unexpected weather scene packaging in /{route}/: {constructor}")
 
+
 if __name__ == "__main__":
-    check(Path(sys.argv[1]), sys.argv[2])
-    check_weather_scene_routes(Path(sys.argv[1]))
+    site = Path(sys.argv[1])
+    check(site, sys.argv[2])
+    check_weather_scene_routes(site)
