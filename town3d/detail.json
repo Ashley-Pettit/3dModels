@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-cashin-street-49-v1",
+      "x": -1279.03942383,
+      "z": -469.26340909,
+      "size": 113.43163086,
+      "file": "detail-cashin-street-49-v1.webp",
+      "lo": "detail-cashin-street-49-v1-lo.webp"
     }
   ]
 }
