@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-piper-place-13-v1",
+      "x": 2318,
+      "z": -643,
+      "size": 79,
+      "file": "detail-piper-place-13-v1.webp",
+      "lo": "detail-piper-place-13-v1-lo.webp"
     }
   ]
 }
