@@ -1,0 +1,112 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "parcelPFI": "5284297",
+    "addressPFI": "53199555",
+    "provider": "Vantor / Esri World Imagery",
+    "scene": "6072276",
+    "captureDate": "2025-02-23",
+    "sourceSamplingM": 0.31,
+    "sourcePositionalAccuracyM": 5,
+    "source": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.740589,-38.627088&level=20",
+    "dataCollectionTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Main house eaves",
+        "method": "manual visual trace"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.7405541,
+              -38.6270186
+            ],
+            [
+              145.7405105,
+              -38.6270705
+            ],
+            [
+              145.7406017,
+              -38.6271396
+            ],
+            [
+              145.7406681,
+              -38.6270893
+            ],
+            [
+              145.7405541,
+              -38.6270186
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Open carport eaves",
+        "method": "manual visual trace"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.7406708,
+              -38.6270909
+            ],
+            [
+              145.7406393,
+              -38.6271197
+            ],
+            [
+              145.7406688,
+              -38.627137
+            ],
+            [
+              145.7407057,
+              -38.6271118
+            ],
+            [
+              145.7406708,
+              -38.6270909
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Approximate approach centre witnesses",
+        "method": "manual visual trace"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.7408619,
+            -38.6270568
+          ],
+          [
+            145.7407982,
+            -38.6270631
+          ],
+          [
+            145.7407613,
+            -38.6270673
+          ],
+          [
+            145.7407204,
+            -38.6271129
+          ]
+        ]
+      }
+    }
+  ]
+}
