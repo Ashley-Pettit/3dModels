@@ -8226,6 +8226,7 @@ const handle = async (m, post) => {
     const llg = new THREE.BufferGeometry(); llg.setAttribute("position", new THREE.Float32BufferAttribute(lgLights, 3));
     W.loganLights = new THREE.PointsMaterial({ color: 0xffd9a0, size: 0.7, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: true });
     lgn.add(new THREE.Points(llg, W.loganLights));
+    // BEGIN LISTEN_AND_BOWLS_WEATHER_SCENES
     // ---- Your drive (shown during the traffic part of Listen): the motorway from just above it, cars as busy
     // as the traffic is, the overhead sign with your time, and any crash or roadworks on the way. Same sky, time and weather. ----
     {
@@ -8632,6 +8633,7 @@ const handle = async (m, post) => {
           r.roll.position.set(r.x0 + Math.sin(e * Math.PI) * r.sway, .52, r.z0 + (r.z1 - r.z0) * e); r.roll.rotation.x -= dt * (1 - t) * 6; });
       };
     }
+    // END LISTEN_AND_BOWLS_WEATHER_SCENES
     // ---- Moorooka, its landmarks in one view (seen from a little higher up): the Beaudesert Road roundabout with cars going
     // round, "Little Africa" shops and Ethiopian restaurants up Beaudesert Road, the Magic Mile of Motors car yards with
     // bunting and pylon signs, Queenslanders and jacarandas, Toohey Forest on the ridge, the city far off ----
@@ -9625,7 +9627,7 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=46", assets: TOWN3D, place: "inv", pre: ["town.json?v=1bef586b", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=48", assets: TOWN3D, place: "inv", pre: ["town.json?v=1bef586b", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
     moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=80", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
@@ -9798,30 +9800,65 @@ const handle = async (m, post) => {
       try { T.bowls?.swapped?.(); } catch {}  // what was shaped to the old model's ground is made again on this one's (Moorooka's road medians)
       try { T.gps?.swapped?.(); } catch {}  // older models need the line re-laid over their new ground
     };
-    const upgrade = async () => {
+    let activeQuality = first, pendingQuality = null;
+    const currentTown = () => !dead && BS.town === T;
+    // Compatible Inverloch tiers keep the scene, guest handles and player-owned vehicle on one canvas.
+    const changeQuality = async (target, initialLoadMs) => {
+      pendingQuality = target;
+      try {
+        if (graphics && (target === "medium" || target === "low") && cur.setQualityInPlace) {
+          const start = performance.now();
+          let applied = false;
+          try { applied = await cur.setQualityInPlace(target); }
+          catch (error) { if (currentTown()) console.warn("Inverloch quality transition failed; replacing the scene", error); }
+          if (applied) {
+            if (!currentTown()) return false;
+            activeQuality = target;
+            // Count both pieces of initialization, excluding time the player spent in Low.
+            if (target !== "low") save({ q: target, ms: Math.round(initialLoadMs + performance.now() - start) });
+            return true;
+          }
+        }
+        if (!currentTown()) return false;
+        const n = next = make(target, false); tag(n);
+        const el = rootOf(n); if (el) el.style.visibility = "hidden";
+        try { await n.ready; } catch { if (next === n) drop(); return false; }
+        if (next !== n || !currentTown()) return false;
+        const loadMs = Math.round(performance.now() - n.t0);
+        await swapTo(n, target);
+        if (cur !== n || !currentTown()) return false;
+        activeQuality = target;
+        if (target !== "low") save({ q: target, ms: loadMs });
+        return true;
+      } finally {
+        pendingQuality = null;
+        if (currentTown()) hiBox.hidden = true;
+      }
+    };
+    const upgrade = async initialLoadMs => {
       // wait for the view to be on screen, then see how smoothly the light one runs
       for (let i = 0; i < 600 && !T.on && !dead; i++) await new Promise(ok => setTimeout(ok, 100));
       await new Promise(ok => setTimeout(ok, 1500));
       if (dead || BS.town !== T) return;
       const f = await fps(2000);
-      if (f < 55 && !window.__anForceUp) return;  // not a steady 60: stay light (__anForceUp: for testing on slow machines)
+      if (!currentTown() || (f < 55 && !window.__anForceUp)) return;
       hiBox.hidden = false;
-      next = make(best, false); tag(next); const el = rootOf(next); if (el) el.style.visibility = "hidden";
-      const n = next;
-      try { await n.ready; } catch { if (next === n) drop(); return; }
-      if (dead || next !== n || BS.town !== T) return;
-      save({ q: best, ms: Math.round(performance.now() - n.t0) });
-      await swapTo(n, best);
+      if (!await changeQuality(best, initialLoadMs)) return;
       // the sharp one has to keep up: if it can't, back to light, and this device stays light
       await new Promise(ok => setTimeout(ok, 1500));
       if (dead || BS.town !== T) return;
       const g = await fps(2500);
-      if (g && g < 40 && !window.__anForceUp) { save({ slow: true }); const back = make("low", false); tag(back); const be = rootOf(back); if (be) be.style.visibility = "hidden";
-        try { await back.ready; } catch { return; } if (!dead && BS.town === T) await swapTo(back, "low"); }
+      if (currentTown() && g && g < 40 && !window.__anForceUp) {
+        save({ slow: true });
+        await changeQuality("low", initialLoadMs);
+      }
     };
     T.pair = { initialPreset, presets, get cur() { return cur; }, get next() { return next; },
+      get quality() { return activeQuality; }, get pendingQuality() { return pendingQuality; },
       setFrameTarget(target) { cur?.setFrameTarget?.(target); next?.setFrameTarget?.(target); } };
-    const ready = cur.ready.then(() => { if (!direct) upgrade(); else if (!manual && first === best) save({ q: best, ms: Math.round(performance.now() - cur.t0) }); });
+    const ready = cur.ready.then(() => { const loadMs = Math.round(performance.now() - cur.t0);
+      if (!direct) upgrade(loadMs).catch(error => { if (currentTown()) { hiBox.hidden = true; console.warn("Town quality upgrade failed", error); } });
+      else if (!manual && first === best) save({ q: best, ms: loadMs }); });
     return m;
   }
   function townModelOn(T) {
@@ -18783,7 +18820,7 @@ const handle = async (m, post) => {
               P.cars.some(D => D !== C && D.x != null && Math.hypot(D.x-sx,D.z-sz) < 12) ||
               (hiddenOnly && (!unobserved(sx,sz) || T.peers?.list?.().some(p => Math.hypot(sx-p.x,sz-p.z) < 100)))) continue;
         }
-        Object.assign(C, { r, i:a, d, s:0, v:0, y:null, p:null, rl:null, ln:null, still:0, blocked:0, x:sx, z:sz, h:null });
+        Object.assign(C, { r, i:a, d, s:0, v:0, y:null, p:null, rl:null, ln:null, still:0, blocked:0, x:sx, z:sz, h:null, dodge:0, dodgeT:0 });
         C.turnPlan = null; C.turnUntil = 0; showSignal(C, 0); return true; }
       return false; };
     const seg = C => { const r = C.r, a = C.i, b = C.i + C.d; return [r.p[a * 2], r.p[a * 2 + 1], r.p[b * 2], r.p[b * 2 + 1]]; };
@@ -18907,7 +18944,17 @@ const handle = async (m, post) => {
         let takenTurn = 0;
         for (let k = 0; k < 6 && C.s >= L; k++) { C.s -= L; takenTurn = next(C) || takenTurn; [ax, az, bx, bz] = seg(C); L = Math.hypot(bx - ax, bz - az) || 0.01; }
         const h = Math.atan2(bx - ax, bz - az); C.h = C.h == null ? h : C.h + wrap(h - C.h) * Math.min(1, dt * 5);
-        C.ln = C.ln == null ? C.r.lane : C.ln + bsClamp(C.r.lane - C.ln, -1.5 * dt, 1.5 * dt);  // (its place across the road: over to the next street's lane a bit at a time, not in one jump at the corner)
+        // Round what's poking into its lane (a parked car's nose, a post, a corner), as a driver would: it looks a few metres ahead
+        // five times a second and, if its lane is blocked there, eases over towards the middle of the road (or a little the other way)
+        // till it's past, then back. Before this it stopped dead behind it and sat there while you watched (Ash, 28 November 2026:
+        // "Check Inverloch for dumb car driving": cars stopped for good behind parked cars, a row of posts and a corner)
+        if (T.invStatic?.wholeTown && C.h != null && (C.lookT = (C.lookT || 0) - dt) <= 0) { C.lookT = 0.2;
+          const G = T.invStatic, [w, l] = townTrafficBodies[C.bus ? "bus" : "car"], hx = Math.sin(C.h), hz = Math.cos(C.h), sx = Math.cos(C.h), sz = -Math.sin(C.h), cx0 = C.x ?? 0, cz0 = C.z ?? 0, now0 = C.ln ?? C.r.lane;
+          const free = o => [2.5, 5, 7.5].every(a => !G.depth(cx0 + hx * a + sx * (o - now0), cz0 + hz * a + sz * (o - now0), C.h, l, w));  // (a lane offset o, a few metres on)
+          if (!free(C.r.lane + (C.dodge || 0))) { for (const k of [0, -0.5, -0.75, -1, -1.25, -1.5, -1.75, -2, -2.25, -2.5, 0.35, 0.7]) if (free(C.r.lane + k)) { C.dodge = k; C.dodgeT = 1.5; break; } }
+          else if (C.dodge && (C.dodgeT = (C.dodgeT || 0) - 0.2) <= 0 && free(C.r.lane)) C.dodge = 0; }
+        const laneTo = C.r.lane + (C.dodge || 0); if (C.dodge) C.v = Math.min(C.v, 7);
+        C.ln = C.ln == null ? C.r.lane : C.ln + bsClamp(laneTo - C.ln, -1.5 * dt, 1.5 * dt);  // (its place across the road: over to the next street's lane a bit at a time, not in one jump at the corner)
         const t = Math.min(1, C.s / L), lx = Math.cos(C.h), lz = -Math.sin(C.h)  /* (on the left of the road, as in Australia: Ash, 16 November 2026, "The cars should drive on the left side of the road"; then "the traffic is often on the wrong side of the roads ... all cars should drive on the left, and buses etc.": heading h runs (sin h, cos h) with z to the south, so the left is (cos h, -sin h); it had the right) */, x = ax + (bx - ax) * t + lx * C.ln, z = az + (bz - az) * t + lz * C.ln;
         if (Math.hypot(x - home[0], z - home[1]) > FAR && !C.rider) { start(C); return; }
         if (T.invStatic?.wholeTown) {
@@ -18915,6 +18962,9 @@ const handle = async (m, post) => {
           const clear = oldH == null || C.y == null ? !T.invStatic.depth(x,z,C.h,l,w) : T.invStatic.canDrive(cx,cz,oldH,x,z,C.h,l,w);
           if (!clear) {
             C.r = oldRoad; C.i = oldI; C.d = oldD; C.s = oldS; C.h = oldH; C.ln = oldLane; C.v = C.still = 0;
+            // stopped, but still edging over to the side it's going round on (a sideways step, if that's clear)
+            if (C.dodge && oldH != null && oldLane != null && C.x != null) { const dl = bsClamp(laneTo - oldLane, -1.5 * dt, 1.5 * dt), qx = cx + Math.cos(oldH) * dl, qz = cz - Math.sin(oldH) * dl;
+              if (dl && T.invStatic.canDrive(cx, cz, oldH, qx, qz, oldH, l, w)) { C.ln = oldLane + dl; C.x = qx; C.z = qz; } }
             C.blocked = (C.blocked || 0) + dt;
             if (C.blocked > 10 && !C.rider && unobserved(cx,cz)) { C.blocked = 8; start(C,true); }
             return;

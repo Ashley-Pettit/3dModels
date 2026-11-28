@@ -1066,7 +1066,7 @@ the drive in front of the stairs is taken out (`edits.json`). The first round's 
   and no shadows for small added objects, or merging them.
 ## Inverloch Rotary clock photo pass
 
-The clock patch is in [beta v48 via Explore #389](https://github.com/Ashley-Pettit/3dModels/pull/389). This host change can carry those same meshes to production after Ash's beta sign-off.
+[Explore #400](https://github.com/Ashley-Pettit/3dModels/pull/400) brought the Rotary clock refinement from [beta v48](https://github.com/Ashley-Pettit/3dModels/pull/389) to production.
 
 The Explore clock in `app.html` uses separate front gold and rear navy cogs, a smaller ketch
 silhouette, and tapered hands with counterweights. The two dated or historical reference views
