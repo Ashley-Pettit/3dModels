@@ -1,0 +1,60 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "15-acacia-court-principal-eaves",
+      "properties": {
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.697084,-38.645133&level=20",
+        "scene": 6072300,
+        "date": "2026-01-27",
+        "samplingM": 0.34,
+        "positionalAccuracyM": 5,
+        "provider": "Vantor LG03 via Esri World Imagery",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "attribution": "Esri, Vantor, Earthstar Geographics and the GIS User Community",
+        "scope": "Dated principal roof eaves. Rear open pool terrace and lower eastern area are outside the authored enclosed wall.",
+        "referencePhoto": "https://www.realestate.com.au/sold/property-residential%2Bland-vic-inverloch-204289600"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.696921,
+              -38.644996
+            ],
+            [
+              145.697065,
+              -38.644961
+            ],
+            [
+              145.697092,
+              -38.645075
+            ],
+            [
+              145.697126,
+              -38.645165
+            ],
+            [
+              145.697063,
+              -38.645185
+            ],
+            [
+              145.697032,
+              -38.645159
+            ],
+            [
+              145.696977,
+              -38.645168
+            ],
+            [
+              145.696921,
+              -38.644996
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
