@@ -25009,10 +25009,11 @@ const handle = async (m, post) => {
     const autoIndexedPass = (A, at, rem, v, cars, homeTraffic, oncoming, latCar) => {
       const grid = T.invStatic, shape = townTrafficBodies[car.bus ? "bus" : "car"], [width, length] = shape;
       const margin = 0.55, transition = offset => 8 + 4 * Math.abs(offset);
+      const passHorizon = Math.min(rem, 185);
       const blockers = [], seen = new Set();
       // Look beyond the first blocker for a place to merge back. Testing the home lane alongside the car
       // keeps the target until its rear clears, including after braking, reversing or a route-buffer trim.
-      let limit = Math.min(rem, 72);
+      let limit = Math.min(passHorizon, 72);
       for (let d = 0; d <= limit; d += 2) {
         if (!A.cut && A.join < 20 && at + d < A.join + 1) continue;
         const [x,z,ux,uz] = autoDir(A, at+d);
@@ -25029,7 +25030,7 @@ const handle = async (m, post) => {
         }
         blockers.push({near,far,left,right,key:hit.key,wall:true,still:true});
         // Include the far end of a parked row before testing the merge. Bound each scan on long streets.
-        if (far+32 > limit) limit = Math.min(rem, 150, far+32);
+        if (far+32 > limit) limit = Math.min(passHorizon, far+32);
       }
       for (const lead of homeTraffic) blockers.push({
         near:lead.al-lead.ext, far:lead.al+lead.ext, left:lead.lat-lead.across, right:lead.lat+lead.across, ...lead
@@ -25047,7 +25048,7 @@ const handle = async (m, post) => {
       const check = (offset, near, far) => {
         const enter = bsClamp(near-length-0.8, 6, transition(offset-latCar)), leave = transition(offset);
         const end = Math.min(rem, far+leave);
-        if (far > rem || end > 185 || (offset && end < far+leave)) return null;
+        if (far > rem || end > passHorizon || (offset && end < far+leave)) return null;
         const smooth = t => t*t*(3-2*t);
         const [, , startX, startZ] = autoDir(A,at);
         const lateralSlope = bsClamp(Math.tan(wrap(Math.atan2(startX,startZ)-car.h)),-0.6,0.6);

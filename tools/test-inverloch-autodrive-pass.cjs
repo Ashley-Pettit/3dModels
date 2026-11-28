@@ -46,7 +46,7 @@ const PARKED_WIDTH = .95, PARKED_LENGTH = 2.25;
 const GRAZE = .0019066, DEEP = .780184;
 const longitudinalExtent = h => HALF_LENGTH * Math.abs(Math.cos(h)) + HALF_WIDTH * Math.abs(Math.sin(h));
 
-function drive(hz, { intrusion = DEEP, centres = [40], gap = false, closed = false, kerbBarrier = false, npc } = {}) {
+function drive(hz, { intrusion = DEEP, centres = [40], seconds = 16, gap = false, closed = false, kerbBarrier = false, npc } = {}) {
   const car = { x: 0, z: 0, y: 0, h: 0, dir: 0, steer: 0, v: CRUISE };
   const trafficCar = npc && { y: 0, ...npc };
   const T = { traffic: { cars: npc ? [trafficCar] : [] } };
@@ -71,7 +71,7 @@ function drive(hz, { intrusion = DEEP, centres = [40], gap = false, closed = fal
   if (gap) T.invStatic.box(-3.1, 50, 0, .2, 180);
   if (closed) T.invStatic.box(0, 40, 0, 100, 2);
   if (kerbBarrier) T.invStatic.box(3.8, 50, 0, .2, 180);
-  for (let tick = 0; tick < 16 * hz; tick++) {
+  for (let tick = 0; tick < seconds * hz; tick++) {
     time = tick / hz;
     if (npc) {
       trafficCar.x = npc.x + Math.sin(npc.h) * npc.v * time;
@@ -131,6 +131,11 @@ for (const hz of [30, 60]) {
       checkContinuousPass(drive(hz, { centres }), centres.at(-1));
     });
   }
+
+  test(`stay out until all 14 parked cars in a long row clear at ${hz} Hz`, () => {
+    const centres = Array.from({ length: 14 }, (_, i) => 40 + 12 * i);
+    checkContinuousPass(drive(hz, { centres, seconds: 19 }), centres.at(-1));
+  });
 
   test(`hold one passing line past a stationary traffic car at ${hz} Hz`, () => {
     const npc = { x: 1.15, z: 40, h: 0, v: 0 };
