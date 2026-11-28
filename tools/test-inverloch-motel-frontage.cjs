@@ -40,21 +40,18 @@ function inParcel(x, z) {
 test('The frontage is one ground-draped structure with only a local sign face', () => {
   const {batches} = fixture();
   assert.equal(batches.length, 1);
-  const [structure, sign] = batches[0];
-  assert.equal(batches[0].length, 2);
+  const [structure] = batches[0];
+  assert.equal(batches[0].length, 1);
   assert.equal(structure.onGround, true);
-  assert.equal(sign.onGround, true);
   assert.equal(structure.positions.length, structure.colors.length);
-  assert.ok(structure.positions.length > 1000 && structure.positions.length / 9 < 7000);
-  assert.equal(sign.positions.length, 18);
-  assert.equal(sign.map.width, 256);
-  assert.equal(sign.map.height, 80);
-  assert.ok(!structure.map && text.includes('INVERLOCH MOTEL'));
-  for (const part of [structure, sign]) {
-    assert.ok(part.positions.every(Number.isFinite));
-    for (let i = 0; i < part.positions.length; i += 3) {
-      assert.ok(inParcel(part.positions[i], part.positions[i + 2]), `${part.positions[i]}, ${part.positions[i + 2]} outside parcel`);
-    }
+  assert.ok(structure.positions.length > 1000 && structure.positions.length / 9 < 3600);
+  assert.equal(structure.uvs.length, structure.positions.length / 3 * 2);
+  assert.equal(structure.map.width, 256);
+  assert.equal(structure.map.height, 80);
+  assert.ok(text.includes('INVERLOCH MOTEL'));
+  assert.ok(structure.positions.every(Number.isFinite));
+  for (let i = 0; i < structure.positions.length; i += 3) {
+    assert.ok(inParcel(structure.positions[i], structure.positions[i + 2]), `${structure.positions[i]}, ${structure.positions[i + 2]} outside parcel`);
   }
 });
 

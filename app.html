@@ -17439,24 +17439,24 @@ const handle = async (m, post) => {
       const a = breaks[i - 1], b = breaks[i], mid = (a + b) / 2, axis = pick(mid);
       if (clippedHedges.some(([from,to]) => mid > from && mid < to)) {
         const bottom = -0.03, top = 2.08;
-        block(axis,a,b,-0.32,0.75,bottom,top - 0.14,hedge[0]);
-        const buds = Math.ceil((b - a) / 0.3);
+        block(axis,a,b,-0.32,0.75,bottom,top,hedge[0],hedge[1]);
+        const buds = Math.ceil((b - a) / 0.48);
         for (let j = 0; j < buds; j++) {
-          const s = bsLerp(a,b,j / buds), e = bsLerp(a,b,(j + 1) / buds);
-          const height = top + Math.sin(j * 2.11 + i) * 0.024;
-          block(axis,s,e,-0.29,0.71,top - 0.18,height,hedge[j % hedge.length],hedge[(j + 1) % hedge.length]);
-          // Two irregular coloured leaf clusters break up the broad clipped face without textures.
-          for (let k = 0; k < 2; k++) {
-            const t = bsLerp(s,e,0.18 + k * 0.32), y = 0.25 + ((j * 7 + i * 3 + k * 17) % 23) * 0.061;
-            block(axis,t,Math.min(t + 0.11,e),-0.337,-0.315,y,y + 0.12,hedge[1 + (j + k) % 2]);
-          }
+          const s = bsLerp(a,b,(j + 0.22) / buds), e = Math.min(s + 0.13,b);
+          const y = 0.27 + ((j * 7 + i * 3) % 23) * 0.067, v = -0.325;
+          quad(at(axis,s,v,y),at(axis,e,v,y + 0.024),at(axis,e,v,y + 0.14),at(axis,s,v,y + 0.11),hedge[1 + j % 2]);
         }
         footprint(axis,a,b,-0.33,0.75);
       } else {
         const pickets = Math.ceil((b - a) / 0.17);
         for (let j = 0; j < pickets; j++) {
           const s = bsLerp(a,b,(j + 0.5) / pickets), w = (b - a) / pickets * 0.235;
-          block(axis,s - w,s + w,-0.044,0.014,0.12,1.55,silver[j % silver.length]);
+          // Thin folded pickets need the road face and the oblique return surfaces.
+          const l = s - w, r = s + w, front = -0.044, back = 0.014, foot = 0.12, top = 1.55;
+          const tint = silver[j % silver.length];
+          quad(at(axis,l,front,foot),at(axis,l,front,top),at(axis,r,front,top),at(axis,r,front,foot),tint);
+          quad(at(axis,l,back,foot),at(axis,l,back,top),at(axis,l,front,top),at(axis,l,front,foot),silver[1]);
+          quad(at(axis,r,front,foot),at(axis,r,front,top),at(axis,r,back,top),at(axis,r,back,foot),silver[2]);
         }
         for (const y of [0.25, 1.42]) block(axis,a,b,0.012,0.068,y - 0.025,y + 0.025,frame);
         const bays = Math.ceil((b - a) / 2.6);
@@ -17493,23 +17493,25 @@ const handle = async (m, post) => {
     canvas.width = 256;
     canvas.height = 80;
     const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#ede9dc";
+    // Keep the sign and coloured structure in one mesh. A white strip preserves the vertex colours.
+    ctx.fillStyle = "#ffffff";
     ctx.fillRect(0,0,256,80);
+    ctx.fillStyle = "#ede9dc";
+    ctx.fillRect(0,16,256,64);
     ctx.strokeStyle = "#574b3c";
     ctx.lineWidth = 2;
-    ctx.strokeRect(5,5,246,70);
+    ctx.strokeRect(5,21,246,54);
     ctx.fillStyle = "#342b22";
     ctx.font = "700 26px Georgia, serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("INVERLOCH MOTEL",128,41,226);
-    const sign = [at(axis,r,-0.077,low),at(axis,l,-0.077,low),at(axis,l,-0.077,high),at(axis,r,-0.077,high)];
-    const matrix = new THREE.Matrix4().elements;
-    model.addParts([
-      { positions: new Float32Array(positions), colors: new Float32Array(colors), matrix, roughness: 0.85, onGround: true, doubleSide: true },
-      { positions: new Float32Array([0,1,2,0,2,3].flatMap(i => sign[i])), uvs: new Float32Array([0,0,1,0,1,1,0,0,1,1,0,1]),
-        map: canvas, matrix, roughness: 0.86, onGround: true, doubleSide: true },
-    ]);
+    ctx.fillText("INVERLOCH MOTEL",128,49,226);
+    const uvs = new Float32Array(positions.length / 3 * 2 + 12);
+    for (let i = 0; i < uvs.length - 12; i += 2) { uvs[i] = 0.5; uvs[i + 1] = 0.9; }
+    uvs.set([0.004,0.012, 0.996,0.012, 0.996,0.787, 0.004,0.012, 0.996,0.787, 0.004,0.787], uvs.length - 12);
+    quad(at(axis,r,-0.077,low),at(axis,l,-0.077,low),at(axis,l,-0.077,high),at(axis,r,-0.077,high),material(0xffffff));
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors), uvs,
+      map: canvas, matrix: new THREE.Matrix4().elements, roughness: 0.85, onGround: true, doubleSide: true }]);
     const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
     for (const ring of solids) grid.polygon(ring);
     for (const [x,z] of palms) grid.post(x,z,0.13);
