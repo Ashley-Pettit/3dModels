@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-beachcomber-drive-2-v2",
+      "x": -2360,
+      "z": 213,
+      "size": 94,
+      "file": "detail-beachcomber-drive-2-v2.webp",
+      "lo": "detail-beachcomber-drive-2-v2-lo.webp"
     }
   ]
 }
