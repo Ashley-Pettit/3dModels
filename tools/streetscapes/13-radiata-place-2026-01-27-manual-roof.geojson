@@ -1,0 +1,67 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.696444,
+              -38.643292
+            ],
+            [
+              145.69655,
+              -38.643466
+            ],
+            [
+              145.696456,
+              -38.64351
+            ],
+            [
+              145.696367,
+              -38.64339
+            ],
+            [
+              145.696346,
+              -38.643399
+            ],
+            [
+              145.696314,
+              -38.643364
+            ],
+            [
+              145.696444,
+              -38.643292
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "address": "13 Radiata Place, Inverloch VIC 3996",
+        "parcelPFI": "131700365",
+        "addressPropertyPFI": "131700368",
+        "legacyHouseSlot": 5704,
+        "source": "Esri World Imagery / Vantor Vivid LG03",
+        "imagery": {
+          "OBJECTID": 6072300,
+          "SRC_DATE": 20260127,
+          "SRC_RES": 0.34,
+          "SRC_ACC": 5,
+          "SRC_DESC": "LG03",
+          "NICE_DESC": "Vantor",
+          "DrawOrder": 80,
+          "ReleaseName": "Raster Basemaps 2026.R05"
+        },
+        "captureDate": "2026-01-27",
+        "mapViewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.69639276,-38.64337113&level=20",
+        "imageryMetadataQuery": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/0/query?f=geojson&inSR=4326&outSR=4326&geometryType=esriGeometryPoint&geometry=145.69639276%2C-38.64337113&where=MinMapLevel%3D12+AND+SRC_DATE+%3E+0&outFields=OBJECTID%2CSRC_DATE%2CSRC_RES%2CSRC_ACC%2CSRC_DESC%2CNICE_DESC%2CDrawOrder%2CReleaseName&returnGeometry=true",
+        "licence": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "addressQuery": "https://opendata.maps.vic.gov.au/geoserver/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=open-data-platform%3Aaddress&outputFormat=application%2Fjson&srsName=urn%3Aogc%3Adef%3Acrs%3AOGC%3A1.3%3ACRS84&CQL_FILTER=ezi_address%3D%2713+RADIATA+PLACE+INVERLOCH+3996%27&propertyName=pfi%2Cproperty_pfi%2Cezi_address%2Cgeom&count=5",
+        "captureMethod": "Six visually selected outer eaves vertices collected manually using anonymous ArcGIS Online Map Viewer Map tools, Location, Capture mode, XY (WGS84).",
+        "geometryUse": "Generalized stepped eaves, with quoted source accuracy of 5 m. Roof shadows and vegetation bound finer interpretation. Assessment only until safe driveway and trail treatment is confirmed."
+      }
+    }
+  ]
+}
