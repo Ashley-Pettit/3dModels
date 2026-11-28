@@ -9896,6 +9896,16 @@ const handle = async (m, post) => {
           if (buildings) {
             const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
             grid.addTown(buildings, m.parkedCarBlockers());
+            // The odd parked car the model stood in a pole, a sign or a wall (8 of Inverloch's 1,593, round the town centre): moved
+            // to the nearest clear spot, along its bay first and then out a little sideways, so it can be driven away (Ash, 28 November
+            // 2026: "Some of the Inverloch parked cars are locked inside poles and can't move when I get in to drive")
+            try { for (const c of m.parkedCarBlockers() || []) { const B = grid.originalBay(c.id); if (!B) continue; grid.take(c.id);
+              let to = null; if (grid.depth(B.x, B.z, B.h, B.l, B.w) > 0) { const fx = Math.sin(B.h), fz = Math.cos(B.h);
+                for (let d = 0.25; d <= 3.5 && !to; d += 0.25) for (const [a, s] of [[d, 0], [-d, 0], [0, d], [0, -d], [d, d], [-d, d], [d, -d], [-d, -d]]) {
+                  if (Math.abs(s) > 2.5) continue; const x = B.x + fx * a + fz * s, z = B.z + fz * a - fx * s;
+                  if (!grid.depth(x, z, B.h, B.l + 0.15, B.w + 0.1)) { to = { x, z }; break; } } }
+              if (to && m.driveCar?.(c.id[0], c.id[1], to.x, ground(to.x, to.z) + 0.05, to.z, B.h, 0, 0)) grid.park(c.id, to.x, to.z, B.h, ground(to.x, to.z) + 0.05, 0, 0);
+              else grid.park(c.id, B.x, B.z, B.h); } } catch (e) { console.warn("Inverloch: couldn't move the parked cars stuck in poles", e); }
           } else invAddDesignedWalls(T, m.designedWallFootprints?.());
         }
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
