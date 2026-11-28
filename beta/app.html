@@ -9676,7 +9676,7 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=50", assets: TOWN3D, place: "inv", pre: ["town.json?v=56b7c1bf", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=50", assets: TOWN3D, place: "inv", pre: ["town.json?v=7b9b05e6", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
     moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=80", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
@@ -10144,6 +10144,8 @@ const handle = async (m, post) => {
     ]) clearLatLon.push({ lat, lon, r: 0.25 });
     if (inv && home && BS.W.invHouse) { const [lat, lon] = townLL(home[0], home[1]); clearLatLon.push({ lat, lon, r: 24 }); detailLatLon.push({ lat, lon, r: 170 }); }
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
+    if (inv) clearLatLon.push({ lat: -38.62805699, lon: 145.75027345, r: 0.16 }); // 11 Citadel Way: superseded generated house slot 5023.
+    if (inv) clearLatLon.push({ lat: -38.62789259, lon: 145.75030791, r: 0.16 }); // 11 Citadel Way: superseded generated house slot 5024.
     if (inv) clearPolygons.push({ latLon: INV_GLADE_SHELTER });
     if (inv) clearPolygons.push({ latLon: invScrewCreekMask(), roads: true });
     // Moorooka's bridges (town.json's roads marked as one): their decks, so a car drives over them, not down through them into the creek.

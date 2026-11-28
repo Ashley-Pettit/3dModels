@@ -1,0 +1,94 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "11-citadel-way-main-roof-20250223",
+      "properties": {
+        "view": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.7503079061,-38.6278925893&level=20",
+        "scene": 6072276,
+        "date": "2025-02-23",
+        "provider": "Vantor WV03 via Esri World Imagery",
+        "attribution": "Esri, Vantor, Earthstar Geographics and the GIS User Community",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "samplingM": 0.31,
+        "positionalAccuracyM": 5,
+        "frontApproach": [
+          [
+            145.750278,
+            -38.62807
+          ],
+          [
+            145.750277,
+            -38.628116
+          ],
+          [
+            145.750278,
+            -38.628134
+          ]
+        ],
+        "sideAccess": [
+          145.750132,
+          -38.627896
+        ],
+        "rearPatioControl": [
+          145.750249,
+          -38.627785
+        ],
+        "plan": "https://raywhiteinverloch.com.au/properties/sold-residential/vic/inverloch-3996/house/3160740",
+        "scope": "Manually sampled roof edge and approach points from the licensed aerial. The southwestern porch recess and eastern garage break follow the enclosure interpretation confirmed by the 2026 agent floor plan. Open rear/east patio and access areas remain outside the shell. Exact wall position, height, materials and façade details are approximate."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.750218,
+              -38.627838
+            ],
+            [
+              145.750337,
+              -38.627851
+            ],
+            [
+              145.750321,
+              -38.62795
+            ],
+            [
+              145.750337,
+              -38.627952
+            ],
+            [
+              145.750321,
+              -38.628026
+            ],
+            [
+              145.750264,
+              -38.628022
+            ],
+            [
+              145.75026,
+              -38.628005
+            ],
+            [
+              145.750237,
+              -38.628004
+            ],
+            [
+              145.750233,
+              -38.628039
+            ],
+            [
+              145.750181,
+              -38.628034
+            ],
+            [
+              145.750218,
+              -38.627838
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
