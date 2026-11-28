@@ -17256,7 +17256,7 @@ const handle = async (m, post) => {
         const bucket = cells.get(k);
         if (!bucket) return;
         for (const B of bucket) {
-          if (B.stamp === id || B.hidden || B === ignore || x+ex < B.x0 || x-ex > B.x1 || z+ez < B.z0 || z-ez > B.z1) continue;
+          if (B.stamp === id || B.hidden || (hl > 0 && B.walkClearance) || B === ignore || x+ex < B.x0 || x-ex > B.x1 || z+ez < B.z0 || z-ez > B.z1) continue;
           B.stamp = id;
           let inside = false, distance2 = Infinity, vx = 0, vz = 0, rim = 0;
           for (const e of B.edges) {
@@ -17762,7 +17762,10 @@ const handle = async (m, post) => {
     // outside their display panels, while leaving the pavement under the awnings open.
     for (const u of units) {
       const [x, z, angle] = front(u, 0.5, 0.3);
-      if (townInBlock(x, z)) collision.box(x, z, angle, 0.5, Math.hypot(u[2] - u[0], u[3] - u[1]));
+      if (townInBlock(x, z)) {
+        const panel = collision.box(x, z, angle, 0.5, Math.hypot(u[2] - u[0], u[3] - u[1]));
+        if (panel) panel.walkClearance = true; // camera near-plane buffer, including while backing away
+      }
     }
     if (pie) [0.12, 0.3, 0.5, 0.68].forEach(t => table(pie, t, 1.5, 0xc8202a));
     if (larder) [0.28, 0.7].forEach(t => table(larder, t, 1.5, 0x2f7a72));
