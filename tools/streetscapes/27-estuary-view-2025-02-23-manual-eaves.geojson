@@ -1,0 +1,153 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.7602927,
+              -38.6296057
+            ],
+            [
+              145.760227,
+              -38.6296884
+            ],
+            [
+              145.7603497,
+              -38.6297387
+            ],
+            [
+              145.7603631,
+              -38.6297277
+            ],
+            [
+              145.7604342,
+              -38.6297539
+            ],
+            [
+              145.7604282,
+              -38.629767
+            ],
+            [
+              145.7605107,
+              -38.6297927
+            ],
+            [
+              145.7605435,
+              -38.6296989
+            ],
+            [
+              145.7603826,
+              -38.6296219
+            ],
+            [
+              145.7603631,
+              -38.6296339
+            ],
+            [
+              145.7602927,
+              -38.6296057
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "dateOfImagery": "2025-02-23",
+        "imagery": "Esri World Imagery / Vantor WV03",
+        "imageryMetadata": {
+          "OBJECTID": 6072276,
+          "SRC_DATE": 20250223,
+          "SRC_RES": 0.31,
+          "SRC_ACC": 5,
+          "SRC_DESC": "WV03",
+          "NICE_DESC": "Vantor",
+          "DrawOrder": 80,
+          "ReleaseName": "Raster Basemaps 2026.R05"
+        },
+        "imageryMetadataQuery": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/0/query?f=geojson&inSR=4326&outSR=4326&geometryType=esriGeometryPoint&geometry=145.7604607%2C-38.62954357&where=MinMapLevel%3D12+AND+SRC_DATE+%3E+0&outFields=OBJECTID%2CSRC_DATE%2CSRC_RES%2CSRC_ACC%2CSRC_DESC%2CNICE_DESC%2CDrawOrder%2CReleaseName&returnGeometry=true",
+        "allowance": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "additionalAttribution": "Esri World Imagery, Esri Community Maps Contributors and Vantor. Vicmap Address and Vicmap Property © State of Victoria under CC BY 4.0.",
+        "parcelCatalog": "https://discover.data.vic.gov.au/en_AU/dataset/vicmap-property-parcel-polygon-with-parcel-detail",
+        "addressQuery": "https://opendata.maps.vic.gov.au/geoserver/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=open-data-platform%3Aaddress&outputFormat=application%2Fjson&srsName=urn%3Aogc%3Adef%3Acrs%3AOGC%3A1.3%3ACRS84&CQL_FILTER=ezi_address%3D%2727+ESTUARY+VIEW+INVERLOCH+3996%27&propertyName=ezi_address%2Cpfi%2Cproperty_pfi%2Cufi_created%2Cproperty_status%2Cgeom&count=10",
+        "agentListing": "https://www.realestate.com.au/property-house-vic-inverloch-150968432",
+        "agentPriceStatement": "https://i2.au.reastatic.net/bae466208f1a47724a7447267818a70259ac52a6354097877a42e973f7b94090/statement.pdf",
+        "agentPriceStatementDate": "2026-10-18",
+        "agentListingUse": "Corroborates type and qualitative appearance only. Positions were captured in Map Viewer.",
+        "role": "house",
+        "address": "27 Estuary View, Inverloch VIC 3996",
+        "parcelPfi": "425873850",
+        "propertyPfi": "425873867",
+        "mapViewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.760396,-38.62969&level=21",
+        "manualMethod": "Anonymous ArcGIS Online Map Viewer, Map tools → Location → Capture mode → XY.",
+        "eavesAreaM2": 286.473,
+        "parcelClearanceM": 9.188,
+        "scopeNote": "Generalized principal eaves. Separate or ambiguous northern covered area deliberately left untraced; listing shows single-storey frontage with a pale-gray multi-gabled roof and an eastern garage."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.7607412,
+              -38.6294087
+            ],
+            [
+              145.7606849,
+              -38.6294731
+            ],
+            [
+              145.7607707,
+              -38.6294967
+            ],
+            [
+              145.7608136,
+              -38.6294344
+            ],
+            [
+              145.7607412,
+              -38.6294087
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "dateOfImagery": "2025-02-23",
+        "imagery": "Esri World Imagery / Vantor WV03",
+        "imageryMetadata": {
+          "OBJECTID": 6072276,
+          "SRC_DATE": 20250223,
+          "SRC_RES": 0.31,
+          "SRC_ACC": 5,
+          "SRC_DESC": "WV03",
+          "NICE_DESC": "Vantor",
+          "DrawOrder": 80,
+          "ReleaseName": "Raster Basemaps 2026.R05"
+        },
+        "imageryMetadataQuery": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/0/query?f=geojson&inSR=4326&outSR=4326&geometryType=esriGeometryPoint&geometry=145.7604607%2C-38.62954357&where=MinMapLevel%3D12+AND+SRC_DATE+%3E+0&outFields=OBJECTID%2CSRC_DATE%2CSRC_RES%2CSRC_ACC%2CSRC_DESC%2CNICE_DESC%2CDrawOrder%2CReleaseName&returnGeometry=true",
+        "allowance": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "additionalAttribution": "Esri World Imagery, Esri Community Maps Contributors and Vantor. Vicmap Address and Vicmap Property © State of Victoria under CC BY 4.0.",
+        "parcelCatalog": "https://discover.data.vic.gov.au/en_AU/dataset/vicmap-property-parcel-polygon-with-parcel-detail",
+        "addressQuery": "https://opendata.maps.vic.gov.au/geoserver/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=open-data-platform%3Aaddress&outputFormat=application%2Fjson&srsName=urn%3Aogc%3Adef%3Acrs%3AOGC%3A1.3%3ACRS84&CQL_FILTER=ezi_address%3D%2727+ESTUARY+VIEW+INVERLOCH+3996%27&propertyName=ezi_address%2Cpfi%2Cproperty_pfi%2Cufi_created%2Cproperty_status%2Cgeom&count=10",
+        "agentListing": "https://www.realestate.com.au/property-house-vic-inverloch-150968432",
+        "agentPriceStatement": "https://i2.au.reastatic.net/bae466208f1a47724a7447267818a70259ac52a6354097877a42e973f7b94090/statement.pdf",
+        "agentPriceStatementDate": "2026-10-18",
+        "agentListingUse": "Corroborates type and qualitative appearance only. Positions were captured in Map Viewer.",
+        "role": "workshop",
+        "address": "27 Estuary View, Inverloch VIC 3996",
+        "parcelPfi": "425873850",
+        "propertyPfi": "425873867",
+        "mapViewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.760768,-38.629448&level=21",
+        "manualMethod": "Anonymous ArcGIS Online Map Viewer, Map tools → Location → Capture mode → XY.",
+        "eavesAreaM2": 60.253,
+        "parcelClearanceM": 5.798,
+        "scopeNote": "Generalized detached workshop eaves, oriented to the eastern on-site access. Excludes the side of the current carport, whose outer boundary cannot be separated in this dated aerial."
+      }
+    }
+  ]
+}
