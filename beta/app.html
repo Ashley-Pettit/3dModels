@@ -9627,7 +9627,7 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model-v48.js?v=48", assets: TOWN3D, place: "inv", pre: ["town.json?v=cabe8c9f", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model-v48.js?v=48", assets: TOWN3D, place: "inv", pre: ["town.json?v=8c6572f2", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
     moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=80", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
@@ -9898,6 +9898,11 @@ const handle = async (m, post) => {
       [-38.62833174, 145.71566991], [-38.62834526, 145.71591683], [-38.62839030, 145.71604316],
       [-38.62846011, 145.71606039]
     ]) clearLatLon.push({ lat, lon, r: 0.16 });
+    if (inv) { // 3 Radiata Place: retire the seeded house and the trunk inside the traced roof.
+      for (const [lat, lon] of [[-38.64296576, 145.69729718], [-38.64307611, 145.69733450]]) {
+        clearLatLon.push({ lat, lon, r: 0.16 });
+      }
+    }
     if (inv && BS.W.invClock) { const [lat, lon] = townLL(D.c[0], D.c[1]); clearLatLon.push({ lat, lon, r: 4.5 }); detailLatLon.push({ lat, lon, r: 260 }); }
     // the model's power poles that land in a road (each is set out beside its own street, so where another street runs past, one can stand
     // in it): taken out, so none stands in the road. Seven in the detail round the town centre, one right in the middle of A'Beckett
@@ -9946,7 +9951,7 @@ const handle = async (m, post) => {
     townModelLoad(cfg).then(lib => {
       if (T.dead) return;
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
-        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=4b3b2b17" } : cfg.assets;
+        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=bc3f17e8" } : cfg.assets;
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
         { onProgress: (f, label) => { if (!T.on && !T.dead) tip.textContent = `Loading the town model: ${String(label).toLowerCase()}…`; },
           onFloodLevel: v => T.onFlood?.(v),

@@ -1,0 +1,90 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.697244,
+              -38.6429634
+            ],
+            [
+              145.6973225,
+              -38.6431179
+            ],
+            [
+              145.6973453,
+              -38.643109
+            ],
+            [
+              145.6973647,
+              -38.6431278
+            ],
+            [
+              145.6974559,
+              -38.6431016
+            ],
+            [
+              145.6974472,
+              -38.6430817
+            ],
+            [
+              145.697466,
+              -38.6430728
+            ],
+            [
+              145.6973674,
+              -38.642911
+            ],
+            [
+              145.697244,
+              -38.6429634
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "address": "3 Radiata Place, Inverloch VIC 3996",
+        "activeVicmapParcelPFI": "131700408",
+        "source": "Esri World Imagery / Vantor Vivid",
+        "captureDate": "2026-01-27",
+        "sourceSceneObjectId": 6072300,
+        "sourceSceneSensor": "LG03",
+        "sourceResolutionM": 0.34,
+        "citedSceneAccuracyM": 5,
+        "origin": "Independent Vicmap parcel and manual visual capture of the roof eaves in the public ArcGIS Online Map Viewer",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "approximateRoofAreaM2": 268.11,
+        "orientedEnvelopeM": [
+          22.41,
+          13.43
+        ],
+        "parcelBoundaryClearanceM": 2.02,
+        "roadClearanceM": 14.88,
+        "nearestModelRoad": "Radiata Place",
+        "frontageSide": "right",
+        "frontageRoadIndex": 389,
+        "intersectingProceduralHouseSlotsAndAreasM2": [
+          [
+            5286,
+            1.29
+          ],
+          [
+            5288,
+            0.09
+          ],
+          [
+            5294,
+            66.46
+          ]
+        ],
+        "osmOrMicrosoftWithinHalfMetre": [],
+        "inputManualReadoutsSha256": "c7cd53330b6597298886a9fb774a378bd94d3a2f0ae9936a40f36686cf7771df",
+        "scope": "Generalized eaves footprint, for independent visual and parcel corroboration. No walls, opening positions or construction details inferred."
+      }
+    }
+  ]
+}

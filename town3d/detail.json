@@ -63,6 +63,14 @@
       "size": 140.81167969,
       "file": "detail-broadbeach-health-club-v1.webp",
       "lo": "detail-broadbeach-health-club-v1-lo.webp"
+    },
+    {
+      "name": "detail-radiata-place-3-v1",
+      "x": -2890.55086914,
+      "z": 617.86348864,
+      "size": 105.60875977,
+      "file": "detail-radiata-place-3-v1.webp",
+      "lo": "detail-radiata-place-3-v1-lo.webp"
     }
   ]
 }
