@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-wonthaggi-clinic-77-79-v1",
+      "x": -678,
+      "z": -1136,
+      "size": 88,
+      "file": "detail-wonthaggi-clinic-77-79-v1.webp",
+      "lo": "detail-wonthaggi-clinic-77-79-v1-lo.webp"
     }
   ]
 }
