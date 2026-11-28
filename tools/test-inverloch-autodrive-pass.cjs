@@ -1,8 +1,8 @@
 // Deterministic closed-loop drives using the host's planner, sedan dynamics and collision sweeps.
 const assert = require("node:assert/strict");
-const { readFileSync } = require("node:fs");
+const { existsSync, readFileSync } = require("node:fs");
 const path = require("node:path");
-const { test } = require("node:test");
+const { before, test } = require("node:test");
 const { Script } = require("node:vm");
 
 const app = readFileSync(path.join(__dirname, "..", "app.html"), "utf8").replace(/\r\n/g, "\n");
@@ -12,9 +12,15 @@ function section(begin, end) {
   return app.slice(start, stop);
 }
 
+// The standalone host also runs on releases predating the shared collision module.
+const hasModule = existsSync(path.join(__dirname, "../src/explore/collision.mjs"));
+let collision = {};
+before(async () => { if (hasModule) collision = await import("../src/explore/collision.mjs"); });
 const driver = new Script([
-  section("  function invCivicCollision(", "  function invAddDesignedWalls("),
-  section("  const townTrafficBodies", "  function townTraffic("),
+  ...(hasModule ? [] : [
+    section("  function invCivicCollision(", "  function invAddDesignedWalls("),
+    section("  const townTrafficBodies", "  function townTraffic("),
+  ]),
   section("    const CAR = [[2.1", "    // how the ground lies"),
   section("    const autoShape =", "    // start driving to a spot:"),
   section("    const AUTO_V =", "    // what the speed chip adds"),
@@ -48,6 +54,7 @@ function drive(hz, { intrusion = DEEP, centres = [40], gap = false, closed = fal
   const hops = [], frames = [];
   let time = 0;
   const advance = driver.runInNewContext({
+    ...collision,
     T, car, ground, solid: () => false, F: { lim: [-500, 500, -500, 500] },
     bsClamp: (v, lo, hi) => Math.max(lo, Math.min(hi, v)),
     wrap: v => Math.atan2(Math.sin(v), Math.cos(v)),
