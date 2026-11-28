@@ -10134,6 +10134,7 @@ const handle = async (m, post) => {
     // another street's width; the wires to each go with it
     if (inv) for (const [lat, lon] of [[-38.6337246, 145.7267682], [-38.6339579, 145.7292535], [-38.6348371, 145.7287447], [-38.6342723, 145.7293649],
       [-38.6338849, 145.7295854], [-38.6329661, 145.7297324], [-38.6348155, 145.7301642]]) clearLatLon.push({ lat, lon, r: 1.5 });
+    if (inv) clearLatLon.push({ lat: -38.64372246, lon: 145.70628974, r: 0.16 }); // 3 Sylvia Court: the confirmed main wall contains seeded trunk 41960.
     // Building centres on the verified vacant parcels at 1, 12, 16 and 17 Mountain Ash Close.
     // Centre masks remove these legacy shells and their blockers without changing their packed slots.
     if (inv) for (const [lat, lon] of [
@@ -10236,6 +10237,7 @@ const handle = async (m, post) => {
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
+        if (inv && m.addParts) invSylviaCourt3(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { T.room6 = townRoom6(T, m); } catch (e) { console.warn("Town model: number 6's room couldn't be drawn", e); }  // (where the drone waited till 24 November 2026)
         if (cfg.place === "moo" && m.addParts && m.getCamera && !OFF.has("bal6")) try { T.bal6 = townBalcony6(T, m); } catch (e) { T.bal6 = null; console.warn("Town model: number 6's house and balcony couldn't be added", e); }  // number 6 as it is, or with the balcony concept
         if (cfg.place === "moo" && m.addParts) try { townHouse24(T, m); } catch (e) { console.warn("Town model: 24 Beaudesert Road couldn't be added", e); }  // Pandy's house as it really is (a demo)
@@ -18204,6 +18206,60 @@ const handle = async (m, post) => {
     return at(0, 1);
   }
   // END GENERATED src/explore/collision.mjs
+
+  // 3 Sylvia Court. A pale compound roof sits west of the shared approach.
+  function invSylviaCourt3(T, model, THREE) {
+    const origin = [-2060,745.40], angle = -1.21 * Math.PI / 180;
+    const walls = [[-6.79,-4.58],[-6.79,4.7],[-2.14,4.7],[-2.14,2.75],
+      [5.78,2.75],[5.78,-4.58]];
+    const roof = [[-7.29,-5.08,0],[6.28,-5.08,0],[6.28,3.25,0],[-1.64,3.25,0],
+      [-1.64,5.2,0],[-7.29,5.2,0],[-2.43,-0.95,1.08],[2.41,-0.95,1.08],
+      [-4.35,1.97,0.92]];
+    const faces = [[0,1,7],[0,7,6],[1,2,7],[2,3,7],
+      [3,6,7],[3,4,8],[3,8,6],[4,5,8],
+      [5,0,6],[5,6,8]];
+    const c = Math.cos(angle), s = Math.sin(angle);
+    const local = (u,v) => [u*c-v*s,u*s+v*c];
+    const world = ([u,v]) => local(u,v).map((p,i) => p + origin[i]);
+    const grade = p => model.groundAt(...world(p));
+    const floor = grade([1.55,2.79])+.11;
+    const top = floor+2.62;
+    const positions = [], colors = [];
+    const wall = new THREE.Color(0xcacdc3), steel = new THREE.Color(0xc9d0ce);
+    const fascia = new THREE.Color(0xdeddd3), glass = new THREE.Color(0x465151);
+    const point = ([u,v],y) => { const [x,z] = local(u,v); return [x,y,z]; };
+    const triangle = (a,b,c,colour) => {
+      positions.push(...a,...b,...c);
+      for (let i=0; i<3; i++) colors.push(colour.r,colour.g,colour.b);
+    };
+    const quad = (a,b,c,d,colour) => { triangle(a,b,c,colour); triangle(a,c,d,colour); };
+    for (let i=0; i<walls.length; i++) {
+      const j=(i+1)%walls.length, a=walls[i], b=walls[j];
+      const start=Math.min(grade(a),grade(b),floor)-.10;
+      quad(point(b,start),point(b,top),point(a,top),point(a,start),wall);
+    }
+    for (let i=0; i<walls.length; i++) {
+      const j=(i+1)%walls.length, a=roof[i], b=roof[j];
+      quad(point(a,top-.12),point(a,top),point(b,top),point(b,top-.12),fascia);
+    }
+    const cap=roof.map(([x,z,y]) => point([x,z],top+y));
+    for (const indices of faces) {
+      const [a,b,c]=indices.map(i => cap[i]);
+      const up=(b[2]-a[2])*(c[0]-a[0])-(b[0]-a[0])*(c[2]-a[2]);
+      if (up>0) triangle(a,b,c,steel); else triangle(a,c,b,steel);
+    }
+    const streetPanel = (left,right,z,low,high,colour) => {
+      quad(point([right,z],low),point([right,z],high),
+        point([left,z],high),point([left,z],low),colour);
+    };
+    streetPanel(-6.14,-3.87,4.727,floor+.84,floor+2.00,glass);
+    streetPanel(-5.07,-5.01,4.736,floor+.84,floor+2.00,fascia);
+    streetPanel(2.82,4.03,2.778,floor+.04,floor+2.11,glass);
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().makeTranslation(origin[0],0,origin[1]).elements, roughness: .87 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls.map(world));
+  }
 
   // Inverloch Motel at 39 Powlett Street. Follow the highway leg of mapped fence 988785313,
   // inset into Vicmap parcel 5287818 with the service driveway at the west end left open.
