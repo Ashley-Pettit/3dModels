@@ -55,6 +55,14 @@
       "size": 121.25450195,
       "file": "detail-pad-chelsea-square-12.webp",
       "lo": "detail-pad-chelsea-square-12-lo.webp"
+    },
+    {
+      "name": "detail-broadbeach-health-club-v1",
+      "x": 1294.68516602,
+      "z": -531.83186364,
+      "size": 140.81167969,
+      "file": "detail-broadbeach-health-club-v1.webp",
+      "lo": "detail-broadbeach-health-club-v1-lo.webp"
     }
   ]
 }
