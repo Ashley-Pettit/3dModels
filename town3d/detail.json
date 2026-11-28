@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-lavender-place-18-v1",
+      "x": -2157.1567041,
+      "z": -282.0307959,
+      "size": 107.56447754,
+      "file": "detail-lavender-place-18-v1.webp",
+      "lo": "detail-lavender-place-18-v1-lo.webp"
     }
   ]
 }
