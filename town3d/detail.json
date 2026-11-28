@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-estuary-view-15-v1",
+      "x": 2489.62872559,
+      "z": -932.07909668,
+      "size": 132.98880859,
+      "file": "detail-estuary-view-15-v1.webp",
+      "lo": "detail-estuary-view-15-v1-lo.webp"
     }
   ]
 }
