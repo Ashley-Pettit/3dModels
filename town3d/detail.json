@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-wattle-court-5-v1",
+      "x": -2683.24478516,
+      "z": 706.81239746,
+      "size": 86.05158203,
+      "file": "detail-wattle-court-5-v1.webp",
+      "lo": "detail-wattle-court-5-v1-lo.webp"
     }
   ]
 }
