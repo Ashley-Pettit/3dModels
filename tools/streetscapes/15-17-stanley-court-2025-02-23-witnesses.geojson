@@ -1,0 +1,340 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "activeParcelPFIs": {
+      "15": "100514435",
+      "17": "100514443"
+    },
+    "activeAddressPFIs": {
+      "15": "125076579",
+      "17": "100514449"
+    },
+    "source": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.741975,-38.627404&level=20",
+    "provider": "Vantor / Esri World Imagery",
+    "scene": "6072276",
+    "captureDate": "2025-02-23",
+    "sourceSamplingM": 0.31,
+    "sourcePositionalAccuracyM": 5,
+    "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+    "licensedCrosscheck": {
+      "15": "microsoft-311223133-aada9dd6467015a2",
+      "17": "microsoft-311223133-459387e9d07e44b0"
+    },
+    "uncertainty": "Driveway polygons are visual guards, not survey boundaries. No. 15 court-side curved concrete and No. 17 straight pale crossovers are distinct. No. 17\u2019s detached rear roof is outside the principal-house change."
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "15 Stanley Court",
+        "role": "principal roof witnesses"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.74170074412822,
+              -38.62749672141916
+            ],
+            [
+              145.74190861532688,
+              -38.62755434483958
+            ],
+            [
+              145.74197030613422,
+              -38.62744747955047
+            ],
+            [
+              145.74176109383106,
+              -38.627362615825064
+            ],
+            [
+              145.74170074412822,
+              -38.62749672141916
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "15 Stanley Court",
+        "role": "observed paving guards"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.7420547957182,
+              -38.62763396985341
+            ],
+            [
+              145.74210441658497,
+              -38.627608825121754
+            ],
+            [
+              145.7420936877489,
+              -38.627572155705614
+            ],
+            [
+              145.74206552455425,
+              -38.62754072476257
+            ],
+            [
+              145.74201053926944,
+              -38.62750615070931
+            ],
+            [
+              145.7419837171793,
+              -38.627476815135886
+            ],
+            [
+              145.74196225950718,
+              -38.627468433541274
+            ],
+            [
+              145.74194080183506,
+              -38.62749148292409
+            ],
+            [
+              145.74195689508915,
+              -38.62751453229951
+            ],
+            [
+              145.74198908159732,
+              -38.62753862936587
+            ],
+            [
+              145.74202797362804,
+              -38.62757739419479
+            ],
+            [
+              145.7420547957182,
+              -38.62763396985341
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "15 Stanley Court",
+        "role": "independent driveway centre witnesses"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.74208161780834,
+            -38.627621397488696
+          ],
+          [
+            145.7420762533903,
+            -38.62759101426483
+          ],
+          [
+            145.7420547957182,
+            -38.62755434483958
+          ],
+          [
+            145.7420212681055,
+            -38.627532343175425
+          ],
+          [
+            145.74198103497028,
+            -38.62751034150453
+          ],
+          [
+            145.74196091840267,
+            -38.62748938752597
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "17 Stanley Court",
+        "role": "principal roof witnesses"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.74206284234523,
+              -38.627450622649484
+            ],
+            [
+              145.74220902273655,
+              -38.62746214734468
+            ],
+            [
+              145.74222377488613,
+              -38.627268322679036
+            ],
+            [
+              145.74207893559932,
+              -38.62726203646489
+            ],
+            [
+              145.74206284234523,
+              -38.627450622649484
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "17 Stanley Court",
+        "role": "observed paving guards"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.74215537855625,
+              -38.6276109205164
+            ],
+            [
+              145.74220365831852,
+              -38.62760253893747
+            ],
+            [
+              145.74220768163204,
+              -38.62755853563199
+            ],
+            [
+              145.74220365831852,
+              -38.6275166276969
+            ],
+            [
+              145.74220365831852,
+              -38.62747786283514
+            ],
+            [
+              145.74215269634723,
+              -38.62747367203803
+            ],
+            [
+              145.74215135524273,
+              -38.62751034150453
+            ],
+            [
+              145.74215403745174,
+              -38.627556440235814
+            ],
+            [
+              145.74215537855625,
+              -38.6276109205164
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "17 Stanley Court",
+        "role": "independent driveway centre witnesses"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.74217951843738,
+            -38.62760149124003
+          ],
+          [
+            145.7421822006464,
+            -38.627574251101336
+          ],
+          [
+            145.7421822006464,
+            -38.6275438678575
+          ],
+          [
+            145.74217683622837,
+            -38.62751243690205
+          ],
+          [
+            145.74217415401935,
+            -38.62748205363202
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "No. 15 detached retained shed retained under slot 5923"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.74159747908115,
+          -38.627200221996446
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "branch toward No. 17\u2019s distinct rear ancillary roof"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.7420574779272,
+          -38.62744119335203
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "rear ancillary yard"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.74198774049282,
+          -38.6273762359359
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "fence-side separation between the sites"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.74206016013622,
+          -38.627495673720176
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "public road surface witness"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.74219427058696,
+          -38.62763292215644
+        ]
+      }
+    }
+  ]
+}

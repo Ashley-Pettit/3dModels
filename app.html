@@ -10134,6 +10134,8 @@ const handle = async (m, post) => {
     // another street's width; the wires to each go with it
     if (inv) for (const [lat, lon] of [[-38.6337246, 145.7267682], [-38.6339579, 145.7292535], [-38.6348371, 145.7287447], [-38.6342723, 145.7293649],
       [-38.6338849, 145.7295854], [-38.6329661, 145.7297324], [-38.6348155, 145.7301642]]) clearLatLon.push({ lat, lon, r: 1.5 });
+    if (inv) clearLatLon.push({ lat: -38.62747145, lon: 145.74205324, r: 0.16 }); // 15–17 Stanley Court: obstructing synthetic frontage house 3097.
+    if (inv) clearLatLon.push({ lat: -38.62745118, lon: 145.74191830, r: 0.16 }); // 15–17 Stanley Court: seeded trunk under the No. 15 roof 31878.
     // Building centres on the verified vacant parcels at 1, 12, 16 and 17 Mountain Ash Close.
     // Centre masks remove these legacy shells and their blockers without changing their packed slots.
     if (inv) for (const [lat, lon] of [
@@ -10168,7 +10170,7 @@ const handle = async (m, post) => {
     townModelLoad(cfg).then(lib => {
       if (T.dead) return;
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
-        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cd69429f" } : cfg.assets;
+        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=1d58d98c" } : cfg.assets;
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
         { onProgress: (f, label) => { if (!T.on && !T.dead) tip.textContent = `Loading the town model: ${String(label).toLowerCase()}…`; },
           onFloodLevel: v => T.onFlood?.(v),
@@ -10240,6 +10242,7 @@ const handle = async (m, post) => {
         if (cfg.place === "moo" && m.addParts && m.getCamera && !OFF.has("bal6")) try { T.bal6 = townBalcony6(T, m); } catch (e) { T.bal6 = null; console.warn("Town model: number 6's house and balcony couldn't be added", e); }  // number 6 as it is, or with the balcony concept
         if (cfg.place === "moo" && m.addParts) try { townHouse24(T, m); } catch (e) { console.warn("Town model: 24 Beaudesert Road couldn't be added", e); }  // Pandy's house as it really is (a demo)
         if (cfg.place === "moo" && m.addParts) try { townHousesLite(T, m); } catch (e) { console.warn("Town model: the houses drawn the light way couldn't be added", e); }
+        if (inv && m.addParts) invStanleyCourt15And17(T, m, BS.B.THREE);
         // the planes (townCar), each with somewhere to stand beside it
         const rides = m.addParts ? TOWN_RIDES[cfg.place] : null;
         // golden ones only for Ash (Ash, 15 November 2026: "Only show the teleport to the golden objects if user name is ash or Ashley")
@@ -23683,6 +23686,71 @@ const handle = async (m, post) => {
       }
     };
   }
+  // 15 and 17 Stanley Court. Keep both court approaches open in one guest batch.
+  function invStanleyCourt15And17(T, model, THREE) {
+    const x0=1047, z0=-1066;
+    const sites=[
+      [true,1036.90695374,-1048.54801088,0.41248446,-0.91096464,[[0.691,0.74],[4.66,0.74],[4.66,1.62],[7.05,1.62],[7.05,0.74],[11.94,0.74],[12.598,19.066],[0.098,18.352]],[[0.15,0.18],[12.48,0.18],[13.18,19.66],[-0.48,18.88]]],
+      [false,1050.33580868,-1060.06205561,0.99498662,0.10000812,[[0.648,0.68],[11.618,0.68],[11.212,20.542],[0.222,20.179]],[[0.1,0.12],[12.19,0.12],[11.76,21.12],[-0.35,20.72]]]
+    ];
+    const positions=[], colours=[];
+    const brick = new THREE.Color(0xa55342), pale = new THREE.Color(0xb4a48e);
+    const tile15 = new THREE.Color(0x686765), tile17 = new THREE.Color(0x706d69);
+    const fascia = new THREE.Color(0x8d7970), portico = new THREE.Color(0xd8c9af);
+    const garage = new THREE.Color(0xd2cab9), seam = new THREE.Color(0xb6ad9f);
+    const glass = new THREE.Color(0x607780), door = new THREE.Color(0x695941);
+    const tri = (a,b,c,paint) => {
+      positions.push(...a,...b,...c);
+      for(let i=0; i<3; i++) colours.push(paint.r,paint.g,paint.b);
+    };
+    const quad = (a,b,c,d,paint) => { tri(a,b,c,paint); tri(a,c,d,paint); };
+    const outlines=[];
+    for (const [styled,x,z,cos,sin,walls,eaves] of sites) {
+      const local = ([u,v]) => [x+u*cos+v*sin,z+u*sin-v*cos];
+      const point = (p,y) => { const [a,b]=local(p); return [a-x0,y,b-z0]; };
+      const ground = p => model.groundAt(...local(p));
+      const floor = Math.max(...walls.slice(0,styled?6:2).map(ground))+.055;
+      const top = floor+2.68;
+      walls.forEach((a,i) => {
+        const b=walls[(i+1)%walls.length];
+        const paint = styled ? (i>=1 && i<=3 ? portico : brick) : pale;
+        quad(point(a,ground(a)-.12),point(b,ground(b)-.12),point(b,top+.02),point(a,top+.02),paint);
+      });
+      const [a,b,c,d] = eaves.map(p=>point(p,top));
+      const front=point([6.08,5.68],top+(styled?1.62:1.68));
+      const rear=point([6.18,14.02],top+(styled?1.62:1.68));
+      const tile = styled ? tile15 : tile17;
+      tri(a,b,front,tile);
+      quad(b,c,rear,front,tile);
+      tri(c,d,rear,tile);
+      quad(d,a,front,rear,tile);
+      eaves.forEach((a,i) => {
+        const b=eaves[(i+1)%eaves.length];
+        quad(point(a,top-.115),point(b,top-.115),point(b,top),point(a,top),fascia);
+      });
+      if (styled) {
+        const face = (u0,u1,v,y0,y1,paint) =>
+          quad(point([u0,v],y0),point([u1,v],y0),point([u1,v],y1),point([u0,v],y1),paint);
+        const sill=Math.max(ground([9.1,.72]),floor-.07);
+        face(7.32,11.66,.711,sill,sill+2.29,portico);
+        face(7.43,11.55,.698,sill+.03,sill+2.16,garage);
+        for(let i=1;i<=4;i++) face(7.43,11.55,.691,sill+i*.43,sill+i*.43+.025,seam);
+        face(4.65,7.06,.713,top-.42,top+.18,portico);
+        face(4.65,4.94,.71,floor,top-.41,portico);
+        face(6.77,7.06,.71,floor,top-.41,portico);
+        face(5.32,6.44,1.593,floor+.035,floor+2.22,door);
+        face(1.35,4.02,.713,floor+.63,floor+2.24,portico);
+        for(const [left,right] of [[1.46,2.19],[2.27,3.07],[3.15,3.91]])
+          face(left,right,.693,floor+.72,floor+2.16,glass);
+      }
+      outlines.push(walls.map(local));
+    }
+    model.addParts([{positions:new Float32Array(positions),colors:new Float32Array(colours),
+      matrix:new THREE.Matrix4().makeTranslation(x0,0,z0).elements,roughness:.88,doubleSide:true}]);
+    const grid=T.invStatic??=invCivicCollision((x,z)=>[x,z],()=>false);
+    for(const ring of outlines) grid.polygon(ring);
+  }
+
   function townCar(T, m, F, ground, place) {
     const C = { in: false, enter() {}, frame() {}, dispose() {} };
     const RIDES = TOWN_RIDES[place]; if (!RIDES || !m.addParts) return C;
