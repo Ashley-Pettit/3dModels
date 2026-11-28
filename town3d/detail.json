@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-stanley-court-15-17-v1",
+      "x": 1009.15037109,
+      "z": -1098.31510742,
+      "size": 80.18442871,
+      "file": "detail-stanley-court-15-17-v1.webp",
+      "lo": "detail-stanley-court-15-17-v1-lo.webp"
     }
   ]
 }
