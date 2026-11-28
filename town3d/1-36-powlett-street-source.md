@@ -1,0 +1,9 @@
+# 1/36 Powlett Street
+
+The enclosed main unit appears in Esri World Imagery scene 6072228, captured by Vantor on 26 March 2022 at 0.50 m ground sample distance and 5 m stated position accuracy. Four corners were sampled in the ArcGIS Online Map Viewer Location tool. The 70.99 m² enclosed wall ring follows the inset intersection with Microsoft outline `microsoft-311223133-6d76ae3d57ac3f18` on active Vicmap Lot 1 PS305761, parcel PFI 5287649. [Dated aerial](https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.72312885,-38.62737779&level=20) · [Esri digitizing terms](https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data) · [Microsoft footprints](https://github.com/microsoft/GlobalMLBuildingFootprints) · [CDLA-Permissive-2.0](https://cdla.dev/permissive-2-0/) · [Vicmap Property, © State of Victoria, CC BY 4.0](https://discover.data.vic.gov.au/en_AU/dataset/vicmap-property-parcel-polygon-with-parcel-detail)
+
+| Northwest eave | Northeast eave | Southeast eave | Southwest eave |
+| --- | --- | --- | --- |
+| `145.7230537, -38.6273388` | `145.7231275, -38.6273047` | `145.7232026, -38.6274168` | `145.7231389, -38.627453` |
+
+The 2021 Ray White sale archive identifies the front porch, north-facing rear deck and carport as separate from the enclosed rooms. All three are outside the new mesh and collider. The photographed deck provides historical context. Façade colour, wall height and roof pitch are approximate, and the model leaves openings unspecified. The house is 7.78 m from the mapped path edge. A 16 cm centre mask clears only seeded trunk 31723 inside the main walls. Shared access, nearby trees, all adjacent structures and the ground retain their existing treatment. [Ray White sale archive](https://www.realestate.com.au/sold/property-house-vic-inverloch-135538574)

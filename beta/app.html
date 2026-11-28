@@ -10255,6 +10255,8 @@ const handle = async (m, post) => {
     // Street by Alma Street (Ash, 27 November 2026: "In Inverloch there is a power pole in the middle of the road near city centre. Move or
     // remove that"). Found by laying the poles out as the model does (every 42 m, 2.5 m past each street's edge) and keeping those inside
     // another street's width; the wires to each go with it
+    // 1/36 Powlett Street. Clear the seeded trunk inside the enclosed main walls.
+    if (inv) clearLatLon.push({ lat: -38.62733858, lon: 145.72310628, r: 0.16 });
     if (inv) for (const [lat, lon] of [[-38.6337246, 145.7267682], [-38.6339579, 145.7292535], [-38.6348371, 145.7287447], [-38.6342723, 145.7293649],
       [-38.6338849, 145.7295854], [-38.6329661, 145.7297324], [-38.6348155, 145.7301642]]) clearLatLon.push({ lat, lon, r: 1.5 });
     // Building centres on the verified vacant parcels at 1, 12, 16 and 17 Mountain Ash Close.
@@ -10370,6 +10372,7 @@ const handle = async (m, post) => {
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
+        if (inv && m.addParts) invPowlettStreet36Unit1(T, m, BS.B.THREE);
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
         if (cfg.place === "moo") try { T.room6 = townRoom6(T, m); } catch (e) { console.warn("Town model: number 6's room couldn't be drawn", e); }  // (where the drone waited till 24 November 2026)
         if (cfg.place === "moo" && m.addParts && m.getCamera && !OFF.has("bal6")) try { T.bal6 = townBalcony6(T, m); } catch (e) { T.bal6 = null; console.warn("Town model: number 6's house and balcony couldn't be added", e); }  // number 6 as it is, or with the balcony concept
@@ -17560,6 +17563,39 @@ const handle = async (m, post) => {
     for (const [X, Z, size] of solids) grid.worldBox(X, Z, yaw, size, size);
     grid.worldBox(...at(0, wall.v), yaw, wall.width, wall.depth);
   }
+  // 1/36 Powlett Street. Enclosed main unit aligned to the dated roof witness.
+  function invPowlettStreet36Unit1(town, model, THREE) {
+    const x0 = -598.254, z0 = -1068.157, eave = 2.53;
+    const outline = [[-5.616,-3.863], [-0.126,-6.763], [1.744,-3.213], [1.704,-2.593], [5.384,4.327], [4.214,5.177], [1.154,6.787], [-1.066,3.897]];
+    const roof = [[3.447,3.88,0.83], [4.214,5.177,0.0], [5.384,4.327,0.0], [-0.753,-4.735,0.83], [1.744,-3.213,0.0], [-0.126,-6.763,0.0], [-5.616,-3.863,0.0], [-3.529,-3.269,0.83], [1.704,-2.593,0.0], [-1.066,3.897,0.0], [1.574,4.871,0.83], [1.154,6.787,0.0], [0.181,3.058,0.83], [0.22,-2.888,0.83], [0.18,-2.265,0.83]];
+    const faces = [[0,1,2], [3,4,5], [5,6,7], [8,0,2], [9,7,6], [10,9,11], [5,7,3], [7,9,12], [13,4,3], [12,9,10], [4,13,8], [1,10,11], [14,8,13], [10,1,0], [0,8,14], [0,12,10], [12,0,14], [7,13,3], [14,7,12], [13,7,14]];
+    const walls = outline.map(([x,z]) => [x + x0,z + z0]);
+    const ground = walls.map(([x,z]) => model.groundAt(x,z));
+    const floor = Math.max(...ground) + 0.07;
+    const wall = new THREE.Color(0xc3c4bc), trim = new THREE.Color(0xc6cbc8), roofGrey = new THREE.Color(0x727d83);
+    const positions = [], colors = [];
+    const triangle = (a,b,c,tint) => {
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,c,d,tint) => { triangle(a,b,c,tint); triangle(a,c,d,tint); };
+    const at = ([x,z],y) => [x,y,z];
+    const fascia = eave - 0.11;
+    for (let i = 0; i < outline.length; i++) {
+      const j = (i + 1) % outline.length;
+      const a = outline[i], b = outline[j];
+      const skirt = Math.min(ground[i],ground[j]) - floor - 0.3;
+      quad(at(a,skirt),at(a,fascia),at(b,fascia),at(b,skirt),wall);
+      quad(at(a,fascia),at(a,eave),at(b,eave),at(b,fascia),trim);
+    }
+    const cap = roof.map(([x,z,rise]) => [x,eave + rise,z]);
+    for (const [a,b,c] of faces) triangle(cap[a],cap[b],cap[c],roofGrey);
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors), roughness: 0.88,
+      matrix: new THREE.Matrix4().makeTranslation(x0,floor,z0).elements }]);
+    const grid = town.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
+  }
+
   // The town centre, the Rotary clock and number 11 Norman Road are copied out of the weather's Inverloch (which is left as it
   // is) and stood in the whole-town model where they really are: their shapes, colours and pictures. The clock's hands, its lit
   // faces, the flags, the koala, the wombats and the windows' glow at night keep following the weather's own, frame by frame.
