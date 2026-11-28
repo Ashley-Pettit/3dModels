@@ -1,0 +1,73 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.703954,
+          -38.632753
+        ]
+      },
+      "properties": {
+        "role": "NW main-roof witness",
+        "source": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70395833,-38.63277059&level=20",
+        "imageDate": "2025-05-13",
+        "scene": 6072283,
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.704103,
+          -38.632771
+        ]
+      },
+      "properties": {
+        "role": "NE main-roof witness",
+        "source": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70395833,-38.63277059&level=20",
+        "imageDate": "2025-05-13",
+        "scene": 6072283,
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.704075,
+          -38.632942
+        ]
+      },
+      "properties": {
+        "role": "SE main-roof witness",
+        "source": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70395833,-38.63277059&level=20",
+        "imageDate": "2025-05-13",
+        "scene": 6072283,
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.703919,
+          -38.632929
+        ]
+      },
+      "properties": {
+        "role": "SW main-roof witness",
+        "source": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70395833,-38.63277059&level=20",
+        "imageDate": "2025-05-13",
+        "scene": 6072283,
+        "digitisingTerms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+      }
+    }
+  ]
+}
