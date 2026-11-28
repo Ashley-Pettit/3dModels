@@ -10126,6 +10126,8 @@ const handle = async (m, post) => {
       [-38.63116937, 145.72886301], [-38.63110856, 145.72815383], [-38.63106352, 145.72848114],
       [-38.63104775, 145.72879123], [-38.63113333, 145.72894915]
     ]) clearLatLon.push({ lat, lon, r: 0.16 });
+    // Clinic roof and displaced structures at 77–79 Wonthaggi Road.
+    if (inv) for (const [lat, lon] of [[-38.62710436,145.72267273], [-38.62721697,145.72273877], [-38.62714039,145.72283065], [-38.62715841,145.72285649]]) clearLatLon.push({ lat, lon, r: .16 });
     if (inv && BS.W.invClock) { const [lat, lon] = townLL(D.c[0], D.c[1]); clearLatLon.push({ lat, lon, r: 4.5 }); detailLatLon.push({ lat, lon, r: 260 }); }
     // the model's power poles that land in a road (each is set out beside its own street, so where another street runs past, one can stand
     // in it): taken out, so none stands in the road. Seven in the detail round the town centre, one right in the middle of A'Beckett
@@ -10168,7 +10170,7 @@ const handle = async (m, post) => {
     townModelLoad(cfg).then(lib => {
       if (T.dead) return;
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
-        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cd69429f" } : cfg.assets;
+        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=40918cdc" } : cfg.assets;
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
         { onProgress: (f, label) => { if (!T.on && !T.dead) tip.textContent = `Loading the town model: ${String(label).toLowerCase()}…`; },
           onFloodLevel: v => T.onFlood?.(v),
@@ -10211,6 +10213,7 @@ const handle = async (m, post) => {
         // the town centre round the Rotary clock and number 11 Norman Road, stood in the model where they really are
         let mine = []; if (inv) try { mine = townModelGuests(T, m); } catch (e) { console.warn("Town model: the town centre and Norman Road couldn't be added", e); }
         if (inv) {
+          if (m.addParts) invWonthaggiClinic(T, m, BS.B.THREE);
           if (m.addParts) townGlade(T, m, BS.B.THREE);
           invMotelFrontage(T, m, BS.B.THREE);
           const buildings = m.buildingBlockers?.();
@@ -17315,6 +17318,43 @@ const handle = async (m, post) => {
       return { glassMaterial, paving: { mesh: pavingMesh, map: sheet, aggregate: regions.aggregate, tiles: regions.paving } };
     };
     return { face, front, floor, brick, metal, finish };
+  }
+
+  // 77–79 Wonthaggi Road. The confirmed clinic's main and rear roof wings share one mesh.
+  function invWonthaggiClinic(town, model, THREE) {
+    const originX = -625, originZ = -1090, eaveHeight = 2.69;
+    const wallRing = [[-10.195,4.06], [-12.072,-5.638], [6.804,-9.31], [8.632,0.127], [2.327,1.339], [4.384,11.96], [-1.893,13.166], [-3.89,2.849]];
+    const eaveRing = [[-10.535,4.563], [-12.576,-5.978], [7.144,-9.815], [9.136,0.468], [2.831,1.68], [4.888,12.301], [-2.233,13.669], [-4.23,3.353]];
+    const ridges = [[-7.46,-1.38,1.35], [-2.73,-2.28,1.65], [3.65,-3.54,1.35], [0.83,11.0,1.05]];
+    const roofFaces = [[8,0,7], [7,9,8], [0,8,1], [9,1,8], [2,9,10], [9,2,1], [10,3,2], [10,9,4], [3,10,4], [11,4,9], [11,6,5], [4,11,5], [7,6,11], [11,9,7]];
+    const walls = wallRing.map(([x,z]) => [x + originX,z + originZ]);
+    const ground = walls.map(([x,z]) => model.groundAt(x,z));
+    const floor = Math.max(...ground) + .04;
+    const paint = new THREE.Color(0xbbafa1), plinth = new THREE.Color(0x82786d);
+    const fascia = new THREE.Color(0x675f59), roofing = new THREE.Color(0x554d4c);
+    const positions = [], colors = [];
+    const triangle = (a,b,c,tint) => {
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,c,d,tint) => { triangle(a,b,c,tint); triangle(a,c,d,tint); };
+    const at = ([x,z],y) => [x,y,z];
+    const fasciaBottom = eaveHeight - .14;
+    for (let i = 0; i < wallRing.length; i++) {
+      const j = (i + 1) % wallRing.length;
+      const a = wallRing[i], b = wallRing[j], eaveA = eaveRing[i], eaveB = eaveRing[j];
+      const skirt = Math.min(ground[i],ground[j]) - floor - .26;
+      quad(at(a,skirt),at(a,.12),at(b,.12),at(b,skirt),plinth);
+      quad(at(a,.12),at(a,fasciaBottom),at(b,fasciaBottom),at(b,.12),paint);
+      quad(at(a,fasciaBottom),at(eaveA,fasciaBottom),at(eaveB,fasciaBottom),at(b,fasciaBottom),fascia);
+      quad(at(eaveA,fasciaBottom),at(eaveA,eaveHeight),at(eaveB,eaveHeight),at(eaveB,fasciaBottom),fascia);
+    }
+    const roof = [...eaveRing.map(p => at(p,eaveHeight)), ...ridges.map(([x,z,h]) => [x,eaveHeight + h,z])];
+    for (const [a,b,c] of roofFaces) triangle(roof[a],roof[b],roof[c],roofing);
+    const matrix = new THREE.Matrix4().makeTranslation(originX,floor,originZ).elements;
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors), roughness: .89, matrix }]);
+    const grid = town.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
   }
 
   // Ramsey Boulevard to The Glade. Road, aerial ground and adjoining buildings are the native model's.
