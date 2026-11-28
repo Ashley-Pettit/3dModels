@@ -10127,6 +10127,8 @@ const handle = async (m, post) => {
       [-38.63104775, 145.72879123], [-38.63113333, 145.72894915]
     ]) clearLatLon.push({ lat, lon, r: 0.16 });
     if (inv && BS.W.invClock) { const [lat, lon] = townLL(D.c[0], D.c[1]); clearLatLon.push({ lat, lon, r: 4.5 }); detailLatLon.push({ lat, lon, r: 260 }); }
+    if (inv) clearLatLon.push({ lat: -38.63263997, lon: 145.74169434, r: 0.16 }); // 7 Evan Place: seeded trunk 36560 inside the confirmed roof.
+    if (inv) clearLatLon.push({ lat: -38.63279311, lon: 145.74176900, r: 0.16 }); // 7 Evan Place: seeded trunk 36729 inside the registered roof.
     // the model's power poles that land in a road (each is set out beside its own street, so where another street runs past, one can stand
     // in it): taken out, so none stands in the road. Seven in the detail round the town centre, one right in the middle of A'Beckett
     // Street by Alma Street (Ash, 27 November 2026: "In Inverloch there is a power pole in the middle of the road near city centre. Move or
@@ -10234,6 +10236,7 @@ const handle = async (m, post) => {
         if (inv && m.addParts) try { mine.push(invWestJetty(T, BS.B.THREE)); } catch (e) { console.warn("Inverloch: the west jetty could not be added", e); }
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
+        if (inv && m.addParts) invEvanPlace7(T, m, BS.B.THREE);
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
         if (cfg.place === "moo") try { T.room6 = townRoom6(T, m); } catch (e) { console.warn("Town model: number 6's room couldn't be drawn", e); }  // (where the drone waited till 24 November 2026)
@@ -18208,6 +18211,86 @@ const handle = async (m, post) => {
   // Inverloch Motel at 39 Powlett Street. Follow the highway leg of mapped fence 988785313,
   // inset into Vicmap parcel 5287818 with the service driveway at the west end left open.
   // Mapillary views 1615864943147134 and 1669414413672530, maxim752, 18 January 2025.
+  // 7 Evan Place. The terracotta hip roof and the recessed western wall share one batch.
+  function invEvanPlace7(T, model, THREE) {
+    const [x0,z0,cos,sin] = [1011.04363222,-467.15677033,0.95477022,0.29734462];
+    const walls = [[0.65,0.95],
+      [13.5,0.95],
+      [13.5,20.35],
+      [-1.2,20.35],
+      [-1.2,15.86],
+      [3.35,15.86],
+      [3.35,7.2],
+      [0.65,7.2]];
+    const roof = [[[2.7,15.21,0.0],[5.811,17.889,0.9644],[8.425,15.275,1.7747]],
+      [[2.7,7.85,0.0],[8.425,6.025,1.7747],[6.5349,4.1349,1.1888]],
+      [[8.425,15.275,1.7747],[2.7,7.85,0.0],[2.7,15.21,0.0]],
+      [[2.7,7.85,0.0],[8.425,15.275,1.7747],[8.425,6.025,1.7747]],
+      [[14.15,15.21,0.0],[8.425,15.275,1.7748],[11.039,17.889,0.9644]],
+      [[8.425,15.275,1.7748],[14.15,15.21,0.0],[14.15,7.85,0.0]],
+      [[10.3151,4.1349,1.1888],[8.425,6.025,1.7748],[14.15,7.85,0.0]],
+      [[8.425,15.275,1.7748],[14.15,7.85,0.0],[8.425,6.025,1.7748]],
+      [[8.425,6.025,1.7747],[10.3151,4.1349,1.1888],[6.5349,4.1349,1.1888]],
+      [[5.811,17.889,0.9644],[11.039,17.889,0.9644],[8.425,15.275,1.7748]],
+      [[3.775,4.075,1.208],[0.0,0.3,0.0],[0.0,7.85,0.0]],
+      [[14.15,0.3,0.0],[10.375,4.075,1.208],[14.15,7.85,0.0]],
+      [[2.7,0.3,0.0],[0.0,0.3,0.0],[3.775,4.075,1.208]],
+      [[2.7,0.3,0.0],[10.375,4.075,1.208],[14.15,0.3,0.0]],
+      [[10.375,4.075,1.208],[2.7,0.3,0.0],[3.775,4.075,1.208]],
+      [[10.3151,4.1349,1.1888],[14.15,7.85,0.0],[10.375,4.075,1.208]],
+      [[3.775,4.075,1.208],[6.5349,4.1349,1.1888],[10.375,4.075,1.208]],
+      [[0.0,7.85,0.0],[2.7,7.85,0.0],[3.775,4.075,1.208]],
+      [[3.775,4.075,1.208],[2.7,7.85,0.0],[6.5349,4.1349,1.1888]],
+      [[10.3151,4.1349,1.1888],[10.375,4.075,1.208],[6.5349,4.1349,1.1888]],
+      [[1.045,18.105,1.0422],[-1.85,15.21,0.0],[-1.85,21.0,0.0]],
+      [[14.15,21.0,0.0],[14.15,15.21,0.0],[11.255,18.105,1.0422]],
+      [[2.7,15.21,0.0],[-1.85,15.21,0.0],[1.045,18.105,1.0422]],
+      [[11.039,17.889,0.9644],[11.255,18.105,1.0422],[14.15,15.21,0.0]],
+      [[2.7,15.21,0.0],[1.045,18.105,1.0422],[5.811,17.889,0.9644]],
+      [[5.811,17.889,0.9644],[11.255,18.105,1.0422],[11.039,17.889,0.9644]],
+      [[11.255,18.105,1.0422],[5.811,17.889,0.9644],[1.045,18.105,1.0422]],
+      [[1.045,18.105,1.0422],[-1.85,21.0,0.0],[2.7,21.0,0.0]],
+      [[1.045,18.105,1.0422],[2.7,21.0,0.0],[11.255,18.105,1.0422]],
+      [[14.15,21.0,0.0],[11.255,18.105,1.0422],[2.7,21.0,0.0]]];
+    const eaves = [[0,0.3],
+      [14.15,0.3],
+      [14.15,21.0],
+      [-1.85,21.0],
+      [-1.85,15.21],
+      [2.7,15.21],
+      [2.7,7.85],
+      [0,7.85]];
+    const positions = [], colours = [];
+    const brick = new THREE.Color(0xb6a189), tile = new THREE.Color(0xa3563f);
+    const fascia = new THREE.Color(0x845845);
+    const offset = ([u,v]) => [u*cos+v*sin,u*sin-v*cos];
+    const world = p => { const [x,z] = offset(p); return [x+x0,z+z0]; };
+    const point = (p,y) => { const [x,z] = offset(p); return [x,y,z]; };
+    const ground = p => model.groundAt(...world(p));
+    const tri = (a,b,c,paint) => {
+      positions.push(...a,...b,...c);
+      for (let i=0; i<3; i++) colours.push(paint.r,paint.g,paint.b);
+    };
+    const quad = (a,b,c,d,paint) => { tri(a,b,c,paint); tri(a,c,d,paint); };
+    const top = Math.max(...walls.map(ground))+2.67;
+    walls.forEach((a,i) => {
+      const b=walls[(i+1)%walls.length];
+      quad(point(a,ground(a)-.13),point(b,ground(b)-.13),point(b,top+.02),point(a,top+.02),brick);
+    });
+    eaves.forEach((a,i) => {
+      const b=eaves[(i+1)%eaves.length];
+      quad(point(a,top-.12),point(b,top-.12),point(b,top),point(a,top),fascia);
+    });
+    for (const face of roof) {
+      const [a,b,c]=face.map(p=>point(p,top+p[2]));
+      if ((b[2]-a[2])*(c[0]-a[0])>(b[0]-a[0])*(c[2]-a[2])) tri(a,b,c,tile);
+      else tri(a,c,b,tile);
+    }
+    model.addParts([{positions:new Float32Array(positions),colors:new Float32Array(colours),
+      matrix:new THREE.Matrix4().makeTranslation(x0,0,z0).elements,roughness:.89,doubleSide:true}]);
+    (T.invStatic??=invCivicCollision((x,z)=>[x,z],()=>false)).polygon(walls.map(world));
+  }
+
   function invMotelFrontage(T, model, THREE) {
     const points = [[-800.60,-1062.98], [-766.60,-1071.23], [-728.16,-1057.54], [-727.08,-1056.91]];
     const sections = [];

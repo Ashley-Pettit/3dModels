@@ -1,0 +1,111 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "activeParcelPFI": "50009410",
+    "activeAddressPFI": "50009646",
+    "source": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.74170719,-38.63270447&level=20",
+    "provider": "Vantor / Esri World Imagery",
+    "scene": "6072276",
+    "captureDate": "2025-02-23",
+    "sourceSamplingM": 0.31,
+    "sourcePositionalAccuracyM": 5,
+    "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+    "licensedCrosscheck": "microsoft-311223133-ac4ad0866dc2ef89",
+    "uncertainty": "Centre northern eave overlaps genuine canopy. Approximate western notch recess witnessed; no facade or storey photo found."
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "principal roof eave witnesses, north edge partly obscured"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.7416099599232,
+              -38.63279718456453
+            ],
+            [
+              145.74176418694157,
+              -38.63283070844536
+            ],
+            [
+              145.74185135873455,
+              -38.632636898292674
+            ],
+            [
+              145.7417896679272,
+              -38.6326222315571
+            ],
+            [
+              145.7417159071793,
+              -38.63258870757878
+            ],
+            [
+              145.74163007649082,
+              -38.63261489818819
+            ],
+            [
+              145.74161264213222,
+              -38.63266099363747
+            ],
+            [
+              145.74165823968548,
+              -38.632676707988416
+            ],
+            [
+              145.74163409980434,
+              -38.632714422416626
+            ],
+            [
+              145.7416287353863,
+              -38.63271337479388
+            ],
+            [
+              145.7416099599232,
+              -38.63279718456453
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "visible apron toward Evan Place turning head"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.74183660658497,
+            -38.632534231080584
+          ],
+          [
+            145.74180039676327,
+            -38.632558326459886
+          ],
+          [
+            145.741752117001,
+            -38.63258137420643
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "existing canopy in the front yard; retain approach"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.74176418694157,
+          -38.63260966006707
+        ]
+      }
+    }
+  ]
+}
