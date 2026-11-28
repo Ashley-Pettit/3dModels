@@ -9883,6 +9883,14 @@ const handle = async (m, post) => {
     // another street's width; the wires to each go with it
     if (inv) for (const [lat, lon] of [[-38.6337246, 145.7267682], [-38.6339579, 145.7292535], [-38.6348371, 145.7287447], [-38.6342723, 145.7293649],
       [-38.6338849, 145.7295854], [-38.6329661, 145.7297324], [-38.6348155, 145.7301642]]) clearLatLon.push({ lat, lon, r: 1.5 });
+    // Building centres on the verified vacant parcels at 1, 12, 16 and 17 Mountain Ash Close.
+    // Centre masks remove these legacy shells and their blockers without changing their packed slots.
+    if (inv) for (const [lat, lon] of [
+      [-38.628973588, 145.744513851],
+      [-38.628099781, 145.744806712],
+      [-38.627782237, 145.744849779],
+      [-38.627680894, 145.744189406],
+    ]) clearLatLon.push({ lat, lon, r: 0.25 });
     if (inv && home && BS.W.invHouse) { const [lat, lon] = townLL(home[0], home[1]); clearLatLon.push({ lat, lon, r: 24 }); detailLatLon.push({ lat, lon, r: 170 }); }
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
     // Moorooka's bridges (town.json's roads marked as one): their decks, so a car drives over them, not down through them into the creek.
@@ -9907,7 +9915,7 @@ const handle = async (m, post) => {
     townModelLoad(cfg).then(lib => {
       if (T.dead) return;
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
-        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=79720942" } : cfg.assets;
+        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cbc57199" } : cfg.assets;
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
         { onProgress: (f, label) => { if (!T.on && !T.dead) tip.textContent = `Loading the town model: ${String(label).toLowerCase()}…`; },
           onFloodLevel: v => T.onFlood?.(v),
