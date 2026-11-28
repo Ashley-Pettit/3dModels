@@ -71,6 +71,14 @@
       "size": 105.60875977,
       "file": "detail-radiata-place-3-v1.webp",
       "lo": "detail-radiata-place-3-v1-lo.webp"
+    },
+    {
+      "name": "detail-radiata-place-13-v1",
+      "x": -2980.51388672,
+      "z": 656.96877273,
+      "size": 109.52019531,
+      "file": "detail-radiata-place-13-v1.webp",
+      "lo": "detail-radiata-place-13-v1-lo.webp"
     }
   ]
 }
