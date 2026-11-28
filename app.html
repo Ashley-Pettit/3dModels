@@ -9721,8 +9721,21 @@ const handle = async (m, post) => {
     const driven = cfg.place === "inv" ? new Map() : null;
     let replaying = null;
     const log = [], last = {}, LAST = ["setLabelObstacles", "setTide", "setFlood", "setFloodLevel", "setMinutes", "setCamera", "setGroundEdits", "setRemoved", "setMore", "driveCar", "setControlledCar"];
+    let controlWaitMs = 0;
+    const waitForControls = async signal => {
+      const start = performance.now();
+      let lastHeld = -Infinity;
+      while (!dead && BS.town === T && !signal?.aborted) {
+        const fly = BS.fly, now = performance.now();
+        if (fly?.joys?.some(joy => joy.held()) || fly?.touches?.size || fly?.keys?.size ||
+            fly?.drag || fly?.vert || fly?.mw) lastHeld = now;
+        if (now - lastHeld >= 350) break;
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      controlWaitMs += performance.now() - start;
+    };
     const make = (q, own) => { const t0 = performance.now(); let mm = null;
-      mm = lib.create(box, { ...opts, quality: q, ...(graphics ? { frameTarget: graphics.frameTarget } : {}), onProgress: own ? cb.onProgress : undefined,
+      mm = lib.create(box, { ...opts, quality: q, ...(graphics ? { frameTarget: graphics.frameTarget, beforeQualityCommit: waitForControls } : {}), onProgress: own ? cb.onProgress : undefined,
         ...(graphics ? { onThunder: strength => { if (mm === cur && T.on && !T.dead && !document.hidden) T.snd?.thunder(strength); } } : {}),
         onFloodLevel: v => { if (mm === cur) cb.onFloodLevel(v); },
         onError: msg => { if (mm === cur) cb.onError(msg); else if (mm === next) drop(); } });
@@ -9787,6 +9800,11 @@ const handle = async (m, post) => {
       if (dead || BS.town !== T) return;
       const f = await fps(2000);
       if (f < 55 && !window.__anForceUp) return;  // not a steady 60: stay light (__anForceUp: for testing on slow machines)
+      // Older embeds and full terrain replacements have no yield point inside the model.
+      if (graphics && !(best === "medium" && lib.canYieldQualityCommit && cur.setQualityInPlace)) {
+        await waitForControls();
+        if (dead || BS.town !== T) return;
+      }
       hiBox.hidden = false;
       next = make(best, false); tag(next); const el = rootOf(next); if (el) el.style.visibility = "hidden";
       const n = next;
