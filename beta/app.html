@@ -9184,12 +9184,21 @@ const handle = async (m, post) => {
     // playing my iOS zoomed in which ruined the game experience"), put it back to normal size once every finger is off the glass, by
     // setting the viewport again. Passive listeners only, and nothing runs while a finger is down, so the sticks are never held up
     if (BS_PASSIVE && window.visualViewport) { const vv = window.visualViewport, m = document.querySelector('meta[name="viewport"]');
-      let down = 0, t = 0; const was = m?.content || "width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover";
-      const fix = () => { clearTimeout(t); if (down || vv.scale < 1.01 || !m) return;
-        m.content = "width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,viewport-fit=cover"; t = setTimeout(() => { m.content = was; }, 400); };
-      const fingers = e => { down = e.touches.length; if (!down) { clearTimeout(t); t = setTimeout(fix, 250); } };
-      const vr = () => { if (!down) { clearTimeout(t); t = setTimeout(fix, 250); } };
-      F.unzoom = { vv, vr, fingers, stop: () => { clearTimeout(t); if (m) m.content = was; } };
+      let down = 0, t = 0, restore = false;
+      const was = m?.content || "width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover";
+      const fix = () => {
+        if (down || !m) return;
+        if (restore) { restore = false; m.content = was; return; }
+        if (vv.scale < 1.01) return;
+        restore = true;
+        m.content = "width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,viewport-fit=cover";
+        t = setTimeout(fix, 400);
+      };
+      // A new touch pauses both viewport writes until every finger is up again.
+      const schedule = () => { clearTimeout(t); if (!down) t = setTimeout(fix, 250); };
+      const fingers = e => { down = e.touches.length; schedule(); };
+      const vr = () => { if (!down && !restore) schedule(); };
+      F.unzoom = { vv, vr, fingers, stop: () => { clearTimeout(t); if (restore) m.content = was; } };
       ["touchstart", "touchend", "touchcancel"].forEach(k => document.addEventListener(k, fingers, { passive: true })); vv.addEventListener("resize", vr, { passive: true }); }
     clearTimeout(F.tipT); F.tipT = setTimeout(() => tip.classList.add("dim"), 6000);
     const look = (dx, dy, k) => { F.yaw -= dx * k; F.pitch = bsClamp(F.pitch - dy * k, -1.45, 1.45); };
