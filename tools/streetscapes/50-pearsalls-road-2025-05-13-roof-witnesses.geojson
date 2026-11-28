@@ -1,0 +1,225 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.700604,
+          -38.616419
+        ]
+      },
+      "properties": {
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedPositionAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70072175,-38.61655404&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "method": "Manually selected visual eave witnesses in the ArcGIS Location tool",
+        "role": "northwest end",
+        "usedForMainShell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.700668,
+          -38.616429
+        ]
+      },
+      "properties": {
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedPositionAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70072175,-38.61655404&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "method": "Manually selected visual eave witnesses in the ArcGIS Location tool",
+        "role": "northeast end",
+        "usedForMainShell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.700712,
+          -38.616524
+        ]
+      },
+      "properties": {
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedPositionAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70072175,-38.61655404&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "method": "Manually selected visual eave witnesses in the ArcGIS Location tool",
+        "role": "east elbow",
+        "usedForMainShell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.700724,
+          -38.616552
+        ]
+      },
+      "properties": {
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedPositionAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70072175,-38.61655404&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "method": "Manually selected visual eave witnesses in the ArcGIS Location tool",
+        "role": "east return past wing",
+        "usedForMainShell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.700779,
+          -38.616671
+        ]
+      },
+      "properties": {
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedPositionAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70072175,-38.61655404&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "method": "Manually selected visual eave witnesses in the ArcGIS Location tool",
+        "role": "southeast hip",
+        "usedForMainShell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.70066,
+          -38.616701
+        ]
+      },
+      "properties": {
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedPositionAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70072175,-38.61655404&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "method": "Manually selected visual eave witnesses in the ArcGIS Location tool",
+        "role": "southwest hip",
+        "usedForMainShell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.700593,
+          -38.616553
+        ]
+      },
+      "properties": {
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedPositionAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70072175,-38.61655404&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "method": "Manually selected visual eave witnesses in the ArcGIS Location tool",
+        "role": "west eave",
+        "usedForMainShell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.700569,
+          -38.616493
+        ]
+      },
+      "properties": {
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedPositionAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70072175,-38.61655404&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "method": "Manually selected visual eave witnesses in the ArcGIS Location tool",
+        "role": "northwest lip",
+        "usedForMainShell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.700818,
+          -38.616474
+        ]
+      },
+      "properties": {
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedPositionAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70072175,-38.61655404&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "method": "Manually selected visual eave witnesses in the ArcGIS Location tool",
+        "role": "separate east wing north edge",
+        "usedForMainShell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.700872,
+          -38.61651
+        ]
+      },
+      "properties": {
+        "source": "Esri World Imagery / Vantor LG04",
+        "scene": 6072283,
+        "captured": "2025-05-13",
+        "groundResolutionM": 0.34,
+        "reportedPositionAccuracyM": 5,
+        "viewer": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70072175,-38.61655404&level=20",
+        "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+        "method": "Manually selected visual eave witnesses in the ArcGIS Location tool",
+        "role": "separate east wing end",
+        "usedForMainShell": false
+      }
+    }
+  ]
+}
