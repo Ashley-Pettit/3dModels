@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-shellback-lane-vacant-lot-v1",
+      "x": 1869.66619141,
+      "z": -856.40572159,
+      "size": 82.14014648,
+      "file": "detail-shellback-lane-vacant-lot-v1.webp",
+      "lo": "detail-shellback-lane-vacant-lot-v1-lo.webp"
     }
   ]
 }
