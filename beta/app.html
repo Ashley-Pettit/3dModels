@@ -10374,6 +10374,7 @@ const handle = async (m, post) => {
         if (cfg.place === "moo") try { T.room6 = townRoom6(T, m); } catch (e) { console.warn("Town model: number 6's room couldn't be drawn", e); }  // (where the drone waited till 24 November 2026)
         if (cfg.place === "moo" && m.addParts && m.getCamera && !OFF.has("bal6")) try { T.bal6 = townBalcony6(T, m); } catch (e) { T.bal6 = null; console.warn("Town model: number 6's house and balcony couldn't be added", e); }  // number 6 as it is, or with the balcony concept
         if (cfg.place === "moo" && m.addParts) try { townHouse24(T, m); } catch (e) { console.warn("Town model: 24 Beaudesert Road couldn't be added", e); }  // Pandy's house as it really is (a demo)
+        if (inv && m.addParts) invHobsonPlace4(T, m, BS.B.THREE);
         if (cfg.place === "moo" && m.addParts) try { townHousesLite(T, m); } catch (e) { console.warn("Town model: the houses drawn the light way couldn't be added", e); }
         // the planes (townCar), each with somewhere to stand beside it
         const rides = m.addParts ? TOWN_RIDES[cfg.place] : null;
@@ -18888,6 +18889,74 @@ const handle = async (m, post) => {
   const STREETS_KEY = "an3d-streets";
   const streetsPref = () => { try { return localStorage.getItem(STREETS_KEY) === "1"; } catch { return false; } };  // off to start with (Ash, 14 November 2026: "Names start off")
   const streetsSave = on => { try { localStorage.setItem(STREETS_KEY, on ? "1" : "0"); } catch {} };
+  // 4 Hobson Place. The olive hip and east approach follow the dated aerial.
+  function invHobsonPlace4(T, model, THREE) {
+    const shell = [[-2030.8,-215.77],[-2029.56,-215.7],[-2024.55,-215.06],[-2025.39,-199.93],[-2044.33,-200.98],[-2043.74,-211.49],[-2031.08,-210.78]];
+    const coveredBay = [[-2024.763,-211.216],[-2028.857,-211.443],[-2029.159,-206.002],[-2025.066,-205.774]];
+    const walls = [...shell.slice(0,3),...coveredBay,...shell.slice(3)];
+    const eaves = [[-2031.1,-216.11],[-2029.54,-216.02],[-2024.21,-215.34],[-2025.09,-199.59],[-2044.67,-200.68],[-2044.04,-211.82],[-2031.38,-211.12]];
+    const ridge = [[-2036.2,-206.03,1.52],[-2028.52,-205.48,1.56],[-2027.72,-212.03,1.12]];
+    const faces = [[2,3,8],[2,8,9],[0,1,9],[1,2,9],[6,0,9],[6,9,8],[5,6,7],[6,8,7],[5,7,4],[7,8,3],[7,3,4]];
+    const apron = [
+      [[-2028.62,-210.95],[-2028.85,-206.42]], [[-2027.27,-210.99],[-2027.5,-206.42]], [[-2025.93,-211.03],[-2026.25,-206.42]],
+      [[-2024.73,-211.06],[-2025,-206.42]], [[-2023.64,-211.05],[-2023.93,-206.20]], [[-2022.24,-211.03],[-2022.55,-206.05]],
+      [[-2020.88,-210.99],[-2021.23,-205.97]], [[-2019.48,-211],[-2019.87,-205.85]], [[-2018.06,-211.01],[-2018.49,-205.73]],
+      [[-2016.64,-211.02],[-2017.11,-205.65]], [[-2015.23,-211.07],[-2015.79,-205.6]], [[-2013.72,-211.19],[-2014.44,-205.58]]
+    ];
+    const x0 = -2034, z0 = -207, wallTop = 2.68, floor = model.groundAt(-2024.93,-207.88)+.10;
+    const positions = [], colors = [];
+    const point = ([x,z], y) => [x-x0,y,z-z0];
+    const tri = (a,b,c,hex) => {
+      const tint = new THREE.Color(hex);
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const top = (a,b,c,hex) => {
+      const up = (b[2]-a[2])*(c[0]-a[0]) - (b[0]-a[0])*(c[2]-a[2]);
+      if (up > 0) tri(a,b,c,hex); else tri(a,c,b,hex);
+    };
+    const quad = (a,b,c,d,hex) => { tri(a,b,c,hex); tri(a,c,d,hex); };
+    const grade = walls.map(p => model.groundAt(...p));
+    for (let i = 0; i < walls.length; i++) {
+      const j = (i+1) % walls.length, a = walls[i], b = walls[j];
+      const mid = [(a[0]+b[0])/2,(a[1]+b[1])/2];
+      const base = Math.min(-.11,Math.min(grade[i],grade[j],model.groundAt(...mid))-floor-.14);
+      quad(point(a,base),point(a,.13),point(b,.13),point(b,base),0x908d7e);
+      quad(point(a,.13),point(a,wallTop),point(b,wallTop),point(b,.13),0xb6ad98);
+    }
+    for (let i = 0; i < shell.length; i++) {
+      const j = (i+1) % shell.length, a = shell[i], b = shell[j], c = eaves[i], d = eaves[j];
+      quad(point(c,wallTop-.12),point(c,wallTop),point(d,wallTop),point(d,wallTop-.12),0xc2c4ab);
+      quad(point(c,wallTop-.12),point(d,wallTop-.12),point(b,wallTop-.12),point(a,wallTop-.12),0xa19e88);
+    }
+    const [bayFrontNorth,bayBackNorth,bayBackSouth,bayFrontSouth] = coveredBay.map(p => point(p,wallTop-.12));
+    quad(bayFrontNorth,bayFrontSouth,bayBackSouth,bayBackNorth,0x86847a);
+    const roof = [...eaves.map(p => point(p,wallTop)),...ridge.map(([x,z,y]) => point([x,z],wallTop+y))];
+    for (const [i,j,k] of faces) top(roof[i],roof[j],roof[k],0x8d9e7e);
+
+    // The covered bay is open to the apron. Joinery placement is representative.
+    const panel = (side,start,end,low,high,hex,offset) => {
+      const a = shell[side], b = shell[(side+1)%shell.length], dx = b[0]-a[0], dz = b[1]-a[1], len = Math.hypot(dx,dz);
+      const p = (t,y) => point([a[0]+(dx*t+dz*offset)/len,a[1]+(dz*t-dx*offset)/len],y);
+      quad(p(start,low),p(start,high),p(end,high),p(end,low),hex);
+    };
+    for (const [side,start,end] of [[2,10.15,12.95],[3,1.8,4.2],[3,9.15,11.90],[4,3.5,6.12],[5,3.1,6.35]]) {
+      panel(side,start,end,.89,2.10,0xe0dac3,.025);
+      panel(side,start+.095,end-.095,.98,2.01,0x656e69,.040);
+    }
+
+    const surface = apron.map(pair => pair.map(p => point(p,model.groundAt(...p)-floor+.038)));
+    for (let i = 1; i < surface.length; i++) {
+      const [a,b] = surface[i-1], [c,d] = surface[i];
+      top(a,c,b,0xaeaa9d);
+      top(b,c,d,0xaeaa9d);
+    }
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().makeTranslation(x0,floor,z0).elements, roughness: .88 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
+  }
+
   // The late-2024 west boat-ramp jetty. The native pier across the slipway is the older east jetty.
   function invWestJetty(T, THREE) {
     const decks = new WeakMap();
