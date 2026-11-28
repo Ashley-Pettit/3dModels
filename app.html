@@ -9676,7 +9676,7 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=50", assets: TOWN3D, place: "inv", pre: ["town.json?v=56b7c1bf", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model.js?v=50", assets: TOWN3D, place: "inv", pre: ["town.json?v=9a28410b", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
     moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=80", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
@@ -10126,6 +10126,10 @@ const handle = async (m, post) => {
       [-38.63116937, 145.72886301], [-38.63110856, 145.72815383], [-38.63106352, 145.72848114],
       [-38.63104775, 145.72879123], [-38.63113333, 145.72894915]
     ]) clearLatLon.push({ lat, lon, r: 0.16 });
+    // 18 Lavender Place retires only the seeded trunk inside the verified house.
+    if (inv) for (const [lat, lon] of [
+      [-38.63488304, 145.70569253],
+    ]) clearLatLon.push({ lat, lon, r: 0.16 });
     if (inv && BS.W.invClock) { const [lat, lon] = townLL(D.c[0], D.c[1]); clearLatLon.push({ lat, lon, r: 4.5 }); detailLatLon.push({ lat, lon, r: 260 }); }
     // the model's power poles that land in a road (each is set out beside its own street, so where another street runs past, one can stand
     // in it): taken out, so none stands in the road. Seven in the detail round the town centre, one right in the middle of A'Beckett
@@ -10168,7 +10172,7 @@ const handle = async (m, post) => {
     townModelLoad(cfg).then(lib => {
       if (T.dead) return;
       const assets = inv ? { town: cfg.assets + cfg.pre[0], height: cfg.assets + "height.png",
-        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=cd69429f" } : cfg.assets;
+        ground: cfg.assets + (window.anSmallGround ? "ground-2k.webp" : "ground.webp"), detail: cfg.assets + "detail.json?v=1132bd5e" } : cfg.assets;
       const m = T.model = townModelPair(T, lib, box, cfg, { assets, clearLatLon, clearPolygons, detailLatLon, ...(inv ? { roadGrounding: true } : {}) },
         { onProgress: (f, label) => { if (!T.on && !T.dead) tip.textContent = `Loading the town model: ${String(label).toLowerCase()}…`; },
           onFloodLevel: v => T.onFlood?.(v),
@@ -10213,6 +10217,7 @@ const handle = async (m, post) => {
         if (inv) {
           if (m.addParts) townGlade(T, m, BS.B.THREE);
           invMotelFrontage(T, m, BS.B.THREE);
+          if (m.addParts) invLavenderHouse(T, m, BS.B.THREE);
           const buildings = m.buildingBlockers?.();
           if (buildings) {
             const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
@@ -18204,6 +18209,66 @@ const handle = async (m, post) => {
     return at(0, 1);
   }
   // END GENERATED src/explore/collision.mjs
+
+  // 18 Lavender Place. One untextured batch and its exact wall-ring collision.
+  function invLavenderHouse(T, model, THREE) {
+    const walls = [[-2110.9,-216.2],[-2110.3,-222.9],[-2113.3,-223.2],[-2112.7,-229.7],
+      [-2108.9,-229.3],[-2107.9,-239.9],[-2121.5,-241.1],[-2123.6,-217.4]];
+    const eaves = [[-2110.33,-215.53],[-2109.62,-223.49],[-2112.63,-223.76],[-2112.16,-228.95],
+      [-2108.31,-228.61],[-2107.24,-240.49],[-2122.07,-241.81],[-2124.32,-216.78]];
+    const ridge = [[-2115.35,-233.75],[-2116.78,-222.71]];
+    const roofFaces = [[7,0,9],[6,7,9],[6,9,8],[5,6,8],[0,1,9],[1,2,9],[2,3,9],[3,8,9],[3,4,8],[4,5,8]];
+    const x0 = -2117, z0 = -229, height = walls.map(point => model.groundAt(...point));
+    const floor = Math.max(...height) + 0.13, soffit = floor + 2.76, positions = [], colours = [];
+    const point = ([x,z], y) => [x - x0, y - floor, z - z0];
+    const tri = (a,b,c,hex) => {
+      const colour = new THREE.Color(hex);
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colours.push(colour.r,colour.g,colour.b);
+    };
+    const quad = (a,b,c,d,hex) => { tri(a,b,c,hex); tri(a,c,d,hex); };
+    for (let i = 0; i < walls.length; i++) {
+      const j = (i + 1) % walls.length, a = walls[i], b = walls[j];
+      const ground = Math.min(height[i], height[j]) - 0.12;
+      quad(point(a,ground),point(b,ground),point(b,floor + .12),point(a,floor + .12),0xad9575);
+      quad(point(a,floor + .12),point(b,floor + .12),point(b,soffit),point(a,soffit),0xd4b58a);
+      const c = eaves[i], d = eaves[j];
+      quad(point(c,soffit - .12),point(d,soffit - .12),point(d,soffit),point(c,soffit),0xeee9df);
+      quad(point(c,soffit - .12),point(a,soffit - .12),point(b,soffit - .12),point(d,soffit - .12),0xd6cdbd);
+    }
+    const roof = [...eaves.map(p => point(p,soffit)),...ridge.map(p => point(p,soffit + 1.84))];
+    for (const [i,j,k] of roofFaces) {
+      const [a,b,c] = [roof[i],roof[j],roof[k]];
+      const up = (b[2]-a[2])*(c[0]-a[0]) - (b[0]-a[0])*(c[2]-a[2]);
+      const tint = i === 5 || i === 7 ? 0x786351 : 0x8d7767;
+      if (up > 0) tri(a,b,c,tint); else tri(a,c,b,tint);
+    }
+    // Face the court. The garage is on the west side of the front, beside the central entry.
+    const [west,east] = [walls[6],walls[5]], dx = east[0]-west[0], dz = east[1]-west[1], width = Math.hypot(dx,dz);
+    const face = (u,y,offset = .033) => point([west[0]+dx*u/width+dz*offset/width,
+      west[1]+dz*u/width-dx*offset/width],floor+y);
+    const trim = (left,right,low,high,hex,offset) =>
+      quad(face(left,low,offset),face(left,high,offset),face(right,high,offset),face(right,low,offset),hex);
+    trim(.48,5.91,.05,2.31,0xf1ece2);
+    trim(.63,5.76,.12,2.22,0xe1e2de,.047);
+    for (let y = .58; y < 2.0; y += .43) trim(.63,5.76,y,y+.018,0xb9b9b1,.061);
+    for (let i = 0; i < 7; i++) { const u = .93 + i * .68; trim(u,u+.48,1.92,2.11,0x424950,.066); }
+    trim(6.43,8.45,.05,2.63,0xb29574);
+    trim(6.70,8.17,.1,2.30,0xe2d8c7,.049);
+    trim(7.02,8.08,.13,2.21,0x746d63,.061);
+    trim(9.0,12.53,.60,2.27,0xf0ede1);
+    trim(9.12,12.41,.71,2.15,0x4f6471,.050);
+    for (const u of [10.22,11.34]) trim(u-.035,u+.035,.71,2.15,0xf0ede1,.067);
+    const panel = (u,v) => roof[6].map((a,i) => a + (roof[5][i]-a)*u + (roof[8][i]-a)*v + (i === 1 ? .045 : 0));
+    for (let i = 0; i < 5; i++) {
+      const a = .11 + i*.073, b = a+.064;
+      quad(panel(a,.18),panel(a,.38),panel(b,.38),panel(b,.18),0x263b55);
+    }
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colours),
+      matrix: new THREE.Matrix4().makeTranslation(x0,floor,z0).elements, roughness: .82 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
+  }
 
   // Inverloch Motel at 39 Powlett Street. Follow the highway leg of mapped fence 988785313,
   // inset into Vicmap parcel 5287818 with the service driveway at the west end left open.
