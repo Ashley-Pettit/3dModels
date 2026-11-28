@@ -125,12 +125,12 @@ img{{max-width:100%}}
 <body>
 """
 
-def inverloch_preloads():
+def inverloch_preloads(page_body):
     # Use the version that townModelLib will request, including on a renderer-only update.
-    model = re.search(r'lib: "InverlochModel", src: TOWN3D \+ "(inverloch-model\.js\?v=\d+)"', body)
+    model = re.search(r'lib: "InverlochModel", src: TOWN3D \+ "([^"]+)"', page_body)
     if not model:
         raise ValueError("Cannot find the Inverloch renderer URL for the Explore head")
-    town_map = re.search(r'place: "inv", pre: \["(town\.json(?:\?v=[a-z0-9]+)?)"', body)
+    town_map = re.search(r'place: "inv", pre: \["([^"]+)"', page_body)
     if not town_map:
         raise ValueError("Cannot find the Inverloch road map URL for the Explore head")
     return """<script>
@@ -204,6 +204,8 @@ if os.path.exists(beta_src):
     for bdir, bplace in (("moorooka", "moo"), ("inverloch", "inv"), ("logan", "logan")):
         xh = (bhead.replace('<base href="../">', '<base href="../../">', 1)
                    .replace("<head>\n", f'<head>\n<meta name="an-explore" content="{bplace}">\n', 1))
+        if bplace == "inv":
+            xh = xh.replace('<base href="../../">', '<base href="../../">\n' + inverloch_preloads(bbody), 1)
         os.makedirs(os.path.join(site, "beta", bdir), exist_ok=True)
         route_body = direct_inverloch_body(bbody) if bplace == "inv" else bbody
         with open(os.path.join(site, "beta", bdir, "index.html"), "w", encoding="utf-8") as f:
@@ -302,7 +304,7 @@ if os.path.exists(os.path.join(here, "local", "brands.json")):
                           .replace("<head>\n", f'<head>\n<meta name="an-explore" content="{slug}">\n', 1))
             assert "explore-share.jpg" in ehead and "an-explore" in ehead and '<base href="../../">' in ehead, "explore page head"
             if slug == "inv":
-                ehead = ehead.replace('<base href="../../">', '<base href="../../">\n' + inverloch_preloads(), 1)
+                ehead = ehead.replace('<base href="../../">', '<base href="../../">\n' + inverloch_preloads(lbody), 1)
             with open(os.path.join(ex, "index.html"), "w", encoding="utf-8") as f:
                 route_body = direct_inverloch_body(lbody) if slug == "inv" else lbody
                 f.write(stamped(ehead, route_body, ex) + route_body.strip() + "\n</body>\n</html>\n")
