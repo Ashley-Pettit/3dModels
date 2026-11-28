@@ -1,0 +1,107 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "activeParcelPFI": "131939399",
+    "activeAddressPFI": "131939403",
+    "source": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70670,-38.63251&level=20",
+    "provider": "Vantor / Esri World Imagery",
+    "scene": "6072283",
+    "captureDate": "2025-05-13",
+    "imageryResolutionM": 0.34,
+    "imageryPositionalAccuracyM": 5,
+    "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "connected house eaves"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.7065404,
+              -38.6324479
+            ],
+            [
+              145.706535,
+              -38.6324836
+            ],
+            [
+              145.706527,
+              -38.6324935
+            ],
+            [
+              145.706523,
+              -38.6325422
+            ],
+            [
+              145.7065511,
+              -38.632549
+            ],
+            [
+              145.7068053,
+              -38.6325679
+            ],
+            [
+              145.7068127,
+              -38.6324689
+            ],
+            [
+              145.7065404,
+              -38.6324479
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "main hip ridge witnesses"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.7066101,
+            -38.6324961
+          ],
+          [
+            145.7067295,
+            -38.632505
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "observed west crossover to roof return"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.7064318,
+            -38.6325391
+          ],
+          [
+            145.7064666,
+            -38.6325317
+          ],
+          [
+            145.7065008,
+            -38.6325286
+          ],
+          [
+            145.706527,
+            -38.6325218
+          ]
+        ]
+      }
+    }
+  ]
+}

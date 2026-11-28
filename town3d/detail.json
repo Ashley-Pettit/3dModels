@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-headland-way-11-v1",
+      "x": -2076.97227539,
+      "z": -539.65292045,
+      "size": 97.78588867,
+      "file": "detail-headland-way-11-v1.webp",
+      "lo": "detail-headland-way-11-v1-lo.webp"
     }
   ]
 }
