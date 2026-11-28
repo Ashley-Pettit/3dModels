@@ -59,13 +59,11 @@ export async function serveSite({site, three, ...options}) {
     .replaceAll('https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js', threeRoute);
   const expectedModelQuery = html.match(/lib: "InverlochModel", src: TOWN3D \+ "inverloch-model\.js(\?v=\d+)"/)?.[1];
   if (!expectedModelQuery) throw Error('Inverloch model request version missing from the original host');
-  const saved = html.includes('an3d-inv-graphics') ? '!manual && first === best' : 'first === best';
-  const save = `if (${saved}) save({ q: best, ms: Math.round(performance.now() - cur.t0) });`;
   html = replaceOnce(html, '<head>', `<head><script>(${setPreferences})();</script>`);
   html = replaceOnce(html, 'function townModelOn(T) {', 'function townModelOn(T) { window.__playtestHost = BS;');
   html = replaceOnce(html, 'mm.t0 = t0; return mm;', 'mm.__playtestScene = window.__playtestConstructed; mm.t0 = t0; return mm;');
-  html = replaceOnce(html, `if (!direct) upgrade(); else ${save}`,
-    `const settled = () => { window.__playtestStable = {first, best, direct}; }; if (!direct) upgrade().then(settled); else { ${save} settled(); }`);
+  html = replaceOnce(html, 'const ready = cur.ready.then(() => {',
+    'const ready = cur.ready.then(() => { window.__playtestStable = {first, best, direct};');
   html = replaceOnce(html, 'C.enterCar = c =>', `C.playtestPose = (x,z,h,v) => {
     if (!car || veh !== "car") return false;
     Object.assign(car, {x,z,h,dir:h,v,steer:0}); sit(0); return true; }; C.enterCar = c =>`);

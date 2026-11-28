@@ -10,6 +10,7 @@ export function readiness() {
 }
 
 export async function occupyUte({first, physical}) {
+  if (!window.__playtestStable?.direct) throw Error('The fixture requires a direct Medium startup');
   const {town, fly} = window.__playtestHost;
   const model = town.pair.cur.__playtestScene;
   if (model.quality !== 'medium' || model.pacing?.targetFps !== 60) {
