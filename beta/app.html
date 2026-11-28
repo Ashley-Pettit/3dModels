@@ -17275,12 +17275,16 @@ const handle = async (m, post) => {
           const push = hl ? Math.max(rim, inside ? d + Math.min(hl,hw) : 0) : hw + (inside ? d : -d);
           if (push <= deepest) continue;
           deepest = push;
-          if (normal) { const sign = (inside ? -1 : 1) / (d || 1); normal.x = vx*sign; normal.z = vz*sign; }
+          if (normal) { const sign = (inside ? -1 : 1) / (d || 1); normal.x = vx*sign; normal.z = vz*sign; normal.shape = B; }
         }
       });
       return deepest;
     }
     const depth = (x,z,h,hl,hw) => contact(x,z,h,hl,hw);
+    const obstacle = (x,z,h,hl,hw) => {
+      const hit = {};
+      return contact(x,z,h,hl,hw,hit) > 0 ? hit.shape : null;
+    };
     // Bound the entire rotating body during a step. Only subdivide when its conservative
     // midpoint box touches something; centimetre-scale uncertainty stops the step.
     function canDrive(x,z,h,tx,tz,th,hl,hw) {
@@ -17334,7 +17338,7 @@ const handle = async (m, post) => {
       if (y != null) moved.set(k,[...id,x,y,z,h,pitch,roll]);
       if (!wholeTown && !inPilot(x,z)) return;
       const [w,l] = dimensions.get(k) || [1.85,4.55];
-      const shape = worldBox(x,z,h,w,l); shape.hidden = hiddenCars.has(k); parked.set(k,shape);
+      const shape = worldBox(x,z,h,w,l); shape.hidden = hiddenCars.has(k); shape.key = k; parked.set(k,shape);
     }
     function addCars(cars) {
       for (const {x,z,heading} of cars) { const id=[x,z]; take(id); parked.set(carKey(x,z),null); park(id,x,z,heading); }
@@ -17376,7 +17380,7 @@ const handle = async (m, post) => {
     }
     // A quality swap reconstructs the renderer (including the cars in their original bays).
     const restoreCars = model => { for (const pose of moved.values()) model.driveCar?.(...pose); };
-    return { polygon, box, worldBox, post, depth, slide, canDrive, take, park, addCars, addTown, own, originalBay, bayFree, hideCars, restoreCars, get wholeTown() { return wholeTown; } };
+    return { polygon, box, worldBox, post, depth, obstacle, slide, canDrive, take, park, addCars, addTown, own, originalBay, bayFree, hideCars, restoreCars, get wholeTown() { return wholeTown; } };
   }
 
   // Native wall rings are already in model metres. Register individual masses so open
