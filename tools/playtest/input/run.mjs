@@ -134,12 +134,14 @@ function assess(data) {
   failed(reset(marks.released), 'The pair did not reset when released');
   const summary = { reasons, hold: timing(data, start, end) };
   if (mode === 'auto') {
-    const queued = models.find(row => row.cur === 1 && row.next === 2);
-    const activeModel = models.find(row => row.cur === 2 && !row.next);
+    const queued = models.find(row => row.cur === 1 && (row.next === 2 || row.pendingQuality === 'medium'));
+    const activeModel = models.find(row => row.at >= queued?.at && !row.next && !row.pendingQuality &&
+      (row.cur === 2 || (row.cur === 1 && row.quality === 'medium')));
     const save = activeModel?.savedQuality ? JSON.parse(activeModel.savedQuality) : null;
-    const oldBuffer = data.frames.findLast(row => row.cur === 1 && row.buffer && (!activeModel || row.at < activeModel.at))?.buffer;
+    const oldBuffer = data.frames.findLast(row => row.cur === 1 && row.buffer && row.at < queued?.at)?.buffer;
     const newBuffer = activeModel?.buffer;
     summary.transition = { queued, activeModel, oldBuffer, newBuffer,
+      path: activeModel ? (activeModel.cur === 1 ? 'in-place' : 'replacement') : null,
       activeBufferChanged: !!oldBuffer && !!newBuffer && oldBuffer.join(',') !== newBuffer.join(','),
       bufferChangesDuringHold: buffers.filter(row => row.at >= start && row.at <= end) };
     summary.gate = queued?.at >= start && activeModel?.at <= end && save?.q === 'medium';
@@ -151,7 +153,8 @@ function assess(data) {
         after: timing(data, activeModel.at, end),
       };
     }
-    const rollback = models.find(row => activeModel && row.at > activeModel.at && row.cur !== 2 && row.at <= end);
+    const rollback = models.find(row => activeModel && row.at > activeModel.at && row.at <= end &&
+      (row.cur !== activeModel.cur || row.quality === 'low'));
     if (rollback) summary.transition.rollback = rollback;
   }
   if (mode === 'norman') {

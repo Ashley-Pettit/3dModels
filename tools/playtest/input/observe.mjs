@@ -22,6 +22,7 @@ export function observe({ url, mode, destination }) {
     const activeCanvas = document.querySelector(`#bsTown [data-an-model="${model?.id}"] canvas`);
     return {
       at: performance.now(), ids: context.ids, place: scene?.cfg?.place, preset: scene?.pair?.initialPreset,
+      quality: scene?.pair?.quality, pendingQuality: scene?.pair?.pendingQuality,
       cur: model?.id, next: scene?.pair?.next?.id, spinner: document.getElementById('bsHiRes')?.hidden === false,
       visible: document.visibilityState, knobs: knobs(), sticks: context.readSticks?.() ?? null,
       on: scene?.on, walk: scene?.walk,
@@ -38,7 +39,7 @@ export function observe({ url, mode, destination }) {
   function frame(displayAt) {
     const s = summary();
     context.frames.push({ displayAt, ...s });
-    const key = [s.cur, s.next, s.spinner, s.on, s.walk].join(',');
+    const key = [s.cur, s.next, s.quality, s.pendingQuality, s.spinner, s.on, s.walk].join(',');
     if (key !== previousModel) {
       context.models.push({ ...s, savedQuality: localStorage.getItem('an3d-inv') });
       previousModel = key;
