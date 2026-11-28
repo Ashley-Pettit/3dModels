@@ -11,13 +11,14 @@ const help = `Usage: node tools/playtest/input/run.mjs --mode auto|norman|gps|st
   --emulate                  Desktop Chrome, 411 × 758 CSS px, DPR 2.625, coarse touch
   --expect-stamp STAMP       Require the supplied Explore page's an-commit value
   --destination SUBSTRING    GPS suggestion to select (mode gps only)
+  --after-release            In Auto, expect the upgrade after both controls are released
   --hold-ms MS               Override the mode's bounded hold (1000–90000 ms)
   --help                     Show usage
 `;
 const { values: options } = parseArgs({ options: {
   mode: { type: 'string' }, url: { type: 'string' }, out: { type: 'string' }, port: { type: 'string', default: '9222' },
   emulate: { type: 'boolean' }, 'expect-stamp': { type: 'string' }, destination: { type: 'string' },
-  'hold-ms': { type: 'string' }, help: { type: 'boolean' },
+  'after-release': { type: 'boolean' }, 'hold-ms': { type: 'string' }, help: { type: 'boolean' },
 } });
 if (options.help) {
   console.log(help);
@@ -25,6 +26,8 @@ if (options.help) {
 }
 const { mode, emulate, out } = options;
 if (!['auto', 'norman', 'gps', 'sticks'].includes(mode) || !options.url || !out) throw Error(help);
+const afterRelease = !!options['after-release'];
+if (afterRelease && mode !== 'auto') throw Error('--after-release requires Auto');
 const url = new URL(options.url);
 if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.hash)
   throw Error('Pass a canonical HTTP(S) Explore URL without credentials or a fragment');
@@ -42,7 +45,7 @@ if (!Number.isInteger(holdMs) || holdMs < 1000 || holdMs > 90000) throw Error('I
 
 await fs.mkdir(path.dirname(path.resolve(out)), { recursive: true });
 const output = await fs.open(out, 'wx');
-const report = { started: new Date().toISOString(), mode, url: url.href, emulate: !!emulate, holdMs,
+const report = { started: new Date().toISOString(), mode, url: url.href, emulate: !!emulate, holdMs, afterRelease,
   expectedStamp: options['expect-stamp'], destination: mode === 'gps' ? destination : undefined, dispatch: [] };
 class Inconclusive extends Error {}
 const requireFixture = (ok, message) => {
@@ -144,8 +147,19 @@ function assess(data) {
       path: activeModel ? (activeModel.cur === 1 ? 'in-place' : 'replacement') : null,
       activeBufferChanged: !!oldBuffer && !!newBuffer && oldBuffer.join(',') !== newBuffer.join(','),
       bufferChangesDuringHold: buffers.filter(row => row.at >= start && row.at <= end) };
-    summary.gate = queued?.at >= start && activeModel?.at <= end && save?.q === 'medium';
-    if (summary.gate) {
+    if (afterRelease) {
+      const lift = touches.find(row => row.type === 'touchend' && row.at >= end && row.ids.length === 0);
+      summary.gate = !!activeModel && !!lift && save?.q === 'medium';
+      if (summary.gate) {
+        failed(activeModel.at >= lift.at && heldFrames.every(row => row.cur === 1 && row.quality === 'low'),
+          'Auto handed off before both fingers were lifted');
+        failed(summary.transition.activeBufferChanged, 'Medium did not change the real drawing buffer');
+        summary.transition.afterLastReleaseMs = activeModel.at - lift.at;
+      }
+    } else {
+      summary.gate = queued?.at >= start && activeModel?.at <= end && save?.q === 'medium';
+    }
+    if (summary.gate && !afterRelease) {
       summary.transition.timing = {
         before: timing(data, start, queued.at),
         building: timing(data, queued.at, activeModel.at),
@@ -345,6 +359,10 @@ try {
     await liftSecond(right);
     await mark('look-up');
     await release('released');
+    if (afterRelease) {
+      await waitFor(() => page.evaluate(() => window.anTownNow?.()?.pair?.quality === 'medium'), 15000);
+      await mark('after-release-observed');
+    }
     if (mode === 'gps') {
       await begin('fresh-pair');
       await release('fresh-released');

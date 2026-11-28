@@ -38,6 +38,11 @@ The first two contacts land as soon as the walking controls are ready. The runne
 
 Use `summary.transition.path` to distinguish a replacement model from a same-canvas upgrade on newer builds. For the latter the gate requires the host to request Medium, complete it on model 1, and save the chosen tier during the held pair. `summary.transition.timing` covers the period before the request, the upgrade work, the handoff, and the held period afterward. The v46 Pixel 7 receipt retained both contacts despite a 917 ms callback gap and a 1.23 s gap between observed Move events near the model handoff. Input continuity and response time are separate results.
 
+For a build that schedules automatic upgrades around active controls, add `--after-release` to the Auto command.
+The same 23-second hold must stay Low. The runner waits up to 15 seconds after lifting both fingers for a genuine
+Medium drawing buffer and records the release-to-handoff time. Compare event latency during the held pair separately
+from the first idle Medium draw.
+
 ### Settled Medium to 11 Norman Road
 
 ```sh
