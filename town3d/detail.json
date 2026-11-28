@@ -55,6 +55,14 @@
       "size": 246.42043945,
       "file": "detail-mountain-ash-vacant-lots-v1.webp",
       "lo": "detail-mountain-ash-vacant-lots-v1-lo.webp"
+    },
+    {
+      "name": "detail-glendale-court-24-v1",
+      "x": -1697.89688533,
+      "z": -704.67200224,
+      "size": 91.91873535,
+      "file": "detail-glendale-court-24-v1.webp",
+      "lo": "detail-glendale-court-24-v1-lo.webp"
     }
   ]
 }
