@@ -10126,6 +10126,9 @@ const handle = async (m, post) => {
       [-38.63116937, 145.72886301], [-38.63110856, 145.72815383], [-38.63106352, 145.72848114],
       [-38.63104775, 145.72879123], [-38.63113333, 145.72894915]
     ]) clearLatLon.push({ lat, lon, r: 0.16 });
+    if (inv) clearLatLon.push({ lat: -38.63373674, lon: 145.70427704, r: 0.16 }); // 3 Dalmont Bay Court: south duplicate packed house 3773.
+    if (inv) clearLatLon.push({ lat: -38.63358134, lon: 145.70430575, r: 0.16 }); // 3 Dalmont Bay Court: north duplicate packed house 3774.
+    if (inv) clearLatLon.push({ lat: -38.63365791, lon: 145.70425694, r: 0.16 }); // 3 Dalmont Bay Court: seeded trunk under the dated main roof 37541.
     if (inv && BS.W.invClock) { const [lat, lon] = townLL(D.c[0], D.c[1]); clearLatLon.push({ lat, lon, r: 4.5 }); detailLatLon.push({ lat, lon, r: 260 }); }
     // the model's power poles that land in a road (each is set out beside its own street, so where another street runs past, one can stand
     // in it): taken out, so none stands in the road. Seven in the detail round the town centre, one right in the middle of A'Beckett
@@ -10238,6 +10241,7 @@ const handle = async (m, post) => {
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
         if (cfg.place === "moo") try { T.room6 = townRoom6(T, m); } catch (e) { console.warn("Town model: number 6's room couldn't be drawn", e); }  // (where the drone waited till 24 November 2026)
         if (cfg.place === "moo" && m.addParts && m.getCamera && !OFF.has("bal6")) try { T.bal6 = townBalcony6(T, m); } catch (e) { T.bal6 = null; console.warn("Town model: number 6's house and balcony couldn't be added", e); }  // number 6 as it is, or with the balcony concept
+        if (inv && m.addParts) invDalmontBayCourt3(T, m, BS.B.THREE);
         if (cfg.place === "moo" && m.addParts) try { townHouse24(T, m); } catch (e) { console.warn("Town model: 24 Beaudesert Road couldn't be added", e); }  // Pandy's house as it really is (a demo)
         if (cfg.place === "moo" && m.addParts) try { townHousesLite(T, m); } catch (e) { console.warn("Town model: the houses drawn the light way couldn't be added", e); }
         // the planes (townCar), each with somewhere to stand beside it
@@ -21911,6 +21915,49 @@ const handle = async (m, post) => {
     for (const side of [1, -1]) for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2, b = (i + 1) / 24 * Math.PI * 2, r = 0.62, z = side * 1.53;
       dot.push(0, 0.1, z, r * Math.cos(a), 0.1 + r * Math.sin(a), z, r * Math.cos(b), 0.1 + r * Math.sin(b), z); }
     return gpsPinMade = { ring: new Float32Array(ring), beam: new Float32Array(beam), pin: new Float32Array(pin), pinN: new Float32Array(pinN), dot: new Float32Array(dot) }; }
+  // 3 Dalmont Bay Court. One roof and enclosed principal shell follow the dated eaves.
+  function invDalmontBayCourt3(T, model, THREE) {
+    const [x0,z0,cos,sin] = [-2244.00054655,-358.35082962,0.99669686,0.08121192];
+    const walls = [[0.55,0.54],
+      [12.47,0.54],
+      [12.47,21.6],
+      [0.55,21.6]];
+    const eaves = [[0,0],
+      [13.04,0],
+      [13.04,22.18],
+      [0,22.18]];
+    const positions = [], colours = [];
+    const render = new THREE.Color(0xb9b2a1), roof = new THREE.Color(0x767a79);
+    const fascia = new THREE.Color(0xa5a4a0);
+    const offset = ([u,v]) => [u*cos+v*sin,u*sin-v*cos];
+    const world = p => { const [x,z] = offset(p); return [x+x0,z+z0]; };
+    const point = (p,y) => { const [x,z] = offset(p); return [x,y,z]; };
+    const ground = p => model.groundAt(...world(p));
+    const tri = (a,b,c,paint) => {
+      positions.push(...a,...b,...c);
+      for (let i=0; i<3; i++) colours.push(paint.r,paint.g,paint.b);
+    };
+    const quad = (a,b,c,d,paint) => { tri(a,b,c,paint); tri(a,c,d,paint); };
+    const top = Math.max(...walls.map(ground))+2.67;
+    walls.forEach((a,i) => {
+      const b=walls[(i+1)%walls.length];
+      quad(point(a,ground(a)-.12),point(b,ground(b)-.12),point(b,top+.02),point(a,top+.02),render);
+    });
+    const [a,b,c,d]=eaves.map(p=>point(p,top));
+    const southRidge=point([6.52,6.33],top+1.82), northRidge=point([6.52,15.74],top+1.82);
+    tri(a,b,southRidge,roof);
+    quad(b,c,northRidge,southRidge,roof);
+    tri(c,d,northRidge,roof);
+    quad(d,a,southRidge,northRidge,roof);
+    eaves.forEach((p,i) => {
+      const q=eaves[(i+1)%eaves.length];
+      quad(point(p,top-.115),point(q,top-.115),point(q,top),point(p,top),fascia);
+    });
+    model.addParts([{positions:new Float32Array(positions),colors:new Float32Array(colours),
+      matrix:new THREE.Matrix4().makeTranslation(x0,0,z0).elements,roughness:.9,doubleSide:true}]);
+    (T.invStatic??=invCivicCollision((x,z)=>[x,z],()=>false)).polygon(walls.map(world));
+  }
+
   function townGpsRibbon(pts, heightAt) {
     const pos = [], halfWidth = 0.8;
     let ax = pts[0], az = pts[1], prev;

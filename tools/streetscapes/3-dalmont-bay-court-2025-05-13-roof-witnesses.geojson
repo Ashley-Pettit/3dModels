@@ -1,0 +1,126 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "activeParcelPFI": "103199743",
+    "activeAddressPFI": "103199747",
+    "source": "https://www.arcgis.com/apps/mapviewer/index.html?layers=10df2279f9684e4a9f6a7f08febac2a9&center=145.70429058,-38.63367391&level=20",
+    "provider": "Vantor / Esri World Imagery",
+    "scene": "6072283",
+    "captureDate": "2025-05-13",
+    "sourceSamplingM": 0.34,
+    "sourcePositionalAccuracyM": 5,
+    "terms": "https://www.arcgis.com/sharing/rest/content/items/8e90a00a0a6845a49262e0b756f57a10/data",
+    "licensedCrosscheck": "microsoft-311223133-4fd06ad5512345c7",
+    "uncertainty": "Both procedural house centres are in the same witnessed main roof. The pale driveway is apparent on the southwest. The aerial does not establish facade openings, and the rear patio and east edge are approximate."
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "principal roof eave witnesses"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              145.7042282186404,
+              -38.633771861347334
+            ],
+            [
+              145.70437708124072,
+              -38.63378233741934
+            ],
+            [
+              145.70440122112186,
+              -38.63358329178943
+            ],
+            [
+              145.70424967631251,
+              -38.63357072046793
+            ],
+            [
+              145.7042282186404,
+              -38.633771861347334
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "visible pale southwest approach from the turning head"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            145.70420541986377,
+            -38.63385357466838
+          ],
+          [
+            145.70422285422237,
+            -38.63382633690504
+          ],
+          [
+            145.70421883090884,
+            -38.63378548024065
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "open rear patio"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.7043368481055,
+          -38.63353719693316
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "west side access"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.7042107842818,
+          -38.63370481445024
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "physical gap toward No. 5"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.70443206652553,
+          -38.633643005536435
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "role": "retained front tree area"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.70430734380633,
+          -38.6338169084461
+        ]
+      }
+    }
+  ]
+}
