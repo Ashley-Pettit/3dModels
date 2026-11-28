@@ -9727,7 +9727,10 @@ const handle = async (m, post) => {
   function townModelPair(T, lib, box, cfg, opts, cb) {
     const key = "an3d-" + cfg.place, mem = navigator.deviceMemory || 8, touch = matchMedia("(pointer: coarse)").matches;
     let seen = {}; try { seen = JSON.parse(localStorage.getItem(key) || "{}") || {}; } catch {}
-    const save = o => { seen = { ...seen, ...o }; try { localStorage.setItem(key, JSON.stringify(seen)); } catch {} };
+    let commitWaitMs = 0;
+    const save = o => {
+      if (o.ms !== undefined && commitWaitMs) { o.ms = Math.max(0, Math.round(o.ms - commitWaitMs)); commitWaitMs = 0; }
+      seen = { ...seen, ...o }; try { localStorage.setItem(key, JSON.stringify(seen)); } catch {} };
     const best = navigator.connection?.saveData || mem < 4 ? "low" : touch || mem <= 4 ? "medium" : "high";
     const graphics = cfg.place === "inv" ? invGraphics : null;
     const presets = lib.qualityPresets ? ["auto", ...lib.qualityPresets] : invGraphicsPresets;
@@ -9741,7 +9744,6 @@ const handle = async (m, post) => {
     const driven = cfg.place === "inv" ? new Map() : null;
     let replaying = null;
     const log = [], last = {}, LAST = ["setLabelObstacles", "setTide", "setFlood", "setFloodLevel", "setMinutes", "setCamera", "setGroundEdits", "setRemoved", "setMore", "driveCar", "setControlledCar"];
-    let controlWaitMs = 0;
     const waitForControls = async signal => {
       const start = performance.now();
       let lastHeld = -Infinity;
@@ -9752,7 +9754,7 @@ const handle = async (m, post) => {
         if (now - lastHeld >= 350) break;
         await new Promise(resolve => setTimeout(resolve, 100));
       }
-      controlWaitMs += performance.now() - start;
+      if (signal) commitWaitMs += performance.now() - start;
     };
     const make = (q, own) => { const t0 = performance.now(); let mm = null;
       mm = lib.create(box, { ...opts, quality: q, ...(graphics ? { frameTarget: graphics.frameTarget, beforeQualityCommit: waitForControls } : {}), onProgress: own ? cb.onProgress : undefined,
@@ -9820,7 +9822,7 @@ const handle = async (m, post) => {
       pendingQuality = target;
       try {
         if (graphics && (target === "medium" || target === "low") && cur.setQualityInPlace) {
-          const start = performance.now(), waitedBefore = controlWaitMs;
+          const start = performance.now();
           let applied = false;
           try { applied = await cur.setQualityInPlace(target); }
           catch (error) { if (currentTown()) console.warn("Inverloch quality transition failed; replacing the scene", error); }
@@ -9828,7 +9830,7 @@ const handle = async (m, post) => {
             if (!currentTown()) return false;
             activeQuality = target;
             // Count both pieces of initialization, excluding time the player spent in Low.
-            if (target !== "low") save({ q: target, ms: Math.round(initialLoadMs + performance.now() - start - (controlWaitMs - waitedBefore)) });
+            if (target !== "low") save({ q: target, ms: Math.round(initialLoadMs + performance.now() - start) });
             return true;
           }
         }
@@ -9853,13 +9855,13 @@ const handle = async (m, post) => {
       for (let i = 0; i < 600 && !T.on && !dead; i++) await new Promise(ok => setTimeout(ok, 100));
       await new Promise(ok => setTimeout(ok, 1500));
       if (dead || BS.town !== T) return;
-      const f = await fps(2000);
-      if (!currentTown() || (f < 55 && !window.__anForceUp)) return;
       // Older embeds and full terrain replacements have no yield point inside the model.
       if (graphics && !(best === "medium" && lib.canYieldQualityCommit && cur.setQualityInPlace)) {
         await waitForControls();
         if (dead || BS.town !== T) return;
       }
+      const f = await fps(2000);
+      if (!currentTown() || (f < 55 && !window.__anForceUp)) return;
       hiBox.hidden = false;
       if (!await changeQuality(best, initialLoadMs)) return;
       // the sharp one has to keep up: if it can't, back to light, and this device stays light
