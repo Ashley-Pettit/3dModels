@@ -9595,7 +9595,7 @@ const handle = async (m, post) => {
   // latitude, longitude, metres back, tilt and bearing). A model with floods can also set floodOf (what its flooded area is a share
   // of: "Logan"), floodNote (the line under the list) and floodWarn (show the not-official notice first, and a banner while a flood is on).
   const TOWNS = {
-    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model-v45.js?v=45", assets: TOWN3D, place: "inv", pre: ["town-v45.json?v=1bef586b", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
+    inv: { lib: "InverlochModel", src: TOWN3D + "inverloch-model-v45n.js?v=46", assets: TOWN3D, place: "inv", pre: ["town-v45.json?v=1bef586b", "height.png", "ground.webp"], up: () => !!BS.W?.invSpot, air: [300, 620, 2350, 0.04, -0.4] },
     moo: { lib: "MoorookaModel", src: TOWN3D + "moorooka/moorooka-model.js?v=80", assets: TOWN3D + "moorooka/", place: "moo", pre: ["town.json", "height.png", "ground.webp"], up: () => !!BS.W?.moo, air: [-150, 620, 1350, 0, -0.5],
       walkStart: { x: -269.8, z: -991.4, yaw: -1.623 },  // Ash's pick for where Moorooka starts: the Beaudesert Road footpath, looking at the house he chose
       // its floods: widest over the Oxley Creek flats along the model's western edge, seen from the east. floodWarn: the not-official notice has to be accepted
@@ -23298,7 +23298,7 @@ const handle = async (m, post) => {
     const mumUp = (x, z, h, host) => { if (!mumMake()) return false; const B = rex; rexCorpse = { x: B.x, z: B.z, h: B.h, s: B.s, pose: { ...B.pose }, t: 0, glow: 0, st: "dead", corpse: true };
       const n = rexRole === "host" ? rexGuests.size : 0, keep = { n: B.n, hostName: B.hostName };
       Object.assign(B, rexNew(x, z, h, host, true), keep); B.maxHp = B.hp = B.base * (1 + n); /* (her full health times how many are in the fight: Ash, 27 November 2026, "Increase both Dino's hps by a factor of the number of players in the lobby") */ B.me = rexOut ? 0 : 100; enrage();
-      gloom(false); snd.voiceLoad?.(rexVoiceSet, ["choppa", "back"]); rexSay("MUMMA T-REX!", 2800, true); snd.roar?.(1); rexCam.shake = Math.max(rexCam.shake, 1.4); hudK = "";
+      gloom(false); snd.voiceLoad?.(rexVoiceSet, ["choppa", "back", "roll"]); rexSay("MUMMA T-REX!", 2800, true); snd.roar?.(1); rexCam.shake = Math.max(rexCam.shake, 1.4); hudK = "";
        return true; };
     // her wings, at 30% health: out with a roar, and she's angry again (Ash, 27 November 2026: "At 30% hp give her wings and start flying
     // after the chopper")
@@ -23945,7 +23945,7 @@ const handle = async (m, post) => {
         // the fireball: she rears back, glowing and roaring, for 1.6 s ("FIREBALL! ROLL!"), then spits it at your helicopter (fbTick flies it)
         case "fireball": { const W = 1.6; stand(); look(); if (host && tg) turn(Math.atan2(dx, dz), 2.2);
           if (R.t < W) { to({ pitch: -0.3, neck: -0.75, jaw: 0.35 + 0.5 * R.t / W }, 6); R.glow = Math.max(R.glow, 0.5 + 0.5 * Math.sin(R.t * 18));
-            if (!R.roared) { R.roared = true; snd.roar?.(0.9); if (rexRole && !rexGhost && heliFight()) rexSay("FIREBALL! ROLL!", 1700, true); } }
+            if (!R.roared) { R.roared = true; snd.roar?.(0.9); if (rexRole && !rexGhost && heliFight()) { rexSay("FIREBALL! ROLL!", 1700, true); setTimeout(() => { if (rex === R && R.st === "fireball") snd.voice?.(rexVoiceSet, "roll"); }, 450); } } }  // ("Do a barrel roll!" over the radio, in an original voice: Ash, 28 November 2026, "I want a voice line as she fireballs ... that says do a barrel role")
           else { to({ pitch: 0.1, neck: -0.25, jaw: R.t < W + 0.35 ? 1.2 : 0.3 }, 10); if (!R.slam) { R.slam = true; fbGo(R); } }
           if (R.t > W + 0.9) { R.cd.fireball = 10 + Math.random() * 5; go("walk"); } break; }
         // flying (her wings out): up to a helicopter's height and after it, snapping and swiping when she's near; down again when it lands
