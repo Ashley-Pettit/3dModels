@@ -10242,6 +10242,8 @@ const handle = async (m, post) => {
     // Inverloch: the town centre and number 11 come across from the weather's Inverloch (below): keep the ground clear where
     // they'll stand (and round both, the model draws its small things: cars with proper shapes, letterboxes, bins, power lines)
     const cfg = T.cfg, inv = cfg.place === "inv", D = INV_TOWN, home = D.nr?.home, clearLatLon = [], clearPolygons = [], detailLatLon = [];
+    // Retire the seeded trunk within the confirmed 10 The Mews roof.
+    if (inv) clearLatLon.push({ lat: -38.63443038, lon: 145.71003664, r: 0.16 });
     // Keep the seeded tree indices stable. Clear only trunks enclosed by the two surveyed Bayview school roofs.
     if (inv) for (const [lat, lon] of [
       [-38.63102523, 145.72813660], [-38.63101172, 145.72819115], [-38.63104325, 145.72849263],
@@ -10384,6 +10386,7 @@ const handle = async (m, post) => {
             return { x: P.x + dx, z: P.z + dz, yaw: Math.atan2(dx, dz), pitch: -0.06 }; })(), target: [P.x, P.z] });
         if (rides) for (const G of rides.cars) { if ((G.spare && m.nearestCar) || G.gold) continue; /* a red car of the app's own only where the model has no cars to hand over */ const dx = Math.sin(G.h) * (G.bus ? 13 : 5.5), dz = Math.cos(G.h) * (G.bus ? 13 : 5.5);  // in front of its nose (nearer to it than to a car parked beside it)
           mine.push({ name: G.name, group: "Things to drive and fly", what: G.what, walk: { x: G.x + dx, z: G.z + dz, yaw: Math.atan2(dx, dz), pitch: -0.1 }, target: [G.x, G.z] }); }
+        if (inv && m.addParts) invTheMews10(T, m, BS.B.THREE);
         // the possum (Moorooka): on the footpath in Kingwell Street, a few steps from it
         if (rides?.possum) { const S = rides.possum; mine.push({ name: S.name, group: "Things to drive and fly", what: S.what, walk: { ...S.stand, pitch: -0.12 }, target: [S.x, S.z] }); }
         if (rides?.pigeon) { const S = rides.pigeon; mine.push({ name: S.name, group: "Things to drive and fly", what: S.what, walk: { ...S.stand, pitch: -0.25 }, target: [S.x, S.z] }); }
@@ -17730,6 +17733,56 @@ const handle = async (m, post) => {
     T.fitMuseumFrontage = native => townMuseumFrontage(native, THREE);
     return jumps;
   }
+  // 10 The Mews. Keep the hip and eastern return beside the existing approach.
+  function invTheMews10(T, model, THREE) {
+    const walls = [[-1727.8,-293.1],[-1723.6,-285.8],[-1729.6,-283],[-1727.9,-279.4],[-1735.5,-275.7],[-1740.9,-286.9]];
+    const eaves = [[-1727.66,-293.54],[-1723.12,-285.65],[-1729.15,-282.84],[-1727.45,-279.24],[-1735.66,-275.24],[-1741.35,-287.06]];
+    const ridges = [[-1735.9,-283.1,1.25],[-1731.3,-286.58,1.50],[-1726.68,-286.52,.95]];
+    const roofFaces = [[0,1,8],[0,8,7],[0,7,5],[1,2,8],[2,7,8],[2,3,6],[2,6,7],[3,4,6],[4,5,6],[5,7,6]];
+    const x0 = -1732, z0 = -285, wallTop = 2.63;
+    const floor = model.groundAt(-1726.2,-286.2) + .12;
+    const positions = [], colors = [];
+    const point = ([x,z], y) => [x-x0,y,z-z0];
+    const tri = (a,b,c,hex) => {
+      const tint = new THREE.Color(hex);
+      positions.push(...a,...b,...c);
+      for (let i = 0; i < 3; i++) colors.push(tint.r,tint.g,tint.b);
+    };
+    const quad = (a,b,c,d,hex) => { tri(a,b,c,hex); tri(a,c,d,hex); };
+    const heights = walls.map(p => model.groundAt(...p));
+    for (let i = 0; i < walls.length; i++) {
+      const j = (i+1) % walls.length, a = walls[i], b = walls[j], c = eaves[i], d = eaves[j];
+      const mid = [(a[0]+b[0])/2,(a[1]+b[1])/2];
+      const base = Math.min(.04,Math.min(heights[i],heights[j],model.groundAt(...mid))-floor-.14);
+      quad(point(a,base),point(a,.13),point(b,.13),point(b,base),0xa19d8e);
+      quad(point(a,.13),point(a,wallTop),point(b,wallTop),point(b,.13),0xc7c1b2);
+      quad(point(c,wallTop-.11),point(c,wallTop),point(d,wallTop),point(d,wallTop-.11),0x5b6466);
+      quad(point(c,wallTop-.11),point(d,wallTop-.11),point(b,wallTop-.11),point(a,wallTop-.11),0xbbbaab);
+    }
+
+    const roof = [...eaves.map(p => point(p,wallTop)),...ridges.map(([x,z,h]) => point([x,z],wallTop+h))];
+    for (const [i,j,k] of roofFaces) {
+      const [a,b,c] = [roof[i],roof[j],roof[k]];
+      const up = (b[2]-a[2])*(c[0]-a[0]) - (b[0]-a[0])*(c[2]-a[2]);
+      if (up > 0) tri(a,b,c,0x70797a); else tri(a,c,b,0x70797a);
+    }
+    // The available view shows the roof. Use subdued, representative openings.
+    const opening = (i,start,span,low,high,hex,offset) => {
+      const a = walls[i], b = walls[(i+1)%walls.length], dx = b[0]-a[0], dz = b[1]-a[1], len = Math.hypot(dx,dz);
+      const p = (t,y) => point([a[0]+(dx*t+dz*offset)/len,a[1]+(dz*t-dx*offset)/len],y);
+      quad(p(start,low),p(start,high),p(start+span,high),p(start+span,low),hex);
+    };
+    for (const [side,start,span] of [[0,2.15,2.05],[1,1.2,2.52],[3,2.1,2.74],[4,5.2,2.45],[5,4.2,3.2]]) {
+      opening(side,start,span,.89,2.09,0xdddbd1,.025);
+      opening(side,start+.09,span-.18,.97,2.02,0x59646a,.040);
+    }
+
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      matrix: new THREE.Matrix4().makeTranslation(x0,floor,z0).elements, roughness: .84 }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    grid.polygon(walls);
+  }
+
   // The timber entry to beach access 38, off the concrete Surf Parade shared path.
   function townSurfParadeBeachAccess(T, m) {
     const THREE = BS.B.THREE, positions = [], colors = [];
