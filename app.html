@@ -7642,19 +7642,19 @@ const handle = async (m, post) => {
       // ---- Norman Road, about 1.6 km west: its own patch of the town (Explore's "Jump to Norman Rd"). Streets, house numbers, the
       // surf beach and the sea from OpenStreetMap; number 11 drawn in detail, the rest as simple coastal houses facing their streets.
       if (D.nr) {
-        const N = D.nr, [ncx, ncz] = N.c, nb = bag(), nl = bag(), nw = bag(), nt = bag(), ntl = bag();
-        put(nb, new THREE.BoxGeometry(620, 2.2, 620), 0x5b8a46, mtx(ncx, 1.1, ncz, 0));  // its own lawn, so it isn't floating
+        const N = D.nr, [ncx, ncz] = N.c, nb = bag(), nl = bag(), nw = bag(), nt = bag(), ntl = bag(), ng = bag();
+        put(ng, new THREE.BoxGeometry(620, 2.2, 620), 0x5b8a46, mtx(ncx, 1.1, ncz, 0));  // its own lawn, so it isn't floating
         // the sea beyond the coastline, then the beach on top
         if (N.coast.length > 3) { const cp = pts2(N.coast), [hx0, hz0] = N.c; const mid = cp[cp.length >> 1], ox = mid[0] - hx0, oz = mid[1] - hz0, ol = Math.hypot(ox, oz) || 1;
           const sea = [...cp, ...cp.slice().reverse().map(([x, z]) => [x + ox / ol * 700, z + oz / ol * 700])];
           const g = new THREE.ShapeGeometry(new THREE.Shape(sea.map(([x, z]) => new THREE.Vector2(x, -z)))); g.applyMatrix4(flatDown); put(nw, g, 0x2f7391, mtx(0, G0 + 0.05, 0, 0)); }
-        if (N.beach.length > 5) { const g = new THREE.ShapeGeometry(new THREE.Shape(P(N.beach))); g.applyMatrix4(flatDown); put(nb, g, 0xe6d6ac, mtx(0, G0 + 0.08, 0, 0)); }
+        if (N.beach.length > 5) { const g = new THREE.ShapeGeometry(new THREE.Shape(P(N.beach))); g.applyMatrix4(flatDown); put(ng, g, 0xe6d6ac, mtx(0, G0 + 0.08, 0, 0)); }
         // streets: bitumen, gravel for the service lanes, sandy tracks for paths
         const segs = [];
         N.r.forEach(([w, f]) => { const pp = pts2(f); for (let i = 0; i < pp.length - 1; i++) { const [ax, az] = pp[i], [bx, bz] = pp[i + 1], L = Math.hypot(bx - ax, bz - az); if (L < 0.2) continue;
           segs.push([ax, az, bx, bz, w]); const c = w >= 7 ? 0x3d4146 : w >= 4 ? 0x8d8a82 : 0xcdbb92;
-          put(nb, new THREE.BoxGeometry(w, 0.08, L + (w >= 7 ? w * 0.6 : 0.4)), c, mtx((ax + bx) / 2, G0 + 0.05, (az + bz) / 2, Math.atan2(bx - ax, bz - az)));
-          if (w >= 7) put(nb, new THREE.BoxGeometry(0.15, 0.1, L * 0.5), 0xe9e4d8, mtx((ax + bx) / 2, G0 + 0.1, (az + bz) / 2, Math.atan2(bx - ax, bz - az))); } });  // a dash down the middle
+          put(ng, new THREE.BoxGeometry(w, 0.08, L + (w >= 7 ? w * 0.6 : 0.4)), c, mtx((ax + bx) / 2, G0 + 0.05, (az + bz) / 2, Math.atan2(bx - ax, bz - az)));
+          if (w >= 7) put(ng, new THREE.BoxGeometry(0.15, 0.1, L * 0.5), 0xe9e4d8, mtx((ax + bx) / 2, G0 + 0.1, (az + bz) / 2, Math.atan2(bx - ax, bz - az))); } });  // a dash down the middle
         const nearRoad = (x, z, pad) => segs.some(([ax, az, bx, bz, w]) => { const dx = bx - ax, dz = bz - az, L2 = dx * dx + dz * dz, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L2));
           return Math.hypot(x - ax - dx * t, z - az - dz * t) < w / 2 + pad; });
         // a hipped roof: a ridge along x, eaves round all four sides
@@ -7795,7 +7795,8 @@ const handle = async (m, post) => {
             const decal = (w, h, x, y, z, ry) => { const d = new THREE.Mesh(new THREE.PlaneGeometry(w, h), wl); d.applyMatrix4(vm(x, y, z, ry)); TG.add(d); };
             decal(0.62, 0.13, 0.48, G0 + 1.48, 2.57, 0); decal(2.4, 0.42, 1.0, G0 + 1.1, 0.4, Math.PI / 2); decal(2.4, 0.42, -1.0, G0 + 1.1, 0.4, -Math.PI / 2); }
           // the garden: lawn at the street, a deep bed of natives (grey-green, white-flowering), pink daisies, a gum or two
-          put(nb, new THREE.BoxGeometry(10.5, 0.04, 5), 0x6a9a4e, m(-4, G0 + 0.04, 12.8)); put(nb, new THREE.BoxGeometry(10.5, 0.2, 5.4), 0x5a4030, m(-4, G0 + 0.1, 7.9));
+          put(ng, new THREE.BoxGeometry(10.5, 0.04, 5), 0x6a9a4e, m(-4, G0 + 0.04, 12.8));
+          put(nb, new THREE.BoxGeometry(10.5, 0.2, 5.4), 0x5a4030, m(-4, G0 + 0.1, 7.9));
           // Open forks and separate, flattened sprays leave sky between the gum crowns.
           // The atlas adds leaf-sized marks; the outline and forks are real geometry.
           const spray = (x, y, z, w, h, d, seed, colour) => {
@@ -7941,6 +7942,7 @@ const handle = async (m, post) => {
           // Explore's "Jump to Norman Rd": on the street out the front, looking at the house
           const sp = new THREE.Vector3(3.5, G0 + 1.9, 25).applyMatrix4(m(0, 0, 0)), tg = new THREE.Vector3(0, F0 + 3.2, 0).applyMatrix4(m(0, 0, 0)), s = toW(sp.x, sp.y, sp.z), l = toW(tg.x, tg.y, tg.z).sub(s);
           W.invNormanSpot = { pos: [s.x, s.y, s.z], yaw: Math.atan2(-l.x, -l.z), pitch: Math.atan2(l.y, Math.hypot(l.x, l.z)) }; }
+        W.invNormanGround = done(ng, { side: THREE.DoubleSide });
         done(nb, { side: THREE.DoubleSide }); done(nl, { roughness: .5 }); done(nt); done(ntl, { flatShading: true, roughness: 1 });
         { const gm = done(nw); gm.material.dispose(); gm.material = W.invGlass || gm.material; }  // windows glow at night, like the shops
       }
@@ -16898,7 +16900,7 @@ const handle = async (m, post) => {
     if (!TG || !m.addParts) return jumps;
     TG.updateMatrixWorld(true);
     const toTG = T.toTG = new THREE.Matrix4().copy(TG.matrixWorld).invert(), v = new THREE.Vector3(), nm = new THREE.Matrix3();
-    T.live = []; T.glow = []; T.roots = []; T.cars = [];
+    T.live = []; T.glow = []; T.roots = []; T.cars = []; T.groundGuests = [];
     const rgb = c => [c.r, c.g, c.b], matOf = o => Array.isArray(o.material) ? o.material[0] : o.material;
     const plain = mat => mat && (mat.isMeshStandardMaterial || mat.isMeshBasicMaterial || mat.isMeshLambertMaterial || mat.isMeshPhongMaterial);
     const look = mat => ({ color: mat.color ? rgb(mat.color) : [1, 1, 1], map: mat.map?.image || undefined, mapRepeat: mat.map ? [mat.map.repeat.x, mat.map.repeat.y] : undefined,
@@ -16943,7 +16945,8 @@ const handle = async (m, post) => {
     const tower = W.invClock?.children.find(o => !o.isMesh && o.children.length);  // the clock's poles, faces, hands and ship; the rest of it is its plaza
     const flags = (W.invFlags || []).filter(under), drive = (W.invDriveCars || []).map(d => d.mesh).filter(Boolean);
     // what moves at number 11: the koala, the wombats, the joey and the magpie, the two on the balcony; and the cars on Norman Road
-    const moving = [W.invKoala?.ko, ...(W.invWombats || []).map(w => w.g), W.invCritters?.roo, W.invCritters?.mag, ...(W.invFolk?.all || [])].filter(Boolean), cars = W.invNormanCars || [], skip = new Set();
+    const wombats = (W.invWombats || []).map(w => w.g);
+    const moving = [W.invKoala?.ko, ...wombats, W.invCritters?.roo, W.invCritters?.mag, ...(W.invFolk?.all || [])].filter(Boolean), cars = W.invNormanCars || [], skip = new Set();
     [W.invClock, ...moving, ...cars].filter(Boolean).forEach(r => r.traverse(o => skip.add(o)));
 
     // the town centre round the clock: the bakery and the other shops, the war memorial, the library and the Hub, the streets
@@ -17000,13 +17003,12 @@ const handle = async (m, post) => {
     const home = D.nr?.home;
     if (home && W.invHouse) { const [hx, hz, nx, nz] = home, ry = Math.atan2(nx, nz), half = 16.5, zBack = -17, zFront = 15.4, zc = (zBack + zFront) / 2;
       const [x, z] = m.fromLatLon(...townLL(hx, hz));
-      // The lawn lies on the slope, just above the ground, not on a flat pad level with the slope's highest corner (which stood it up to
-      // 1.4 m over the ground on the low side). The house and everything on the lot lean with it, walls still upright: the slope is about
-      // a degree, too little to see. Ash, 26 November 2026: "The grass on 11 Norman Rd is too high", then "Remove that extra grass from
-      // 11 Norman Rd that you just added and instead just make the grass lower" (the grassy bank round it, which is gone)
-      const L = slopePad(m, { x: x + Math.sin(ry) * zc, z: z + Math.cos(ry) * zc, hw: half + 0.4, hd: (zFront - zBack) / 2 + 0.4, heading: ry, color: [0.105, 0.254, 0.061] }), top = L.top;
+      // The fitted slope still anchors the house and paving. The rendered lawn grades down around them.
+      const L = normanLawn(m, { x: x + Math.sin(ry) * zc, z: z + Math.cos(ry) * zc,
+        hw: half + 0.4, hd: (zFront - zBack) / 2 + 0.4, heading: ry }), top = L.top;
       (T.pads ||= []).push(L);
       const place = L.lean.clone().multiply(new THREE.Matrix4().makeTranslation(x - hx, top - G0, z - hz));
+      skip.add(W.invNormanGround);  // the full-town terrain and road supply these surfaces
       lot(W.invHouse, half, zBack, zFront, place, skip);
       if (m.buildingBlockers) {
         const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
@@ -17015,31 +17017,81 @@ const handle = async (m, post) => {
           grid.worldBox(x + Math.cos(ry)*u + Math.sin(ry)*v, z - Math.sin(ry)*u + Math.cos(ry)*v, ry, w, l);
         }
       }
-      moving.forEach(r => whole(r, place));
+      moving.forEach(r => {
+        if (!wombats.includes(r)) { whole(r, place); return; }
+        const anchored = place.clone();
+        T.groundGuests.push({ root: r, anchored, place, lawn: L });
+        whole(r, anchored);
+      });
       cars.forEach(c => { const cp = place.clone(); T.cars.push({ o: c, cp }); whole(c, cp); });  // each car kept on the model's road as it goes
       if (W.invNormanSpot) stop("Norman Rd", W.invNormanSpot, place, [x, z]); }
     return jumps;
   }
-  // A lawn laid on a slope (P: its middle x, z, half its width hw and depth hd, its heading, its colour): the plane that best fits the
-  // model's ground under it (sampled 9 x 9), raised just enough that the ground doesn't come up through it (5 cm clear, at least 6 cm
-  // up). Gives back what padGround and the drone need, its height at its middle (top), the slope across and along it (gu, gv), and lean:
-  // the shear that tilts things laid flat at its middle onto it, keeping upright things upright
-  function slopePad(m, P) { const c = Math.cos(P.heading), s = Math.sin(P.heading), N = 9, g = [];
+  // Fit the same placement plane as the original pad before grading the exposed lawn.
+  function normanLawn(m, P) { const c = Math.cos(P.heading), s = Math.sin(P.heading), N = 9, g = [];
     for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) { const u = (i / (N - 1) * 2 - 1) * P.hw, v = (j / (N - 1) * 2 - 1) * P.hd; g.push([u, v, m.groundAt(P.x + u * c + v * s, P.z - u * s + v * c)]); }
     const mean = g.reduce((a, q) => a + q[2], 0) / g.length, gu = g.reduce((a, q) => a + q[0] * q[2], 0) / g.reduce((a, q) => a + q[0] * q[0], 0), gv = g.reduce((a, q) => a + q[1] * q[2], 0) / g.reduce((a, q) => a + q[1] * q[1], 0);
     const top = mean + Math.max(0.06, Math.max(...g.map(([u, v, y]) => y - (mean + gu * u + gv * v))) + 0.05);
     const gx = gu * c + gv * s, gz = -gu * s + gv * c, THREE = BS.B.THREE, M = (a, b, cc, d, e, f, h, k, l, n, o, q) => new THREE.Matrix4().set(a, b, cc, d, e, f, h, k, l, n, o, q, 0, 0, 0, 1);
     const lean = M(1, 0, 0, 0, gx, 1, gz, -gx * P.x - gz * P.z, 0, 0, 1, 0);  // (y goes up gx a metre across x and gz along z, about the lawn's middle)
-    // the lawn: a slab 1.5 m deep, its top on the plane, its sides down into the ground
-    const pos = [], box = (x0, x1, y0, y1, z0, z1) => { for (const f of [[[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]], [[x0, y0, z1], [x0, y1, z1], [x0, y1, z0], [x0, y0, z0]], [[x0, y1, z0], [x0, y1, z1], [x1, y1, z1], [x1, y1, z0]],
-      [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]], [[x1, y0, z0], [x0, y0, z0], [x0, y1, z0], [x1, y1, z0]]]) pos.push(...f[0], ...f[1], ...f[2], ...f[0], ...f[2], ...f[3]); };
-    box(-P.hw, P.hw, -1.5, 0, -P.hd, P.hd);
-    const at = lean.clone().multiply(new THREE.Matrix4().makeTranslation(P.x, top, P.z)).multiply(new THREE.Matrix4().makeRotationY(P.heading));
-    m.addParts([{ positions: new Float32Array(pos), color: P.color, roughness: 1, matrix: at.elements.slice() }]);
-    return { x: P.x, z: P.z, c, s, hw: P.hw, hd: P.hd, top, gu, gv, lean }; }
-  // the ground on a pad: its top where you're on it (on a sloping one, its slope), else the ground g
+    const { x, z, hw, hd } = P, far = hd + .55, cells = 72, stride = cells + 1;
+    const du = 2 * hw / cells, dv = (hd + far) / cells;
+    const smooth = (a, b, t) => { const f = bsClamp((t - a) / (b - a), 0, 1); return f * f * (3 - 2 * f); };
+    const hardscape = u => Math.max(1 - smooth(3.9, 4.7, Math.abs(u - 5.2)), 1 - smooth(.75, 1.38, Math.abs(u + 4.4)));
+    const height = new Float32Array(stride * stride), positions = [], indices = [], uvs = [];
+    for (let j = 0; j <= cells; j++) for (let i = 0; i <= cells; i++) {
+      const u = -hw + du * i, v = -hd + dv * j, wx = x + c*u + s*v, wz = z - s*u + c*v;
+      const ground = m.groundAt(wx, wz);
+      const street = v > hd - .35 ? m.roadSurfaceAt?.(wx, wz) ?? ground : ground;
+      const bed = Math.max(ground, street);
+      const edge = Math.min(hw - Math.abs(u), v + hd, hd - v);
+      const grass = smooth(0, 4.1, edge);
+      // A short apron meets the road beyond the existing ends of the driveway and path.
+      const approach = hardscape(u) * smooth(hd - 8, hd - 5.4, v) * (1 - smooth(hd - .22, far, v));
+      const fit = Math.max(grass, approach);
+      const y = height[j * stride + i] = bed + fit * Math.max(0, top + gu*u + gv*v - bed);
+      positions.push(wx, y + .012, wz);
+      uvs.push(i / cells, 1 - j / cells);
+      if (i < cells && j < cells) {
+        const a = j * stride + i;
+        indices.push(a, a + stride, a + 1, a + 1, a + stride, a + stride + 1);
+      }
+    }
+    // Feather over the renderer's own verge texture, with a little deterministic lawn grain.
+    const map = document.createElement("canvas"); map.width = map.height = 128;
+    const ctx = map.getContext("2d"), pixels = ctx.createImageData(map.width, map.height);
+    let seed = 11;
+    for (let j = 0; j < map.height; j++) for (let i = 0; i < map.width; i++) {
+      const u = -hw + 2 * hw * i / (map.width - 1), v = -hd + (hd + far) * j / (map.height - 1);
+      const edge = Math.min(hw - Math.abs(u), v + hd, hd - v);
+      const mottling = Math.sin(u*.94 + v*.31) * Math.cos(v*.59 - u*.24);
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      const grain = 6 * mottling + (seed / 4294967296 - .5) * 10;
+      const driveway = 1 - smooth(3.62, 3.8, Math.abs(u - 5.2));
+      const apronFade = smooth(hd - 1.4, hd - .34, v) * (1 - smooth(hd + .06, far, v));
+      const apron = Math.max(driveway, 1 - smooth(.48, .62, Math.abs(u + 4.4))) * apronFade;
+      const opacity = Math.max(hardscape(u) * apronFade, smooth(0, 2.6 + .35 * mottling, edge));
+      const k = 4 * (j * map.width + i);
+      pixels.data[k] = 115 + grain + 19 * apron;
+      pixels.data[k + 1] = 125 + grain + 2 * apron;
+      pixels.data[k + 2] = 82 + grain + 28 * apron;
+      pixels.data[k + 3] = Math.round(255 * opacity);
+    }
+    ctx.putImageData(pixels, 0, 0);
+    m.addParts([{ positions, indices, uvs, map, opacity: .999, roughness: 1, matrix: new THREE.Matrix4().elements }]);
+    // Interpolate the same triangles that are drawn, so wheels and feet follow the visible grade.
+    const surfaceAt = (u, v, fallback) => {
+      if (Math.abs(u) > hw || v < -hd || v > far) return fallback;
+      const f = (u + hw) / du, g = (v + hd) / dv, i = Math.min(cells - 1, Math.floor(f)), j = Math.min(cells - 1, Math.floor(g));
+      const a = j * stride + i, p = f - i, q = g - j;
+      const y = p + q <= 1 ? height[a] * (1 - p - q) + height[a + 1] * p + height[a + stride] * q
+        : height[a + stride + 1] * (p + q - 1) + height[a + 1] * (1 - q) + height[a + stride] * (1 - p);
+      return Math.max(fallback, y);
+    };
+    return { x, z, c, s, hw, hd, top, gu, gv, lean, surfaceAt };
+  }
   function padGround(P, x, z, g) { const dx = x - P.x, dz = z - P.z, u = dx * P.c - dz * P.s, v = dx * P.s + dz * P.c;
-    return Math.abs(u) <= P.hw && Math.abs(v) <= P.hd ? Math.max(g, P.top + (P.gu || 0) * u + (P.gv || 0) * v) : g; }
+    return P.surfaceAt(u, v, g); }
   // The weather's town centre, cut out of its merged shapes and laid over the whole-town model's ground, which slopes where
   // the weather's is flat: every shape goes across with its heights measured from the ground, and the model lays it down so
   // that it follows the ground beneath it. A building comes whole or not at all (by its outline on the map); so does each
@@ -25597,6 +25649,12 @@ const handle = async (m, post) => {
     // the clock's hands, the koala and the wombats: wherever the weather's own are now
     if (T.live?.length) { const M = T.mtx || (T.mtx = new BS.B.THREE.Matrix4());
       T.roots.forEach(r => r.updateWorldMatrix(true, true));
+      for (const { root, place, anchored, lawn } of T.groundGuests) {
+        const p = (T.cv || (T.cv = new BS.B.THREE.Vector3())).setFromMatrixPosition(root.matrixWorld).applyMatrix4(T.toTG).applyMatrix4(place);
+        const plane = lawn.top + lawn.lean.elements[1] * (p.x - lawn.x) + lawn.lean.elements[9] * (p.z - lawn.z);
+        const ground = padGround(lawn, p.x, p.z, m.groundAt(p.x, p.z));
+        anchored.elements[13] = place.elements[13] + ground - plane;
+      }
       for (const C of T.cars || []) { const p = (T.cv || (T.cv = new BS.B.THREE.Vector3())).setFromMatrixPosition(C.o.matrixWorld).applyMatrix4(T.toTG);
         C.cp.elements[13] = m.groundAt(p.x + C.cp.elements[12], p.z + C.cp.elements[14]) + 0.05 - 2.2; }  // the cars: on the ground under them (the weather's G0 is 2.2)
       for (const L of T.live) L.h.setMatrix(L.i, M.copy(L.place).multiply(T.toTG).multiply(L.o.matrixWorld).elements); }
