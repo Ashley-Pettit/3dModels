@@ -6378,7 +6378,8 @@ const handle = async (m, post) => {
       weather_code: 1, is_day: hourly.is_day[j], uv_index: hourly.uv_index[j], precipitation: 0, cloud_cover: 12, pressure_msl: 1016, visibility: 30000 };
     return { latitude: c[1], longitude: c[2], timezone: tz, utc_offset_seconds: off, current, hourly, daily, fair: true }; };
   async function loadWeather() {
-    if (NO_NEWS) { const c = CITY[S.region] || CITY.qld; state.wx = { at: Date.now(), d: fairWx(c), city: c[0], tuned: true }; renderWxChip(); if (openSheet === "weather") renderWeather(); return; }
+    if (NO_NEWS) { if (BS.fly && state.wx) return;  // (the 3D site's weather is always fair: nothing to redraw mid-game)
+      const c = CITY[S.region] || CITY.qld; state.wx = { at: Date.now(), d: fairWx(c), city: c[0], tuned: true }; renderWxChip(); if (openSheet === "weather") renderWeather(); return; }
     const c = CITY[S.region];
     if (!c) { state.wx = null; renderWxChip(); return; }
     const key = "brief.wx3." + S.region;
@@ -9130,7 +9131,13 @@ const handle = async (m, post) => {
       const set = p => { const r = el.getBoundingClientRect(), R = r.width / 2 - 14; let dx = p.clientX - (r.left + r.width / 2), dy = p.clientY - (r.top + r.height / 2);
         const d = Math.hypot(dx, dy); if (d > R) { dx *= R / d; dy *= R / d; }
         knob.style.transform = `translate(${dx}px, ${dy}px)`; v.x = dx / R; v.y = -dy / R; };
-      const end = () => { id = null; knob.style.transform = ""; v.x = 0; v.y = 0; };
+      let heldAt = 0;
+      const end = why => { const was = id; id = null; knob.style.transform = ""; v.x = 0; v.y = 0;
+        // Why the Move stick let go, when it wasn't a thumb lifting (Ash, 29 November 2026, "Still bugged, fix the joystick"): a desktop
+        // test can't show what an iPhone does, so the phone says. Kept in BS.stickLog; shown to Ash as a toast
+        if (was === null || !why || why === "lifted" || v !== F.stick) return; const held = ((performance.now() - heldAt) / 1000).toFixed(1);
+        (BS.stickLog ||= []).push({ why, held, at: new Date().toISOString() }); if (BS.stickLog.length > 20) BS.stickLog.shift(); console.warn("Move stick let go:", why, held + " s");
+        try { if (isAsh()) toast(`Move stick let go: ${why} (held ${held} s)`, 4000, true); } catch {} };
       const mine = e => [...e.changedTouches].find(t => t.identifier === id);
       const h = {
         // two fingers down at once can come in one event: take the one on this stick, not just the first
@@ -9138,10 +9145,10 @@ const handle = async (m, post) => {
           if (id !== null) return;
           const t = [...e.changedTouches].find(q => el.contains(q.target));
           if (!t) return;
-          id = t.identifier; set(t); tip.classList.add("dim");
+          id = t.identifier; heldAt = performance.now(); set(t); tip.classList.add("dim");
         },
         touchmove: e => { const t = mine(e); if (t) set(t); },
-        touchend: e => { if (mine(e)) end(); }, touchcancel: e => { if (mine(e)) end(); },
+        touchend: e => { if (mine(e)) end("lifted"); }, touchcancel: e => { if (mine(e)) end(`the phone cancelled the touch (${e.touches.length} other finger${e.touches.length === 1 ? "" : "s"} down)`); },
         pointerdown: e => { if (e.pointerType !== "mouse") return; id = "m"; try { el.setPointerCapture(e.pointerId); } catch {} set(e); tip.classList.add("dim"); e.preventDefault(); },
         pointermove: e => { if (e.pointerType === "mouse" && id === "m") set(e); },
         pointerup: e => { if (e.pointerType === "mouse" && id === "m") end(); },
@@ -9494,7 +9501,7 @@ const handle = async (m, post) => {
     document.body.classList.remove("bslocked"); $("bsLockTip").hidden = true;
     ["pointerdown", "pointermove", "pointerup", "pointercancel"].forEach(k => canvas.removeEventListener(k, F.on[k])); canvas.removeEventListener("wheel", F.on.wheel); canvas.removeEventListener("contextmenu", F.on.ctxmenu); canvas.style.cursor = "";
     if (document.pointerLockElement === canvas) document.exitPointerLock?.();
-    for (const j of [...(F.joys || []), ...(F.uds || [])]) { j.end(); Object.entries(j.h).forEach(([k, f]) => j.el.removeEventListener(k, f)); }
+    for (const j of [...(F.joys || []), ...(F.uds || [])]) { j.end("Explore closed or restarted"); Object.entries(j.h).forEach(([k, f]) => j.el.removeEventListener(k, f)); }
     if (F.noGesture) ["gesturestart", "gesturechange"].forEach(k => document.removeEventListener(k, F.noGesture));
     if (F.unzoom) { const U = F.unzoom; ["touchstart", "touchend", "touchcancel"].forEach(k => document.removeEventListener(k, U.fingers)); U.vv.removeEventListener("resize", U.vr); U.stop(); }
     clearTimeout(F.tipT); BS.fly = null;
@@ -27542,7 +27549,7 @@ const handle = async (m, post) => {
   document.addEventListener("visibilitychange", () => { if (document.hidden) markVisit(); });
   window.addEventListener("pagehide", markVisit);
   render();
-  setInterval(() => { if (state.loaded && !document.hidden && !openSheet) render(true); }, 60000);
+  setInterval(() => { if (state.loaded && !document.hidden && !openSheet && !BS.fly) render(true); }, 60000);
 
   function finishRefresh(changed) {
     if (!state.refreshing) return;
@@ -28154,10 +28161,13 @@ const handle = async (m, post) => {
     // reload by themselves (and pulling down only fetches news), so check whenever it comes back into view.
     checkBuild();
     document.addEventListener("visibilitychange", () => { if (!document.hidden) checkBuild(); });
-    setInterval(() => { if (!document.hidden) checkBuild(); }, 10 * 60000);
-    setInterval(() => { if (!document.hidden) loadWeather(); }, 15 * 60000);
+    // (none of these while Explore is open: the weather's redraw rebuilds a sheet of the page, and the news reload renders the news. Ash,
+    // 29 November 2026: "You keep loading the news app in the background which I think causes issues", with the stick dropping. They
+    // catch up when you leave Explore, or the next time round)
+    setInterval(() => { if (!document.hidden && !BS.fly) checkBuild(); }, 10 * 60000);
+    setInterval(() => { if (!document.hidden && !BS.fly) loadWeather(); }, 15 * 60000);
     // Pick up new stories while the app stays open.
-    setInterval(() => { if (!document.hidden) loadStatic(false); }, 10 * 60000);
+    setInterval(() => { if (!document.hidden && !BS.fly) loadStatic(false); }, 10 * 60000);
     document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() - Date.parse(state.status?.updatedAt || 0) > 30 * 60000) loadStatic(false); });
   });
 })();
