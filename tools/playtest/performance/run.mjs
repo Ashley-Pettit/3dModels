@@ -128,11 +128,13 @@ try {
   console.log(`${report.label} started ${report.timing.durationMs / 1000}s, ${report.state.gpu}, ${report.state.quality}/${report.state.frameTarget}`);
   let nextThermal = 0, nextPresentation = 0, nextSave = Date.now() + 15000;
   const finishDeadline = Date.now() + report.timing.durationMs + 15000;
-  while (Date.now() < finishDeadline) {
+  for (;;) {
     const cursor = Object.fromEntries(['renders', 'rafs', 'progress'].map(key => [key, report[key].length]));
     const current = await page.evaluate(readReplay, cursor);
     for (const key of Object.keys(cursor)) report[key].push(...current[key]);
     const now = Date.now();
+    // A slow optional device sample may span completion. Always read the final replay first.
+    if (current.end === null && now >= finishDeadline) break;
     if (phone && now >= nextThermal) {
       nextThermal = now + 15000;
       await sample('thermal', thermalSample);
