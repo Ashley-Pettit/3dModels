@@ -256,6 +256,15 @@ lines, found on the photograph.
   broken give way lines where a street meets a bigger or equal one, and kerbs kept clear of every street's carriageway
   (they used to poke into junctions).
 
+## Inverloch Industrial Estate wayfinding sign
+
+The blue two-post sign on the south verge of Wonthaggi Road points westbound traffic toward the Bear Street approach
+to Inverloch Industrial Estate. Its position (`145.720042, -38.627388`) and dimensions are estimates from two views,
+with the anchor checked against the road edge. Authored geometry and canvas lettering use one batch, and only the
+posts are solid. [Approach view](https://www.mapillary.com/app/?pKey=588735650795644) · [Close view](https://www.mapillary.com/app/?pKey=584548554484819) · [Mapillary CC BY-SA terms](https://help.mapillary.com/hc/en-us/articles/115001770409-CC-BY-SA-license-for-open-data)
+
+Both views were captured by maxim752 on 18 January 2025.
+
 ## Inverloch tidied by inference
 
 Ash, 13 November 2026: "Do the same for Inverloch, find things that look out of place and infer correctness". With

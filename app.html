@@ -9963,6 +9963,7 @@ const handle = async (m, post) => {
               else grid.park(c.id, B.x, B.z, B.h); } } catch (e) { console.warn("Inverloch: couldn't move the parked cars stuck in poles", e); }
           } else invAddDesignedWalls(T, m.designedWallFootprints?.());
         }
+        if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
         const OFF = exOff(); document.body.classList.toggle("bsnoplaces", OFF.has("places"));
         if (cfg.place === "moo" && m.addParts && !OFF.has("no6")) T.no6 = townNo6(T, m);  // 6 Beaudesert Road's street, from Ash's photos (it catches its own errors)
@@ -17206,6 +17207,54 @@ const handle = async (m, post) => {
     const inPilot = (x,z) => townInBlock((x-o0[0])/kx, (z-o0[1])/kz);
     return { at, place, inPilot, parts: parts.length, corners: parts.reduce((n, p) => n + p.positions.length / 3, 0) };
   }
+  // The westbound wayfinder in the south verge, before the Bear Street turn.
+  // Estimated from maxim752 Mapillary frames 588735650795644 and 584548554484819 (18 January 2025).
+  function invIndustrialEstateSign(T, model, THREE) {
+    const x = -867.06, z = -1067.02, angle = 104 * Math.PI / 180;
+    const matrix = new THREE.Matrix4().makeRotationY(angle).setPosition(x, 0, z);
+    const canvas = document.createElement("canvas"); canvas.width = 192; canvas.height = 48;
+    const ink = canvas.getContext("2d");
+    if (!ink) return;
+    const faceWidth = 184;
+    ink.fillStyle = "#fff"; ink.fillRect(0, 0, canvas.width, canvas.height);
+    ink.fillStyle = "#19417c"; ink.fillRect(0, 0, faceWidth, canvas.height);
+    ink.strokeStyle = "#fff"; ink.lineWidth = 2; ink.strokeRect(3, 3, faceWidth - 6, 42);
+    ink.lineWidth = 5;
+    ink.beginPath(); ink.moveTo(33, 12); ink.lineTo(21, 24); ink.lineTo(33, 36); ink.stroke();
+    ink.fillStyle = "#fff"; ink.font = "bold 16px sans-serif";
+    ink.textAlign = "center"; ink.textBaseline = "middle";
+    ink.fillText("Inverloch", 110, 15); ink.fillText("Industrial Estate", 110, 33);
+
+    const positions = [], colors = [], uvs = [];
+    const metal = new THREE.Color(0x879098);
+    const box = (width, height, depth, localX, base, panel = false) => {
+      const geometry = new THREE.BoxGeometry(width, height, depth);
+      const pos = geometry.getAttribute("position"), norm = geometry.getAttribute("normal"), uv = geometry.getAttribute("uv");
+      for (const i of geometry.index.array) {
+        const front = panel && norm.getZ(i) > 0.5;
+        positions.push(localX + pos.getX(i), base + height / 2 + pos.getY(i), pos.getZ(i));
+        if (front) {
+          colors.push(1, 1, 1);
+          uvs.push((0.5 + uv.getX(i) * (faceWidth - 1)) / canvas.width, uv.getY(i));
+        } else {
+          colors.push(metal.r, metal.g, metal.b);
+          uvs.push(0.985, 0.5);
+        }
+      }
+    };
+    const posts = [-0.51, 0.51], postWidth = 0.065;
+    for (const localX of posts) box(postWidth, 2.32, postWidth, localX, 0);
+    box(1.90, 0.49, 0.045, 0, 2.04, true);
+    model.addParts([{ positions: new Float32Array(positions), colors: new Float32Array(colors),
+      uvs: new Float32Array(uvs), map: canvas, matrix: matrix.elements, onGround: true }]);
+
+    const grid = T.invStatic ??= invCivicCollision((x,z) => [x,z], () => false);
+    for (const localX of posts) {
+      const foot = new THREE.Vector3(localX, 0, 0).applyMatrix4(matrix);
+      grid.worldBox(foot.x, foot.z, angle, postWidth, postWidth);
+    }
+  }
+
   // Ground-level collision in model metres. Authored guest shapes use their local transform.
   function invCivicCollision(at, inPilot) {
     const dimensions = new Map(), owned = new WeakMap(), identity = (x,z) => [x,z];
