@@ -10269,6 +10269,8 @@ const handle = async (m, post) => {
     if (inv && BS.W.invTG && BS.W.invClock) TOWN_BLOCK.forEach(P => clearPolygons.push({ latLon: P.map(([x, z]) => townLL(x, z)), roads: true }));  // the town centre comes across whole
     if (inv) clearPolygons.push({ latLon: INV_GLADE_SHELTER });
     if (inv) clearPolygons.push({ latLon: invScrewCreekMask(), roads: true });
+    if (inv) clearLatLon.push({ lat: -38.63375701, lon: 145.70490295, r: 0.16 }); // 9 Dalmont Bay Court: seeded trunk 37542 beneath the main roof.
+    if (inv) clearLatLon.push({ lat: -38.63380430, lon: 145.70485127, r: 0.16 }); // 9 Dalmont Bay Court: seeded trunk 37687 beneath the main roof.
     // Moorooka's bridges (town.json's roads marked as one): their decks, so a car drives over them, not down through them into the creek.
     // The deck is as the model draws it (moorooka-model.js ?v=79): straight from one end's ground to the other's, a metre's hump in the
     // middle, and 0.6 m up, coming up from the road over its first and last 8 m. Under a bridge (a road under an overpass) you stay down:
@@ -10366,6 +10368,7 @@ const handle = async (m, post) => {
           if (m.addParts) try { townSurfParadeBeachAccess(T, m); }
             catch (e) { console.warn("Inverloch: Surf Parade beach access couldn't be added", e); }
         }
+        if (inv && m.addParts) invDalmontBayCourt9(T, m, BS.B.THREE);
         if (inv && m.addParts) try { mine.push(invWestJetty(T, BS.B.THREE)); } catch (e) { console.warn("Inverloch: the west jetty could not be added", e); }
         if (inv && m.addParts) invIndustrialEstateSign(T, m, BS.B.THREE);
         if (cfg.place === "moo") try { mine = mine.concat(townShops(T, m)); } catch (e) { console.warn("Town model: Moorooka's shops couldn't be added", e); }
@@ -18066,6 +18069,122 @@ const handle = async (m, post) => {
   }
   // The westbound wayfinder in the south verge, before the Bear Street turn.
   // Estimated from maxim752 Mapillary frames 588735650795644 and 584548554484819 (18 January 2025).
+  // 9 Dalmont Bay Court. A single guest with a hip roof, closed garage and recessed entry.
+  function invDalmontBayCourt9(T, model, THREE) {
+    const x0 = -2193.13858, z0 = -354.77827, cos = .99580679, sin = .09148132;
+    const walls = [[2.21,0.07],
+      [8.87,0.07],
+      [8.87,1.73],
+      [12.71,1.73],
+      [12.71,0.13],
+      [16.73,0.13],
+      [16.73,19.42],
+      [6.04,19.42],
+      [6.04,6.95],
+      [2.21,6.95]];
+    const roof = [[[11.385,14.075,1.4222],[5.58,7.41,0.0],[5.58,19.88,0.0]],
+      [[11.385,5.465,1.4222],[5.58,-0.34,0.0],[8.9777,3.2023,0.8324]],
+      [[8.9777,3.8677,0.8324],[11.385,5.465,1.4222],[8.9777,3.2023,0.8324]],
+      [[11.385,5.465,1.4222],[5.58,7.41,0.0],[11.385,14.075,1.4222]],
+      [[5.58,7.41,0.0],[11.385,5.465,1.4222],[8.9777,3.8677,0.8324]],
+      [[11.385,14.075,1.4222],[17.19,19.88,0.0],[17.19,7.4,0.0]],
+      [[11.385,5.465,1.4222],[13.9624,5.3191,0.7908],[13.9624,2.8876,0.7908]],
+      [[11.385,14.075,1.4222],[13.9624,5.3191,0.7908],[11.385,5.465,1.4222]],
+      [[11.385,14.075,1.4222],[17.19,7.4,0.0],[13.9624,5.3191,0.7908]],
+      [[12.28,-0.34,0.0],[11.385,5.465,1.4222],[13.9624,2.8876,0.7908]],
+      [[11.385,5.465,1.4222],[12.28,-0.34,0.0],[5.58,-0.34,0.0]],
+      [[11.385,14.075,1.4222],[5.58,19.88,0.0],[17.19,19.88,0.0]],
+      [[1.77,7.41,0.0],[5.645,3.535,0.9106],[1.77,-0.34,0.0]],
+      [[5.645,3.535,0.9106],[8.9777,3.2023,0.8324],[5.58,-0.34,0.0]],
+      [[8.645,3.535,0.9106],[8.9777,3.2023,0.8324],[5.645,3.535,0.9106]],
+      [[5.58,-0.34,0.0],[1.77,-0.34,0.0],[5.645,3.535,0.9106]],
+      [[5.58,7.41,0.0],[5.645,3.535,0.9106],[1.77,7.41,0.0]],
+      [[5.645,3.535,0.9106],[5.58,7.41,0.0],[8.9777,3.8677,0.8324]],
+      [[8.9777,3.8677,0.8324],[8.645,3.535,0.9106],[5.645,3.535,0.9106]],
+      [[8.9777,3.8677,0.8324],[8.9777,3.2023,0.8324],[8.645,3.535,0.9106]],
+      [[13.9624,2.8876,0.7908],[13.9624,5.3191,0.7908],[14.735,4.3636,1.1539]],
+      [[14.735,-0.34,1.1539],[13.9624,2.8876,0.7908],[14.735,4.3636,1.1539]],
+      [[14.735,-0.34,1.1539],[12.28,-0.34,0.0],[13.9624,2.8876,0.7908]],
+      [[14.735,4.3636,1.1539],[17.19,-0.34,0.0],[14.735,-0.34,1.1539]],
+      [[14.735,4.3636,1.1539],[17.19,7.4,0.0],[17.19,-0.34,0.0]],
+      [[13.9624,5.3191,0.7908],[17.19,7.4,0.0],[14.8305,4.4817,1.109]],
+      [[14.8305,4.4817,1.109],[14.735,4.3636,1.1538],[13.9624,5.3191,0.7908]]];
+    const fascia = [[1.77,-0.34,0.0],
+      [12.28,-0.34,0.0],
+      [14.735,-0.34,1.1539],
+      [17.19,-0.34,0.0],
+      [17.19,19.88,0.0],
+      [5.58,19.88,0.0],
+      [5.58,7.41,0.0],
+      [1.77,7.41,0.0]];
+    const position = [], colour = [];
+    const stone = new THREE.Color(0xc9bca2), warmStone = new THREE.Color(0xc3b196);
+    const tile = new THREE.Color(0xbabcb4), trim = new THREE.Color(0xbbbab1);
+    const timber = new THREE.Color(0x8a6652), seam = new THREE.Color(0x796050);
+    const frame = new THREE.Color(0xe0ddd2), glass = new THREE.Color(0x6c7779);
+    const local = ([u,v]) => [u*cos+v*sin,u*sin-v*cos];
+    const world = (p) => { const [x,z] = local(p); return [x+x0,z+z0]; };
+    const at = (p,y) => { const [x,z] = local(p); return [x,y,z]; };
+    const ground = p => model.groundAt(...world(p));
+    const tri = (a,b,c,paint) => {
+      position.push(...a,...b,...c);
+      for (let i=0; i<3; i++) colour.push(paint.r,paint.g,paint.b);
+    };
+    const quad = (a,b,c,d,paint) => { tri(a,b,c,paint); tri(a,c,d,paint); };
+    const topFace = (a,b,c,paint) => {
+      if ((b[2]-a[2])*(c[0]-a[0])>(b[0]-a[0])*(c[2]-a[2])) tri(a,b,c,paint);
+      else tri(a,c,b,paint);
+    };
+    const horizontal = (u0,u1,v0,v1,y,paint) => {
+      const a=at([u0,v0],y), b=at([u1,v0],y), c=at([u1,v1],y), d=at([u0,v1],y);
+      topFace(a,b,c,paint); topFace(a,c,d,paint);
+    };
+    const face = (u0,u1,v,y0,y1,paint) =>
+      quad(at([u0,v],y0),at([u1,v],y0),at([u1,v],y1),at([u0,v],y1),paint);
+
+    const floor = Math.max(...walls.slice(0,6).map(ground))+.055;
+    const top = floor+2.69;
+    walls.forEach((a,i) => {
+      const b=walls[(i+1)%walls.length];
+      quad(at(a,ground(a)-.13),at(b,ground(b)-.13),at(b,top+.02),at(a,top+.02),i<6 ? warmStone : stone);
+    });
+    for (const [a,b,c] of roof) topFace(at(a,top+a[2]),at(b,top+b[2]),at(c,top+c[2]),tile);
+    fascia.forEach((a,i) => {
+      const b=fascia[(i+1)%fascia.length];
+      quad(at(a,top+a[2]-.11),at(b,top+b[2]-.11),at(b,top+b[2]),at(a,top+a[2]),trim);
+    });
+    // Steel eave lining covers the setback while keeping the porch physically open.
+    horizontal(8.87,12.71,-.34,1.73,top-.085,trim);
+    const gable = [[12.71,.13,.2021],[14.735,.13,1.1539],[16.73,.13,.2162]];
+    for (let i=0; i<gable.length-1; i++) {
+      const a=gable[i], b=gable[i+1];
+      quad(at(a,top-.025),at(b,top-.025),at(b,top+b[2]-.055),at(a,top+a[2]-.055),timber);
+    }
+
+    const garageSill = Math.max(ground([5.3,.02]),floor-.10);
+    face(2.90,8.43,.042,garageSill,garageSill+2.23,frame);
+    face(3.02,8.31,.028,garageSill+.025,garageSill+2.10,timber);
+    for (let i=1; i<=5; i++) face(3.02,8.31,.019,garageSill+i*.33,garageSill+i*.33+.024,seam);
+    face(10.29,11.29,1.704,floor+.012,floor+2.25,frame);
+    face(10.38,11.18,1.692,floor+.045,floor+2.17,timber);
+    for (const [u0,u1] of [[13.0,13.78],[14.11,14.89],[15.20,15.98]]) {
+      face(u0,u1,.103,floor+.58,floor+2.24,frame);
+      face(u0+.071,u1-.071,.086,floor+.65,floor+2.17,glass);
+    }
+
+    const post = [9.50,.25], postHalf=.085, postBase=ground(post)-.07;
+    const postRing = [[-1,-1],[1,-1],[1,1],[-1,1]].map(([u,v]) => [post[0]+u*postHalf,post[1]+v*postHalf]);
+    postRing.forEach((a,i) => {
+      const b=postRing[(i+1)%postRing.length];
+      quad(at(a,postBase),at(b,postBase),at(b,top-.09),at(a,top-.09),timber);
+    });
+    model.addParts([{ positions:new Float32Array(position), colors:new Float32Array(colour),
+      matrix:new THREE.Matrix4().makeTranslation(x0,0,z0).elements, roughness:.88, doubleSide:true }]);
+    const grid = T.invStatic ??= invCivicCollision((x,z)=>[x,z],()=>false);
+    grid.polygon(walls.map(world));
+    grid.polygon(postRing.map(world));
+  }
+
   function invIndustrialEstateSign(T, model, THREE) {
     const x = -867.06, z = -1067.02, angle = 104 * Math.PI / 180;
     const matrix = new THREE.Matrix4().makeRotationY(angle).setPosition(x, 0, z);
