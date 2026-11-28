@@ -25,6 +25,9 @@ CAR = struct.Struct("<4h")
 TREE = struct.Struct("<3h")
 MAP_CENTRE_CLEARANCE = 0.5
 FRONTAGE_REACH = 65
+TREE_MOVE_LIMIT = 6.0
+TREE_EDGE_MARGIN = 0.35
+TREE_CROWN_BY_KIND = (0.78, 0.36, 0.45, 0.20)
 PROTECTED_STREETS = {"abeckettstreet", "normanroad"}
 # This also covers the host's A'Beckett retail/library block and hotel flank.
 AB_EAST_PRECINCT = box(-280, -485, -65, -252)
@@ -193,7 +196,40 @@ def synth_attrs(feature, area, key):
     return (int(shed), levels, roof, seed[1] % 12, seed[2] % 10)
 
 
-def place(town, layers, parcel_geojson=None):
+def tree_destination(trunk, crown, parcel, parcel_index, protected, occupancy, tree_index, moved):
+    interior = parcel.buffer(-0.5)
+    possible = set()
+    for radius_step in range(3, round(TREE_MOVE_LIMIT * 2) + 1):
+        radius = radius_step / 2
+        for direction in range(16):
+            angle = direction * math.tau / 16
+            possible.add((round((trunk.x + radius * math.cos(angle)) * 4),
+                          round((trunk.y + radius * math.sin(angle)) * 4)))
+
+    def move_distance(coords):
+        return math.hypot(coords[0] / 4 - trunk.x, coords[1] / 4 - trunk.y)
+
+    for x, z in sorted(possible, key=lambda coords: (move_distance(coords), coords)):
+        point = Point(x / 4, z / 4)
+        distance = move_distance((x, z))
+        if not (1.5 <= distance <= TREE_MOVE_LIMIT) or not interior.contains(point):
+            continue
+        if len(parcel_index.query(point, predicate="intersects")) != 1:
+            continue
+        if protected.distance(point) <= crown:
+            continue
+        if len(occupancy.query(point, predicate="dwithin", distance=max(1.5, crown))):
+            continue
+        spacing = max(2.0, crown)
+        if len(tree_index.query(point, predicate="dwithin", distance=spacing)):
+            continue
+        if any(point.distance(other) <= spacing for other in moved):
+            continue
+        return x, z, point, distance
+    return None
+
+
+def place(town, layers, parcel_geojson=None, *, relocate_blocking_trees=False):
     roads = street_geometry(town)
     normalized_name = lambda name: "".join(ch for ch in name.lower() if ch.isalnum())
     protected = unary_union([
@@ -290,21 +326,51 @@ def place(town, layers, parcel_geojson=None):
                 # The base atlas contains legacy house pads. Avoid revealing most of a pad at once.
                 reason["legacy_ground_pad_alignment"] += 1
                 continue
-            proposals.append((provider, score, source_id, index, encoded, rectangle, feature, match_method, blocking_legacy))
+            proposals.append((provider, score, source_id, index, encoded, rectangle, feature, match_method,
+                              blocking_legacy, geometry, parcel))
 
     final_rows = houses.copy()
     placed = []
     occupied_slots = set()
     used_cells = {}
-    trunks = [Point(x / 4, z / 4) for x, z, _ in rows(town["trees"], TREE)]
+    packed_trees = rows(town["trees"], TREE)
+    trunks = [Point(x / 4, z / 4) for x, z, _ in packed_trees]
     tree_index = STRtree(trunks)
+    tree_blocked = []
+
+    def cell_keys(rectangle):
+        minx, minz, maxx, maxz = rectangle.bounds
+        return [(x, z) for x in range(math.floor(minx / 20), math.floor(maxx / 20) + 1)
+                for z in range(math.floor(minz / 20), math.floor(maxz / 20) + 1)]
+
+    def overlaps_placed(rectangle, keys):
+        neighbours = {j for key in keys for j in used_cells.get(key, ())}
+        return any(rectangle.intersection(placed[j]["polygon"]).area > MAP_CENTRE_CLEARANCE for j in neighbours)
+
+    def accept(proposal, keys):
+        provider, _, identifier, index, encoded, rectangle, feature, match_method, *_ = proposal
+        if index is None:
+            slot = len(final_rows)
+            final_rows.append((*encoded, *synth_attrs(feature, rectangle.area, identifier)))
+            status = "placed_missing_shell"
+        else:
+            slot = index
+            final_rows[index] = (*encoded, *houses[index][5:])
+            occupied_slots.add(index)
+            status = "fitted_existing_shell"
+        for key in keys:
+            used_cells.setdefault(key, []).append(len(placed))
+        placed.append(dict(source=provider, sourceId=identifier, slot=slot, status=status, method=match_method,
+                           polygon=rectangle, x=encoded[0] / 4, z=encoded[1] / 4))
+        return slot
+
     # Keep packet indices stable for the original building variants, trees and route props.
     pending = sorted(proposals, key=lambda r: (r[0] != "osm", r[3] is None, -r[1], r[2]))
     while pending:
         before = len(placed)
         deferred = []
         for proposal in pending:
-            provider, _, identifier, index, encoded, rectangle, feature, match_method, blocking_legacy = proposal
+            _, _, _, index, encoded, rectangle, _, _, blocking_legacy, _, _ = proposal
             if index is not None and index in occupied_slots:
                 reason["source_duplicate_or_lower_ranked"] += 1
                 continue
@@ -312,37 +378,85 @@ def place(town, layers, parcel_geojson=None):
                 # Retry only after a neighbour's legacy shell has moved to a checked position.
                 deferred.append(proposal)
                 continue
-            minx, minz, maxx, maxz = rectangle.bounds
-            keys = [(x, z) for x in range(math.floor(minx / 20), math.floor(maxx / 20) + 1)
-                    for z in range(math.floor(minz / 20), math.floor(maxz / 20) + 1)]
-            neighbours = {j for key in keys for j in used_cells.get(key, ())}
-            if any(rectangle.intersection(placed[j]["polygon"]).area > MAP_CENTRE_CLEARANCE for j in neighbours):
+            keys = cell_keys(rectangle)
+            if overlaps_placed(rectangle, keys):
                 reason["conflicting_source_outline"] += 1
                 continue
             tree_hits = tree_index.query(rectangle, predicate="contains")
             if any(index is None or not original[index].covers(trunks[j]) for j in tree_hits):
                 reason["existing_tree_in_new_shell"] += 1
+                if relocate_blocking_trees:
+                    tree_blocked.append((proposal, tree_hits))
                 continue
-            if index is None:
-                slot = len(final_rows)
-                final_rows.append((*encoded, *synth_attrs(feature, rectangle.area, identifier)))
-                status = "placed_missing_shell"
-            else:
-                slot = index
-                if encoded == houses[index][:5]:
-                    reason["already_matches_packed_envelope"] += 1
-                    continue
-                final_rows[index] = (*encoded, *houses[index][5:])
-                occupied_slots.add(index)
-                status = "fitted_existing_shell"
-            for key in keys:
-                used_cells.setdefault(key, []).append(len(placed))
-            placed.append(dict(source=provider, sourceId=identifier, slot=slot, status=status, method=match_method,
-                               polygon=rectangle, x=encoded[0] / 4, z=encoded[1] / 4))
+            if index is not None and encoded == houses[index][:5]:
+                reason["already_matches_packed_envelope"] += 1
+                continue
+            accept(proposal, keys)
         if len(placed) == before:
             reason["conflicting_existing_shell"] += len(deferred)
             break
         pending = deferred
+
+    tree_report = None
+    if relocate_blocking_trees:
+        stage_one_rows = final_rows.copy()
+        stage_one_placement_count = len(placed)
+        stage_one_slots = {row["slot"] for row in placed}
+        # Keep open destinations outside all staged geometry and plausible source outlines.
+        occupancy = STRtree([*fixed, *map(house_area, final_rows), *[p[5] for p in proposals], *[p[9] for p in proposals]])
+        moved_trees = {}
+        moves = []
+        rejected = Counter()
+        for proposal, tree_hits in tree_blocked:
+            provider, _, identifier, index, encoded, rectangle, _, _, blocking_legacy, source, parcel_id = proposal
+            keys = cell_keys(rectangle)
+            if (index in occupied_slots or not blocking_legacy.issubset(occupied_slots)
+                    or overlaps_placed(rectangle, keys)):
+                rejected["conflicts_with_staged_shell"] += 1
+                continue
+            if index is not None and encoded == houses[index][:5]:
+                rejected["already_matches_packed_envelope"] += 1
+                continue
+            if len(tree_hits) != 1:
+                rejected["multiple_blocking_trunks"] += 1
+                continue
+            tree = int(tree_hits[0])
+            trunk = trunks[tree]
+            if tree in moved_trees:
+                rejected["trunk_already_used"] += 1
+                continue
+            if not source.buffer(-TREE_EDGE_MARGIN).contains(trunk) or not rectangle.buffer(-TREE_EDGE_MARGIN).contains(trunk):
+                rejected["trunk_outside_certain_outline_interior"] += 1
+                continue
+            if parcel_id is None:
+                rejected["no_active_parcel"] += 1
+                continue
+            parcel = parcels[parcel_id]
+            if (not parcel.covers(source) or not parcel.covers(rectangle)
+                    or len(parcel_index.query(trunk, predicate="intersects")) != 1):
+                rejected["ambiguous_or_crossing_parcel"] += 1
+                continue
+            _, _, kind_and_height = packed_trees[tree]
+            crown = TREE_CROWN_BY_KIND[kind_and_height >> 8] * ((kind_and_height & 255) / 10)
+            destination = tree_destination(trunk, crown, parcel, parcel_index, protected, occupancy,
+                                           tree_index, moved_trees.values())
+            if destination is None:
+                rejected["no_clear_position_on_same_parcel"] += 1
+                continue
+            x, z, point, distance = destination
+            slot = accept(proposal, keys)
+            moved_trees[tree] = point
+            packed_trees[tree] = (x, z, kind_and_height)
+            reason["existing_tree_in_new_shell"] -= 1
+            moves.append(dict(source=provider, sourceId=identifier, houseSlot=slot, treeSlot=tree,
+                              fromXZ=[trunk.x, trunk.y], toXZ=[point.x, point.y], distanceM=round(distance, 3),
+                              treeKind=kind_and_height >> 8, treeHeightM=(kind_and_height & 255) / 10))
+
+        assert all(stage_one_rows[i] == final_rows[i] for i in stage_one_slots)
+        tree_report = dict(stageOnePlacements=stage_one_placement_count, proposalsReviewed=len(tree_blocked),
+                           additionalPlacements=len(moves), rejected=dict(rejected.most_common()), moves=moves)
+        if moves:
+            town["trees"] = pack(packed_trees, TREE)
 
     assert all(final_rows[i] == houses[i] for i in protected_indices)
     assert all(houses[i][5:] == final_rows[i][5:] for i in range(len(houses)))
@@ -360,6 +474,8 @@ def place(town, layers, parcel_geojson=None):
         "placements": [{k: v for k, v in row.items() if k != "polygon"} for row in placed],
         "sourceCentres": source_centres,
     }
+    if tree_report is not None:
+        report["treeRelocation"] = tree_report
     town["houses"] = pack(final_rows, HOUSE)
     town["counts"]["houses"] = len(final_rows)
     credit = "Additional outline estimates: Microsoft Global ML Building Footprints (CDLA-Permissive-2.0)."
@@ -378,22 +494,29 @@ def main():
     parser.add_argument("--osm", type=Path, required=True)
     parser.add_argument("--microsoft", type=Path, required=True)
     parser.add_argument("--parcels", type=Path)
+    parser.add_argument("--relocate-blocking-trees", action="store_true",
+                        help="Second pass for unambiguously tree-blocked shells with safe same-parcel relocations")
     parser.add_argument("--report", type=Path, required=True)
     args = parser.parse_args()
+    if args.relocate_blocking_trees and not args.parcels:
+        parser.error("--relocate-blocking-trees requires --parcels")
     inputs = {path.resolve() for path in (args.baseline, args.osm, args.microsoft, args.parcels) if path is not None}
     outputs = {args.output.resolve(), args.report.resolve()}
     if len(outputs) != 2 or inputs & outputs:
         parser.error("Write the candidate and report to separate paths outside the input files.")
     town = read(args.baseline)
     report = place(town, [("osm", read(args.osm)), ("microsoft", read(args.microsoft))],
-                   read(args.parcels) if args.parcels else None)
+                   read(args.parcels) if args.parcels else None, relocate_blocking_trees=args.relocate_blocking_trees)
     candidate = json.dumps(town, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     report["candidateSha256"] = hashlib.sha256(candidate).hexdigest()
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(candidate)
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({k: v for k, v in report.items() if k not in {"placements", "sourceCentres"}}, indent=2))
+    summary = {k: v for k, v in report.items() if k not in {"placements", "sourceCentres"}}
+    if "treeRelocation" in summary:
+        summary["treeRelocation"] = {k: v for k, v in report["treeRelocation"].items() if k != "moves"}
+    print(json.dumps(summary, indent=2))
 
 
 if __name__ == "__main__":

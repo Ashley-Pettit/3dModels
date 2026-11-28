@@ -32,3 +32,9 @@ python tools/streetscapes/coverage_inventory.py baseline.json candidate.json cov
 ```
 
 The placement report records source identifiers, accepted slots and reasons for rejected proposals. The coverage GeoJSON preserves both sides of every original road and checks that the map projection, original road data, original mapped buildings and original packed style fields stayed intact.
+
+## Optional tree relocation pass
+
+Reproduce the second pass from the same original baseline and the three source snapshots above by adding `--relocate-blocking-trees` to the placement command. The importer completes the first pass before reconsidering tree-blocked outlines. It moves only a single packed, procedurally seeded trunk per accepted outline, with a margin inside both the source outline and the fitted shell. The new trunk needs a clear position within six metres on the same unambiguous active Vicmap parcel. Building and road offsets, neighbouring trunks and the two protected corridors constrain the destination. The report records each original and revised position and the reason when a move is declined.
+
+This pass retains the 1,029 accepted first-pass placements and moves 67 of the 46,704 packed trunks while retaining their indices, species and heights. It adds 21 refits and 46 new envelopes. The resulting packed map has 6,306 envelopes and measures 374,829 bytes at gzip level 6, 579 bytes above the first-pass map. The tree slots come from the procedural vegetation generator in the canonical Inverloch source. The relocated positions are model adjustments guided by the sourced building outlines and parcel boundaries.
